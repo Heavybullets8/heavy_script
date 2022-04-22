@@ -20,6 +20,17 @@ do
         \?)
             echo "Invalid Option -$OPTARG, type -h for help"
             exit;;
+        :)
+            echo "Option: -$OPTARG requires an argument" >&2
+            exit;;
+        i)
+            ignore+="$OPTARG"
+            ;;
+        t)
+            timeout=$OPTARG
+            re='^[0-9]+$'
+            ! [[ $timeout =~ $re ]] && echo -e "Error: -t needs to be assigned an interger\n$timeout is not an interger" >&2
+            ;;
         m)
             echo -e "1  Mount\n2  Unmount All" && read -p "Please type a number: " selection
 
@@ -28,8 +39,8 @@ do
                 echo "$list" && read -p "Please type a number : " selection
                 app=$(echo -e "$list" | grep ^"$selection" | awk '{print $2}' | cut -c 4-)
                 pvc=$(echo -e "$list" | grep ^"$selection" || echo -e "\nInvalid selection")
-                status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "(,|^)$app(,|$)" | awk -F ',' '{print $2}'| tr -d " \t\n\r") && SECONDS=0 && timeout=200
-                [[ "$status" != "STOPPED" ]] && echo -e "\nScaling down $app" && midclt call chart.release.scale "$app" '{"replica_count": 0}' &> /dev/null
+                status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "(,|^)$app(,|$)" | awk -F ',' '{print $2}'| tr -d " \t\n\r") && SECONDS=0
+                [[ "$status" != "STOPPED" ]] && echo -e "\nScaling down $app" && midclt call chart.release.scale "$app" '{"replica_count": 0}' &> /dev/null && [[ -z $timeout ]] && echo -e "\nSetting Default Timeout to 300\nChange timeout with -t" && timeout=300 || echo -e "\nTimeout was set to $timeout"
                 while [[ "$SECONDS" -le "$timeout" && "$status" != "STOPPED" ]]
                     do
                         status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "(,|^)$app(,|$)" | awk -F ',' '{print $2}'| tr -d " \t\n\r")
@@ -56,19 +67,8 @@ do
                 break
             fi
             exit;;
-        :)
-            echo "Option: -$OPTARG requires an argument" >&2
-            exit;;
         s)
             echo -e "Syncing all catalogs, please wait.." && cli -c 'app catalog sync_all' &> /dev/null && echo -e "Catalog sync complete"
-            ;;
-        i)
-            ignore+="$OPTARG"
-            ;;
-        t)
-            timeout=$OPTARG
-            re='^[0-9]+$'
-            ! [[ $timeout =~ $re ]] && echo -e "Error: -t needs to be assigned an interger\n$timeout is not an interger" >&2
             ;;
         U)
             mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep ,true,)

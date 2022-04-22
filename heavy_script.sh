@@ -28,8 +28,8 @@ do
                 echo "$list" && read -p "Please type a number : " selection
                 app=$(echo -e "$list" | grep ^$selection | awk '{print $2}' | cut -c 4-)
                 pvc=$(echo -e "$list" | grep ^$selection || echo -e "\nInvalid selection")
-                status=$(cli -m csv -c 'app chart_release query name,status' | grep $app | awk -F ',' '{print $2}'| tr -d " \t\n\r") && SECONDS=0 && timeout=200
-                [[ "$status" != "STOPPED" ]] && echo -e "\nScaling down $app" && midclt call chart.release.scale $app '{"replica_count": 0}' &> /dev/null
+                status=$(cli -m csv -c 'app chart_release query name,status' | grep -w $app | awk -F ',' '{print $2}'| tr -d " \t\n\r") && SECONDS=0 && timeout=200
+                [[ "$status" != "STOPPED" ]] && echo -e "\nScaling down -w $app" && midclt call chart.release.scale $app '{"replica_count": 0}' &> /dev/null
                 while [[ "$SECONDS" -le "$timeout" && "$status" != "STOPPED" ]]
                     do
                         status=$(cli -m csv -c 'app chart_release query name,status' | grep $app | awk -F ',' '{print $2}'|tr -d " \t\n\r")

@@ -16,7 +16,7 @@ do
             echo "-U | Update all applications, ignores versions"
             echo "-u | Update all applications, does not update Major releases"
             echo "-p | Prune unused/old docker images"
-            echo "EX |./heavy_script.sh -i portainer -i arch -i sonarr -i radarr -t 600 -sUp"
+            echo "EX | bash heavy_script.sh -i portainer -i arch -i sonarr -i radarr -t 600 -sUp"
             echo "EX | bash /mnt/tank/scripts/heavy_script.sh -t 8812 -m"
             exit;;
         \?)

@@ -10,12 +10,14 @@ do
             echo "These arguments NEED to be ran in a specific order, you can go from TOP to BOTTOM, see example below"
             echo "-m | Initiates mounting feature, choose between unmounting and mounting PVC data"
             echo "-i | Add application to ignore list, one by one, see example below."
-            echo "-t | Default: 300 -- Set a custom timeout: This is the ammount of time the script will wait for an application to go from DEPLOYING to ACTIVE"
+            echo "-t | Set a custom timeout in seconds for -u or -U: This is the ammount of time the script will wait for an application to go from DEPLOYING to ACTIVE"
+            echo "-t | Set a custom timeout in seconds for -m: Amount of time script will wait for applications to stop, before timing out"
             echo "-s | sync catalog"
             echo "-U | Update all applications, ignores versions"
             echo "-u | Update all applications, does not update Major releases"
             echo "-p | Prune unused/old docker images"
-            echo "EX |./update.sh -I portainer -I arch -I sonarr -I radarr -t 600 -sUp"
+            echo "EX |./heavy_script.sh -i portainer -i arch -i sonarr -i radarr -t 600 -sUp"
+            echo "EX | bash /mnt/tank/scripts/heavy_script.sh -t 8812 -m"
             exit;;
         \?)
             echo "Invalid Option -$OPTARG, type -h for help"

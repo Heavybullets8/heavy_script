@@ -3,12 +3,14 @@
 #If no argument is passed, kill the script.
 [[ -z "$*" ]] && echo "This script requires an arguent, use -h for help" && exit
 
-while getopts ":hsi:mt:uUp" opt
+while getopts ":hsi:mrb:t:uUp" opt
 do
     case $opt in
         h)
             echo "These arguments NEED to be ran in a specific order, you can go from TOP to BOTTOM, see example below"
             echo "-m | Initiates mounting feature, choose between unmounting and mounting PVC data"
+            echo "-r | Opens a menu to restore a HeavyScript backup that was taken on you ix-applications pool"
+            echo "-b | Back-up your ix-applications dataset, specify a number after -b"
             echo "-i | Add application to ignore list, one by one, see example below."
             echo "-t | Set a custom timeout in seconds for -u or -U: This is the ammount of time the script will wait for an application to go from DEPLOYING to ACTIVE"
             echo "-t | Set a custom timeout in seconds for -m: Amount of time script will wait for applications to stop, before timing out"
@@ -16,7 +18,7 @@ do
             echo "-U | Update all applications, ignores versions"
             echo "-u | Update all applications, does not update Major releases"
             echo "-p | Prune unused/old docker images"
-            echo "EX | bash heavy_script.sh -i portainer -i arch -i sonarr -i radarr -t 600 -sUp"
+            echo "EX | bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -sUp"
             echo "EX | bash /mnt/tank/scripts/heavy_script.sh -t 8812 -m"
             exit;;
         \?)
@@ -25,6 +27,36 @@ do
         :)
             echo "Option: -$OPTARG requires an argument" >&2
             exit;;
+        b)
+            number_of_backups=$OPTARG
+            echo "Number of backups was set to $number_of_backups"
+            re='^[0-9]+$'
+            ! [[ $number_of_backups =~ $re  ]] && echo -e "Error: -b needs to be assigned an interger\n$number_of_backups is not an interger" >&2 && exit
+
+            date=$(date '+%Y_%m_%d_%H_%M_%S')
+            cli -c 'app kubernetes backup_chart_releases backup_name=''"'HeavyScript_"$date"'"'
+
+            mapfile -t list_backups < <(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -nr | awk -F '|'  '{print $2}'| tr -d " \t\r")
+            overflow=$(expr ${#list_backups[@]} - $number_of_backups)
+
+            if [[  ${#list_backups[@]}  -gt  "number_of_backups" ]]; then
+            echo && mapfile -t list_overflow < <(cli -c 'app kubernetes list_backups' | grep "HeavyScript_"  | sort -nr | awk -F '|'  '{print $2}'| tr -d " \t\r" | tail -n "$overflow")
+            for i in "${list_overflow[@]}"
+            do
+                cli -c 'app kubernetes delete_backup backup_name=''"'"$i"'"' &> /dev/null && echo -e "Deleting your oldest backup $i\nThis is to remain in the $number_of_backups backups range you set. " || echo "Failed to delete $i"
+            done
+            fi
+            ;;
+        r)
+            list_backups=$(cli -c 'app kubernetes list_backups' | sort -nr | tr -d " \t\r"  | awk -F '|'  '/HeavyScript_/{print NR-1,  $2}') && echo "$list_backups" && read -p "Please type a number: " selection && restore_point=$(echo "$list_backups" | grep ^"$selection" | awk '{print $2}') && echo -e "\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible.\n\nYou have chosen to restore $restore_point\nWould you like to continue?"  && echo -e "1  Yes\n2  No" && read -p "Please type a number: " yesno || { echo "FAILED"; exit; }
+            if [[ $yesno == "1" ]]; then
+            echo -e "\nStarting Backup, this will take a LONG time." && cli -c 'app kubernetes restore_backup backup_name=''"'"$restore_point"'"' || echo "Restore FAILED"
+            elif [[ $yesno == "2" ]]; then
+                echo "You've chosen NO, killing script. Good luck."
+            else
+                echo "Invalid Selection"
+            fi
+            ;;
         i)
             ignore+="$OPTARG"
             ;;
@@ -89,7 +121,7 @@ do
                             echo -e "\n$n\nUpdating" && cli -c 'app chart_release upgrade release_name=''"'"$n"'"' &> /dev/null && echo -e "Updated\n$ov\n$nv\nWas Stopped, Beginning Stop Loop" && SECONDS=0 || { echo "FAILED"; continue; }
                             while [[ "$status"  !=  "ACTIVE" ]]
                                 do
-                                    status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep $n | awk -F ',' '{print $2}')
+                                    status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "$n" | awk -F ',' '{print $2}')
                                     if [[ "$status"  ==  "STOPPED" ]]; then
                                             echo -e "Stopped"
                                             break
@@ -133,7 +165,7 @@ do
                                 echo -e "\n$n\nUpdating" && cli -c 'app chart_release upgrade release_name=''"'"$n"'"' &> /dev/null && echo -e "Updated\n$ov\n$nv" || echo "FAILED"
                                 continue
                         elif [[ "$tt" == "$av" && "$status"  ==  "STOPPED" ]]; then
-                            echo -e "\n$n\nUpdating" && cli -c 'app chart_release upgrade release_name=''"'$n'"' &> /dev/null && echo -e "Updated\n$ov\n$nv\nWas Stopped, Beginning Stop Loop" && SECONDS=0 || { echo "FAILED"; continue; }
+                            echo -e "\n$n\nUpdating" && cli -c 'app chart_release upgrade release_name=''"'"$n"'"' &> /dev/null && echo -e "Updated\n$ov\n$nv\nWas Stopped, Beginning Stop Loop" && SECONDS=0 || { echo "FAILED"; continue; }
                             while [[ "$status"  !=  "ACTIVE" ]]
                                 do
                                     status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "$n" | awk -F ',' '{print $2}')

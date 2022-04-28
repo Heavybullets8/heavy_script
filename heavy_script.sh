@@ -48,7 +48,7 @@ do
             fi
             ;;
         r)
-            list_backups=$(cli -c 'app kubernetes list_backups' | sort -nr | tr -d " \t\r"  | awk -F '|'  '/HeavyScript_/{print NR-1,  $2}') && echo "$list_backups" && read -p "Please type a number: " selection && restore_point=$(echo "$list_backups" | grep ^"$selection" | awk '{print $2}') && echo -e "\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible.\n\nYou have chosen to restore $restore_point\nWould you like to continue?"  && echo -e "1  Yes\n2  No" && read -p "Please type a number: " yesno || { echo "FAILED"; exit; }
+            list_backups=$(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | tr -d " \t\r"  | awk -F '|'  '{print NR-1, $2}' | column -t) && echo "$list_backups" && read -p "Please type a number: " selection && restore_point=$(echo "$list_backups" | grep ^"$selection" | awk '{print $2}') && echo -e "\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible.\n\nYou have chosen to restore $restore_point\nWould you like to continue?"  && echo -e "1  Yes\n2  No" && read -p "Please type a number: " yesno || { echo "FAILED"; exit; }
             if [[ $yesno == "1" ]]; then
             echo -e "\nStarting Backup, this will take a LONG time." && cli -c 'app kubernetes restore_backup backup_name=''"'"$restore_point"'"' || echo "Restore FAILED"
             elif [[ $yesno == "2" ]]; then

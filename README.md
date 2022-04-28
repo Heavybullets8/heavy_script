@@ -27,3 +27,7 @@ Script that can: Update Truenas SCALE applications, Mount and unmount PVC storag
 
 - bash /mnt/tank/scripts/heavy_script.sh -t 8812 -m
 - bash /mnt/tank/scripts/heavy_script/heavy_script.sh -r
+
+
+### My personal Cron Job
+- ```git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_script/heavy_script.sh -b 14 -sup```

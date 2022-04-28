@@ -29,7 +29,7 @@ do
             exit;;
         b)
             number_of_backups=$OPTARG
-            echo "Number of backups was set to $number_of_backups"
+            echo -e "\nNumber of backups was set to $number_of_backups"
             re='^[0-9]+$'
             ! [[ $number_of_backups =~ $re  ]] && echo -e "Error: -b needs to be assigned an interger\n$number_of_backups is not an interger" >&2 && exit
 

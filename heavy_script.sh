@@ -35,11 +35,9 @@ do
 
             date=$(date '+%Y_%m_%d_%H_%M_%S')
             cli -c 'app kubernetes backup_chart_releases backup_name=''"'HeavyScript_"$date"'"'
-
             mapfile -t list_backups < <(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -nr | awk -F '|'  '{print $2}'| tr -d " \t\r")
-            overflow=$(expr ${#list_backups[@]} - $number_of_backups)
-
             if [[  ${#list_backups[@]}  -gt  "number_of_backups" ]]; then
+            overflow=$(expr ${#list_backups[@]} - $number_of_backups)
             echo && mapfile -t list_overflow < <(cli -c 'app kubernetes list_backups' | grep "HeavyScript_"  | sort -nr | awk -F '|'  '{print $2}'| tr -d " \t\r" | tail -n "$overflow")
             for i in "${list_overflow[@]}"
             do

@@ -80,8 +80,9 @@ do
                     done
                 data_name=$(echo "$pvc" | awk '{print $3}')
                 mount=$(echo "$pvc" | awk '{print $4}')
-                path=$(find /*/*/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
-                echo -e "\nMounting\n""$path""""$mount""\nTo\n/mnt/temporary/$data_name" && zfs set mountpoint=/temporary/"$data_name" "$path""$mount" && echo -e "Mounted\n\nUnmount with the following command\nzfs set mountpoint=legacy ""$path"""$mount"\nOr use the Unmount All option"
+                volume_name=$(echo "$pvc" | awk '{print $4}')
+                full_path=$(zfs list | grep $volume_name | awk '{print $1}')
+                echo -e "\nMounting\n"$full_path"\nTo\n/mnt/temporary/$data_name" && zfs set mountpoint=/temporary/"$data_name" "$full_path" && echo -e "Mounted\n\nUnmount with the following command\nzfs set mountpoint=legacy "$full_path" && rmdir /mnt/temporary/"$data_name"\nOr use the Unmount All option"
                 break
             elif [[ $selection == "2" ]]; then
                 mapfile -t unmount_array < <(basename -a /mnt/temporary/* | sed "s/*//")

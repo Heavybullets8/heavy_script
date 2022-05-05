@@ -109,7 +109,7 @@ do
             echo -e "\nSyncing all catalogs, please wait.." && cli -c 'app catalog sync_all' &> /dev/null && echo -e "Catalog sync complete"
             ;;
         U)
-            mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | grep ",true")
+            mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | grep ",true" | sort)
             [[ -z $array ]] && echo -e "\nThere are no updates available" && continue || echo -e "\n${#array[@]} update(s) available"
             [[ -z $timeout ]] && echo -e "\nSetting Default Timeout to 300\nChange timeout with -t" && timeout=300 || echo -e "\nTimeout was set to $timeout"
             for i in "${array[@]}"
@@ -147,7 +147,7 @@ do
                 done
             ;;
         u)
-            mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | grep -E ",true")
+            mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | grep ",true" | sort)
             [[ -z $array ]] && echo -e "\nThere are no updates available" && continue || echo -e "\n${#array[@]} update(s) available"
             [[ -z $timeout ]] && echo -e "\nSetting Default Timeout to 300\nChange timeout with -t" && timeout=300 || echo -e "\nTimeout was set to $timeout"
                 for i in "${array[@]}"

@@ -71,8 +71,13 @@ do
                 echo "$list" && read -p "Please type a number : " selection
                 app=$(echo -e "$list" | grep ^"$selection" | awk '{print $2}' | cut -c 4-)
                 pvc=$(echo -e "$list" | grep ^"$selection" || echo -e "\nInvalid selection")
-                status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "(,|^)$app(,|$)" | awk -F ',' '{print $2}'| tr -d " \t\n\r") && SECONDS=0
-                [[ "$status" != "STOPPED" ]] && echo -e "\nScaling down $app" && midclt call chart.release.scale "$app" '{"replica_count": 0}' &> /dev/null && [[ -z $timeout ]] && echo -e "\nSetting Default Timeout to 300\nChange timeout with -t" && timeout=300 || echo -e "\nTimeout was set to $timeout"
+                status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "(,|^)$app(,|$)" | awk -F ',' '{print $2}'| tr -d " \t\n\r")
+                if [[ "$status" != "STOPPED" ]]; then
+                    [[ -z $timeout ]] && echo -e "\nSetting Default Timeout to 300\nChange timeout with -t" && timeout=300 || echo -e "\nTimeout was set to $timeout"
+                    SECONDS=0 && echo -e "\nScaling down $app" && midclt call chart.release.scale "$app" '{"replica_count": 0}' &> /dev/null 
+                else
+                    echo -e "\n$app is already stopped"
+                fi
                 while [[ "$SECONDS" -le "$timeout" && "$status" != "STOPPED" ]]
                     do
                         status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "(,|^)$app(,|$)" | awk -F ',' '{print $2}'| tr -d " \t\n\r")
@@ -82,7 +87,7 @@ do
                 mount=$(echo "$pvc" | awk '{print $4}')
                 volume_name=$(echo "$pvc" | awk '{print $4}')
                 full_path=$(zfs list | grep $volume_name | awk '{print $1}')
-                echo -e "\nMounting\n"$full_path"\nTo\n/mnt/temporary/$data_name" && zfs set mountpoint=/temporary/"$data_name" "$full_path" && echo -e "Mounted\n\nUnmount with the following command\nzfs set mountpoint=legacy "$full_path" && rmdir /mnt/temporary/"$data_name"\nOr use the Unmount All option"
+                echo -e "\nMounting\n"$full_path"\nTo\n/mnt/temporary/$data_name" && zfs set mountpoint=/temporary/"$data_name" "$full_path" && echo -e "Mounted\n\nUnmount with the following command\nzfs set mountpoint=legacy "$full_path" && rmdir /mnt/temporary/"$data_name"\nOr use the Unmount All option\n"
                 break
             elif [[ $selection == "2" ]]; then
                 mapfile -t unmount_array < <(basename -a /mnt/temporary/* | sed "s/*//")

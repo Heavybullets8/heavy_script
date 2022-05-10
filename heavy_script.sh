@@ -243,10 +243,10 @@ if [[ $rollback == "true" ]]; then
             break
         elif [[ "$status"  ==  "STOPPED" ]]; then
             [[ "$count" -le 1 ]] && echo "Verifying Stopped.." && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
-            [[ "$count" -ge 2 ]] && echo "Error: Application appears to be stuck in stopped state" && break #if reports stopped any time after the first loop, assume its broken.
+            echo "Error: Application appears to be stuck in stopped state" && break #if reports stopped any time after the first loop, assume its broken.
         elif [[ "$status"  ==  "ACTIVE" ]]; then
             [[ "$count" -le 1 ]] && echo "Verifying Active.." && sleep 15 && continue #if reports active on FIRST time through loop, double check
-            [[ "$count" -ge 2 ]] && echo "Active" && break #if reports active any time after the first loop, assume actually active.
+            echo "Active" && break #if reports active any time after the first loop, assume actually active.
         else
             [[ "$verbose" == "true" ]] && echo "Waiting $((timeout-SECONDS)) more seconds for $app_name to be ACTIVE"
             sleep 15
@@ -255,14 +255,13 @@ if [[ $rollback == "true" ]]; then
     done
 else
     if [[  "$startstatus"  ==  "STOPPED"  ]]; then
-        status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep ""$app_name"," | awk -F ',' '{print $2}')
         while [[ "0"  !=  "1" ]]
         do
             (( count++ ))
-            [[ "$count" -ge 2 ]] && status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep ""$app_name"," | awk -F ',' '{print $2}') #Skip first status check, due to the one directly above it.
+            status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep ""$app_name"," | awk -F ',' '{print $2}') #Skip first status check, due to the one directly above it.
             if [[ "$status"  ==  "STOPPED" ]]; then
                 [[ "$count" -le 1 ]] && echo "Verifying Stopped.." && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
-                [[ "$count" -ge 2 ]] && echo "Stopped" && break #assume actually stopped anytime AFTER the first loop
+                echo "Stopped" && break #assume actually stopped anytime AFTER the first loop
                 break
             elif [[ "$status"  ==  "ACTIVE" ]]; then
                 [[ "$count" -le 1 ]] && echo "Verifying Active.." && sleep 15 && continue #if reports active on FIRST time through loop, double check

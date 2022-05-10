@@ -256,21 +256,23 @@ if [[ $rollback == "true" ]]; then
 else
     if [[  "$startstatus"  ==  "STOPPED"  ]]; then
         status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep ""$app_name"," | awk -F ',' '{print $2}')
-        while [[ "$status" !=  "STOPPED" ]]
+        while [[ "0"  !=  "1" ]]
         do
             (( count++ ))
             [[ "$count" -ge 2 ]] && status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep ""$app_name"," | awk -F ',' '{print $2}') #Skip first status check, due to the one directly above it.
             if [[ "$status"  ==  "STOPPED" ]]; then
-                echo "Stopped"
+                [[ "$count" -le 1 ]] && echo "Verifying Stopped.." && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
+                [[ "$count" -ge 2 ]] && echo "Stopped" && break #assume actually stopped anytime AFTER the first loop
                 break
             elif [[ "$status"  ==  "ACTIVE" ]]; then
+                [[ "$count" -le 1 ]] && echo "Verifying Active.." && sleep 15 && continue #if reports active on FIRST time through loop, double check
                 [[ "$verbose" == "true" ]] && echo "Returing to STOPPED state.."
                 midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && echo "Stopped"|| echo "FAILED"
                 break
             elif [[ "$SECONDS" -ge "$timeout" ]]; then
                 echo "Error: Run Time($SECONDS) has exceeded Timeout($timeout)"
                 break
-            elif [[ "$status" !=  "STOPPED" ]]; then
+            else
                 [[ "$verbose" == "true" ]] && echo "Waiting $((timeout-SECONDS)) more seconds for $app_name to be ACTIVE"
                 sleep 10
                 continue

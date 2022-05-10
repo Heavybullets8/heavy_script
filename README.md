@@ -32,4 +32,4 @@ Script that can: Update Truenas SCALE applications, Mount and unmount PVC storag
 
 
 ### My personal Cron Job
-- ```git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_script/heavy_script.sh -b 14 -sup```
+- ```git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_script/heavy_script.sh -b 14 -Rsup```

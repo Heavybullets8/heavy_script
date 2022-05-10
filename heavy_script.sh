@@ -95,7 +95,10 @@ fi
 export -f backup
 
 restore(){
-list_backups=$(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -rV | tr -d " \t\r"  | awk -F '|'  '{print NR-1, $2}' | column -t) && echo "$list_backups" && read -p "Please type a number: " selection && restore_point=$(echo "$list_backups" | grep ^"$selection" | awk '{print $2}') && echo -e "\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible.\n\nYou have chosen to restore $restore_point\nWould you like to continue?"  && echo -e "1  Yes\n2  No" && read -p "Please type a number: " yesno || { echo "FAILED"; exit; }
+list_backups=$(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -rV | tr -d " \t\r"  | awk -F '|'  '{print NR-1, $2}' | column -t)
+echo "$list_backups" && read -p "Please type a number: " selection && restore_point=$(echo "$list_backups" | grep ^"$selection" | awk '{print $2}')
+[[ -z "$restore_point" ]] && echo "Invalid Selection: $selection, was not an option" && exit #Check for valid selection. If none, kill script
+echo -e "\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible.\n\nYou have chosen to restore $restore_point\nWould you like to continue?"  && echo -e "1  Yes\n2  No" && read -p "Please type a number: " yesno || { echo "FAILED"; exit; }
 if [[ $yesno == "1" ]]; then
   echo -e "\nStarting Backup, this will take a LONG time." && cli -c 'app kubernetes restore_backup backup_name=''"'"$restore_point"'"' || echo "Restore FAILED"
 elif [[ $yesno == "2" ]]; then
@@ -112,8 +115,9 @@ echo -e "1  Mount\n2  Unmount All" && read -p "Please type a number: " selection
 if [[ $selection == "1" ]]; then
   list=$(k3s kubectl get pvc -A | sort -u | awk '{print NR-1, "\t" $1 "\t" $2 "\t" $4}' | column -t | sed "s/^0/ /")
   echo "$list" && read -p "Please type a number : " selection
-  app=$(echo -e "$list" | grep ^"$selection" | awk '{print $2}' | cut -c 4-)
-  pvc=$(echo -e "$list" | grep ^"$selection" || echo -e "\nInvalid selection")
+  app=$(echo -e "$list" | grep ^"$selection" | awk '{print $2}' | cut -c 4- )
+  [[ -z "$app" ]] && echo "Invalid Selection: $selection, was not an option" && exit #Check for valid selection. If none, kill script
+  pvc=$(echo -e "$list" | grep ^"$selection")
   status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "(,|^)$app(,|$)" | awk -F ',' '{print $2}'| tr -d " \t\n\r")
   if [[ "$status" != "STOPPED" ]]; then
     [[ -z $timeout ]] && echo -e "\nDefault Timeout: 500" && timeout=500 || echo -e "\nCustom Timeout: $timeout"
@@ -145,7 +149,6 @@ elif [[ $selection == "2" ]]; then
     done
 else
   echo "Invalid selection, type -h for help"
-  break
 fi
 }
 export -f mount

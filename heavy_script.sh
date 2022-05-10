@@ -116,7 +116,7 @@ if [[ $selection == "1" ]]; then
   pvc=$(echo -e "$list" | grep ^"$selection" || echo -e "\nInvalid selection")
   status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "(,|^)$app(,|$)" | awk -F ',' '{print $2}'| tr -d " \t\n\r")
   if [[ "$status" != "STOPPED" ]]; then
-    [[ -z $timeout ]] && echo -e "\nDefault Timeout: 500" && timeout=500 || echo -e "\nTimeout was set to $timeout"
+    [[ -z $timeout ]] && echo -e "\nDefault Timeout: 500" && timeout=500 || echo -e "\nCustom Timeout: $timeout"
     SECONDS=0 && echo -e "\nScaling down $app" && midclt call chart.release.scale "$app" '{"replica_count": 0}' &> /dev/null
   else
     echo -e "\n$app is already stopped"
@@ -163,7 +163,7 @@ export -f prune
 update_apps(){
     mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | grep ",true" | sort)
     [[ -z $array ]] && echo -e "\nThere are no updates available" || echo -e "\n${#array[@]} update(s) available"
-    [[ -z $timeout ]] && echo -e "\nSetting Default Timeout to 500\nChange timeout with -t" && timeout=500 || echo -e "\nTimeout was set to $timeout"
+    [[ -z $timeout ]] && echo -e "\nDefault Timeout: 500" && timeout=500 || echo -e "\nCustom Timeout: $timeout"
         for i in "${array[@]}"
             do
                 app_name=$(echo "$i" | awk -F ',' '{print $1}') #print out first catagory, name.

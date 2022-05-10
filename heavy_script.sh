@@ -177,7 +177,7 @@ update_apps(){
                 old_full_ver=$(echo "$i" | awk -F ',' '{print $4}') #Upgraded From
                 new_full_ver=$(echo "$i" | awk -F ',' '{print $5}') #Upraded To
                 rollback_version=$(echo "$i" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
-                [[ "${ignore[*]}"  ==  *"${app_name}"* ]] && echo -e "\n$app_name\nIgnored, skipping" && continue
+                printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name\nIgnored, skipping" && continue #If application is on ignore list, skip
                 if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #continue to update
                   startstatus=$status
                   if [[ $stop_before_update == "true" ]]; then # Check to see if user is using -S or not

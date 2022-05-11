@@ -95,10 +95,13 @@ fi
 export -f backup
 
 restore(){
+clear -x
 list_backups=$(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -rV | tr -d " \t\r"  | awk -F '|'  '{print $2}' | nl | column -t)
 echo "$list_backups" && read -p "Please type a number: " selection && restore_point=$(echo "$list_backups" | grep ^"$selection" | awk '{print $2}')
+[[ -z "$selection" ]] && echo "Your selection cannot be empty" && exit #Check for valid selection. If none, kill script
 [[ -z "$restore_point" ]] && echo "Invalid Selection: $selection, was not an option" && exit #Check for valid selection. If none, kill script
-echo -e "\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible.\n\nYou have chosen to restore $restore_point\nWould you like to continue?"  && echo -e "1  Yes\n2  No" && read -p "Please type a number: " yesno || { echo "FAILED"; exit; }
+echo -e "\nWARNING:\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible" || { echo "FAILED"; exit; }
+echo -e "\n\nYou have chosen:\n$restore_point\n\nWould you like to continue?"  && echo -e "1  Yes\n2  No" && read -p "Please type a number: " yesno || { echo "FAILED"; exit; }
 if [[ $yesno == "1" ]]; then
   echo -e "\nStarting Backup, this will take a LONG time." && cli -c 'app kubernetes restore_backup backup_name=''"'"$restore_point"'"' || echo "Restore FAILED"
 elif [[ $yesno == "2" ]]; then
@@ -110,11 +113,13 @@ fi
 export -f restore
 
 mount(){
+clear -x
 echo -e "1  Mount\n2  Unmount All" && read -p "Please type a number: " selection
-
+[[ -z "$selection" ]] && echo "Your selection cannot be empty" && exit #Check for valid selection. If none, kill script
 if [[ $selection == "1" ]]; then
   list=$(k3s kubectl get pvc -A | sort -u | awk '{print NR-1, "\t" $1 "\t" $2 "\t" $4}' | column -t | sed "s/^0/ /")
   echo "$list" && read -p "Please type a number : " selection
+  [[ -z "$selection" ]] && echo "Your selection cannot be empty" && exit #Check for valid selection. If none, kill script
   app=$(echo -e "$list" | grep ^"$selection" | awk '{print $2}' | cut -c 4- )
   [[ -z "$app" ]] && echo "Invalid Selection: $selection, was not an option" && exit #Check for valid selection. If none, kill script
   pvc=$(echo -e "$list" | grep ^"$selection")
@@ -144,7 +149,7 @@ elif [[ $selection == "2" ]]; then
       main=$(k3s kubectl get pvc -A | grep "$i" | awk '{print $1, $2, $4}')
       app=$(echo "$main" | awk '{print $1}' | cut -c 4-)
       pvc=$(echo "$main" | awk '{print $3}')
-      path=$(find /*/*/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
+      path=$(find /mnt/*/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
       zfs set mountpoint=legacy "$path""$pvc" && echo "$i unmounted" && rmdir /mnt/temporary/"$i" || echo "failed to unmount $i"
     done
 else

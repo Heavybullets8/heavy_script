@@ -95,7 +95,7 @@ fi
 export -f backup
 
 restore(){
-list_backups=$(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -rV | tr -d " \t\r"  | awk -F '|'  '{print NR-1, $2}' | column -t)
+list_backups=$(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -rV | tr -d " \t\r"  | awk -F '|'  '{print $2}' | nl | column -t)
 echo "$list_backups" && read -p "Please type a number: " selection && restore_point=$(echo "$list_backups" | grep ^"$selection" | awk '{print $2}')
 [[ -z "$restore_point" ]] && echo "Invalid Selection: $selection, was not an option" && exit #Check for valid selection. If none, kill script
 echo -e "\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible.\n\nYou have chosen to restore $restore_point\nWould you like to continue?"  && echo -e "1  Yes\n2  No" && read -p "Please type a number: " yesno || { echo "FAILED"; exit; }

@@ -49,3 +49,19 @@ bash /mnt/tank/scripts/heavy_script/heavy_script.sh -r
 ```
 git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_script/heavy_script.sh -b 14 -Rsup
 ```
+
+<br>
+<br>
+
+### Additional Informaton
+
+#### Verbose vs Non-Verbose 
+-  Verbose used `bash heavy_test.sh -b 5 -SRupv`
+- Non-Verbose used `bash heavy_test.sh -b 5 -SRup`
+
+| Verbose 	| Non-Verbose 	|
+|---------	|-------------	|
+|  ![image](https://user-images.githubusercontent.com/20793231/167971188-07f71d02-8da3-4e0c-b9a0-cd26e7f63613.png) |   ![image](https://user-images.githubusercontent.com/20793231/167972033-dc8d4ab4-4fb2-4c8a-b7dc-b9311ae55cf8.png) |
+       
+
+

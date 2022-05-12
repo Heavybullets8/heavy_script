@@ -295,8 +295,8 @@ fi
 export -f prune
 
 [[ $restore == "true" ]] && restore && exit
-[[ $number_of_backups -gt 0 ]] && backup
 [[ $mount == "true" ]] && mount && exit
+[[ $number_of_backups -gt 0 ]] && backup
 [[ $sync == "true" ]] && sync
 [[ $update_all_apps == "true" || $update_apps == "true" ]] && update_apps
 [[ $prune == "true" ]] && prune

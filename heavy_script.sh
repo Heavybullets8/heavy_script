@@ -34,9 +34,9 @@ do
       ;;
     b)
       re='^[0-9]+$'
-      ! [[ $OPTARG =~ $re  ]] && echo -e "Error: -b needs to be assigned an interger\n$number_of_backups is not an interger" >&2 && exit
       number_of_backups=$OPTARG
-      echo -e "\nNumber of backups was set to $number_of_backups"
+      ! [[ $OPTARG =~ $re  ]] && echo -e "Error: -b needs to be assigned an interger\n"$number_of_backups" is not an interger" >&2 && exit
+      [[ "$number_of_backups" -le 0 ]] && echo "Error: Number of backups is required to be at least 1" && exit
       ;;
     r)
       restore="true"
@@ -47,7 +47,8 @@ do
     t)
       re='^[0-9]+$'
       timeout=$OPTARG
-      ! [[ $timeout =~ $re ]] && echo -e "Error: -t needs to be assigned an interger\n$timeout is not an interger" >&2 && exit
+      ! [[ $timeout =~ $re ]] && echo -e "Error: -t needs to be assigned an interger\n"$timeout" is not an interger" >&2 && exit
+      [[ "$timeout" -le 50 ]] && echo "Warning: Your timeout is set very low and may lead to premature rollbacks or skips"
       ;;
     m)
       mount="true"
@@ -77,6 +78,7 @@ do
 done
 
 backup(){
+echo -e "\nNumber of backups was set to $number_of_backups"
 date=$(date '+%Y_%m_%d_%H_%M_%S')
 [[ "$verbose" == "true" ]] && cli -c 'app kubernetes backup_chart_releases backup_name=''"'HeavyScript_"$date"'"'
 [[ -z "$verbose" ]] && echo -e "\nNew Backup Name:" && cli -c 'app kubernetes backup_chart_releases backup_name=''"'HeavyScript_"$date"'"' | tail -n 1
@@ -96,7 +98,7 @@ export -f backup
 
 restore(){
 clear -x
-list_backups=$(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -rV | tr -d " \t\r"  | awk -F '|'  '{print $2}' | nl | column -t)
+list_backups=$(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -t '_' -Vr -k2,7 | tr -d " \t\r"  | awk -F '|'  '{print $2}' | nl | column -t)
 echo "$list_backups" && read -p "Please type a number: " selection && restore_point=$(echo "$list_backups" | grep ^"$selection" | awk '{print $2}')
 [[ -z "$selection" ]] && echo "Your selection cannot be empty" && exit #Check for valid selection. If none, kill script
 [[ -z "$restore_point" ]] && echo "Invalid Selection: $selection, was not an option" && exit #Check for valid selection. If none, kill script
@@ -139,10 +141,10 @@ if [[ $selection == "1" ]]; then
   mount=$(echo "$pvc" | awk '{print $4}')
   volume_name=$(echo "$pvc" | awk '{print $4}')
   full_path=$(zfs list | grep $volume_name | awk '{print $1}')
-  echo -e "\nMounting\n"$full_path"\nTo\n/mnt/temporary/$data_name" && zfs set mountpoint=/temporary/"$data_name" "$full_path" && echo -e "Mounted\n\nUnmount with the following command\nzfs set mountpoint=legacy "$full_path" && rmdir /mnt/temporary/"$data_name"\nOr use the Unmount All option\n"
+  echo -e "\nMounting\n"$full_path"\nTo\n/mnt/heavyscript/$data_name" && zfs set mountpoint=/heavyscript/"$data_name" "$full_path" && echo -e "Mounted\n\nUnmount with the following command\nzfs set mountpoint=legacy "$full_path" && rmdir /mnt/heavyscript/"$data_name"\nOr use the Unmount All option\n"
   exit
 elif [[ $selection == "2" ]]; then
-  mapfile -t unmount_array < <(basename -a /mnt/temporary/* | sed "s/*//")
+  mapfile -t unmount_array < <(basename -a /mnt/heavyscript/* | sed "s/*//")
   [[ -z $unmount_array ]] && echo "Theres nothing to unmount" && exit
   for i in "${unmount_array[@]}"
     do
@@ -150,8 +152,16 @@ elif [[ $selection == "2" ]]; then
       app=$(echo "$main" | awk '{print $1}' | cut -c 4-)
       pvc=$(echo "$main" | awk '{print $3}')
       path=$(find /mnt/*/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
-      zfs set mountpoint=legacy "$path""$pvc" && echo "$i unmounted" && rmdir /mnt/temporary/"$i" || echo "failed to unmount $i"
+      safety_check=$(find /mnt/*/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6- | wc -l) #if theres more than one new lines, that means theres more than one application with the same name on another pool.
+      if [[  "$safety_check" -gt 1 ]]; then #if there is another app with the same name on another pool, use the current pools application, since the other instance is probably old, or unused.
+          echo "$i is a name used on more than one pool.. attempting to use your current kubernetes apps pool"
+          pool=$(cli -c 'app kubernetes config' | grep dataset | awk -F '|' '{print $3}' | awk -F '/' '{print $1}' | tr -d " \t\n\r")
+          full_path=$(find /mnt/"$pool"/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
+          zfs set mountpoint=legacy "$full_path""$pvc" && echo "$i unmounted" && rmdir /mnt/heavyscript/"$i" && continue || echo "failed to unmount $i"
+      fi
+      zfs set mountpoint=legacy "$path""$pvc" && echo "$i unmounted" && rmdir /mnt/heavyscript/"$i" || echo "failed to unmount $i"
     done
+  rmdir /mnt/heavyscript
 else
   echo "Invalid selection, type -h for help"
 fi
@@ -268,7 +278,7 @@ else
         while [[ "0"  !=  "1" ]]
         do
             (( count++ ))
-            status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep ""$app_name"," | awk -F ',' '{print $2}') #Skip first status check, due to the one directly above it.
+            status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep ""$app_name"," | awk -F ',' '{print $2}')
             if [[ "$status"  ==  "STOPPED" ]]; then
                 [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo "Verifying Stopped.." && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
                 [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
@@ -294,9 +304,10 @@ fi
 }
 export -f prune
 
-[[ $restore == "true" ]] && restore && exit
-[[ $mount == "true" ]] && mount && exit
-[[ $number_of_backups -gt 0 ]] && backup
-[[ $sync == "true" ]] && sync
-[[ $update_all_apps == "true" || $update_apps == "true" ]] && update_apps
-[[ $prune == "true" ]] && prune
+[[ "$restore" == "true" && "$mount" == "true" ]] && echo -e "The Restore Function(-r)\nand\nMount Function(-m)\nCannot both be called at the same time." && exit
+[[ "$restore" == "true" ]] && restore && exit
+[[ "$mount" == "true" ]] && mount && exit
+[[ "$number_of_backups" -ge 1 ]] && backup
+[[ "$sync" == "true" ]] && sync
+[[ "$update_all_apps" == "true" || $update_apps == "true" ]] && update_apps
+[[ "$prune" == "true" ]] && prune

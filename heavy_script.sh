@@ -86,7 +86,7 @@ mapfile -t list_backups < <(cli -c 'app kubernetes list_backups' | grep "HeavySc
 if [[  ${#list_backups[@]}  -gt  "number_of_backups" ]]; then
   echo -e "\nDeleting the oldest backup(s) for exceeding limit:"
   overflow=$(expr ${#list_backups[@]} - $number_of_backups)
-  mapfile -t list_overflow < <(cli -c 'app kubernetes list_backups' | grep "HeavyScript_"  | sort -t '_' -Vr -k2,7 | awk -F '|'  '{print $2}'| tr -d " \t\r" | tail -n "$overflow")
+  mapfile -t list_overflow < <(cli -c 'app kubernetes list_backups' | grep "HeavyScript_"  | sort -t '_' -V -k2,7 | awk -F '|'  '{print $2}'| tr -d " \t\r" | head -n "$overflow")
   for i in "${list_overflow[@]}"
   do
     cli -c 'app kubernetes delete_backup backup_name=''"'"$i"'"' &> /dev/null || echo "Failed to delete $i"
@@ -180,7 +180,7 @@ export -f prune
 
 update_apps(){
     mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | grep ",true" | sort)
-    [[ -z $array ]] && echo -e "\nThere are no updates available" || echo -e "\n${#array[@]} update(s) available"
+    [[ -z $array ]] && echo -e "\nThere are no updates available" && return 0 || echo -e "\n${#array[@]} update(s) available"
     [[ -z $timeout ]] && echo -e "\nDefault Timeout: 500" && timeout=500 || echo -e "\nCustom Timeout: $timeout"
         for i in "${array[@]}"
             do

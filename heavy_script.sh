@@ -1,5 +1,6 @@
 #!/bin/bash
 #If no argument is passed, kill the script.
+
 [[ -z "$*" ]] && echo "This script requires an arguent, use -h for help" && exit
 
 while getopts ":hsi:mrb:t:uUpSRv" opt
@@ -35,7 +36,7 @@ do
     b)
       re='^[0-9]+$'
       number_of_backups=$OPTARG
-      ! [[ $OPTARG =~ $re  ]] && echo -e "Error: -b needs to be assigned an interger\n"$number_of_backups" is not an interger" >&2 && exit
+      ! [[ $OPTARG =~ $re  ]] && echo -e "Error: -b needs to be assigned an interger\n\"""$number_of_backups""\" is not an interger" >&2 && exit
       [[ "$number_of_backups" -le 0 ]] && echo "Error: Number of backups is required to be at least 1" && exit
       ;;
     r)
@@ -47,8 +48,7 @@ do
     t)
       re='^[0-9]+$'
       timeout=$OPTARG
-      ! [[ $timeout =~ $re ]] && echo -e "Error: -t needs to be assigned an interger\n"$timeout" is not an interger" >&2 && exit
-      [[ "$timeout" -le 50 ]] && echo "Warning: Your timeout is set very low and may lead to premature rollbacks or skips"
+      ! [[ $timeout =~ $re ]] && echo -e "Error: -t needs to be assigned an interger\n\"""$timeout""\" is not an interger" >&2 && exit
       ;;
     m)
       mount="true"
@@ -85,7 +85,7 @@ date=$(date '+%Y_%m_%d_%H_%M_%S')
 mapfile -t list_backups < <(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -t '_' -Vr -k2,7 | awk -F '|'  '{print $2}'| tr -d " \t\r")
 if [[  ${#list_backups[@]}  -gt  "number_of_backups" ]]; then
   echo -e "\nDeleting the oldest backup(s) for exceeding limit:"
-  overflow=$(expr ${#list_backups[@]} - $number_of_backups)
+  overflow=$(( ${#list_backups[@]} - "$number_of_backups" ))
   mapfile -t list_overflow < <(cli -c 'app kubernetes list_backups' | grep "HeavyScript_"  | sort -t '_' -V -k2,7 | awk -F '|'  '{print $2}'| tr -d " \t\r" | head -n "$overflow")
   for i in "${list_overflow[@]}"
   do
@@ -97,9 +97,11 @@ fi
 export -f backup
 
 restore(){
-clear -x
+clear -x && echo "pulling restore points.."
 list_backups=$(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -t '_' -Vr -k2,7 | tr -d " \t\r"  | awk -F '|'  '{print $2}' | nl | column -t)
-echo "$list_backups" && read -p "Please type a number: " selection && restore_point=$(echo "$list_backups" | grep ^"$selection" | awk '{print $2}')
+clear -x
+[[ -z "$list_backups" ]] && echo "No HeavyScript restore points available" && exit || { title; echo "Choose a restore point" ;  }
+echo "$list_backups" && read -p "Please type a number: " selection && restore_point=$(echo "$list_backups" | grep ^""$selection" " | awk '{print $2}')
 [[ -z "$selection" ]] && echo "Your selection cannot be empty" && exit #Check for valid selection. If none, kill script
 [[ -z "$restore_point" ]] && echo "Invalid Selection: $selection, was not an option" && exit #Check for valid selection. If none, kill script
 echo -e "\nWARNING:\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible" || { echo "FAILED"; exit; }
@@ -116,6 +118,7 @@ export -f restore
 
 mount(){
 clear -x
+title
 echo -e "1  Mount\n2  Unmount All" && read -p "Please type a number: " selection
 [[ -z "$selection" ]] && echo "Your selection cannot be empty" && exit #Check for valid selection. If none, kill script
 if [[ $selection == "1" ]]; then
@@ -140,8 +143,8 @@ if [[ $selection == "1" ]]; then
   data_name=$(echo "$pvc" | awk '{print $3}')
   mount=$(echo "$pvc" | awk '{print $4}')
   volume_name=$(echo "$pvc" | awk '{print $4}')
-  full_path=$(zfs list | grep $volume_name | awk '{print $1}')
-  echo -e "\nMounting\n"$full_path"\nTo\n/mnt/heavyscript/$data_name" && zfs set mountpoint=/heavyscript/"$data_name" "$full_path" && echo -e "Mounted\n\nUnmount with the following command\nzfs set mountpoint=legacy "$full_path" && rmdir /mnt/heavyscript/"$data_name"\nOr use the Unmount All option\n"
+  full_path=$(zfs list | grep "$volume_name" | awk '{print $1}')
+  echo -e "\nMounting\n$full_path\nTo\n/mnt/heavyscript/$data_name" && zfs set mountpoint=/heavyscript/"$data_name" "$full_path" && echo -e "Mounted\n\nUnmount with the following command\nzfs set mountpoint=legacy "$full_path" && rmdir /mnt/heavyscript/"$data_name"\nOr use the Unmount All option\n"
   exit
 elif [[ $selection == "2" ]]; then
   mapfile -t unmount_array < <(basename -a /mnt/heavyscript/* | sed "s/*//")
@@ -182,6 +185,7 @@ update_apps(){
     mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | grep ",true" | sort)
     [[ -z $array ]] && echo -e "\nThere are no updates available" && return 0 || echo -e "\n${#array[@]} update(s) available"
     [[ -z $timeout ]] && echo -e "\nDefault Timeout: 500" && timeout=500 || echo -e "\nCustom Timeout: $timeout"
+    [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
         for i in "${array[@]}"
             do
                 app_name=$(echo "$i" | awk -F ',' '{print $1}') #print out first catagory, name.
@@ -205,7 +209,7 @@ update_apps(){
                         cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo -e "Updated\n$old_full_ver\n$new_full_ver" && after_update_actions || echo "FAILED"
                         continue
                       else # if status was not STOPPED, stop the app prior to updating
-                        echo -e "\n"$app_name""
+                        echo -e "\n$app_name"
                         [[ "$verbose" == "true" ]] && echo "Stopping prior to update.."
                         midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && SECONDS=0 || echo -e "FAILED"
                         while [[ "$status" !=  "STOPPED" ]]
@@ -246,7 +250,7 @@ if [[ $rollback == "true" ]]; then
     while [[ "0"  !=  "1" ]]
     do
         (( count++ ))
-        status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep ""$app_name"," | awk -F ',' '{print $2}')
+        status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep """$app_name""," | awk -F ',' '{print $2}')
         if [[ "$status"  ==  "ACTIVE" && "$startstatus"  ==  "STOPPED" ]]; then
             [[ "$verbose" == "true" ]] && echo "Returing to STOPPED state.."
             midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && echo "Stopped"|| echo "FAILED"
@@ -278,7 +282,7 @@ else
         while [[ "0"  !=  "1" ]]
         do
             (( count++ ))
-            status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep ""$app_name"," | awk -F ',' '{print $2}')
+            status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep """$app_name""," | awk -F ',' '{print $2}')
             if [[ "$status"  ==  "STOPPED" ]]; then
                 [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo "Verifying Stopped.." && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
                 [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
@@ -304,10 +308,24 @@ fi
 }
 export -f prune
 
+title(){
+echo ' _   _                        _____           _       _   '
+echo '| | | |                      /  ___|         (_)     | | '
+echo '| |_| | ___  __ ___   ___   _\ `--.  ___ _ __ _ _ __ | |_'
+echo "|  _  |/ _ \/ _\` \ \ / / | | |\`--. \/ __| '__| | '_ \| __|"
+echo '| | | |  __/ (_| |\ V /| |_| /\__/ / (__| |  | | |_) | |_ '
+echo '\_| |_/\___|\__,_| \_/  \__, \____/ \___|_|  |_| .__/ \__|'
+echo '                         __/ |                 | |        '
+echo '                        |___/                  |_|        '
+echo
+}
+export -f title
+
 [[ "$restore" == "true" && "$mount" == "true" ]] && echo -e "The Restore Function(-r)\nand\nMount Function(-m)\nCannot both be called at the same time." && exit
 [[ "$restore" == "true" ]] && restore && exit
 [[ "$mount" == "true" ]] && mount && exit
+[[ "$number_of_backups" -ge 1 && "$sync" == "true" ]] && [[ "$update_all_apps" == "true" || "$update_apps" == "true" ]] && title
 [[ "$number_of_backups" -ge 1 ]] && backup
 [[ "$sync" == "true" ]] && sync
-[[ "$update_all_apps" == "true" || $update_apps == "true" ]] && update_apps
+[[ "$update_all_apps" == "true" || "$update_apps" == "true" ]] && update_apps
 [[ "$prune" == "true" ]] && prune

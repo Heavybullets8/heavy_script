@@ -324,7 +324,6 @@ export -f title
 [[ "$restore" == "true" && "$mount" == "true" ]] && echo -e "The Restore Function(-r)\nand\nMount Function(-m)\nCannot both be called at the same time." && exit
 [[ "$restore" == "true" ]] && restore && exit
 [[ "$mount" == "true" ]] && mount && exit
-[[ "$number_of_backups" -ge 1 && "$sync" == "true" ]] && [[ "$update_all_apps" == "true" || "$update_apps" == "true" ]] && title
 [[ "$number_of_backups" -ge 1 ]] && backup
 [[ "$sync" == "true" ]] && sync
 [[ "$update_all_apps" == "true" || "$update_apps" == "true" ]] && update_apps

@@ -20,7 +20,7 @@ do
       echo "-U | Update all applications, ignores versions"
       echo "-u | Update all applications, does not update Major releases"
       echo "-p | Prune unused/old docker images"
-      echo "-s | Stop App before attempting update"
+      echo "-S | Stop App before attempting update"
       echo "EX | bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -vRsUp"
       echo "EX | bash /mnt/tank/scripts/heavy_script.sh -t 8812 -m"
       exit
@@ -320,8 +320,10 @@ echo '                        |___/                  |_|        '
 echo
 }
 export -f title
-
+#exit if incompatable functions are called
 [[ "$restore" == "true" && "$mount" == "true" ]] && echo -e "The Restore Function(-r)\nand\nMount Function(-m)\nCannot both be called at the same time." && exit
+[[ "$update_all_apps" == "true" && "$update_apps" == "true" ]] && echo -e "-U and -u cannot BOTH be called" && exit
+#Continue to call functions in specific order
 [[ "$restore" == "true" ]] && restore && exit
 [[ "$mount" == "true" ]] && mount && exit
 [[ "$number_of_backups" -ge 1 && "$sync" == "true" ]] && [[ "$update_all_apps" == "true" || "$update_apps" == "true" ]] && title

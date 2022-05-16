@@ -1,7 +1,7 @@
 #!/bin/bash
-#If no argument is passed, kill the script.
 
-[[ -z "$*" ]] && echo "This script requires an arguent, use -h for help" && exit
+#If no argument is passed, kill the script.
+[[ -z "$*" ]] && echo "This script requires an argument, use -h for help" && exit
 
 while getopts ":hsi:mrb:t:uUpSRv" opt
 do
@@ -12,7 +12,7 @@ do
       echo "-b | Back-up your ix-applications dataset, specify a number after -b"
       echo "-i | Add application to ignore list, one by one, see example below."
       echo "-R | Roll-back applications if they fail to update"
-      echo "-S | Shutdown applications prior to updating"
+      echo "-S | Shutdown application prior to updating"
       echo "-v | verbose output"
       echo "-t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
       echo "-s | sync catalog"
@@ -20,7 +20,6 @@ do
       echo "-U | Update all applications, ignores versions"
       echo "-u | Update all applications, does not update Major releases"
       echo "-p | Prune unused/old docker images"
-      echo "-S | Stop App before attempting update"
       echo "EX | bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -vRsUp"
       echo "EX | bash /mnt/tank/scripts/heavy_script.sh -t 8812 -m"
       exit
@@ -101,7 +100,7 @@ clear -x && echo "pulling restore points.."
 list_backups=$(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -t '_' -Vr -k2,7 | tr -d " \t\r"  | awk -F '|'  '{print $2}' | nl | column -t)
 clear -x
 [[ -z "$list_backups" ]] && echo "No HeavyScript restore points available" && exit || { title; echo "Choose a restore point" ;  }
-echo "$list_backups" && read -p "Please type a number: " selection && restore_point=$(echo "$list_backups" | grep ^""$selection" " | awk '{print $2}')
+echo "$list_backups" && read -p "Please type a number: " selection && restore_point=$(echo "$list_backups" | grep ^"$selection " | awk '{print $2}')
 [[ -z "$selection" ]] && echo "Your selection cannot be empty" && exit #Check for valid selection. If none, kill script
 [[ -z "$restore_point" ]] && echo "Invalid Selection: $selection, was not an option" && exit #Check for valid selection. If none, kill script
 echo -e "\nWARNING:\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible" || { echo "FAILED"; exit; }
@@ -214,7 +213,7 @@ update_apps(){
                         midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && SECONDS=0 || echo -e "FAILED"
                         while [[ "$status" !=  "STOPPED" ]]
                         do
-                            status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep ""$app_name"," | awk -F ',' '{print $2}')
+                            status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "$app_name," | awk -F ',' '{print $2}')
                             if [[ "$status"  ==  "STOPPED" ]]; then
                                 echo "Stopped"
                                 [[ "$verbose" == "true" ]] && echo "Updating.."
@@ -250,7 +249,7 @@ if [[ $rollback == "true" ]]; then
     while [[ "0"  !=  "1" ]]
     do
         (( count++ ))
-        status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep """$app_name""," | awk -F ',' '{print $2}')
+        status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "$app_name," | awk -F ',' '{print $2}')
         if [[ "$status"  ==  "ACTIVE" && "$startstatus"  ==  "STOPPED" ]]; then
             [[ "$verbose" == "true" ]] && echo "Returing to STOPPED state.."
             midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && echo "Stopped"|| echo "FAILED"
@@ -279,10 +278,10 @@ if [[ $rollback == "true" ]]; then
     done
 else
     if [[  "$startstatus"  ==  "STOPPED"  ]]; then
-        while [[ "0"  !=  "1" ]]
+        while [[ "0"  !=  "1" ]] #using a constant while loop, then breaking out of the loop with break commands below. 
         do
             (( count++ ))
-            status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep """$app_name""," | awk -F ',' '{print $2}')
+            status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "$app_name," | awk -F ',' '{print $2}')
             if [[ "$status"  ==  "STOPPED" ]]; then
                 [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo "Verifying Stopped.." && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
                 [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports stopped on FIRST time through loop, double check

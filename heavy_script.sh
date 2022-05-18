@@ -1,6 +1,6 @@
 #!/bin/bash
-
 #If no argument is passed, kill the script.
+
 [[ -z "$*" ]] && echo "This script requires an argument, use -h for help" && exit
 
 while getopts ":hsi:mrb:t:uUpSRv" opt
@@ -12,7 +12,7 @@ do
       echo "-b | Back-up your ix-applications dataset, specify a number after -b"
       echo "-i | Add application to ignore list, one by one, see example below."
       echo "-R | Roll-back applications if they fail to update"
-      echo "-S | Shutdown application prior to updating"
+      echo "-S | Shutdown applications prior to updating"
       echo "-v | verbose output"
       echo "-t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
       echo "-s | sync catalog"
@@ -20,6 +20,7 @@ do
       echo "-U | Update all applications, ignores versions"
       echo "-u | Update all applications, does not update Major releases"
       echo "-p | Prune unused/old docker images"
+      echo "-S | Stop App before attempting update"
       echo "EX | bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -vRsUp"
       echo "EX | bash /mnt/tank/scripts/heavy_script.sh -t 8812 -m"
       exit
@@ -124,9 +125,9 @@ if [[ $selection == "1" ]]; then
   list=$(k3s kubectl get pvc -A | sort -u | awk '{print NR-1, "\t" $1 "\t" $2 "\t" $4}' | column -t | sed "s/^0/ /")
   echo "$list" && read -p "Please type a number : " selection
   [[ -z "$selection" ]] && echo "Your selection cannot be empty" && exit #Check for valid selection. If none, kill script
-  app=$(echo -e "$list" | grep ^"$selection" | awk '{print $2}' | cut -c 4- )
+  app=$(echo -e "$list" | grep ^"$selection " | awk '{print $2}' | cut -c 4- )
   [[ -z "$app" ]] && echo "Invalid Selection: $selection, was not an option" && exit #Check for valid selection. If none, kill script
-  pvc=$(echo -e "$list" | grep ^"$selection")
+  pvc=$(echo -e "$list" | grep ^"$selection ")
   status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "(,|^)$app(,|$)" | awk -F ',' '{print $2}'| tr -d " \t\n\r")
   if [[ "$status" != "STOPPED" ]]; then
     [[ -z $timeout ]] && echo -e "\nDefault Timeout: 500" && timeout=500 || echo -e "\nCustom Timeout: $timeout"
@@ -137,7 +138,7 @@ if [[ $selection == "1" ]]; then
   while [[ "$SECONDS" -le "$timeout" && "$status" != "STOPPED" ]]
     do
       status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "(,|^)$app(,|$)" | awk -F ',' '{print $2}'| tr -d " \t\n\r")
-      echo -e "Waiting $((timeout-SECONDS)) more seconds for $app to be STOPPED" && sleep 10
+      echo -e "Waiting $((timeout-SECONDS)) more seconds for $app to be STOPPED" && sleep 5
     done
   data_name=$(echo "$pvc" | awk '{print $3}')
   mount=$(echo "$pvc" | awk '{print $4}')
@@ -278,7 +279,7 @@ if [[ $rollback == "true" ]]; then
     done
 else
     if [[  "$startstatus"  ==  "STOPPED"  ]]; then
-        while [[ "0"  !=  "1" ]] #using a constant while loop, then breaking out of the loop with break commands below. 
+        while [[ "0"  !=  "1" ]] #using a constant while loop, then breaking out of the loop with break commands below.
         do
             (( count++ ))
             status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "$app_name," | awk -F ',' '{print $2}')

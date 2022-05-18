@@ -16,11 +16,9 @@ do
       echo "-v | verbose output"
       echo "-t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
       echo "-s | sync catalog"
-      echo "-S | Stops App before update with -u or -U and restarts afterwards"
       echo "-U | Update all applications, ignores versions"
       echo "-u | Update all applications, does not update Major releases"
       echo "-p | Prune unused/old docker images"
-      echo "-S | Stop App before attempting update"
       echo "EX | bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -vRsUp"
       echo "EX | bash /mnt/tank/scripts/heavy_script.sh -t 8812 -m"
       exit

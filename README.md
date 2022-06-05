@@ -53,6 +53,94 @@ git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_scr
 <br>
 <br>
 
+
+## How to Install
+
+### Create a Scripts Dataset
+
+I created a `scripts` dataset on my Truenas SCALE system, this is where all my scripts will remain.
+
+### Open a Terminal 
+
+**Change Directory to your scripts folder**
+```
+cd /mnt/speed/scripts
+```
+
+**Git Clone Heavy_Script**
+```
+git clone https://github.com/Heavybullets8/heavy_script.git
+```
+
+**Change Directory to Heavy_Script folder**
+```
+cd heavy_script
+```
+
+From here, you can just run Heavy_Script with `bash heavy_script.sh -ARGUMENTS`
+
+> Note: `chmod +x` is NOT required. Doing this will break the `git pull` function. Just run the script with `bash heavy_script.sh`
+
+<br>
+
+## How to Update 
+
+### Manually
+
+#### Open a Terminal 
+
+**Change Directory to your heavy_script folder**
+```
+cd /mnt/speed/scripts/heavy_script
+```
+
+**git pull**
+```
+git pull
+```
+<br >
+
+### Update with your Cron Job
+
+Here, we will update the script prior to running it, incase there is a bugfix, or any new additions to the script
+
+**Cron Job Command**
+```
+git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_script/heavy_script.sh -b 14 -Rsup
+```
+> The important command here is the `git -C /PATH/TO/HEAVY_SCRIPT_DIRECTORY pull`
+
+> This command will allow you to preform a `git pull` on a remote directory, which will ensure your script is udated prior to running it
+
+> `&&` Is used to run a command AFTER the previous command completed successfully
+>> So once the `git -C /PATH/TO/HEAVY_SCRIPT_DIRECTORY pull` command completes, THEN it will run the `bash /PATH/TO/HEAVY_SCRIPT_DIRECTORY/heavy_script.sh -b 14 -Rsup` command
+
+<br >
+<br >
+
+## Creating a Cron Job
+
+1. Truenas SCALE GUI
+2. System Settings
+3. Advanced
+4. Cron Jobs
+   1. Click Add
+
+| Name                   	| Value                                                                                                             	| Reason                                                                                                                                                                                         	|
+|------------------------	|-------------------------------------------------------------------------------------------------------------------	|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
+| `Description`          	| HeavyScript git pull and Update apps                                                                              	| This is up to you, put whatever you think is a good description in here                                                                                                                        	|
+| `Command`              	| `git -C /PATH/TO/HEAVY_SCRIPT_DIRECTORY pull && bash /PATH/TO/HEAVY_SCRIPT_DIRECTORY/heavy_script.sh -b 14 -Rsup` 	| This is the command you will be running on your schedule  I personally use:  `git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_script/heavy_script.sh -b 14 -Rsup` 	|
+| `Run As User`          	| `root`                                                                                                            	| Running the script as `root` is REQUIRED. You cannot access all of the kubernetes functions without this user.                                                                                 	|
+| `Schedule`             	| Up to you, I run mine everyday at `0400`                                                                          	| Again up to you                                                                                                                                                                                	|
+| `Hide Standard Output` 	| `False` or Unticked                                                                                               	| I like to receive an email report of how the script ran, what apps updated etc.                                                                                                                	|
+| `Hide Standard Error`  	| `False`  or Unticked                                                                                              	| I want to see any errors that occur                                                                                                                                                            	|
+| `Enabled`              	| `True` or Ticked                                                                                                  	| This will Enable the script to run on your schedule                                                                                                                                            	|
+
+
+
+<br >
+<br >
+
 ### Additional Informaton
 
 #### Verbose vs Non-Verbose 

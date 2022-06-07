@@ -157,7 +157,7 @@ elif [[ $selection == "2" ]]; then
           echo "$i is a name used on more than one pool.. attempting to use your current kubernetes apps pool"
           pool=$(cli -c 'app kubernetes config' | grep dataset | awk -F '|' '{print $3}' | awk -F '/' '{print $1}' | tr -d " \t\n\r")
           full_path=$(find /mnt/"$pool"/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
-          zfs set mountpoint=legacy "$full_path""$pvc" && echo "$i unmounted" && rmdir /mnt/heavyscript/"$i" && continue || echo "failed to unmount $i"
+          zfs set mountpoint=legacy "$full_path""$pvc" && echo "$i unmounted" && rmdir /mnt/heavyscript/"$i" || echo "failed to unmount $i"
       else
           zfs set mountpoint=legacy "$path""$pvc" && echo "$i unmounted" && rmdir /mnt/heavyscript/"$i" || echo "failed to unmount $i"
       fi

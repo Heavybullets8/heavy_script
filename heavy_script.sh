@@ -149,7 +149,7 @@ elif [[ $selection == "2" ]]; then
   [[ -z $unmount_array ]] && echo "Theres nothing to unmount" && exit
   for i in "${unmount_array[@]}"
     do
-      main=$(k3s kubectl get pvc -A | grep "$i" | awk '{print $1, $2, $4}')
+      main=$(k3s kubectl get pvc -A | grep -E "\s$i\s" | awk '{print $1, $2, $4}')
       app=$(echo "$main" | awk '{print $1}' | cut -c 4-)
       pvc=$(echo "$main" | awk '{print $3}')
       mapfile -t path < <(find /mnt/*/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)

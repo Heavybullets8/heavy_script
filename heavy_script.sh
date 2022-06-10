@@ -155,7 +155,7 @@ elif [[ $selection == "2" ]]; then
       mapfile -t path < <(find /mnt/*/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
       if [[  "${#path[@]}" -gt 1 ]]; then #if there is another app with the same name on another pool, use the current pools application, since the other instance is probably old, or unused.
           echo "$i is a name used on more than one pool.. attempting to use your current kubernetes apps pool"
-          pool=$(cli -c 'app kubernetes config' | grep dataset | awk -F '|' '{print $3}' | awk -F '/' '{print $1}' | tr -d " \t\n\r")
+          pool=$(cli -c 'app kubernetes config' | grep -E "dataset\s\|" | awk -F '|' '{print $3}' | awk -F '/' '{print $1}' | tr -d " \t\n\r")
           full_path=$(find /mnt/"$pool"/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
           zfs set mountpoint=legacy "$full_path""$pvc" && echo "$i unmounted" && rmdir /mnt/heavyscript/"$i" || echo "failed to unmount $i"
       else
@@ -175,12 +175,12 @@ echo -e "\nSyncing all catalogs, please wait.." && cli -c 'app catalog sync_all'
 export -f sync
 
 prune(){
-echo -e "\nPruning Docker Images" && docker image prune -af | grep Total || echo "Failed to Prune Docker Images"
+echo -e "\nPruning Docker Images" && docker image prune -af | grep "^Total" || echo "Failed to Prune Docker Images"
 }
 export -f prune
 
 update_apps(){
-    mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | grep ",true" | sort)
+    mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | grep -E ",true(,|$)" | sort)
     [[ -z $array ]] && echo -e "\nThere are no updates available" && return 0 || echo -e "\n${#array[@]} update(s) available"
     [[ -z $timeout ]] && echo -e "\nDefault Timeout: 500" && timeout=500 || echo -e "\nCustom Timeout: $timeout"
     [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
@@ -192,6 +192,7 @@ update_apps(){
                 old_chart_ver=$(echo "$i" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}' | awk -F '.' '{print $1}') # Old Chart MAJOR version
                 new_chart_ver=$(echo "$i" | awk -F ',' '{print $5}' | awk -F '_' '{print $2}' | awk -F '.' '{print $1}') # New Chart MAJOR version
                 status=$(echo "$i" | awk -F ',' '{print $2}') #status of the app: STOPPED / DEPLOYING / ACTIVE
+                startstatus=$status
                 diff_app=$(diff <(echo "$old_app_ver") <(echo "$new_app_ver")) #caluclating difference in major app versions
                 diff_chart=$(diff <(echo "$old_chart_ver") <(echo "$new_chart_ver")) #caluclating difference in Chart versions
                 old_full_ver=$(echo "$i" | awk -F ',' '{print $4}') #Upgraded From
@@ -199,7 +200,6 @@ update_apps(){
                 rollback_version=$(echo "$i" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
                 printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name\nIgnored, skipping" && continue #If application is on ignore list, skip
                 if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #continue to update
-                  startstatus=$status
                   if [[ $stop_before_update == "true" ]]; then # Check to see if user is using -S or not
                       if [[ "$status" ==  "STOPPED" ]]; then # if status is already stopped, skip while loop
                         echo -e "\n$app_name"
@@ -248,7 +248,7 @@ if [[ $rollback == "true" ]]; then
     while [[ "0"  !=  "1" ]]
     do
         (( count++ ))
-        status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "$app_name," | awk -F ',' '{print $2}')
+        status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "^$app_name," | awk -F ',' '{print $2}')
         if [[ "$status"  ==  "ACTIVE" && "$startstatus"  ==  "STOPPED" ]]; then
             [[ "$verbose" == "true" ]] && echo "Returing to STOPPED state.."
             midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && echo "Stopped"|| echo "FAILED"
@@ -280,7 +280,7 @@ else
         while [[ "0"  !=  "1" ]] #using a constant while loop, then breaking out of the loop with break commands below.
         do
             (( count++ ))
-            status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "$app_name," | awk -F ',' '{print $2}')
+            status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "^$app_name," | awk -F ',' '{print $2}')
             if [[ "$status"  ==  "STOPPED" ]]; then
                 [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo "Verifying Stopped.." && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
                 [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports stopped on FIRST time through loop, double check

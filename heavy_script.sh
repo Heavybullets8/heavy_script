@@ -31,8 +31,9 @@ do
                 echo 
                 echo "Examples"
                 echo "bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -vrsUp"
-                echo "bash /mnt/tank/scripts/heavy_script.sh -t 8812 -m"
-                echo "bash /mnt/tank/scripts/heavy_script.sh --mount"
+                echo "bash /mnt/tank/scripts/heavy_script.sh -t 150 --mount"
+                echo "bash /mnt/tank/scripts/heavy_script.sh --dns"
+                echo "bash /mnt/tank/scripts/heavy_script.sh --restore"              
                 exit
                 ;;
             dns)

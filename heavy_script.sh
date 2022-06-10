@@ -9,6 +9,32 @@ do
   case $opt in
      -)
         case "${OPTARG}" in
+           help)
+                clear -x
+                echo "Basic Utilities"
+                echo "--mount   | Initiates mounting feature, choose between unmounting and mounting PVC data"
+                echo "--restore | Opens a menu to restore a \"heavy_script\" backup that was taken on your \"ix-applications\" dataset"
+                echo "--dns     | list all of your applications DNS names and their web ports"
+                echo
+                echo "Update Options"
+                echo "-U | Update all applications, ignores versions"
+                echo "-u | Update all applications, does not update Major releases"
+                echo "-b | Back-up your ix-applications dataset, specify a number after -b"
+                echo "-i | Add application to ignore list, one by one, see example below."
+                echo "-R | THIS OPTION WILL DEPRICATE SOON, USE \"-r\" instead. Roll-back applications if they fail to update"
+                echo "-r | Roll-back applications if they fail to update"
+                echo "-S | Shutdown applications prior to updating"
+                echo "-v | verbose output"
+                echo "-t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
+                echo "-s | sync catalog"
+                echo "-p | Prune unused/old docker images"
+                echo 
+                echo "Examples"
+                echo "bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -vrsUp"
+                echo "bash /mnt/tank/scripts/heavy_script.sh -t 8812 -m"
+                echo "bash /mnt/tank/scripts/heavy_script.sh --mount"
+                exit
+                ;;
             dns)
                 dns="true"
                 ;;
@@ -17,23 +43,6 @@ do
                 ;;
           mount)
                 mount="true"
-                ;;
-           help)
-                echo "-m | Initiates mounting feature, choose between unmounting and mounting PVC data"
-                echo "-r | Opens a menu to restore a heavy_script backup that was taken on you ix-applications pool"
-                echo "-b | Back-up your ix-applications dataset, specify a number after -b"
-                echo "-i | Add application to ignore list, one by one, see example below."
-                echo "-R | Roll-back applications if they fail to update"
-                echo "-S | Shutdown applications prior to updating"
-                echo "-v | verbose output"
-                echo "-t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
-                echo "-s | sync catalog"
-                echo "-U | Update all applications, ignores versions"
-                echo "-u | Update all applications, does not update Major releases"
-                echo "-p | Prune unused/old docker images"
-                echo "EX | bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -vRsUp"
-                echo "EX | bash /mnt/tank/scripts/heavy_script.sh -t 8812 -m"
-                exit
                 ;;
 
               *)
@@ -84,6 +93,7 @@ do
       ;;
     R)
       rollback="true"
+      echo "WARNING: -R is being transisitioned to -r, this is due to a refactor in the script. Please Make the change ASAP!"
       ;;
     v)
       verbose="true"
@@ -342,7 +352,6 @@ echo "Generating DNS Names.."
 ignore="cron|kube-system|nvidia|svclb|NAME|memcached"
 
 # Pulling pod names
-
 mapfile -t main < <(k3s kubectl get pods -A | grep -Ev "$ignore" | sort)
 
 # Pulling all ports
@@ -364,6 +373,7 @@ export -f dns
 #exit if incompatable functions are called
 [[ "$restore" == "true" && "$mount" == "true" ]] && echo -e "The Restore Function(-r)\nand\nMount Function(-m)\nCannot both be called at the same time." && exit
 [[ "$update_all_apps" == "true" && "$update_apps" == "true" ]] && echo -e "-U and -u cannot BOTH be called" && exit
+
 #Continue to call functions in specific order
 [[ "$dns" == "true" ]] && dns && exit
 [[ "$restore" == "true" ]] && restore && exit

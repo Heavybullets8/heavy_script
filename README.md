@@ -1,5 +1,14 @@
 # heavy_script
 
+## Table of contents:
+* [Arguments](#arguments)
+* [Examples](#examples)
+* [How to Install](#how-to-install)
+* [How to Update](#how-to-update)
+* [Creating a Cron Job](#creating-a-cron-job)
+* [Additional Information](#additional-information)
+
+<br>
 
 ## Arguments
 
@@ -7,7 +16,7 @@
 |-----------	|------------------------	|-----------	|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
 | --restore 	| --restore              	| None      	| Restore HeavyScript specific `ix-applications dataset` snapshot                                                                                                                                                       	|
 | --mount   	| --mount                	| None      	| Initiates mounting feature Choose between unmounting and mounting PVC data                                                                                                                                            	|
-| --dns     	| --dns                  	| None      	| list all of your applications DNS names and their web ports                                                                                                                                                           	|
+| --dns     	| --dns                  	| None      	| list all of your applications DNS names and their web port                                                                                                                                                            	|
 | -U        	| -U                     	| None      	| Update applications, ignoring major version changes                                                                                                                                                                   	|
 | -u        	| -u                     	| None      	| Update applications, do NOT update if there was a major version change                                                                                                                                                	|
 | -b        	| -b 14                  	| Integer   	| Backup `ix-appliactions` dataset Creates backups up to the number you've chosen                                                                                                                                       	|
@@ -123,7 +132,7 @@ git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_scr
 
 ## Creating a Cron Job
 
-1. Truenas SCALE GUI
+1. TrueNAS SCALE GUI
 2. System Settings
 3. Advanced
 4. Cron Jobs
@@ -144,7 +153,7 @@ git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_scr
 <br >
 <br >
 
-### Additional Informaton
+### Additional Information
 
 #### Verbose vs Non-Verbose 
 -  Verbose used `bash heavy_script.sh -b 5 -Srupv`

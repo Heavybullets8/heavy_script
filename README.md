@@ -38,11 +38,17 @@ bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -rsup
 ```
 
 > `-b` is set to 14. Up to 14 snapshots of your ix-applications dataset will be saved
+
 > `-i` is set to ignore portainer, arch, sonarr, and radarr. These applications will be ignored when it comes to updates.
+
 > `-t` I set it to 600 seconds, this means the script will wait 600 seconds for the application to become ACTIVE before timing out and continuing to a different application. 
+
 > `-r` Will rollback applications if they fail to deploy after updating.
+
 > `-s` will just sync the repositories, ensuring you are downloading the latest updates.
+
 > `-u` update applications as long as the major version has absolutely no change, if it does have a change it will ask the user to update manually.
+
 > `-p` Prune docker images.
 
 #### Mounting PVC Data

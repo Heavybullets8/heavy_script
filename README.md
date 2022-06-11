@@ -12,21 +12,22 @@
 
 ## Arguments
 
-| Flag      	| Example                	| Parameter 	| Description                                                                                                                                                                                                           	|
-|-----------	|------------------------	|-----------	|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
-| --restore 	| --restore              	| None      	| Restore HeavyScript specific `ix-applications dataset` snapshot                                                                                                                                                       	|
-| --mount   	| --mount                	| None      	| Initiates mounting feature Choose between unmounting and mounting PVC data                                                                                                                                            	|
-| --dns     	| --dns                  	| None      	| list all of your applications DNS names and their web port                                                                                                                                                            	|
-| -U        	| -U                     	| None      	| Update applications, ignoring major version changes                                                                                                                                                                   	|
-| -u        	| -u                     	| None      	| Update applications, do NOT update if there was a major version change                                                                                                                                                	|
-| -b        	| -b 14                  	| Integer   	| Backup `ix-appliactions` dataset Creates backups up to the number you've chosen                                                                                                                                       	|
-| -i        	| -i nextcloud -i sonarr 	| String    	| Applications listed will be ignored during updating List one application after another as shown in the example                                                                                                        	|
-| (-R\|-r)  	| -r                     	| None      	| Monitors applications after they update If the app does not become "ACTIVE" after either: The custom Timeout, or Default Timeout, rollback the application. Warning: deprecating `-R` please begin using `-r` instead 	|
-| -v        	| -v                     	| None      	| Verbose Output Look at the bottom of this page for an example                                                                                                                                                         	|
-| -S        	| -S                     	| None      	| Shutdown the application prior to updating it                                                                                                                                                                         	|
-| -t        	| -t 150                 	| Integer   	| Set a custom timeout to be used with either: `-m`  - Time the script will wait for application to be "STOPPED" or `-(u\|U)`  - Time the script will wait for application to be either "STOPPED" or "ACTIVE"           	|
-| -s        	| -s                     	| None      	| Sync Catalogs prior to updating                                                                                                                                                                                       	|
-| -p        	| -p                     	| None      	| Prune old/unused docker images                                                                                                                                                                                        	|
+| Flag            	| Example                	| Parameter 	| Description                                                                                                                                                                                                            	|
+|-----------------	|------------------------	|-----------	|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
+| --delete-backup 	| --delete-backup        	| None      	| Opens a menu to delete backups >Useful if you need to delete old system backups or backups from other scripts                                                                                                          	|
+| --restore       	| --restore              	| None      	| Restore HeavyScript specific `ix-applications dataset` snapshot                                                                                                                                                        	|
+| --mount         	| --mount                	| None      	| Initiates mounting feature Choose between unmounting and mounting PVC data                                                                                                                                             	|
+| --dns           	| --dns                  	| None      	| list all of your applications DNS names and their web ports                                                                                                                                                            	|
+| -U              	| -U                     	| None      	| Update applications, ignoring major version changes                                                                                                                                                                    	|
+| -u              	| -u                     	| None      	| Update applications, do NOT update if there was a major version change                                                                                                                                                 	|
+| -b              	| -b 14                  	| Integer   	| Backup `ix-appliactions` dataset Creates backups up to the number you've chosen                                                                                                                                        	|
+| -i              	| -i nextcloud -i sonarr 	| String    	| Applications listed will be ignored during updating List one application after another as shown in the example                                                                                                         	|
+| (-R\|-r)        	| -r                     	| None      	| Monitors applications after they update If the app does not become "ACTIVE" after either: The custom Timeout, or Default Timeout, rollback the application. >Warning: deprecating `-R` please begin using `-r` instead 	|
+| -v              	| -v                     	| None      	| Verbose Output Look at the bottom of this page for an example                                                                                                                                                          	|
+| -S              	| -S                     	| None      	| Shutdown the application prior to updating it                                                                                                                                                                          	|
+| -t              	| -t 150                 	| Integer   	| Set a custom timeout to be used with either: `-m`  - Time the script will wait for application to be "STOPPED" or `-(u\|U)`  - Time the script will wait for application to be either "STOPPED" or "ACTIVE"            	|
+| -s              	| -s                     	| None      	| Sync Catalogs prior to updating                                                                                                                                                                                        	|
+| -p              	| -p                     	| None      	| Prune old/unused docker images                                                                                                                                                                                         	|
 
 <br>
 <br>
@@ -61,6 +62,12 @@ bash /mnt/tank/scripts/heavy_script.sh -t 300 --mount
 
 ```
 bash /mnt/tank/scripts/heavy_script/heavy_script.sh --restore
+```
+
+#### Deleting Backups
+
+```
+bash /mnt/tank/scripts/heavy_script/heavy_script.sh --backup-delete
 ```
 
 #### List All DNS Names

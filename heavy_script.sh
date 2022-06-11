@@ -105,6 +105,27 @@ do
   esac
 done
 
+
+deleteBackup(){
+clear -x && echo "pulling all restore points.."
+list_backups=$(cli -c 'app kubernetes list_backups' | sort -t '_' -Vr -k2,7 | tr -d " \t\r"  | awk -F '|'  '{print $2}' | nl | column -t)
+clear -x
+[[ -z "$list_backups" ]] && echo "No restore points available" && exit || { title; echo -e "Choose a restore point to delete\nThese may be out of order if they are not HeavyScript backups" ;  }
+echo "$list_backups" && read -p "Please type a number: " selection && restore_point=$(echo "$list_backups" | grep ^"$selection " | awk '{print $2}')
+[[ -z "$selection" ]] && echo "Your selection cannot be empty" && exit #Check for valid selection. If none, kill script
+[[ -z "$restore_point" ]] && echo "Invalid Selection: $selection, was not an option" && exit #Check for valid selection. If none, kill script
+echo -e "\nWARNING:\nYou CANNOT go back after deleting your restore point" || { echo "FAILED"; exit; }
+echo -e "\n\nYou have chosen:\n$restore_point\n\nWould you like to continue?"  && echo -e "1  Yes\n2  No" && read -p "Please type a number: " yesno || { echo "FAILED"; exit; }
+if [[ $yesno == "1" ]]; then
+  echo -e "\nDeleting $restore_point" && cli -c 'app kubernetes delete_backup backup_name=''"'"$restore_point"'"' &>/dev/null && echo "Sucessfully deleted" || echo "Deletion Failed"
+elif [[ $yesno == "2" ]]; then
+  echo "You've chosen NO, killing script."
+else
+  echo "Invalid Selection"
+fi
+}
+
+
 backup(){
 echo -e "\nNumber of backups was set to $number_of_backups"
 date=$(date '+%Y_%m_%d_%H_%M_%S')
@@ -123,6 +144,7 @@ if [[  ${#list_backups[@]}  -gt  "number_of_backups" ]]; then
 fi
 }
 export -f backup
+
 
 restore(){
 clear -x && echo "pulling restore points.."
@@ -143,6 +165,33 @@ else
 fi
 }
 export -f restore
+
+
+dns(){
+clear -x
+echo "Generating DNS Names.."
+#ignored dependency pods, No change required
+dep_ignore="cron|kube-system|nvidia|svclb|NAME|memcached"
+
+# Pulling pod names
+mapfile -t main < <(k3s kubectl get pods -A | grep -Ev "$dep_ignore" | sort)
+
+# Pulling all ports
+all_ports=$(k3s kubectl get service -A)
+
+clear -x
+count=0
+for i in "${main[@]}"
+do
+    [[ count -le 0 ]] && echo -e "\n" && ((count++))
+    appName=$(echo "$i" | awk '{print $2}' | sed 's/-[^-]*-[^-]*$//' | sed 's/-0//')
+    ixName=$(echo "$i" | awk '{print $1}')
+    port=$(echo "$all_ports" | grep -E "\s$appName\s" | awk '{print $6}' | grep -Eo "^[[:digit:]]+{1}")
+    echo -e "$appName.$ixName.svc.cluster.local $port"
+done | uniq | nl -b t | sed 's/\s\s\s$/- -------- ----/' | column -t -R 1 -N "#,DNS_Name,Port" -L
+}
+export -f dns
+
 
 mount(){
 clear -x
@@ -199,15 +248,12 @@ fi
 }
 export -f mount
 
+
 sync(){
 echo -e "\nSyncing all catalogs, please wait.." && cli -c 'app catalog sync_all' &> /dev/null && echo -e "Catalog sync complete"
 }
 export -f sync
 
-prune(){
-echo -e "\nPruning Docker Images" && docker image prune -af | grep "^Total" || echo "Failed to Prune Docker Images"
-}
-export -f prune
 
 update_apps(){
     mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | grep -E ",true(,|$)" | sort)
@@ -334,29 +380,12 @@ else
     fi
 fi
 }
-export -f prune
+export -f after_update_actions
 
-
-deleteBackup(){
-clear -x && echo "pulling restore points.."
-list_backups=$(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -t '_' -Vr -k2,7 | tr -d " \t\r"  | awk -F '|'  '{print $2}' | nl | column -t)
-clear -x
-[[ -z "$list_backups" ]] && echo "No HeavyScript restore points available" && exit || { title; echo "Choose a restore point" ;  }
-echo "$list_backups" && read -p "Please type a number: " selection && restore_point=$(echo "$list_backups" | grep ^"$selection " | awk '{print $2}')
-[[ -z "$selection" ]] && echo "Your selection cannot be empty" && exit #Check for valid selection. If none, kill script
-[[ -z "$restore_point" ]] && echo "Invalid Selection: $selection, was not an option" && exit #Check for valid selection. If none, kill script
-echo -e "\nWARNING:\nYou CANNOT go back after deleting your restore point" || { echo "FAILED"; exit; }
-echo -e "\n\nYou have chosen:\n$restore_point\n\nWould you like to continue?"  && echo -e "1  Yes\n2  No" && read -p "Please type a number: " yesno || { echo "FAILED"; exit; }
-if [[ $yesno == "1" ]]; then
-  echo -e "\nDeleting $restore_point" && cli -c 'app kubernetes delete_backup backup_name=''"'"$restore_point"'"' &>/dev/null && echo "Sucessfully deleted $restore_point" || echo "Deletion Failed"
-elif [[ $yesno == "2" ]]; then
-  echo "You've chosen NO, killing script."
-else
-  echo "Invalid Selection"
-fi
+prune(){
+echo -e "\nPruning Docker Images" && docker image prune -af | grep "^Total" || echo "Failed to Prune Docker Images"
 }
-
-
+export -f prune
 
 title(){
 echo ' _   _                        _____           _       _   '
@@ -370,31 +399,6 @@ echo '                        |___/                  |_|        '
 echo
 }
 export -f title
-
-dns(){
-clear -x
-echo "Generating DNS Names.."
-#ignored dependency pods, No change required
-dep_ignore="cron|kube-system|nvidia|svclb|NAME|memcached"
-
-# Pulling pod names
-mapfile -t main < <(k3s kubectl get pods -A | grep -Ev "$dep_ignore" | sort)
-
-# Pulling all ports
-all_ports=$(k3s kubectl get service -A)
-
-clear -x
-count=0
-for i in "${main[@]}"
-do
-    [[ count -le 0 ]] && echo -e "\n" && ((count++))
-    appName=$(echo "$i" | awk '{print $2}' | sed 's/-[^-]*-[^-]*$//' | sed 's/-0//')
-    ixName=$(echo "$i" | awk '{print $1}')
-    port=$(echo "$all_ports" | grep -E "\s$appName\s" | awk '{print $6}' | grep -Eo "^[[:digit:]]+{1}")
-    echo -e "$appName.$ixName.svc.cluster.local $port"
-done | uniq | nl -b t | sed 's/\s\s\s$/- -------- ----/' | column -t -R 1 -N "#,DNS_Name,Port" -L
-}
-export -f dns
 
 #exit if incompatable functions are called
 [[ "$restore" == "true" && "$mount" == "true" ]] && echo -e "The Restore Function(-r)\nand\nMount Function(-m)\nCannot both be called at the same time." && exit

@@ -68,7 +68,7 @@ bash /mnt/tank/scripts/heavy_script/heavy_script.sh --restore
 #### Deleting Backups
 
 ```
-bash /mnt/tank/scripts/heavy_script/heavy_script.sh --backup-delete
+bash /mnt/tank/scripts/heavy_script/heavy_script.sh --delete-backup
 ```
 
 #### List All DNS Names

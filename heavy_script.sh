@@ -403,7 +403,6 @@ echo
 export -f title
 
 #exit if incompatable functions are called
-[[ "$restore" == "true" && "$mount" == "true" ]] && echo -e "The Restore Function(-r)\nand\nMount Function(-m)\nCannot both be called at the same time." && exit
 [[ "$update_all_apps" == "true" && "$update_apps" == "true" ]] && echo -e "-U and -u cannot BOTH be called" && exit
 
 #Continue to call functions in specific order

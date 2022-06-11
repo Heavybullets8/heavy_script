@@ -1,53 +1,85 @@
 # heavy_script
-Update | Backup | Restore | Mount PVC | Rollback Applications | Sync Catalog | Prune Docker Images
+
+## Table of contents:
+* [Arguments](#arguments)
+* [Examples](#examples)
+* [How to Install](#how-to-install)
+* [How to Update](#how-to-update)
+* [Creating a Cron Job](#creating-a-cron-job)
+* [Additional Information](#additional-information)
+
+<br>
+
+## Arguments
+
+| Flag            	| Example                	| Parameter 	| Description                                                                                                                                                                                                                           	|
+|-----------------	|------------------------	|-----------	|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
+| --delete-backup 	| --delete-backup        	| None      	| Opens a menu to delete backups<br>_Useful if you need to delete old system backups or backups from other scripts_                                                                                                                     	|
+| --restore       	| --restore              	| None      	| Restore HeavyScript specific `ix-applications dataset` snapshot                                                                                                                                                                       	|
+| --mount         	| --mount                	| None      	| Initiates mounting feature<br>Choose between unmounting and mounting PVC data                                                                                                                                                         	|
+| --dns           	| --dns                  	| None      	| list all of your applications DNS names and their web ports                                                                                                                                                                           	|
+| -U              	| -U                     	| None      	| Update applications, ignoring major version changes                                                                                                                                                                                   	|
+| -u              	| -u                     	| None      	| Update applications, do NOT update if there was a major version change                                                                                                                                                                	|
+| -b              	| -b 14                  	| Integer   	| Backup `ix-appliactions` dataset<br>_Creates backups up to the number you've chosen_                                                                                                                                                  	|
+| -i              	| -i nextcloud -i sonarr 	| String    	| Applications listed will be ignored during updating<br>_List one application after another as shown in the example_                                                                                                                   	|
+| (-R\|-r)        	| -r                     	| None      	| Monitors applications after they update<br>If the app does not become "ACTIVE" after either:<br>The custom Timeout, or Default Timeout,<br>rollback the application.<br>__Warning: deprecating `-R` please begin using `-r` instead__ 	|
+| -v              	| -v                     	| None      	| Verbose Output<br>_Look at the bottom of this page for an example_                                                                                                                                                                    	|
+| -S              	| -S                     	| None      	| Shutdown the application prior to updating it                                                                                                                                                                                         	|
+| -t              	| -t 150                 	| Integer   	| Set a custom timeout to be used with either:<br>`-m` <br>_Time the script will wait for application to be "STOPPED"_<br>or<br>`-(u\|U)` <br>_Time the script will wait for application to be either "STOPPED" or "ACTIVE"_            	|
+| -s              	| -s                     	| None      	| Sync Catalogs prior to updating                                                                                                                                                                                                       	|
+| -p              	| -p                     	| None      	| Prune old/unused docker images                                                                                                                                                                                                        	|
 
 
-| Flag 	| Example                	| Parameter 	| Description                                                                                                                                                                                                         	|
-|------	|------------------------	|-----------	|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
-| -r   	| -r                     	| None      	| Restore HeavyScript specific 'ix-applications dataset' snapshot                                                                                                                                                     	|
-| -m   	| -m                     	| None      	| Initiates mounting feature<br>Choose between unmounting and mounting PVC data                                                                                                                                       	|
-| -b   	| -b 14                  	| int       	| Backup 'ix-appliactions' dataset<br>Creates backups up to the number you've chosen                                                                                                                                  	|
-| -i   	| -i nextcloud -i sonarr 	| String    	| Applications listed will be ignored during updating                                                                                                                                                                 	|
-| -R   	| -R                     	| None      	| Monitors applications after they update<br>If the app does not become "ACTIVE" after either:<br>The custom Timeout, or Default Timeout,<br>rollback the application.                                                	|
-| -v   	| -v                     	| None      	| Verbose output                                                                                                                                                                                                      	|
-| -S   	| -S                     	| None      	| Shutdown applications prior to updating                                                                                                                                                                             	|
-| -t   	| -t 150                 	| int       	| Set a custom timeout to be used with either:<br>-m <br>- Time the script will wait for application to be "STOPPED"<br>or<br>-u/U <br>- Time the script will wait for application to be either "STOPPED" or "ACTIVE" 	|
-| -s   	| -s                     	| None      	| Sync Catalog before updating                                                                                                                                                                                        	|
-| -U   	| -U                     	| None      	| Update applications, ignoring major version changes                                                                                                                                                                 	|
-| -u   	| -u                     	| None      	| Update applications, do NOT update if there was a major version change                                                                                                                                              	|
-| -p   	| -p                     	| None      	| Prune old/unused docker images                                                                                                                                                                                      	|
 <br>
 <br>
 
 ### Examples
 #### Typical Cron Job  
 ```
-bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -Rsup
+bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -rsup
 ```
 
-- -b is set to 14. Up to 14 snapshots of your ix-applications dataset will be saved
-- -i is set to ignore portainer, arch, sonarr, and radarr. These applications will be ignored when it comes to updates.
-- -t I set it to 600 seconds, this means the script will wait 600 seconds for the application to become ACTIVE before timing out and continuing to a different application. 
-- -R Will rollback applications if they fail to deploy after updating.
-- -s will just sync the repositories, ensuring you are downloading the latest updates.
-- -u update applications as long as the major version has absolutely no change, if it does have a change it will ask the user to update manually.
-- -p Prune docker images.
+> `-b` is set to 14. Up to 14 snapshots of your ix-applications dataset will be saved
+
+> `-i` is set to ignore portainer, arch, sonarr, and radarr. These applications will be ignored when it comes to updates.
+
+> `-t` I set it to 600 seconds, this means the script will wait 600 seconds for the application to become ACTIVE before timing out and continuing to a different application. 
+
+> `-r` Will rollback applications if they fail to deploy after updating.
+
+> `-s` will just sync the repositories, ensuring you are downloading the latest updates.
+
+> `-u` update applications as long as the major version has absolutely no change, if it does have a change it will ask the user to update manually.
+
+> `-p` Prune docker images.
 
 #### Mounting PVC Data
 
 ```
-bash /mnt/tank/scripts/heavy_script.sh -t 300 -m
+bash /mnt/tank/scripts/heavy_script.sh -t 300 --mount
 ```
 
 #### Restoring ix-applications dataset
 
 ```
-bash /mnt/tank/scripts/heavy_script/heavy_script.sh -r
+bash /mnt/tank/scripts/heavy_script/heavy_script.sh --restore
+```
+
+#### Deleting Backups
+
+```
+bash /mnt/tank/scripts/heavy_script/heavy_script.sh --delete-backup
+```
+
+#### List All DNS Names
+
+```
+bash /mnt/tank/scripts/heavy_script/heavy_script.sh --dns
 ```
 
 #### My personal Cron Job
 ```
-git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_script/heavy_script.sh -b 14 -Rsup
+git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_script/heavy_script.sh -b 14 -rsup
 ```
 
 <br>
@@ -106,21 +138,21 @@ Here, we will update the script prior to running it, incase there is a bugfix, o
 
 **Cron Job Command**
 ```
-git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_script/heavy_script.sh -b 14 -Rsup
+git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_script/heavy_script.sh -b 14 -rsup
 ```
 > The important command here is the `git -C /PATH/TO/HEAVY_SCRIPT_DIRECTORY pull`
 
 > This command will allow you to preform a `git pull` on a remote directory, which will ensure your script is udated prior to running it
 
 > `&&` Is used to run a command AFTER the previous command completed successfully
->> So once the `git -C /PATH/TO/HEAVY_SCRIPT_DIRECTORY pull` command completes, THEN it will run the `bash /PATH/TO/HEAVY_SCRIPT_DIRECTORY/heavy_script.sh -b 14 -Rsup` command
+>> So once the `git -C /PATH/TO/HEAVY_SCRIPT_DIRECTORY pull` command completes, THEN it will run the `bash /PATH/TO/HEAVY_SCRIPT_DIRECTORY/heavy_script.sh -b 14 -rsup` command
 
 <br >
 <br >
 
 ## Creating a Cron Job
 
-1. Truenas SCALE GUI
+1. TrueNAS SCALE GUI
 2. System Settings
 3. Advanced
 4. Cron Jobs
@@ -129,7 +161,7 @@ git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_scr
 | Name                   	| Value                                                                                                             	| Reason                                                                                                                                                                                         	|
 |------------------------	|-------------------------------------------------------------------------------------------------------------------	|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
 | `Description`          	| HeavyScript git pull and Update apps                                                                              	| This is up to you, put whatever you think is a good description in here                                                                                                                        	|
-| `Command`              	| `git -C /PATH/TO/HEAVY_SCRIPT_DIRECTORY pull && bash /PATH/TO/HEAVY_SCRIPT_DIRECTORY/heavy_script.sh -b 14 -Rsup` 	| This is the command you will be running on your schedule  I personally use:  `git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_script/heavy_script.sh -b 14 -Rsup` 	|
+| `Command`              	| `git -C /PATH/TO/HEAVY_SCRIPT_DIRECTORY pull && bash /PATH/TO/HEAVY_SCRIPT_DIRECTORY/heavy_script.sh -b 14 -rsup` 	| This is the command you will be running on your schedule  I personally use:  `git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_script/heavy_script.sh -b 14 -rsup` 	|
 | `Run As User`          	| `root`                                                                                                            	| Running the script as `root` is REQUIRED. You cannot access all of the kubernetes functions without this user.                                                                                 	|
 | `Schedule`             	| Up to you, I run mine everyday at `0400`                                                                          	| Again up to you                                                                                                                                                                                	|
 | `Hide Standard Output` 	| `False` or Unticked                                                                                               	| I like to receive an email report of how the script ran, what apps updated etc.                                                                                                                	|
@@ -141,11 +173,11 @@ git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_scr
 <br >
 <br >
 
-### Additional Informaton
+### Additional Information
 
 #### Verbose vs Non-Verbose 
--  Verbose used `bash heavy_test.sh -b 5 -SRupv`
-- Non-Verbose used `bash heavy_test.sh -b 5 -SRup`
+-  Verbose used `bash heavy_script.sh -b 5 -Srupv`
+- Non-Verbose used `bash heavy_script.sh -b 5 -Srup`
 
 | Verbose 	| Non-Verbose 	|
 |---------	|-------------	|

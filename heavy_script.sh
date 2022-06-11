@@ -33,7 +33,8 @@ do
                 echo "bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -vrsUp"
                 echo "bash /mnt/tank/scripts/heavy_script.sh -t 150 --mount"
                 echo "bash /mnt/tank/scripts/heavy_script.sh --dns"
-                echo "bash /mnt/tank/scripts/heavy_script.sh --restore"              
+                echo "bash /mnt/tank/scripts/heavy_script.sh --restore"  
+                echo            
                 exit
                 ;;
             dns)
@@ -45,9 +46,11 @@ do
           mount)
                 mount="true"
                 ;;
-
+  delete-backup)
+                deleteBackup="true"
+                ;;
               *)
-                echo "Invalid Option -$OPTARG, type --help for help"
+                echo "Invalid Option --$OPTARG, type --help for help"
                 exit
                 ;;
         esac
@@ -148,7 +151,7 @@ echo -e "1  Mount\n2  Unmount All" && read -p "Please type a number: " selection
 [[ -z "$selection" ]] && echo "Your selection cannot be empty" && exit #Check for valid selection. If none, kill script
 if [[ $selection == "1" ]]; then
   list=$(k3s kubectl get pvc -A | sort -u | awk '{print NR-1, "\t" $1 "\t" $2 "\t" $4}' | column -t | sed "s/^0/ /")
-  echo "$list" && read -p "Please type a number : " selection
+  echo "$list" && read -p "Please type a number: " selection
   [[ -z "$selection" ]] && echo "Your selection cannot be empty" && exit #Check for valid selection. If none, kill script
   app=$(echo -e "$list" | grep ^"$selection " | awk '{print $2}' | cut -c 4- )
   [[ -z "$app" ]] && echo "Invalid Selection: $selection, was not an option" && exit #Check for valid selection. If none, kill script
@@ -333,6 +336,28 @@ fi
 }
 export -f prune
 
+
+deleteBackup(){
+clear -x && echo "pulling restore points.."
+list_backups=$(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -t '_' -Vr -k2,7 | tr -d " \t\r"  | awk -F '|'  '{print $2}' | nl | column -t)
+clear -x
+[[ -z "$list_backups" ]] && echo "No HeavyScript restore points available" && exit || { title; echo "Choose a restore point" ;  }
+echo "$list_backups" && read -p "Please type a number: " selection && restore_point=$(echo "$list_backups" | grep ^"$selection " | awk '{print $2}')
+[[ -z "$selection" ]] && echo "Your selection cannot be empty" && exit #Check for valid selection. If none, kill script
+[[ -z "$restore_point" ]] && echo "Invalid Selection: $selection, was not an option" && exit #Check for valid selection. If none, kill script
+echo -e "\nWARNING:\nYou CANNOT go back after deleting your restore point" || { echo "FAILED"; exit; }
+echo -e "\n\nYou have chosen:\n$restore_point\n\nWould you like to continue?"  && echo -e "1  Yes\n2  No" && read -p "Please type a number: " yesno || { echo "FAILED"; exit; }
+if [[ $yesno == "1" ]]; then
+  echo -e "\nDeleting $restore_point" && cli -c 'app kubernetes delete_backup backup_name=''"'"$restore_point"'"' &>/dev/null && echo "Sucessfully deleted $restore_point" || echo "Deletion Failed"
+elif [[ $yesno == "2" ]]; then
+  echo "You've chosen NO, killing script."
+else
+  echo "Invalid Selection"
+fi
+}
+
+
+
 title(){
 echo ' _   _                        _____           _       _   '
 echo '| | | |                      /  ___|         (_)     | | '
@@ -350,10 +375,10 @@ dns(){
 clear -x
 echo "Generating DNS Names.."
 #ignored dependency pods, No change required
-ignore="cron|kube-system|nvidia|svclb|NAME|memcached"
+dep_ignore="cron|kube-system|nvidia|svclb|NAME|memcached"
 
 # Pulling pod names
-mapfile -t main < <(k3s kubectl get pods -A | grep -Ev "$ignore" | sort)
+mapfile -t main < <(k3s kubectl get pods -A | grep -Ev "$dep_ignore" | sort)
 
 # Pulling all ports
 all_ports=$(k3s kubectl get service -A)
@@ -376,6 +401,7 @@ export -f dns
 [[ "$update_all_apps" == "true" && "$update_apps" == "true" ]] && echo -e "-U and -u cannot BOTH be called" && exit
 
 #Continue to call functions in specific order
+[[ "$deleteBackup" == "true" ]] && deleteBackup && exit
 [[ "$dns" == "true" ]] && dns && exit
 [[ "$restore" == "true" ]] && restore && exit
 [[ "$mount" == "true" ]] && mount && exit

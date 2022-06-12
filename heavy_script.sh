@@ -9,7 +9,7 @@ help(){
 echo "Basic Utilities"
 echo "--mount         | Initiates mounting feature, choose between unmounting and mounting PVC data"
 echo "--restore       | Opens a menu to restore a \"heavy_script\" backup that was taken on your \"ix-applications\" dataset"
-echo "--delete backup | Opens a menu to delete backups on your system"
+echo "--delete-backup | Opens a menu to delete backups on your system"
 echo "--dns           | list all of your applications DNS names and their web ports"
 echo
 echo "Update Options"

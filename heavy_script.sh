@@ -4,7 +4,6 @@
 [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && echo "This script requires an argument, use --help for help" && exit
 
 
-
 ARGS="$@" ; echo "$ARGS" | sed -e 's/\s?\-\-self\-update\s?//'
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")

@@ -27,7 +27,7 @@ git fetch
     count=0
     for i in ${ARGS[@]}
     do
-    [[ "$i" == "--self-update" ]] && unset "${ARGS[$count]}"
+    [[ "$i" == "--self-update" ]] && unset "ARGS[$count]"
     ((count++))
     done
     exec bash "$SCRIPTNAME" "${ARGS[@]}"

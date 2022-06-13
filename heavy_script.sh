@@ -4,6 +4,7 @@
 [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && echo "This script requires an argument, use --help for help" && exit
 
 
+
 args=("$@")
 
 self_update() {

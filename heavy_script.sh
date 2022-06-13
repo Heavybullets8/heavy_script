@@ -4,7 +4,7 @@
 [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && echo "This script requires an argument, use --help for help" && exit
 
 
-ARGS=$(echo "$*" | sed -E 's/[[:space:]]?--self-update[[:space:]]?//g')
+ARGS=$( "$@" )
 
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
@@ -22,7 +22,7 @@ git fetch
     git checkout $BRANCH
     git pull --force
     echo "Running the new version..."
-    exec bash "$SCRIPTNAME" "$ARGS"
+    exec bash "$SCRIPTNAME" "${ARGS[@]/[[:space:]]?--self-update[[:space:]]?}"
 
     # Now exit this old instance
     exit 1

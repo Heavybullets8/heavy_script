@@ -23,7 +23,7 @@ git fetch
     git checkout $BRANCH
     git pull --force
     echo "Running the new version..."
-    exec bash "$SCRIPTNAME" "${ARGS[@]/[[:space:]]?--self-update[[:space:]]?}"
+    exec bash "$SCRIPTNAME" "${ARGS[@]//[[:space:]]?--self-update[[:space:]]?}"
 
     # Now exit this old instance
     exit 1

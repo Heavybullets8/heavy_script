@@ -5,7 +5,7 @@
 
 
 
-ARGS="$@" 
+ARGS=( "$@" ) 
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 SCRIPTNAME="$0"
@@ -22,7 +22,7 @@ git fetch
     git checkout $BRANCH
     git pull --force
     echo "Running the new version..."
-    exec bash "$SCRIPTNAME" "${ARGS//\-\-self\-update}"
+    exec bash "$SCRIPTNAME" "${ARGS[@]//\-\-self\-update}"
 
     # Now exit this old instance
     exit 1

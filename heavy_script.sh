@@ -24,14 +24,14 @@ echo "-v | verbose output"
 echo "-t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
 echo "-s | sync catalog"
 echo "-p | Prune unused/old docker images"
-echo 
+echo
 echo "Examples"
 echo "bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -vrsUp"
 echo "bash /mnt/tank/scripts/heavy_script.sh -t 150 --mount"
 echo "bash /mnt/tank/scripts/heavy_script.sh --dns"
-echo "bash /mnt/tank/scripts/heavy_script.sh --restore"  
+echo "bash /mnt/tank/scripts/heavy_script.sh --restore"
 echo "bash /mnt/tank/scripts/heavy_script.sh --delete-backup"
-echo         
+echo
 exit
 }
 export -f help
@@ -102,8 +102,8 @@ export -f restore
 dns(){
 clear -x
 echo "Generating DNS Names.."
-#ignored dependency pods, No change required
-dep_ignore="cron|kube-system|nvidia|svclb|NAME|memcached"
+#ignored dependency pods, may need to add more in the future.
+dep_ignore="\-cronjob\-|^kube-system|\ssvclb|NAME|\-memcached\-.[^custom\-app]|\-postgresql\-.[^custom\-app]|\-redis\-.[^custom\-app]|\-mariadb\-.[^custom\-app]|\-promtail\-.[^custom\-app]"
 
 # Pulling pod names
 mapfile -t main < <(k3s kubectl get pods -A | grep -Ev "$dep_ignore" | sort)

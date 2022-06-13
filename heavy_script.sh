@@ -22,7 +22,13 @@ git fetch
     git checkout $BRANCH
     git pull --force
     echo "Running the new version..."
-    exec bash "$SCRIPTNAME" "${ARGS[@]//[[:space:]]?--self-update[[:space:]]?}"
+    count=0
+    for i in ${ARGS[@]}
+    do
+    [[ "$i" == "//[[:space:]]?--self-update[[:space:]]?" ]] && unset "${ARGS[$count]}"
+    ((count++))
+    done
+    exec bash "$SCRIPTNAME" "${ARGS[@]}"
 
     # Now exit this old instance
     exit 1

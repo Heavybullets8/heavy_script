@@ -3,7 +3,7 @@
 #If no argument is passed, kill the script.
 [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && echo "This script requires an argument, use --help for help" && exit
 
-ARGS="$*" ; echo "${ARGS//\-\-self\-update}"
+ARGS="$*" 
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 SCRIPTNAME="$0"
@@ -21,7 +21,7 @@ git fetch
     git checkout $BRANCH
     git pull --force
     echo "Running the new version..."
-    exec bash "$SCRIPTNAME" "$ARGS"
+    exec bash "$SCRIPTNAME" "${ARGS//\-\-self\-update}"
 
     # Now exit this old instance
     exit 1

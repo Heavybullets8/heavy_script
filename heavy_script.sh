@@ -3,6 +3,7 @@
 #If no argument is passed, kill the script.
 [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && echo "This script requires an argument, use --help for help" && exit
 
+echo "yep"
 
 args=("$@")
 

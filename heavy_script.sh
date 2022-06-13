@@ -12,7 +12,7 @@ SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 SCRIPTNAME="$0"
 cd $SCRIPTPATH
-git fetch
+git fetch &> /dev/null 
 
 [[ -n $(git diff --name-only origin/beta | grep $SCRIPTNAME) ]] && {
     echo "Found a new version of me, updating myself..."

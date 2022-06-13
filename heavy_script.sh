@@ -23,7 +23,8 @@ git fetch &> /dev/null
     [[ "$i" == "--self-update" ]] && unset "args[$count]" && break
     ((count++))
     done
-    bash "$SCRIPTNAME" "${args[@]}"
+    sleep 5
+    exec bash "$SCRIPTNAME" "${args[@]}"
 
     # Now exit this old instance
     exit 1

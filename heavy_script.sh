@@ -16,7 +16,7 @@ git fetch &> /dev/null
 [[ -n $(git diff --name-only origin/beta | grep $SCRIPTNAME) ]] && {
     echo "Found a new version of me, updating myself..."
     git pull --force &> /dev/null 
-    echo "Running the new version..."
+    echo -e "Running the new version...\n"
     count=0
     for i in "${args[@]}"
     do
@@ -28,7 +28,7 @@ git fetch &> /dev/null
     # Now exit this old instance
     exit 1
     }
-    echo "Already the latest version."
+    echo -e "Already the latest version.\n"
 }
 
 

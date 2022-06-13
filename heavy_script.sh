@@ -20,7 +20,7 @@ git fetch
     git checkout $BRANCH
     git pull --force
     echo "Running the new version..."
-    exec "$SCRIPTNAME" "$ARGS"
+    exec bash "$SCRIPTNAME" "$ARGS"
 
     # Now exit this old instance
     exit 1

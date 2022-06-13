@@ -3,7 +3,6 @@
 #If no argument is passed, kill the script.
 [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && echo "This script requires an argument, use --help for help" && exit
 
-echo "yep"
 
 args=("$@")
 
@@ -15,7 +14,7 @@ cd $SCRIPTPATH
 git fetch &> /dev/null 
 
 [[ -n $(git diff --name-only origin/beta | grep $SCRIPTNAME) ]] && {
-    echo "Found a new version of me, updating myself..."
+    echo "Found a new version of HeavyScript, updating myself..."
     git pull --force &> /dev/null 
     echo -e "Running the new version...\n"
     count=0

@@ -5,17 +5,13 @@
 
 
 
-ARGS=("$@")
+args=("$@")
 
-
-
+self_update() {
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 SCRIPTNAME="$0"
 BRANCH="beta"
-
-self_update() {
-
 cd $SCRIPTPATH
 git fetch
 
@@ -26,12 +22,12 @@ git fetch
     git pull --force
     echo "Running the new version..."
     count=0
-    for i in ${ARGS[@]}
+    for i in "${args[@]}"
     do
-    [[ "$i" == "--self-update" ]] && unset "ARGS[$count]" && break
+    [[ "$i" == "--self-update" ]] && unset "args[$count]" && break
     ((count++))
     done
-    exec bash "$SCRIPTNAME" "${ARGS[@]}"
+    exec bash "$SCRIPTNAME" "${args[@]}"
 
     # Now exit this old instance
     exit 1

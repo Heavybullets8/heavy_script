@@ -5,7 +5,7 @@
 
 
 
-ARGS="$@" ; echo "$ARGS" | sed -e 's/[[:space:]]\?\-\-self\-update[[:space:]]\?//'
+ARGS="$@" ; echo "$ARGS" | sed -e 's/[[:space:]]\?--self-update[[:space:]]\?//'
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 SCRIPTNAME="$0"

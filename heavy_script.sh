@@ -14,9 +14,9 @@ SCRIPTNAME="$0"
 cd $SCRIPTPATH
 git fetch
 
-[[ -n $(git diff --name-only origin/$BRANCH | grep $SCRIPTNAME) ]] && {
+[[ -n $(git diff --name-only origin/beta | grep $SCRIPTNAME) ]] && {
     echo "Found a new version of me, updating myself..."
-    git pull --force
+    git pull --force &> /dev/null 
     echo "Running the new version..."
     count=0
     for i in "${args[@]}"

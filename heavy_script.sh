@@ -4,12 +4,38 @@
 [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && echo "This script requires an argument, use --help for help" && exit
 
 
+self_update() {
+SCRIPT=$(readlink -f "$0")
+SCRIPTPATH=$(dirname "$SCRIPT")
+SCRIPTNAME="$0"
+ARGS="$@"
+BRANCH="beta"
+
+cd $SCRIPTPATH
+git fetch
+
+[[ -n $(git diff --name-only origin/$BRANCH | grep $SCRIPTNAME) ]] && {
+    echo "Found a new version of me, updating myself..."
+    git pull --force
+    git checkout $BRANCH
+    git pull --force
+    echo "Running the new version..."
+    exec "$SCRIPTNAME" "$@"
+
+    # Now exit this old instance
+    exit 1
+    }
+    echo "Already the latest version."
+}
+
+self_update
+
 help(){
 [[ $help == "true" ]] && clear -x
 echo "Basic Utilities"
 echo "--mount         | Initiates mounting feature, choose between unmounting and mounting PVC data"
 echo "--restore       | Opens a menu to restore a \"heavy_script\" backup that was taken on your \"ix-applications\" dataset"
-echo "--delete backup | Opens a menu to delete backups on your system"
+echo "--delete-backup | Opens a menu to delete backups on your system"
 echo "--dns           | list all of your applications DNS names and their web ports"
 echo
 echo "Update Options"
@@ -24,14 +50,14 @@ echo "-v | verbose output"
 echo "-t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
 echo "-s | sync catalog"
 echo "-p | Prune unused/old docker images"
-echo 
+echo
 echo "Examples"
 echo "bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -vrsUp"
 echo "bash /mnt/tank/scripts/heavy_script.sh -t 150 --mount"
 echo "bash /mnt/tank/scripts/heavy_script.sh --dns"
-echo "bash /mnt/tank/scripts/heavy_script.sh --restore"  
+echo "bash /mnt/tank/scripts/heavy_script.sh --restore"
 echo "bash /mnt/tank/scripts/heavy_script.sh --delete-backup"
-echo         
+echo
 exit
 }
 export -f help
@@ -102,8 +128,8 @@ export -f restore
 dns(){
 clear -x
 echo "Generating DNS Names.."
-#ignored dependency pods, No change required
-dep_ignore="cron|kube-system|nvidia|svclb|NAME|memcached"
+#ignored dependency pods, may need to add more in the future.
+dep_ignore="\-cronjob\-|^kube-system|\ssvclb|NAME|\-memcached\-.[^custom\-app]|\-postgresql\-.[^custom\-app]|\-redis\-.[^custom\-app]|\-mariadb\-.[^custom\-app]|\-promtail\-.[^custom\-app]"
 
 # Pulling pod names
 mapfile -t main < <(k3s kubectl get pods -A | grep -Ev "$dep_ignore" | sort)

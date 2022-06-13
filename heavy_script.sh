@@ -28,7 +28,7 @@ git fetch
     echo "Already the latest version."
 }
 
-
+echo
 
 help(){
 [[ $help == "true" ]] && clear -x

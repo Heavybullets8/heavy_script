@@ -32,7 +32,6 @@ git fetch &> /dev/null
 }
 
 
-
 help(){
 [[ $help == "true" ]] && clear -x
 echo "Basic Utilities"

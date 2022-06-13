@@ -9,6 +9,8 @@ SCRIPTPATH=$(dirname "$SCRIPT")
 SCRIPTNAME="$0"
 BRANCH="beta"
 
+
+
 self_update() {
 
 cd $SCRIPTPATH

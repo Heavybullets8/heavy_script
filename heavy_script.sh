@@ -21,14 +21,13 @@ git fetch
     git checkout $BRANCH
     git pull --force
     echo "Running the new version..."
-    bash "$SCRIPTNAME" "${ARGS//\ \-\-self\-update}"
+    bash "$SCRIPTNAME" "${ARGS//\ \-\-self\-update\ }"
 
     # Now exit this old instance
     exit 1
     }
     echo "Already the latest version."
 }
-
 
 
 help(){

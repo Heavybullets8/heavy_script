@@ -3,6 +3,35 @@
 #If no argument is passed, kill the script.
 [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && echo "This script requires an argument, use --help for help" && exit
 
+args=("$@")
+
+self_update() {
+SCRIPT=$(readlink -f "$0")
+SCRIPTPATH=$(dirname "$SCRIPT")
+SCRIPTNAME="$0"
+cd $SCRIPTPATH
+git fetch &> /dev/null 
+
+[[ -n $(git diff --name-only origin/main | grep $SCRIPTNAME) ]] && {
+    echo "Found a new version of HeavyScript, updating myself..."
+    git pull --force &> /dev/null 
+    echo -e "Running the new version...\n"
+    count=0
+    for i in "${args[@]}"
+    do
+    [[ "$i" == "--self-update" ]] && unset "args[$count]" && break
+    ((count++))
+    done
+    sleep 5
+    exec bash "$SCRIPTNAME" "${args[@]}"
+
+    # Now exit this old instance
+    exit
+    }
+    echo -e "HeavyScript is already the latest version.\n"
+}
+
+
 
 help(){
 [[ $help == "true" ]] && clear -x
@@ -342,8 +371,11 @@ do
     case $opt in
       -)
           case "${OPTARG}" in
-            help)
+             help)
                   help="true"
+                  ;;
+      self-update)
+                  self_update="true"
                   ;;
               dns)
                   dns="true"
@@ -423,6 +455,7 @@ done
 
 #Continue to call functions in specific order
 [[ "$help" == "true" ]] && help
+[[ "$self_update" == "true" ]] && self_update
 [[ "$deleteBackup" == "true" ]] && deleteBackup && exit
 [[ "$dns" == "true" ]] && dns && exit
 [[ "$restore" == "true" ]] && restore && exit

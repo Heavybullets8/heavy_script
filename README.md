@@ -14,6 +14,7 @@
 
 | Flag            	| Example                	| Parameter 	| Description                                                                                                                                                                                                                           	|
 |-----------------	|------------------------	|-----------	|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
+| --self-update   	| --self-update          	| None      	| Updates HeavyScript prior to running it<br>_You no longer need to git pull_                                                                                                                                                           	|
 | --delete-backup 	| --delete-backup        	| None      	| Opens a menu to delete backups<br>_Useful if you need to delete old system backups or backups from other scripts_                                                                                                                     	|
 | --restore       	| --restore              	| None      	| Restore HeavyScript specific `ix-applications dataset` snapshot                                                                                                                                                                       	|
 | --mount         	| --mount                	| None      	| Initiates mounting feature<br>Choose between unmounting and mounting PVC data                                                                                                                                                         	|
@@ -36,7 +37,7 @@
 ### Examples
 #### Typical Cron Job  
 ```
-bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -rsup
+bash heavy_script.sh --self-update -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -rsup
 ```
 
 > `-b` is set to 14. Up to 14 snapshots of your ix-applications dataset will be saved
@@ -52,6 +53,8 @@ bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -rsup
 > `-u` update applications as long as the major version has absolutely no change, if it does have a change it will ask the user to update manually.
 
 > `-p` Prune docker images.
+
+> `--self-update` Will update the script prior to running anything else.
 
 #### Mounting PVC Data
 
@@ -79,7 +82,7 @@ bash /mnt/tank/scripts/heavy_script/heavy_script.sh --dns
 
 #### My personal Cron Job
 ```
-git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_script/heavy_script.sh -b 14 -rsup
+bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 14 -rsup
 ```
 
 <br>
@@ -111,7 +114,7 @@ cd heavy_script
 
 From here, you can just run Heavy_Script with `bash heavy_script.sh -ARGUMENTS`
 
-> Note: `chmod +x` is NOT required. Doing this will break the `git pull` function. Just run the script with `bash heavy_script.sh`
+> Note: `chmod +x` is NOT required. Doing this will break the `git pull` (or self update) function. Just run the script with `bash heavy_script.sh`
 
 <br>
 
@@ -132,20 +135,13 @@ git pull
 ```
 <br >
 
-### Update with your Cron Job
+### Update with the scripts built-in option
 
-Here, we will update the script prior to running it, incase there is a bugfix, or any new additions to the script
-
-**Cron Job Command**
 ```
-git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_script/heavy_script.sh -b 14 -rsup
+bash heavyscript --self-update -b 14 -supr
 ```
-> The important command here is the `git -C /PATH/TO/HEAVY_SCRIPT_DIRECTORY pull`
+> The important argument here is the `--self-update`, you can still use all of your same arguments with this option.
 
-> This command will allow you to preform a `git pull` on a remote directory, which will ensure your script is udated prior to running it
-
-> `&&` Is used to run a command AFTER the previous command completed successfully
->> So once the `git -C /PATH/TO/HEAVY_SCRIPT_DIRECTORY pull` command completes, THEN it will run the `bash /PATH/TO/HEAVY_SCRIPT_DIRECTORY/heavy_script.sh -b 14 -rsup` command
 
 <br >
 <br >
@@ -161,7 +157,7 @@ git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_scr
 | Name                   	| Value                                                                                                             	| Reason                                                                                                                                                                                         	|
 |------------------------	|-------------------------------------------------------------------------------------------------------------------	|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
 | `Description`          	| HeavyScript git pull and Update apps                                                                              	| This is up to you, put whatever you think is a good description in here                                                                                                                        	|
-| `Command`              	| `git -C /PATH/TO/HEAVY_SCRIPT_DIRECTORY pull && bash /PATH/TO/HEAVY_SCRIPT_DIRECTORY/heavy_script.sh -b 14 -rsup` 	| This is the command you will be running on your schedule  I personally use:  `git -C /mnt/speed/scripts/heavy_script pull && bash /mnt/speed/scripts/heavy_script/heavy_script.sh -b 14 -rsup` 	|
+| `Command`              	| `bash /PATH/TO/HEAVY_SCRIPT_DIRECTORY/heavy_script.sh --self-update -b 14 -rsup` 	| This is the command you will be running on your schedule  I personally use:  `bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 14 -rsup` 	|
 | `Run As User`          	| `root`                                                                                                            	| Running the script as `root` is REQUIRED. You cannot access all of the kubernetes functions without this user.                                                                                 	|
 | `Schedule`             	| Up to you, I run mine everyday at `0400`                                                                          	| Again up to you                                                                                                                                                                                	|
 | `Hide Standard Output` 	| `False` or Unticked                                                                                               	| I like to receive an email report of how the script ran, what apps updated etc.                                                                                                                	|

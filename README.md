@@ -138,7 +138,7 @@ git pull
 ### Update with the scripts built-in option
 
 ```
-bash heavyscript --self-update -b 14 -supr
+bash heavyscript.sh --self-update -b 14 -supr
 ```
 > The important argument here is the `--self-update`, you can still use all of your same arguments with this option.
 

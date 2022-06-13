@@ -3,13 +3,13 @@
 #If no argument is passed, kill the script.
 [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && echo "This script requires an argument, use --help for help" && exit
 
-
-self_update() {
+ARGS="echo $* | sed s/--self-update//"
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 SCRIPTNAME="$0"
-ARGS="$@"
 BRANCH="beta"
+
+self_update() {
 
 cd $SCRIPTPATH
 git fetch
@@ -20,7 +20,7 @@ git fetch
     git checkout $BRANCH
     git pull --force
     echo "Running the new version..."
-    exec "$SCRIPTNAME" "$@"
+    exec "$SCRIPTNAME" "$ARGS"
 
     # Now exit this old instance
     exit 1
@@ -28,7 +28,7 @@ git fetch
     echo "Already the latest version."
 }
 
-self_update
+
 
 help(){
 [[ $help == "true" ]] && clear -x
@@ -371,6 +371,9 @@ do
             help)
                   help="true"
                   ;;
+     self-update)
+                  self_update="true"
+                  ;;
               dns)
                   dns="true"
                   ;;
@@ -448,6 +451,7 @@ done
 [[ "$update_all_apps" == "true" && "$update_apps" == "true" ]] && echo -e "-U and -u cannot BOTH be called" && exit
 
 #Continue to call functions in specific order
+[[ "$self_update" == "true" ]] && self_update
 [[ "$help" == "true" ]] && help
 [[ "$deleteBackup" == "true" ]] && deleteBackup && exit
 [[ "$dns" == "true" ]] && dns && exit

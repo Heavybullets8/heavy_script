@@ -14,13 +14,14 @@ git fetch &> /dev/null
 
 [[ -n $(git diff --name-only origin/main | grep $SCRIPTNAME) ]] && {
     echo "Found a new version of HeavyScript, updating myself..."
-    git pull --force &> /dev/null 
+    git reset --hard -q
+    git pull --force -q
     echo -e "Running the new version...\n"
     count=0
     for i in "${args[@]}"
     do
-    [[ "$i" == "--self-update" ]] && unset "args[$count]" && break
-    ((count++))
+        [[ "$i" == "--self-update" ]] && unset "args[$count]" && break
+        ((count++))
     done
     sleep 5
     exec bash "$SCRIPTNAME" "${args[@]}"
@@ -57,7 +58,7 @@ echo "Examples"
 echo "bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -vrsUp"
 echo "bash /mnt/tank/scripts/heavy_script.sh -t 150 --mount"
 echo "bash /mnt/tank/scripts/heavy_script.sh --dns"
-echo "bash /mnt/tank/scripts/heavy_script.sh --restore"
+echo "bash --restore"
 echo "bash /mnt/tank/scripts/heavy_script.sh --delete-backup"
 echo
 exit
@@ -267,7 +268,7 @@ do
         else #user must not be using -S, just update
             echo -e "\n$app_name"
             [[ "$verbose" == "true" ]] && echo "Updating.."
-            cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo -e "Updated\n$old_full_ver\n$new_full_ver" && after_update_actions || { echo "FAILED"; continue; }
+            cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo -e "Updated\n$old_full_ver\n$new_full_ver" && after_update_actions || echo "FAILED"
         fi
     else
         echo -e "\n$app_name\nMajor Release, update manually"

@@ -28,8 +28,6 @@ if [[ -n $(git diff --name-only origin/beta | grep $SCRIPTNAME) ]]; then
 
     # Now exit this old instance
     exit
-elif [[ $self_updated == "true" ]]; then
-    echo -e "HeavyScript has been updated\n"
 else 
     echo -e "HeavyScript is already the latest version\n"
 fi
@@ -462,6 +460,7 @@ done
 
 #Continue to call functions in specific order
 [[ "$help" == "true" ]] && help
+[[ $self_updated == "true" ]] && echo -e "HeavyScript has been updated\n"
 [[ "$self_update" == "true" ]] && self_update
 [[ "$deleteBackup" == "true" ]] && deleteBackup && exit
 [[ "$dns" == "true" ]] && dns && exit

@@ -12,7 +12,7 @@ SCRIPTNAME="$0"
 cd $SCRIPTPATH
 git fetch &> /dev/null 
 
-if [[ -n $(git diff --name-only origin/main | grep $SCRIPTNAME) ]]; then
+if [[ -n $(git diff --name-only origin/beta | grep $SCRIPTNAME) ]]; then
     echo "Found a new version of HeavyScript, updating myself..."
     git reset --hard -q
     git pull --force -q

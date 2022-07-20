@@ -8,7 +8,7 @@ args=("$@")
 self_update() {
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
-SCRIPTNAME="$0"
+SCRIPTNAME="heavy_script.sh"
 cd $SCRIPTPATH
 git fetch &> /dev/null 
 

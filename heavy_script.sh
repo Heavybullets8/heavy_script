@@ -459,7 +459,7 @@ done
 
 #Continue to call functions in specific order
 [[ "$help" == "true" ]] && help
-[[ $self_updated == "true" ]] && echo -e "HeavyScript has been updated\n"
+[[ "$self_updated" == "true" ]] && echo -e "HeavyScript has been updated\n"
 [[ "$self_update" == "true" ]] && self_update
 [[ "$deleteBackup" == "true" ]] && deleteBackup && exit
 [[ "$dns" == "true" ]] && dns && exit

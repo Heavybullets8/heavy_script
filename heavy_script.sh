@@ -12,7 +12,7 @@ SCRIPTNAME="$0"
 cd $SCRIPTPATH
 git fetch &> /dev/null 
 
-[[ -n $(git diff --name-only origin/main | grep $SCRIPTNAME) ]] && {
+if  git diff --name-only origin/main | grep -q $SCRIPTNAME ; then
     echo "Found a new version of HeavyScript, updating myself..."
     git reset --hard -q
     git pull --force -q
@@ -20,7 +20,7 @@ git fetch &> /dev/null
     count=0
     for i in "${args[@]}"
     do
-        [[ "$i" == "--self-update" ]] && unset "args[$count]" && break
+        [[ "$i" == "--self-update" ]] && unset "args[$count]" && args+=("--updated") && break
         ((count++))
     done
     sleep 5
@@ -28,9 +28,11 @@ git fetch &> /dev/null
 
     # Now exit this old instance
     exit
-    }
-    echo -e "HeavyScript is already the latest version.\n"
+else 
+    echo -e "HeavyScript is already the latest version\n"
+fi
 }
+
 
 
 help(){
@@ -217,7 +219,7 @@ export -f sync
 
 
 update_apps(){
-mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | grep -E ",true(,|$)" | sort)
+mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | grep -E ",true(,|\b)" | sort)
 [[ -z $array ]] && echo -e "\nThere are no updates available" && return 0 || echo -e "\n${#array[@]} update(s) available"
 [[ -z $timeout ]] && echo -e "\nDefault Timeout: 500" && timeout=500 || echo -e "\nCustom Timeout: $timeout"
 [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
@@ -389,6 +391,9 @@ do
     delete-backup)
                   deleteBackup="true"
                   ;;
+          updated)
+                  self_updated="true"
+                  ;;
                 *)
                   echo -e "Invalid Option \"--$OPTARG\"\n" && help
                   exit
@@ -455,6 +460,7 @@ done
 
 #Continue to call functions in specific order
 [[ "$help" == "true" ]] && help
+[[ $self_updated == "true" ]] && echo -e "HeavyScript has been updated\n"
 [[ "$self_update" == "true" ]] && self_update
 [[ "$deleteBackup" == "true" ]] && deleteBackup && exit
 [[ "$dns" == "true" ]] && dns && exit

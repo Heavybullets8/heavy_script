@@ -34,7 +34,6 @@ fi
 }
 
 
-
 help(){
 [[ $help == "true" ]] && clear -x
 echo "Basic Utilities"

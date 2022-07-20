@@ -28,7 +28,7 @@ if [[ -n $(git diff --name-only origin/beta | grep $SCRIPTNAME) ]]; then
 
     # Now exit this old instance
     exit
-elif [[ $self_update == "true" ]]; then
+elif [[ $self_updated == "true" ]]; then
     echo -e "HeavyScript has been updated\n"
 else 
     echo -e "HeavyScript is already the latest version\n"
@@ -393,7 +393,7 @@ do
                   deleteBackup="true"
                   ;;
           updated)
-                  self_update="true"
+                  self_updated="true"
                   ;;
                 *)
                   echo -e "Invalid Option \"--$OPTARG\"\n" && help

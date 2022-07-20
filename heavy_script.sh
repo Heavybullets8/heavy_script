@@ -6,13 +6,13 @@
 args=("$@")
 
 self_update() {
-SCRIPT=$(readlink -f "$0")
-SCRIPTPATH=$(dirname "$SCRIPT")
-SCRIPTNAME="heavy_script.sh"
-cd $SCRIPTPATH
+script=$(readlink -f "$0")
+script_path=$(dirname "$script")
+script_name="heavy_script.sh"
+cd "$script_path" || exit
 git fetch &> /dev/null 
 
-if  git diff --name-only origin/main | grep -q "$SCRIPTNAME" ; then
+if  git diff --name-only origin/main | grep -q "$script_name" ; then
     echo "Found a new version of HeavyScript, updating myself..."
     git reset --hard -q
     git pull --force -q
@@ -24,7 +24,7 @@ if  git diff --name-only origin/main | grep -q "$SCRIPTNAME" ; then
         ((count++))
     done
     sleep 5
-    exec bash "$SCRIPTNAME" "${args[@]}"
+    exec bash "$script_name" "${args[@]}"
 
     # Now exit this old instance
     exit

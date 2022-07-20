@@ -20,7 +20,7 @@ if  git diff --name-only origin/main | grep -q "$script_name" ; then
     count=0
     for i in "${args[@]}"
     do
-        [[ "$i" == "--self-update" ]] && unset "args[$count]" && args+=("--updated") && break
+        [[ "$i" == "--self-update" ]] && unset "args[$count]" && break
         ((count++))
     done
     sleep 5
@@ -390,9 +390,6 @@ do
     delete-backup)
                   deleteBackup="true"
                   ;;
-          updated)
-                  self_updated="true"
-                  ;;
                 *)
                   echo -e "Invalid Option \"--$OPTARG\"\n" && help
                   exit
@@ -459,7 +456,6 @@ done
 
 #Continue to call functions in specific order
 [[ "$help" == "true" ]] && help
-[[ "$self_updated" == "true" ]] && echo -e "HeavyScript has been updated\n"
 [[ "$self_update" == "true" ]] && self_update
 [[ "$deleteBackup" == "true" ]] && deleteBackup && exit
 [[ "$dns" == "true" ]] && dns && exit

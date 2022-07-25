@@ -11,12 +11,14 @@ count=0
     for i in "${array[@]}"
     do
         update_apps "$i" &
-        (( count++ ))
         processes+=($!)
-        while [[ "$count" -ge "$update_limit" ]]
+        proc_count=0
+        while [[ "${#processes[@]}" -ge "$update_limit" ]]
         do
             echo "waiting for free space"
-            wait -n "${processes[@]}" &> /dev/null && (( count-- ))
+            wait -n "${processes[$proc_count]}" &> /dev/null
+            (( proc_count++ ))
+            unset "processes[$proc_count]"
         done
     done
 

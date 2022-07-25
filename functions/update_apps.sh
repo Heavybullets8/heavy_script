@@ -18,7 +18,7 @@ count=0
         do
             for proc in "${processes[@]}"
             do
-                kill -0 "$proc" || unset "processes[$proc_count]"
+                kill -0 "$proc" || { unset "processes[$proc_count]"; break; } 
                 (( proc_count++ ))
             done
         done

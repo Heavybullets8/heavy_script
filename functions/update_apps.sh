@@ -15,8 +15,7 @@ do
     if [[ "$jobs" -ge "$update_limit" ]]; then
         sleep 3
     else
-        application="${array[$it]}"
-        update_apps "$application" &
+        update_apps "${array[$it]}" &
         processes+=($!)
         ((it++))
     fi
@@ -32,6 +31,7 @@ done
 export -f commander
 
 update_apps(){
+i=${array[$it]}
 app_name=$(echo "$i" | awk -F ',' '{print $1}') #print out first catagory, name.
 old_app_ver=$(echo "$i" | awk -F ',' '{print $4}' | awk -F '_' '{print $1}' | awk -F '.' '{print $1}') #previous/current Application MAJOR Version
 new_app_ver=$(echo "$i" | awk -F ',' '{print $5}' | awk -F '_' '{print $1}' | awk -F '.' '{print $1}') #new Application MAJOR Version

@@ -34,6 +34,7 @@ fi
 }
 
 
+
 help(){
 [[ $help == "true" ]] && clear -x
 echo "Basic Utilities"
@@ -391,6 +392,9 @@ do
                   ;;
     delete-backup)
                   deleteBackup="true"
+                  ;;
+          updated)
+                  self_updated="true"
                   ;;
                 *)
                   echo -e "Invalid Option \"--$OPTARG\"\n" && help

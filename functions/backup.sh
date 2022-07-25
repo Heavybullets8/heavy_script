@@ -1,0 +1,74 @@
+#!/bin/bash
+
+
+backup(){
+echo -e "\nNumber of backups was set to $number_of_backups"
+date=$(date '+%Y_%m_%d_%H_%M_%S')
+[[ "$verbose" == "true" ]] && cli -c 'app kubernetes backup_chart_releases backup_name=''"'HeavyScript_"$date"'"'
+[[ -z "$verbose" ]] && echo -e "\nNew Backup Name:" && cli -c 'app kubernetes backup_chart_releases backup_name=''"'HeavyScript_"$date"'"' | tail -n 1
+mapfile -t list_backups < <(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -t '_' -Vr -k2,7 | awk -F '|'  '{print $2}'| tr -d " \t\r")
+if [[  ${#list_backups[@]}  -gt  "number_of_backups" ]]; then
+    echo -e "\nDeleting the oldest backup(s) for exceeding limit:"
+    overflow=$(( ${#list_backups[@]} - "$number_of_backups" ))
+    mapfile -t list_overflow < <(cli -c 'app kubernetes list_backups' | grep "HeavyScript_"  | sort -t '_' -V -k2,7 | awk -F '|'  '{print $2}'| tr -d " \t\r" | head -n "$overflow")
+    for i in "${list_overflow[@]}"
+    do
+        cli -c 'app kubernetes delete_backup backup_name=''"'"$i"'"' &> /dev/null || echo "Failed to delete $i"
+        echo "$i"
+    done
+fi
+}
+export -f backup
+
+
+
+deleteBackup(){
+clear -x && echo "pulling all restore points.."
+list_backups=$(cli -c 'app kubernetes list_backups' | sort -t '_' -Vr -k2,7 | tr -d " \t\r"  | awk -F '|'  '{print $2}' | nl | column -t)
+clear -x
+[[ -z "$list_backups" ]] && echo "No restore points available" && exit
+title 
+echo -e "Choose a restore point to delete\nThese may be out of order if they are not all HeavyScript backups"
+echo "$list_backups"
+read -pr -t 600 "Please type a number: " selection
+restore_point=$(echo "$list_backups" | grep ^"$selection " | awk '{print $2}')
+if [[ -z "$selection" ]]; then #Check for valid selection. If none, kill script
+    echo "Your selection cannot be empty"
+    exit 
+elif [[ -z "$restore_point" ]]; then #Check for valid selection. If none, kill script
+    echo "Invalid Selection: $selection, was not an option"
+    exit 
+fi
+echo -e "\nWARNING:\nYou CANNOT go back after deleting your restore point"
+echo -e "\n\nYou have chosen:\n$restore_point\n\nWould you like to continue?"  && echo -e "1  Yes\n2  No"
+read -rp -t 120 "Please type a number: " yesno || { echo "Failed to make a valid selection"; exit; }
+if [[ $yesno == "1" ]]; then
+    echo -e "\nDeleting $restore_point" && cli -c 'app kubernetes delete_backup backup_name=''"'"$restore_point"'"' &>/dev/null && echo "Sucessfully deleted" || echo "Deletion Failed"
+elif [[ $yesno == "2" ]]; then
+    echo "You've chosen NO, killing script."
+else
+    echo "Invalid Selection"
+fi
+}
+export -f deleteBackup
+
+
+restore(){
+clear -x && echo "pulling restore points.."
+list_backups=$(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -t '_' -Vr -k2,7 | tr -d " \t\r"  | awk -F '|'  '{print $2}' | nl | column -t)
+clear -x
+[[ -z "$list_backups" ]] && echo "No HeavyScript restore points available" && exit || { title; echo "Choose a restore point" ;  }
+echo "$list_backups" && read -t 600 -p "Please type a number: " selection && restore_point=$(echo "$list_backups" | grep ^"$selection " | awk '{print $2}')
+[[ -z "$selection" ]] && echo "Your selection cannot be empty" && exit #Check for valid selection. If none, kill script
+[[ -z "$restore_point" ]] && echo "Invalid Selection: $selection, was not an option" && exit #Check for valid selection. If none, kill script
+echo -e "\nWARNING:\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible" || { echo "FAILED"; exit; }
+echo -e "\n\nYou have chosen:\n$restore_point\n\nWould you like to continue?"  && echo -e "1  Yes\n2  No" && read -t 120 -p "Please type a number: " yesno || { echo "FAILED"; exit; }
+if [[ $yesno == "1" ]]; then
+    echo -e "\nStarting Backup, this will take a LONG time." && cli -c 'app kubernetes restore_backup backup_name=''"'"$restore_point"'"' || echo "Restore FAILED"
+elif [[ $yesno == "2" ]]; then
+    echo "You've chosen NO, killing script. Good luck."
+else
+    echo "Invalid Selection"
+fi
+}
+export -f restore

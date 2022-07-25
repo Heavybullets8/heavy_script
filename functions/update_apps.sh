@@ -62,7 +62,7 @@ printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name
                     if [[ "$status"  ==  "STOPPED" ]]; then
                         echo_array+=("Stopped")
                         [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
-                        cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo "Failed to update"
+                        cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo_array+=("Failed to update")
                         break
                     elif [[ "$SECONDS" -ge "$timeout" ]]; then
                         echo_array+=("Error: Run Time($SECONDS) has exceeded Timeout($timeout)")
@@ -76,7 +76,7 @@ printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name
         else #user must not be using -S, just update
             echo_array+=("\n$app_name")
             [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
-            cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo "FAILED"
+            cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo_array+=("FAILED")
         fi
     else
         echo_array+=("\n$app_name\nMajor Release, update manually")
@@ -102,27 +102,27 @@ if [[ $rollback == "true" ]]; then
         (( count++ ))
         status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "^$app_name," | awk -F ',' '{print $2}')
         if [[ "$status"  ==  "ACTIVE" && "$startstatus"  ==  "STOPPED" ]]; then
-            [[ "$verbose" == "true" ]] && echo "Returing to STOPPED state.."
-            midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && echo "Stopped"|| echo "FAILED"
+            [[ "$verbose" == "true" ]] && echo_array+=("Returing to STOPPED state..")
+            midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && echo_array+=("Stopped")|| echo_array+=("FAILED")
             break
         elif [[ "$SECONDS" -ge "$timeout" && "$status"  ==  "DEPLOYING" && "$failed" != "true" ]]; then
-            echo -e "Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)\nIf this is a slow starting application, set a higher timeout with -t\nIf this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration\nReverting update.."
+            echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)\nIf this is a slow starting application, set a higher timeout with -t\nIf this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration\nReverting update..")
             midclt call chart.release.rollback "$app_name" "{\"item_version\": \"$rollback_version\"}" &> /dev/null
             [[ "$startstatus"  ==  "STOPPED" ]] && failed="true" && after_update_actions && unset failed #run back after_update_actions function if the app was stopped prior to update
             break
         elif [[ "$SECONDS" -ge "$timeout" && "$status"  ==  "DEPLOYING" && "$failed" == "true" ]]; then
-            echo -e "Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)\nThe application failed to be ACTIVE even after a rollback,\nManual intervention is required\nAbandoning"
+            echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)\nThe application failed to be ACTIVE even after a rollback,\nManual intervention is required\nAbandoning")
             break
         elif [[ "$status"  ==  "STOPPED" ]]; then
-            [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo "Verifying Stopped.." && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
+            [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Stopped..") && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
             [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
-            echo "Stopped" && break #if reports stopped any time after the first loop, assume its extermal services.
+            echo_array+=("Stopped") && break #if reports stopped any time after the first loop, assume its extermal services.
         elif [[ "$status"  ==  "ACTIVE" ]]; then
-            [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo "Verifying Active.." && sleep 15 && continue #if reports active on FIRST time through loop, double check
+            [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && sleep 15 && continue #if reports active on FIRST time through loop, double check
             [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports active on FIRST time through loop, double check
             echo "Active" && break #if reports active any time after the first loop, assume actually active.
         else
-            [[ "$verbose" == "true" ]] && echo "Waiting $((timeout-SECONDS)) more seconds for $app_name to be ACTIVE"
+            [[ "$verbose" == "true" ]] && echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be ACTIVE")
             sleep 15
             continue
         fi
@@ -134,21 +134,21 @@ else
             (( count++ ))
             status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "^$app_name," | awk -F ',' '{print $2}')
             if [[ "$status"  ==  "STOPPED" ]]; then
-                [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo "Verifying Stopped.." && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
+                [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Stopped..") && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
                 [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
-                echo "Stopped" && break #assume actually stopped anytime AFTER the first loop
+                echo_array+=("Stopped") && break #assume actually stopped anytime AFTER the first loop
                 break
             elif [[ "$status"  ==  "ACTIVE" ]]; then
-                [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo "Verifying Active.." && sleep 15 && continue #if reports active on FIRST time through loop, double check
+                [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && sleep 15 && continue #if reports active on FIRST time through loop, double check
                 [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports active on FIRST time through loop, double check
-                [[ "$verbose" == "true" ]] && echo "Returing to STOPPED state.."
-                midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && echo "Stopped"|| echo "FAILED"
+                [[ "$verbose" == "true" ]] && echo_array+=("Returing to STOPPED state..")
+                midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && echo_array+=("Stopped")|| echo_array+=("FAILED")
                 break
             elif [[ "$SECONDS" -ge "$timeout" ]]; then
-                echo "Error: Run Time($SECONDS) has exceeded Timeout($timeout)"
+                echo_array+=("Error: Run Time($SECONDS) has exceeded Timeout($timeout)")
                 break
             else
-                [[ "$verbose" == "true" ]] && echo "Waiting $((timeout-SECONDS)) more seconds for $app_name to be ACTIVE"
+                [[ "$verbose" == "true" ]] && echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be ACTIVE")
                 sleep 10
                 continue
             fi

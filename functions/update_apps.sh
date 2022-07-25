@@ -15,12 +15,16 @@ do
     if [[ "$jobs" -ge "$update_limit" ]]; then
         sleep 3
     else
-        output=$(update_apps "${array[$it]}" &)
+        mapfile -t output < <(update_apps "${array[$it]}" &)
         processes+=($!)
         ((it++))
     fi
 done
-echo "$output"
+
+for i in "${output[@]}"
+do
+    echo "$i"
+done
 
 for proc in "${processes[@]}"
 do

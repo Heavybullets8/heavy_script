@@ -82,6 +82,13 @@ printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo_array+=(echo -e
         echo -e "\n$app_name\nMajor Release, update manually"
         return
     fi
+
+#dump array
+for i in "${echo_array[@]}"
+do
+    echo "$i"
+done
+
 }
 export -f update_apps
 

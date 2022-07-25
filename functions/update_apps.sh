@@ -7,20 +7,15 @@ mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_availabl
 [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
 
 update_limit=2
-count=0
+current_updates=0
     for i in "${array[@]}"
     do
         update_apps "$i" &
+        (( current_updates++ ))
         processes+=($!)
-        proc_count=0
-        count=$(jobs -p | wc -l)
-        while [[ "${#processes[@]}" -ge "$update_limit" ]]
+        while [[ current_updates -ge "$update_limit" ]]
         do
-            for proc in "${processes[@]}"
-            do
-                kill -0 "$proc" || { unset "processes[$proc_count]"; break; } 
-                (( proc_count++ ))
-            done
+            sleep 5
         done
     done
 
@@ -45,13 +40,14 @@ diff_chart=$(diff <(echo "$old_chart_ver") <(echo "$new_chart_ver")) #caluclatin
 old_full_ver=$(echo "$i" | awk -F ',' '{print $4}') #Upgraded From
 new_full_ver=$(echo "$i" | awk -F ',' '{print $5}') #Upraded To
 rollback_version=$(echo "$i" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
-printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name\nIgnored, skipping" && return #If application is on ignore list, skip
+printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name\nIgnored, skipping" && (( current_updates-- )) && return #If application is on ignore list, skip
     if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #continue to update
         if [[ $stop_before_update == "true" ]]; then # Check to see if user is using -S or not
             if [[ "$status" ==  "STOPPED" ]]; then # if status is already stopped, skip while loop
                 echo -e "\n$app_name"
                 [[ "$verbose" == "true" ]] && echo "Updating.."
                 cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo -e "Updated\n$old_full_ver\n$new_full_ver" && after_update_actions || echo "FAILED"
+                (( current_updates-- ))
                 return
             else # if status was not STOPPED, stop the app prior to updating
                 echo -e "\n$app_name"
@@ -81,8 +77,10 @@ printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name
         fi
     else
         echo -e "\n$app_name\nMajor Release, update manually"
+        (( current_updates-- ))
         return
     fi
+(( current_updates-- ))
 }
 export -f update_apps
 
@@ -149,6 +147,5 @@ else
         done
     fi
 fi
-return
 }
 export -f after_update_actions

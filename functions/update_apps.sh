@@ -13,14 +13,10 @@ count=0
         update_apps "$i" &
         (( count++ ))
         processes+=($!)
-        jobs -p
         while [[ "$count" -ge "$update_limit" ]]
         do
-            jobs -p
-            pidcount=0
             echo "waiting for free space"
-            wait -n "${processes[pidcount]}" && (( count-- ))
-            (( pidcount ++ ))
+            wait -n "${processes[@]}" &> /dev/null && (( count-- ))
         done
     done
 

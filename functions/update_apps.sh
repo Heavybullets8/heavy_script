@@ -48,38 +48,38 @@ printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name
     if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #continue to update
         if [[ $stop_before_update == "true" ]]; then # Check to see if user is using -S or not
             if [[ "$status" ==  "STOPPED" ]]; then # if status is already stopped, skip while loop
-                echo_array+=(echo -e "\n$app_name")
-                [[ "$verbose" == "true" ]] && echo_array+=(echo "Updating..")
-                cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=(echo -e "Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo_array+=(echo "FAILED")
+                echo_array+=("\n$app_name")
+                [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
+                cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo_array+=("FAILED")
                 return
             else # if status was not STOPPED, stop the app prior to updating
-                echo_array+=(echo -e "\n$app_name")
-                [[ "$verbose" == "true" ]] && echo_array+=(echo "Stopping prior to update..")
-                midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && SECONDS=0 || echo_array+=(echo -e "FAILED")
+                echo_array+=("\n$app_name")
+                [[ "$verbose" == "true" ]] && echo_array+=("Stopping prior to update..")
+                midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && SECONDS=0 || echo_array+=("FAILED")
                 while [[ "$status" !=  "STOPPED" ]]
                 do
                     status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "^$app_name," | awk -F ',' '{print $2}')
                     if [[ "$status"  ==  "STOPPED" ]]; then
-                        echo_array+=(echo "Stopped")
-                        [[ "$verbose" == "true" ]] && echo_array+=(echo "Updating..")
-                        cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=(echo -e "Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo "Failed to update"
+                        echo_array+=("Stopped")
+                        [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
+                        cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo "Failed to update"
                         break
                     elif [[ "$SECONDS" -ge "$timeout" ]]; then
-                        echo_array+=(echo "Error: Run Time($SECONDS) has exceeded Timeout($timeout)")
+                        echo_array+=("Error: Run Time($SECONDS) has exceeded Timeout($timeout)")
                         break
                     elif [[ "$status" !=  "STOPPED" ]]; then
-                        [[ "$verbose" == "true" ]] && echo_array+=(echo "Waiting $((timeout-SECONDS)) more seconds for $app_name to be STOPPED")
+                        [[ "$verbose" == "true" ]] && echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be STOPPED")
                         sleep 10
                     fi
                 done
             fi
         else #user must not be using -S, just update
-            echo_array+=(echo -e "\n$app_name")
-            [[ "$verbose" == "true" ]] && echo_array+=(echo "Updating..")
-            cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=(echo -e "Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo "FAILED"
+            echo_array+=("\n$app_name")
+            [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
+            cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo "FAILED"
         fi
     else
-        echo_array+=(echo -e "\n$app_name\nMajor Release, update manually")
+        echo_array+=("\n$app_name\nMajor Release, update manually")
         return
     fi
 

@@ -139,5 +139,6 @@ else
         done
     fi
 fi
+return
 }
 export -f after_update_actions

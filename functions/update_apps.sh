@@ -9,28 +9,18 @@ mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_availabl
 update_limit=2
 current_updates=0
 
-
-while true
+it=0
+while [[ $it -lt ${#array[@]} ]]
 do
-    if [[ current_updates -ge "$update_limit" ]]; then
-        sleep 5
+    jobs=$(jobs -p | wc -l)
+    if [[ "$jobs" -ge "$update_limit" ]]; then
+        sleep 3
     else
-        for i in "${array[@]}"
-        do
-            { update_apps "$i"; (( current_updates-- )) ;} & (( current_updates++ ))
-            processes+=($!)
-        done
+        update_apps "${#array[$it]}" &
+        processes+=($!)
+        ((it++))
     fi
 done
-
-
-
-
-
-        
-
-
-
 
 
 

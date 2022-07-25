@@ -115,7 +115,7 @@ if [[ $rollback == "true" ]]; then
         elif [[ "$status"  ==  "ACTIVE" ]]; then
             [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && sleep 15 && continue #if reports active on FIRST time through loop, double check
             [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports active on FIRST time through loop, double check
-            echo_array+=(echo "Active") && break #if reports active any time after the first loop, assume actually active.
+            echo_array+=("Active") && break #if reports active any time after the first loop, assume actually active.
         else
             [[ "$verbose" == "true" ]] && echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be ACTIVE")
             sleep 15

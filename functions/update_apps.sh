@@ -12,6 +12,7 @@ count=0
     do
         update_apps "$i" &
         (( count++ ))
+        processes+=($!)
         while [[ "$count" -ge "$update_limit" ]]
         do
             echo "waiting for free space"
@@ -19,6 +20,12 @@ count=0
             count=0
         done
     done
+
+for proc in "${processes[@]}"
+do
+    wait "$proc"
+done
+
 }
 export -f commander
 

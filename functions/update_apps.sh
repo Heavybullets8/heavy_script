@@ -16,6 +16,7 @@ count=0
         do
             echo "waiting for free space"
             wait
+            count=0
         done
     done
 }

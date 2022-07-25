@@ -13,6 +13,7 @@ count=0
         update_apps "$i" &
         (( count++ ))
         processes+=($!)
+        jobs -p
         while [[ "$count" -ge "$update_limit" ]]
         do
             jobs -p

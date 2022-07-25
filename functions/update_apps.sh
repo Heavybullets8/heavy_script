@@ -1,6 +1,6 @@
 #!/bin/bash
 
-
+commander(){
 mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | tr -d " \t\r" | grep -E ",true($|,)" | sort)
 [[ -z $array ]] && echo -e "\nThere are no updates available" && return 0 || echo -e "\n${#array[@]} update(s) available"
 [[ -z $timeout ]] && echo -e "\nDefault Timeout: 500" && timeout=500 || echo -e "\nCustom Timeout: $timeout"
@@ -18,7 +18,8 @@ count=0
             wait
         done
     done
-
+}
+export -f commander
 
 update_apps(){
 app_name=$(echo "$i" | awk -F ',' '{print $1}') #print out first catagory, name.

@@ -115,5 +115,5 @@ done
 [[ "$mount" == "true" ]] && mount && exit
 [[ "$number_of_backups" -ge 1 ]] && backup
 [[ "$sync" == "true" ]] && sync
-[[ "$update_all_apps" == "true" || "$update_apps" == "true" ]] && update_apps
+[[ "$update_all_apps" == "true" || "$update_apps" == "true" ]] && commander
 [[ "$prune" == "true" ]] && prune

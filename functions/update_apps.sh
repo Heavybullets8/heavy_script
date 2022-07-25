@@ -13,7 +13,7 @@ current_updates=0
         update_apps "$i" &
         (( current_updates++ ))
         processes+=($!)
-        while [[ current_updates -ge "$update_limit" ]]
+        while [[ "$current_updates" -ge "$update_limit" ]]
         do
             sleep 5
         done

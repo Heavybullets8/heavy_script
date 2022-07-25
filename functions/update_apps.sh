@@ -17,7 +17,7 @@ do
     else
         for i in "${array[@]}"
         do
-            update_apps "$i" && (( current_updates-- )) & (( current_updates++ ))
+            { update_apps "$i"; (( current_updates-- )) ;} & (( current_updates++ ))
             processes+=($!)
         done
     fi

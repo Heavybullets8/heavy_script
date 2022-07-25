@@ -15,7 +15,7 @@ do
     if [[ "$jobs" -ge "$update_limit" ]]; then
         sleep 3
     else
-        mapfile -t output < <(update_apps "${array[$it]}") &
+        coproc update_appsfd { update_apps "${array[$it]}" ; }
         processes+=($!)
         ((it++))
     fi
@@ -26,13 +26,9 @@ do
     wait "$proc"
 done
 
+IFS= read -r -d '' -u "${update_appsfd[0]}" update_output
 
-for i in "${output[@]}"
-do
-    echo "$i"
-done
-
-
+echo "$update_output"
 
 
 }

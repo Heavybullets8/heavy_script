@@ -83,11 +83,6 @@ printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name
         return
     fi
 
-#dump array
-for i in "${echo_array[@]}"
-do
-    echo -e "$i"
-done
 
 }
 export -f update_apps
@@ -155,5 +150,13 @@ else
         done
     fi
 fi
+
+#dump array
+for i in "${echo_array[@]}"
+do
+    echo -e "$i"
+done
+
+
 }
 export -f after_update_actions

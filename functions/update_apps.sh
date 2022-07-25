@@ -11,7 +11,7 @@ update_limit=2
 
     for i in "${array[@]}"
     do
-        update_apps "$i" &
+        update_apps "$i" && (( current_updates-- )) &
         (( current_updates++ ))
         processes+=($!)
         while [[ "$current_updates" -ge "$update_limit" ]]

@@ -15,7 +15,7 @@ do
     if [[ "$jobs" -ge "$update_limit" ]]; then
         sleep 3
     else
-        mapfile -t output < <(update_apps "${array[$it]}" &)
+        mapfile -t output < <(update_apps "${array[$it]}") &
         processes+=($!)
         ((it++))
     fi

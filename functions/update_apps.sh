@@ -14,6 +14,7 @@ count=0
         (( count++ ))
         while [[ "$count" -ge "$update_limit" ]]
         do
+            echo "waiting for free space"
             wait
         done
     done

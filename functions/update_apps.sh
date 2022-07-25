@@ -13,12 +13,14 @@ count=0
         update_apps "$i" &
         processes+=($!)
         proc_count=0
+        count=$(jobs -p | wc -l)
         while [[ "${#processes[@]}" -ge "$update_limit" ]]
         do
-            echo "waiting for free space"
-            wait -n "${processes[$proc_count]}" &> /dev/null
-            (( proc_count++ ))
-            unset "processes[$proc_count]"
+            for proc in "${processes[@]}"
+            do
+                kill -0 "$proc" || unset "processes[$proc_count]"
+                (( proc_count++ ))
+            done
         done
     done
 

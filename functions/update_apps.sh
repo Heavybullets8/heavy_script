@@ -1,35 +1,45 @@
 #!/bin/bash
 
 
-update_apps(){
-# Replace with line below after testing
-# cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | tr -d " \t\r" | grep -E ",true($|,)" | sort
-mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | grep -E ",true(,|\b)" | sort)
+mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | tr -d " \t\r" | grep -E ",true($|,)" | sort)
 [[ -z $array ]] && echo -e "\nThere are no updates available" && return 0 || echo -e "\n${#array[@]} update(s) available"
 [[ -z $timeout ]] && echo -e "\nDefault Timeout: 500" && timeout=500 || echo -e "\nCustom Timeout: $timeout"
 [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
-for i in "${array[@]}"
-do
-    app_name=$(echo "$i" | awk -F ',' '{print $1}') #print out first catagory, name.
-    old_app_ver=$(echo "$i" | awk -F ',' '{print $4}' | awk -F '_' '{print $1}' | awk -F '.' '{print $1}') #previous/current Application MAJOR Version
-    new_app_ver=$(echo "$i" | awk -F ',' '{print $5}' | awk -F '_' '{print $1}' | awk -F '.' '{print $1}') #new Application MAJOR Version
-    old_chart_ver=$(echo "$i" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}' | awk -F '.' '{print $1}') # Old Chart MAJOR version
-    new_chart_ver=$(echo "$i" | awk -F ',' '{print $5}' | awk -F '_' '{print $2}' | awk -F '.' '{print $1}') # New Chart MAJOR version
-    status=$(echo "$i" | awk -F ',' '{print $2}') #status of the app: STOPPED / DEPLOYING / ACTIVE
-    startstatus=$status
-    diff_app=$(diff <(echo "$old_app_ver") <(echo "$new_app_ver")) #caluclating difference in major app versions
-    diff_chart=$(diff <(echo "$old_chart_ver") <(echo "$new_chart_ver")) #caluclating difference in Chart versions
-    old_full_ver=$(echo "$i" | awk -F ',' '{print $4}') #Upgraded From
-    new_full_ver=$(echo "$i" | awk -F ',' '{print $5}') #Upraded To
-    rollback_version=$(echo "$i" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
-    printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name\nIgnored, skipping" && continue #If application is on ignore list, skip
+
+update_limit=5
+count=0
+    for i in "${array[@]}"
+    do
+        update_apps "$i" &
+        (( count++ ))
+        while [[ "$count" -ge "$update_limit" ]]
+        do
+            wait
+        done
+    done
+
+
+update_apps(){
+app_name=$(echo "$i" | awk -F ',' '{print $1}') #print out first catagory, name.
+old_app_ver=$(echo "$i" | awk -F ',' '{print $4}' | awk -F '_' '{print $1}' | awk -F '.' '{print $1}') #previous/current Application MAJOR Version
+new_app_ver=$(echo "$i" | awk -F ',' '{print $5}' | awk -F '_' '{print $1}' | awk -F '.' '{print $1}') #new Application MAJOR Version
+old_chart_ver=$(echo "$i" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}' | awk -F '.' '{print $1}') # Old Chart MAJOR version
+new_chart_ver=$(echo "$i" | awk -F ',' '{print $5}' | awk -F '_' '{print $2}' | awk -F '.' '{print $1}') # New Chart MAJOR version
+status=$(echo "$i" | awk -F ',' '{print $2}') #status of the app: STOPPED / DEPLOYING / ACTIVE
+startstatus=$status
+diff_app=$(diff <(echo "$old_app_ver") <(echo "$new_app_ver")) #caluclating difference in major app versions
+diff_chart=$(diff <(echo "$old_chart_ver") <(echo "$new_chart_ver")) #caluclating difference in Chart versions
+old_full_ver=$(echo "$i" | awk -F ',' '{print $4}') #Upgraded From
+new_full_ver=$(echo "$i" | awk -F ',' '{print $5}') #Upraded To
+rollback_version=$(echo "$i" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
+printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name\nIgnored, skipping" && return #If application is on ignore list, skip
     if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #continue to update
         if [[ $stop_before_update == "true" ]]; then # Check to see if user is using -S or not
             if [[ "$status" ==  "STOPPED" ]]; then # if status is already stopped, skip while loop
                 echo -e "\n$app_name"
                 [[ "$verbose" == "true" ]] && echo "Updating.."
                 cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo -e "Updated\n$old_full_ver\n$new_full_ver" && after_update_actions || echo "FAILED"
-                continue
+                return
             else # if status was not STOPPED, stop the app prior to updating
                 echo -e "\n$app_name"
                 [[ "$verbose" == "true" ]] && echo "Stopping prior to update.."
@@ -48,7 +58,6 @@ do
                     elif [[ "$status" !=  "STOPPED" ]]; then
                         [[ "$verbose" == "true" ]] && echo "Waiting $((timeout-SECONDS)) more seconds for $app_name to be STOPPED"
                         sleep 10
-                        continue
                     fi
                 done
             fi
@@ -59,9 +68,8 @@ do
         fi
     else
         echo -e "\n$app_name\nMajor Release, update manually"
-        continue
+        return
     fi
-done
 }
 export -f update_apps
 

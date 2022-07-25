@@ -17,7 +17,7 @@ count=0
         do
             echo "waiting for free space"
             wait -n "${processes[@]}"
-            count=0
+            (( count-- ))
         done
     done
 

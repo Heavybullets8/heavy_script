@@ -86,7 +86,7 @@ printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name
 #dump array
 for i in "${echo_array[@]}"
 do
-    echo "$i"
+    echo -e "$i"
 done
 
 }

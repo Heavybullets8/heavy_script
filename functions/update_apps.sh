@@ -15,9 +15,11 @@ count=0
         processes+=($!)
         while [[ "$count" -ge "$update_limit" ]]
         do
+            jobs -p
+            pidcount=0
             echo "waiting for free space"
-            wait -n "${processes[@]}"
-            (( count-- ))
+            wait -n "${processes[pidcount]}" && (( count-- ))
+            (( pidcount ++ ))
         done
     done
 

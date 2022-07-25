@@ -9,13 +9,14 @@ mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_availabl
 update_limit=4
 
 it=0
+
 while [[ $it -lt ${#array[@]} ]]
 do
     jobs=$(jobs -p | wc -l)
     if [[ "$jobs" -ge "$update_limit" ]]; then
         sleep 3
     else
-        coproc update_appsfd { update_apps "${array[$it]}" ; }
+        update_apps "${array[$it]}"
         processes+=($!)
         ((it++))
     fi
@@ -25,10 +26,6 @@ for proc in "${processes[@]}"
 do
     wait "$proc"
 done
-
-IFS= read -r -d '' -u "${update_appsfd[0]}" update_output
-
-echo "$update_output"
 
 
 }
@@ -85,7 +82,7 @@ printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name
         echo -e "\n$app_name\nMajor Release, update manually"
         return
     fi
-}
+} | sort
 export -f update_apps
 
 

@@ -16,7 +16,7 @@ count=0
         while [[ "$count" -ge "$update_limit" ]]
         do
             echo "waiting for free space"
-            wait
+            wait -n "${processes[@]}"
             count=0
         done
     done

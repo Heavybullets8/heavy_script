@@ -3,34 +3,34 @@
 #If no argument is passed, kill the script.
 [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && echo "This script requires an argument, use --help for help" && exit
 
-echo "yep"
-
 args=("$@")
 
 self_update() {
-SCRIPT=$(readlink -f "$0")
-SCRIPTPATH=$(dirname "$SCRIPT")
-SCRIPTNAME="$0"
-cd $SCRIPTPATH
+script=$(readlink -f "$0")
+script_path=$(dirname "$script")
+script_name="heavy_script.sh"
+cd "$script_path" || exit
 git fetch &> /dev/null 
 
-[[ -n $(git diff --name-only origin/beta | grep $SCRIPTNAME) ]] && {
+if  git diff --name-only origin/main | grep -q "$script_name" ; then
     echo "Found a new version of HeavyScript, updating myself..."
-    git pull --force &> /dev/null 
+    git reset --hard -q
+    git pull --force -q
     echo -e "Running the new version...\n"
     count=0
     for i in "${args[@]}"
     do
-    [[ "$i" == "--self-update" ]] && unset "args[$count]" && break
-    ((count++))
+        [[ "$i" == "--self-update" ]] && unset "args[$count]" && break
+        ((count++))
     done
     sleep 5
-    exec bash "$SCRIPTNAME" "${args[@]}"
+    exec bash "$script_name" "${args[@]}"
 
     # Now exit this old instance
-    exit 1
-    }
-    echo -e "Already the latest version.\n"
+    exit
+else 
+    echo -e "HeavyScript is already the latest version\n"
+fi
 }
 
 
@@ -59,7 +59,7 @@ echo "Examples"
 echo "bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -vrsUp"
 echo "bash /mnt/tank/scripts/heavy_script.sh -t 150 --mount"
 echo "bash /mnt/tank/scripts/heavy_script.sh --dns"
-echo "bash /mnt/tank/scripts/heavy_script.sh --restore"
+echo "bash heavy_script.sh --restore"
 echo "bash /mnt/tank/scripts/heavy_script.sh --delete-backup"
 echo
 exit
@@ -218,7 +218,9 @@ export -f sync
 
 
 update_apps(){
-mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | grep -E ",true(,|$)" | sort)
+# Replace with line below after testing
+# cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | tr -d " \t\r" | grep -E ",true($|,)" | sort
+mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | grep -E ",true(,|\b)" | sort)
 [[ -z $array ]] && echo -e "\nThere are no updates available" && return 0 || echo -e "\n${#array[@]} update(s) available"
 [[ -z $timeout ]] && echo -e "\nDefault Timeout: 500" && timeout=500 || echo -e "\nCustom Timeout: $timeout"
 [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
@@ -269,7 +271,7 @@ do
         else #user must not be using -S, just update
             echo -e "\n$app_name"
             [[ "$verbose" == "true" ]] && echo "Updating.."
-            cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo -e "Updated\n$old_full_ver\n$new_full_ver" && after_update_actions || { echo "FAILED"; continue; }
+            cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo -e "Updated\n$old_full_ver\n$new_full_ver" && after_update_actions || echo "FAILED"
         fi
     else
         echo -e "\n$app_name\nMajor Release, update manually"
@@ -372,10 +374,10 @@ do
     case $opt in
       -)
           case "${OPTARG}" in
-            help)
+             help)
                   help="true"
                   ;;
-     self-update)
+      self-update)
                   self_update="true"
                   ;;
               dns)
@@ -455,8 +457,8 @@ done
 [[ "$update_all_apps" == "true" && "$update_apps" == "true" ]] && echo -e "-U and -u cannot BOTH be called" && exit
 
 #Continue to call functions in specific order
-[[ "$self_update" == "true" ]] && self_update
 [[ "$help" == "true" ]] && help
+[[ "$self_update" == "true" ]] && self_update
 [[ "$deleteBackup" == "true" ]] && deleteBackup && exit
 [[ "$dns" == "true" ]] && dns && exit
 [[ "$restore" == "true" ]] && restore && exit

@@ -21,15 +21,17 @@ do
     fi
 done
 
+for proc in "${processes[@]}"
+do
+    wait "$proc"
+done
+
+
 for i in "${output[@]}"
 do
     echo "$i"
 done
 
-for proc in "${processes[@]}"
-do
-    wait "$proc"
-done
 
 
 

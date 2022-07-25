@@ -7,7 +7,6 @@ mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_availabl
 [[ -z $timeout ]] && echo -e "\nDefault Timeout: 500" && timeout=500 || echo -e "\nCustom Timeout: $timeout"
 [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
 update_limit=2
-current_updates=0
 
 it=0
 while [[ $it -lt ${#array[@]} ]]
@@ -16,13 +15,12 @@ do
     if [[ "$jobs" -ge "$update_limit" ]]; then
         sleep 3
     else
-        update_apps "${array[$it]}" &
+        application="${array[$it]}"
+        update_apps "$application" &
         processes+=($!)
         ((it++))
     fi
 done
-
-
 
 
 for proc in "${processes[@]}"

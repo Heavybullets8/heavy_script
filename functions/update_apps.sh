@@ -14,7 +14,7 @@ while [[ $it -lt ${#array[@]} ]]
 do
     jobs=$(jobs -p | wc -l)
     if [[ "$jobs" -ge "$update_limit" ]]; then
-        sleep 3
+        sleep 1
     else
         update_apps "${array[$it]}" &
         processes+=($!)

@@ -20,7 +20,7 @@ menu(){
     2)
         mount="true"
         ;;
-    4)
+    3)
         read -rt 600 -p "Please type the max number of backups to keep: " number_of_backups
         re='^[0-9]+$'
         number_of_backups=$number_of_backups
@@ -28,13 +28,13 @@ menu(){
         [[ "$number_of_backups" -le 0 ]] && echo "Error: Number of backups is required to be at least 1" && exit
         backup "$number_of_backups"
       ;;
-    5)
+    4)
         restore="true"
         ;;
-    6)
+    5)
         deleteBackup="true"
         ;;
-    7)
+    6)
         echo ""
         echo "1  Update Apps Excluding likely breaking major changes"
         echo "2  Update Apps Including likely breaking major changes"

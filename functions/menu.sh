@@ -34,7 +34,7 @@ menu(){
     6)
         deleteBackup="true"
         ;;
-    9)
+    7)
         echo ""
         echo "1  Update Apps Excluding likely breaking major changes"
         echo "2  Update Apps Including likely breaking major changes"

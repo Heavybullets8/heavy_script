@@ -1,9 +1,5 @@
 #!/bin/bash
 
-#If no argument is passed, kill the script.
-[[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && menu
-
-
 # shellcheck source=functions/backup.sh
 source functions/backup.sh
 # shellcheck source=functions/dns.sh
@@ -18,6 +14,10 @@ source functions/mount.sh
 source functions/self_update.sh
 # shellcheck source=functions/update_apps.sh
 source functions/update_apps.sh
+
+
+#If no argument is passed, kill the script.
+[[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && menu
 
 
 # Parse script options

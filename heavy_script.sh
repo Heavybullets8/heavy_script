@@ -136,7 +136,12 @@ done
 [[ "$dns" == "true" ]] && dns && exit
 [[ "$restore" == "true" ]] && restore && exit
 [[ "$mount" == "true" ]] && mount && exit
-[[ "$number_of_backups" -ge 1 ]] && backup
-[[ "$sync" == "true" ]] && sync
+if [[ "$number_of_backups" -ge 1 && "$sync" == "true" ]]; then # Run backup and sync at the same time
+    backup &
+    sync &
+    wait
+fi
+[[ "$number_of_backups" -ge 1 && "$sync" == "false" ]] && backup 
+[[ "$sync" == "true" && "$number_of_backups" -le 1 ]] && sync 
 [[ "$update_all_apps" == "true" || "$update_apps" == "true" ]] && commander
 [[ "$prune" == "true" ]] && prune

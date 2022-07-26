@@ -50,39 +50,62 @@ menu(){
         script_path=$(dirname "$script")
         script_name="heavy_script.sh"
         cd "$script_path" || exit
-        clear -x
-        title
-        echo "Choose Your Update Type"
-        echo "-----------------------"
-        echo "1) -U | Update all applications, ignores versions"
-        echo "2) -u | Update all applications, does not update Major releases"
-        echo
-        echo "0) Exit"
-        echo
-        read -rt 600 -p "Please type the number associated with the flag above: " current_selection
-        if [[ $current_selection == 1 ]]; then
-            echo -e "\nHow many applications do you want updating at the same time?"
-            read -rt 600 -p "Please type an integer greater than 0: " up_async
-        elif [[ $current_selection == 2 ]]; then
-            echo -e "\nHow many applications do you want updating at the same time?"
-            read -rt 600 -p "Please type an integer greater than 0: " up_async
-        elif [[ $current_selection == 0 ]]; then
-            echo "Exiting.." 
-            exit
-        else
-            echo "$current_selection was not an option, try again"
-            exit
-        fi
-        if [[ $up_async == 0 ]]; then
-            echo "0 was not an option.. exiting"
-            exit
-        elif ! [[ $up_async =~ ^[0-9]+$  ]]; then
-            echo "Error: \"$up_async\" is invalid, it needs to be an integer"
-            exit
-        else
-            update_selection+=("-u" "$up_async")
-            update_list+=("-u")
-        fi
+        while true 
+        do
+            clear -x
+            title
+            echo "Choose Your Update Type"
+            echo "-----------------------"
+            echo "1) -U | Update all applications, ignores versions"
+            echo "2) -u | Update all applications, does not update Major releases"
+            echo
+            echo "0) Exit"
+            echo
+            read -rt 600 -p "Please type the number associated with the flag above: " current_selection
+            if [[ $current_selection == 1 ]]; then
+                echo -e "\nHow many applications do you want updating at the same time?"
+                read -rt 600 -p "Please type an integer greater than 0: " up_async
+                if [[ $up_async == 0 ]]; then
+                    echo "Error: \"$up_async\" is less than 1"
+                    echo "NOT adding it to the list"
+                    sleep 5
+                    continue
+                elif ! [[ $up_async =~ ^[0-9]+$  ]]; then
+                    echo "Error: \"$up_async\" is invalid, it needs to be an integer"
+                    echo "NOT adding it to the list"
+                    sleep 5
+                    continue
+                else
+                    update_selection+=("-U" "$up_async")
+                    update_list+=("-U")
+                    break
+                fi
+            elif [[ $current_selection == 2 ]]; then
+                echo -e "\nHow many applications do you want updating at the same time?"
+                read -rt 600 -p "Please type an integer greater than 0: " up_async
+                if [[ $up_async == 0 ]]; then
+                    echo "Error: \"$up_async\" is less than 1"
+                    echo "NOT adding it to the list"
+                    sleep 5
+                    continue
+                elif ! [[ $up_async =~ ^[0-9]+$  ]]; then
+                    echo "Error: \"$up_async\" is invalid, it needs to be an integer"
+                    echo "NOT adding it to the list"
+                    sleep 5
+                    continue
+                else
+                    update_selection+=("-u" "$up_async")
+                    update_list+=("-u")
+                    break
+                fi
+            elif [[ $current_selection == 0 ]]; then
+                echo "Exiting.." 
+                exit
+            else
+                echo "$current_selection was not an option, try again"
+                exit
+            fi
+        done
         while true 
         do
             clear -x

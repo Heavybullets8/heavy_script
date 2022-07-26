@@ -101,10 +101,11 @@ menu(){
             echo 
             echo "Current Choices"
             echo "---------------"
-            for i in "${update_selection[@]}"
+            for i in "${update_list[@]}"
             do
                 echo "$i"
             done
+            echo
             read -rt 600 -p "Please type the number associated with the flag above: " current_selection
 
 
@@ -116,24 +117,32 @@ menu(){
                 read -rt 600 -p "Please type an integer: " up_backups
                 ! [[ $up_backups =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
                 [[ $up_backups == 0 ]] && echo -e "Error: Number of backups cannot be 0\nNOT adding it to the list" && sleep 5 && continue
+                update_list+=("-b $up_backups")
                 update_selection+=("-b" "$up_backups")
             elif [[ $current_selection == 2 ]]; then
                 read -rt 600 -p "What is the name of the application we should ignore?: " up_ignore
+                update_list+=("-b $up_ignore")
                 update_selection+=("-i" "$up_ignore")                
             elif [[ $current_selection == 3 ]]; then
+                update_list+=("-r")
                 update_selection+=("-r")
             elif [[ $current_selection == 4 ]]; then
+                update_list+=("-S")
                 update_selection+=("-S")
             elif [[ $current_selection == 5 ]]; then
+                update_list+=("-v")
                 update_selection+=("-v")
             elif [[ $current_selection == 6 ]]; then
                 echo "What do you want your timeout to be?"
                 read -rt 600 -p "Please type an integer: " up_timeout
                 ! [[ $up_timeout =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
+                update_list+=("-t $up_timeout")
                 update_selection+=("-t" "$up_timeout")
             elif [[ $current_selection == 7 ]]; then
+                update_list+=("-s")
                 update_selection+=("-s") 
             elif [[ $current_selection == 8 ]]; then
+                update_list+=("-p")
                 update_selection+=("-p")  
             else
                 echo "$current_selection was not an option, try again" && sleep 5 && continue                                                                  

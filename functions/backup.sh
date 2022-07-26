@@ -2,21 +2,27 @@
 
 
 backup(){
-echo -e "\nNumber of backups was set to $number_of_backups"
+echo_backup+=("\nNumber of backups was set to $number_of_backups")
 date=$(date '+%Y_%m_%d_%H_%M_%S')
 [[ "$verbose" == "true" ]] && cli -c 'app kubernetes backup_chart_releases backup_name=''"'HeavyScript_"$date"'"'
-[[ -z "$verbose" ]] && echo -e "\nNew Backup Name:" && cli -c 'app kubernetes backup_chart_releases backup_name=''"'HeavyScript_"$date"'"' | tail -n 1
+[[ -z "$verbose" ]] && echo_backup+=("\nNew Backup Name:") && cli -c 'app kubernetes backup_chart_releases backup_name=''"'HeavyScript_"$date"'"' | tail -n 1
 mapfile -t list_backups < <(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -t '_' -Vr -k2,7 | awk -F '|'  '{print $2}'| tr -d " \t\r")
 if [[  ${#list_backups[@]}  -gt  "number_of_backups" ]]; then
-    echo -e "\nDeleting the oldest backup(s) for exceeding limit:"
+    echo_backup+=("\nDeleting the oldest backup(s) for exceeding limit:")
     overflow=$(( ${#list_backups[@]} - "$number_of_backups" ))
     mapfile -t list_overflow < <(cli -c 'app kubernetes list_backups' | grep "HeavyScript_"  | sort -t '_' -V -k2,7 | awk -F '|'  '{print $2}'| tr -d " \t\r" | head -n "$overflow")
     for i in "${list_overflow[@]}"
     do
-        cli -c 'app kubernetes delete_backup backup_name=''"'"$i"'"' &> /dev/null || echo "Failed to delete $i"
-        echo "$i"
+        cli -c 'app kubernetes delete_backup backup_name=''"'"$i"'"' &> /dev/null || echo_backup+=("Failed to delete $i")
+        echo_backup+=("$i")
     done
 fi
+
+#Dump the echo_array, ensures all output is in a neat order. 
+for i in "${echo_backup[@]}"
+do
+    echo -e "$i"
+done
 }
 export -f backup
 

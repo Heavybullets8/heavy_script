@@ -80,24 +80,24 @@ menu(){
         if [[ $current_selection == 0 ]]; then
             exec bash "$script_name" "${update_selection[@]}"
             exit
-        elif [[ $current_selection == 3 ]]; then
+        elif [[ $current_selection == 1 ]]; then
             read -rt 600 -p "Up to how many backups should we keep?\n Please type an integer: " up_backups
             update_selection+=("-b" "$up_backups")
-        elif [[ $current_selection == 4 ]]; then
+        elif [[ $current_selection == 2 ]]; then
             read -rt 600 -p "What is the name of the application we should ignore?: " up_ignore
             update_selection+=("-i" "$up_ignore")                
-        elif [[ $current_selection == 5 ]]; then
+        elif [[ $current_selection == 3 ]]; then
             update_selection+=("-r")
-        elif [[ $current_selection == 6 ]]; then
+        elif [[ $current_selection == 4 ]]; then
             update_selection+=("-S")
-        elif [[ $current_selection == 7 ]]; then
+        elif [[ $current_selection == 5 ]]; then
             update_selection+=("-v")
-        elif [[ $current_selection == 8 ]]; then
+        elif [[ $current_selection == 6 ]]; then
             read -rt 600 -p "What do you want your timeout to be?: " up_timeout
             update_selection+=("-t" "$up_timeout")
-        elif [[ $current_selection == 9 ]]; then
+        elif [[ $current_selection == 7 ]]; then
             update_selection+=("-s") 
-        elif [[ $current_selection == 10 ]]; then
+        elif [[ $current_selection == 8 ]]; then
             update_selection+=("-p")                                                                    
         fi
         done

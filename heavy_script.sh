@@ -128,6 +128,7 @@ do
 done
 
 
+
 #exit if incompatable functions are called 
 [[ "$update_all_apps" == "true" && "$update_apps" == "true" ]] && echo -e "-U and -u cannot BOTH be called" && exit
 

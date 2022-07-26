@@ -3,26 +3,27 @@
 menu(){
   clear -x
   title
-  echo "0  Help"
-  echo "1  List DNS Names"
-  echo "2  Mount and Unmount PVC storage"
-  echo "3  Create a Backup"
-  echo "4  Restore a Backup"
-  echo "5  Delete a Backup"
-  echo "6  Update Applications"
+  echo "1  Help"
+  echo "2  List DNS Names"
+  echo "3  Mount and Unmount PVC storage"
+  echo "4  Create a Backup"
+  echo "5  Restore a Backup"
+  echo "6  Delete a Backup"
+  echo "7  Update HeavyScript"
+  echo "8  Update Applications"
   read -rt 600 -p "Please select an option by number: " selection
 
   case $selection in
-    0)
+    1)
         help="true"
         ;;
-    1)
+    2)
         dns="true"
         ;;
-    2)
+    3)
         mount="true"
         ;;
-    3)
+    4)
         read -rt 600 -p "Please type the max number of backups to keep: " number_of_backups
         re='^[0-9]+$'
         number_of_backups=$number_of_backups
@@ -31,13 +32,16 @@ menu(){
         echo "Generating backup, please be patient for output.."
         backup "$number_of_backups"
       ;;
-    4)
+    5)
         restore="true"
         ;;
-    5)
+    6)
         deleteBackup="true"
         ;;
-    6)
+    7)
+        self_update="true"
+        ;;
+    8)
         script=$(readlink -f "$0")
         script_path=$(dirname "$script")
         script_name="heavy_script.sh"

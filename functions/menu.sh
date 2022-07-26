@@ -100,6 +100,11 @@ menu(){
             echo "0) Done making selections, proceed with update"
             echo 
             read -rt 600 -p "Please type the number associated with the flag above: " current_selection
+
+            for i in "${current_selection[@]}"
+            do
+                echo "$i"
+            done
             if [[ $current_selection == 0 ]]; then
                 exec bash "$script_name" "${update_selection[@]}"
                 exit

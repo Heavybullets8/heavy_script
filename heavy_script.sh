@@ -19,7 +19,7 @@ source functions/update_apps.sh
 
 
 # Parse script options
-while getopts ":sii:rb:t:uUpSRv-:" opt
+while getopts ":si:rb:t:uUpSRv-:" opt
 do
     case $opt in
       -)

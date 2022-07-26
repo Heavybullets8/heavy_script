@@ -19,7 +19,7 @@ source functions/update_apps.sh
 
 
 # Parse script options
-while getopts ":si::rb:t:uUpSRv-:" opt
+while getopts ":sirb:t:uUpSRv-:" opt
 do
     case $opt in
       -)
@@ -48,10 +48,10 @@ do
                   ;;
           esac
           ;;
-    #   :)
-    #     echo -e "Option: \"-$OPTARG\" requires an argument\n" && help
-    #     exit
-    #     ;;
+      :)
+         echo -e "Option: \"-$OPTARG\" requires an argument\n" && help
+         exit
+         ;;
       b)
         re='^[0-9]+$'
         number_of_backups=$OPTARG
@@ -62,8 +62,15 @@ do
         rollback="true"
         ;;
       i)
-        ignore+=("$OPTARG")
-        [[ -z "$ignore" ]] && echo "\"-i\" requires an argument" && exit
+        # Check next positional parameter
+        eval nextopt=${!OPTIND}
+        # existing or starting with dash?
+        if [[ -n $nextopt && $nextopt != -* ]] ; then
+            OPTIND=$((OPTIND + 1))
+            ignore+=("$OPTARG")
+        else
+            echo "Option: \"-i\" requires an argument"
+        fi
         ;;
       t)
         re='^[0-9]+$'

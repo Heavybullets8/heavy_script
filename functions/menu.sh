@@ -1,6 +1,7 @@
 #!/bin/bash
 
 menu(){
+  clear -x
   title
   echo "0  Help"
   echo "1  List DNS Names"

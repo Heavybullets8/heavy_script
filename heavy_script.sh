@@ -70,6 +70,7 @@ do
             ignore+=("$OPTARG")
         else
             echo "Option: \"-i\" requires an argument"
+            exit
         fi
         ;;
       t)

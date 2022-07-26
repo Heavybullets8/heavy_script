@@ -43,7 +43,7 @@ menu(){
         script_name="heavy_script.sh"
         cd "$script_path" || exit
         clear -x
-        echo "Choose your update options"
+        echo "Choose your update options "
         echo
         echo "-U | Update all applications, ignores versions"
         echo "-u | Update all applications, does not update Major releases"

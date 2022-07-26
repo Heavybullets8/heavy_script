@@ -100,7 +100,7 @@ do
         # existing or starting with dash?
         if [[ -n $nextopt && $nextopt != -* ]] ; then
             OPTIND=$((OPTIND + 1))
-            update_limit=("$OPTARG")
+            update_limit=$OPTARG
         else
             update_limit=1
         fi

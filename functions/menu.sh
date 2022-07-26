@@ -53,7 +53,7 @@ menu(){
         cd "$script_path" || exit
         clear -x
         title
-        echo "What type of update would you like?"
+        echo "--Choose your update type--"
         echo "1) -U | Update all applications, ignores versions"
         echo "2) -u | Update all applications, does not update Major releases"
         echo
@@ -77,46 +77,47 @@ menu(){
         fi
         while true 
         do
-        clear -x
-        title
-        echo "Choose your update options "
-        echo
-        echo "1) -b | Back-up your ix-applications dataset, specify a number after -b"
-        echo "2) -i | Add application to ignore list, one by one, see example below."
-        echo "3) -r | Roll-back applications if they fail to update"
-        echo "4) -S | Shutdown applications prior to updating"
-        echo "5) -v | verbose output"
-        echo "6) -t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
-        echo "7) -s | sync catalog"
-        echo "8) -p | Prune unused/old docker images"
-        echo
-        echo "0) Done making selections, proceed with update"
-        echo 
-
-        read -rt 600 -p "Please type the number associated with the flag above: " current_selection
-        if [[ $current_selection == 0 ]]; then
-            exec bash "$script_name" "${update_selection[@]}"
-            exit
-        elif [[ $current_selection == 1 ]]; then
-            read -rt 600 -p "Up to how many backups should we keep?\n Please type an integer: " up_backups
-            update_selection+=("-b" "$up_backups")
-        elif [[ $current_selection == 2 ]]; then
-            read -rt 600 -p "What is the name of the application we should ignore?: " up_ignore
-            update_selection+=("-i" "$up_ignore")                
-        elif [[ $current_selection == 3 ]]; then
-            update_selection+=("-r")
-        elif [[ $current_selection == 4 ]]; then
-            update_selection+=("-S")
-        elif [[ $current_selection == 5 ]]; then
-            update_selection+=("-v")
-        elif [[ $current_selection == 6 ]]; then
-            read -rt 600 -p "What do you want your timeout to be?: " up_timeout
-            update_selection+=("-t" "$up_timeout")
-        elif [[ $current_selection == 7 ]]; then
-            update_selection+=("-s") 
-        elif [[ $current_selection == 8 ]]; then
-            update_selection+=("-p")                                                                    
-        fi
+            clear -x
+            title
+            echo "--Choose your update options--"
+            echo
+            echo "1) -b | Back-up your ix-applications dataset, specify a number after -b"
+            echo "2) -i | Add application to ignore list, one by one, see example below."
+            echo "3) -r | Roll-back applications if they fail to update"
+            echo "4) -S | Shutdown applications prior to updating"
+            echo "5) -v | verbose output"
+            echo "6) -t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
+            echo "7) -s | sync catalog"
+            echo "8) -p | Prune unused/old docker images"
+            echo
+            echo "0) Done making selections, proceed with update"
+            echo 
+            read -rt 600 -p "Please type the number associated with the flag above: " current_selection
+            if [[ $current_selection == 0 ]]; then
+                exec bash "$script_name" "${update_selection[@]}"
+                exit
+            elif [[ $current_selection == 1 ]]; then
+                echo "Up to how many backups should we keep?"
+                read -rt 600 -p "Please type an integer: " up_backups
+                update_selection+=("-b" "$up_backups")
+            elif [[ $current_selection == 2 ]]; then
+                read -rt 600 -p "What is the name of the application we should ignore?: " up_ignore
+                update_selection+=("-i" "$up_ignore")                
+            elif [[ $current_selection == 3 ]]; then
+                update_selection+=("-r")
+            elif [[ $current_selection == 4 ]]; then
+                update_selection+=("-S")
+            elif [[ $current_selection == 5 ]]; then
+                update_selection+=("-v")
+            elif [[ $current_selection == 6 ]]; then
+                echo "What do you want your timeout to be?"
+                read -rt 600 -p "Please type an integer: " up_timeout
+                update_selection+=("-t" "$up_timeout")
+            elif [[ $current_selection == 7 ]]; then
+                update_selection+=("-s") 
+            elif [[ $current_selection == 8 ]]; then
+                update_selection+=("-p")                                                                    
+            fi
         done
         ;;
     *)

@@ -6,7 +6,7 @@ mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_availabl
 [[ -z $array ]] && echo -e "\nThere are no updates available" && return 0 || echo -e "\n${#array[@]} update(s) available"
 [[ -z $timeout ]] && echo -e "\nDefault Timeout: 500" && timeout=500 || echo -e "\nCustom Timeout: $timeout"
 [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
-echo "Asynchronous Updates: 1"
+echo "Asynchronous Updates: $update_limit"
 
 it=0
 

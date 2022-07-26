@@ -117,7 +117,9 @@ menu(){
             elif [[ $current_selection == 7 ]]; then
                 update_selection+=("-s") 
             elif [[ $current_selection == 8 ]]; then
-                update_selection+=("-p")                                                                    
+                update_selection+=("-p")  
+            else
+                echo "$current_selection was not an option, try again"                                                                 
             fi
         done
         ;;

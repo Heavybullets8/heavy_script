@@ -67,7 +67,7 @@ do
         ;;
       i)
         ignore+=("$OPTARG")
-        [[ -z "$OPTARG" ]] && echo "\"-i\" requires an argument" && exit
+        [[ -z "$ignore" ]] && echo "\"-i\" requires an argument" && exit
         ;;
       t)
         re='^[0-9]+$'

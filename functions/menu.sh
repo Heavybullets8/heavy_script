@@ -75,7 +75,7 @@ menu(){
                 update_selection+=("-b $up_backups")
             elif [[ $current_selection == 4 ]]; then
                 read -rt 600 -p "What is the name of the application we should ignore?: " up_ignore
-                update_selection+=("-i $up_ignore")                
+                update_selection+=("-i" "$up_ignore")                
             elif [[ $current_selection == 5 ]]; then
                 update_selection+=("-r")
             elif [[ $current_selection == 6 ]]; then

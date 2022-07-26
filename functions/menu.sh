@@ -1,6 +1,7 @@
 #!/bin/bash
 
 menu(){
+  title
   echo "0  Help"
   echo "1  List DNS Names"
   echo "2  Mount and Unmount PVC storage"

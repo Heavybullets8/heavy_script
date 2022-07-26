@@ -50,9 +50,11 @@ menu(){
         echo "0) Exit"
         read -rt 600 -p "Please type the number associated with the flag above: " current_selection
         if [[ $current_selection == 1 ]]; then
-            update_selection+=("-U")
-        elif [[ $current_selection == 2 ]]; then  
-            update_selection+=("-u")
+            read -rt 600 -p "How many applications do you want updating at the same time?\n Please type an integer: " up_async 
+            update_selection+=("-U" "$up_async")
+        elif [[ $current_selection == 2 ]]; then
+            read -rt 600 -p "How many applications do you want updating at the same time?\n Please type an integer: " up_async  
+            update_selection+=("-u" "$up_async")
         elif [[ $current_selection == 0 ]]; then
             echo "Exiting.." 
             exit

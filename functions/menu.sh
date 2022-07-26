@@ -101,7 +101,7 @@ menu(){
             echo 
             read -rt 600 -p "Please type the number associated with the flag above: " current_selection
 
-            for i in "${current_selection[@]}"
+            for i in "${update_selection[@]}"
             do
                 echo "$i"
             done
@@ -133,7 +133,7 @@ menu(){
             elif [[ $current_selection == 8 ]]; then
                 update_selection+=("-p")  
             else
-                echo "$current_selection was not an option, try again"                                                                 
+                echo "$current_selection was not an option, try again" && sleep 5 && continue                                                                  
             fi
         done
         ;;

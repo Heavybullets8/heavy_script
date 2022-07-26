@@ -137,7 +137,7 @@ done
 [[ "$restore" == "true" ]] && restore && exit
 [[ "$mount" == "true" ]] && mount && exit
 if [[ "$number_of_backups" -ge 1 && "$sync" == "true" ]]; then # Run backup and sync at the same time
-    echo "Backing up and syncing catalogs at the same time, please wait for output.."
+    echo -e "Backing up and syncing catalogs at the same time, please wait for output..\n"
     backup &
     sync &
     wait

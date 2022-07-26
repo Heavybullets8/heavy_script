@@ -11,14 +11,18 @@ echo "Asynchronous Updates: $update_limit"
 it=0
 while [[ $it -lt ${#array[@]} ]]
 do
-    jobs=$(jobs -p | wc -l)
-    if [[ "$jobs" -ge "$update_limit" ]]; then
+    proc_count=${#processes[@]}
+    for proc in "${processes[@]}"
+    do
+        kill -0 "$proc" || ((proc_count--))
+    done
+    #jobs=$(jobs -p | wc -l)
+    if [[ "$proc_count" -ge "$update_limit" ]]; then
         sleep 1
     else
         update_apps "${array[$it]}" &
         processes+=($!)
         ((it++))
-        echo "$processes"
     fi
 done
 
@@ -33,7 +37,7 @@ export -f commander
 
 update_apps(){
 app_name=$(echo "${array[$it]}" | awk -F ',' '{print $1}') #print out first catagory, name.
-printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name\nIgnored, skipping" && exit 0 #If application is on ignore list, skip
+printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name\nIgnored, skipping" && return 0 #If application is on ignore list, skip
 old_app_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $1}' | awk -F '.' '{print $1}') #previous/current Application MAJOR Version
 new_app_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}' | awk -F '_' '{print $1}' | awk -F '.' '{print $1}') #new Application MAJOR Version
 old_chart_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}' | awk -F '.' '{print $1}') # Old Chart MAJOR version

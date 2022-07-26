@@ -1,13 +1,15 @@
 #!/bin/bash
 
 #If no argument is passed, kill the script.
-[[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && echo "This script requires an argument, use --help for help" && exit
+[[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && menu
 
 
 # shellcheck source=functions/backup.sh
 source functions/backup.sh
 # shellcheck source=functions/dns.sh
 source functions/dns.sh
+# shellcheck source=functions/menu.sh
+source functions/menu.sh
 # shellcheck source=functions/misc.sh
 source functions/misc.sh
 # shellcheck source=functions/mount.sh

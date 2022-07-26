@@ -107,6 +107,7 @@ menu(){
                 echo "Up to how many backups should we keep?"
                 read -rt 600 -p "Please type an integer: " up_backups
                 ! [[ $up_backups =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
+                [[ $up_backups == 0 ]] && echo -e "Error: Number of backups cannot be 0\nNOT adding it to the list" && sleep 5 && continue
                 update_selection+=("-b" "$up_backups")
             elif [[ $current_selection == 2 ]]; then
                 read -rt 600 -p "What is the name of the application we should ignore?: " up_ignore

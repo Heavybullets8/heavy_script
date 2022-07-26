@@ -128,6 +128,8 @@ menu(){
             read -rt 600 -p "Please type the number associated with the flag above: " current_selection
 
             if [[ $current_selection == 0 ]]; then
+                clear -x
+                echo "Running \"bash heavy_script.sh ${update_selection[*]}\""
                 exec bash "$script_name" "${update_selection[@]}"
                 exit
             elif [[ $current_selection == 1 ]]; then

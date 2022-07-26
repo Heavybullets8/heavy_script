@@ -19,7 +19,7 @@ source functions/update_apps.sh
 
 
 # Parse script options
-while getopts ":si:rb:t:uUpSRv-:" opt
+while getopts ":sii:rb:t:uUpSRv-:" opt
 do
     case $opt in
       -)
@@ -67,7 +67,7 @@ do
         ;;
       i)
         ignore+=("$OPTARG")
-        [[ -z "$ignore" ]] && echo "\"-i\" requires an argument" && exit
+        [[ -z "$OPTARG" ]] && echo "\"-i\" requires an argument" && exit
         ;;
       t)
         re='^[0-9]+$'

@@ -11,9 +11,14 @@ menu(){
   echo "6  Delete a Backup"
   echo "7  Update HeavyScript"
   echo "8  Update Applications"
+  echo
+  echo "0  Exit"
   read -rt 600 -p "Please select an option by number: " selection
 
   case $selection in
+    0)
+        exit
+        ;;
     1)
         help="true"
         ;;

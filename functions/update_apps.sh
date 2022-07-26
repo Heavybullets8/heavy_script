@@ -43,14 +43,14 @@ diff_chart=$(diff <(echo "$old_chart_ver") <(echo "$new_chart_ver")) #caluclatin
 old_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}') #Upgraded From
 new_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}') #Upraded To
 rollback_version=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
-printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name\nIgnored, skipping" && exit #If application is on ignore list, skip
+printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name\nIgnored, skipping" && return 1 #If application is on ignore list, skip
     if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #continue to update
         if [[ $stop_before_update == "true" ]]; then # Check to see if user is using -S or not
             if [[ "$status" ==  "STOPPED" ]]; then # if status is already stopped, skip while loop
                 echo_array+=("\n$app_name")
                 [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
                 cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo_array+=("FAILED")
-                return
+                return 0
             else # if status was not STOPPED, stop the app prior to updating
                 echo_array+=("\n$app_name")
                 [[ "$verbose" == "true" ]] && echo_array+=("Stopping prior to update..")
@@ -79,7 +79,7 @@ printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name
         fi
     else
         echo_array+=("\n$app_name\nMajor Release, update manually")
-        return
+        return 0
     fi
 
 

@@ -3,16 +3,16 @@
 menu(){
   clear -x
   title
-  echo "1  Help"
-  echo "2  List DNS Names"
-  echo "3  Mount and Unmount PVC storage"
-  echo "4  Create a Backup"
-  echo "5  Restore a Backup"
-  echo "6  Delete a Backup"
-  echo "7  Update HeavyScript"
-  echo "8  Update Applications"
+  echo "1)  Help"
+  echo "2)  List DNS Names"
+  echo "3)  Mount and Unmount PVC storage"
+  echo "4)  Create a Backup"
+  echo "5)  Restore a Backup"
+  echo "6)  Delete a Backup"
+  echo "7)  Update HeavyScript"
+  echo "8)  Update Applications"
   echo
-  echo "0  Exit"
+  echo "0)  Exit"
   read -rt 600 -p "Please select an option by number: " selection
 
   case $selection in
@@ -58,6 +58,7 @@ menu(){
         echo "2) -u | Update all applications, does not update Major releases"
         echo
         echo "0) Exit"
+        echo
         read -rt 600 -p "Please type the number associated with the flag above: " current_selection
         if [[ $current_selection == 1 ]]; then
             echo -e "\nHow many applications do you want updating at the same time?"

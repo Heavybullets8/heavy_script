@@ -83,9 +83,27 @@ do
         ;;
       U)
         update_all_apps="true"
+        # Check next positional parameter
+        eval nextopt=${!OPTIND}
+        # existing or starting with dash?
+        if [[ -n $nextopt && $nextopt != -* ]] ; then
+            OPTIND=$((OPTIND + 1))
+            update_limit=("$OPTARG")
+        else
+            update_limit=1
+        fi        
         ;;
       u)
         update_apps="true"
+        # Check next positional parameter
+        eval nextopt=${!OPTIND}
+        # existing or starting with dash?
+        if [[ -n $nextopt && $nextopt != -* ]] ; then
+            OPTIND=$((OPTIND + 1))
+            update_limit=("$OPTARG")
+        else
+            update_limit=1
+        fi
         ;;
       S)
         stop_before_update="true"

@@ -59,7 +59,8 @@ menu(){
         echo "Example: -u 3 -b 14 -rSvsp -i nextcloud"
 
         read -rt 600 -p "Please type the flags you wish, with options above: " update_selection
-        exec bash "$script_name" $update_selection
+        args=("$update_selection")
+        exec bash "$script_name" "${args[@]}"
 
         ;;
     *)

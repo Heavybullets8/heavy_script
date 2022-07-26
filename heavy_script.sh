@@ -52,10 +52,10 @@ do
         echo -e "Invalid Option \"-$OPTARG\"\n" && help
         exit
         ;;
-      :)
-        echo -e "Option: \"-$OPTARG\" requires an argument\n" && help
-        exit
-        ;;
+    #   :)
+    #     echo -e "Option: \"-$OPTARG\" requires an argument\n" && help
+    #     exit
+    #     ;;
       b)
         re='^[0-9]+$'
         number_of_backups=$OPTARG
@@ -66,6 +66,7 @@ do
         rollback="true"
         ;;
       i)
+        [[ -z "$OPTARG" ]] && echo "\"-i\" requires an argument" && exit
         ignore+=("$OPTARG")
         ;;
       t)
@@ -87,10 +88,6 @@ do
         ;;
       p)
         prune="true"
-        ;;
-      R)
-        rollback="true"
-        echo "WARNING: -R is being transisitioned to -r, this is due to a refactor in the script. Please Make the change ASAP!"
         ;;
       v)
         verbose="true"

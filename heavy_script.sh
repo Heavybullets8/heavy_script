@@ -48,10 +48,6 @@ do
                   ;;
           esac
           ;;
-      \?)
-        echo -e "Invalid Option \"-$OPTARG\"\n" && help
-        exit
-        ;;
     #   :)
     #     echo -e "Option: \"-$OPTARG\" requires an argument\n" && help
     #     exit
@@ -91,6 +87,10 @@ do
         ;;
       v)
         verbose="true"
+        ;;
+      \?)
+        echo -e "Invalid Option \"-$OPTARG\"\n" && help
+        exit
         ;;
       *)
         echo -e "Invalid Option \"-$OPTARG\"\n" && help

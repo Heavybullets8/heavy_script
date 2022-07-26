@@ -43,25 +43,32 @@ menu(){
         script_name="heavy_script.sh"
         cd "$script_path" || exit
         clear -x
+        while true 
+        do
         echo "Choose your update options "
         echo
-        echo "-U | Update all applications, ignores versions"
-        echo "-u | Update all applications, does not update Major releases"
-        echo "-b | Back-up your ix-applications dataset, specify a number after -b"
-        echo "-i | Add application to ignore list, one by one, see example below."
-        echo "-r | Roll-back applications if they fail to update"
-        echo "-S | Shutdown applications prior to updating"
-        echo "-v | verbose output"
-        echo "-t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
-        echo "-s | sync catalog"
-        echo "-p | Prune unused/old docker images"
+        echo "1) -U | Update all applications, ignores versions"
+        echo "2) -u | Update all applications, does not update Major releases"
+        echo "3) -b | Back-up your ix-applications dataset, specify a number after -b"
+        echo "4) -i | Add application to ignore list, one by one, see example below."
+        echo "5) -r | Roll-back applications if they fail to update"
+        echo "6) -S | Shutdown applications prior to updating"
+        echo "7) -v | verbose output"
+        echo "8) -t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
+        echo "9) -s | sync catalog"
+        echo "10) -p | Prune unused/old docker images"
+        echo
+        echo "0) Done making selections, proceed with update"
         echo 
-        echo "Example: -u 3 -b 14 -rSvsp -i nextcloud"
 
-        read -rt 600 -p "Please type the flags you wish, with options above: " update_selection
-        args=("$update_selection")
-        exec bash "$script_name" "${args[@]}"
+        read -rt 600 -p "Please type the number associated with the flag above: " current_selection
+        if [[ $current_selection == 0 ]]; then
+            exec bash "$script_name" "${args[@]}"
 
+        else 
+            update_selection+=("$current_selection")
+        fi
+        done
         ;;
     *)
         echo "Unknown option" && exit 1

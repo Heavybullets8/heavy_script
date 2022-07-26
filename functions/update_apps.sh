@@ -9,7 +9,6 @@ mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_availabl
 echo "Asynchronous Updates: $update_limit"
 
 it=0
-
 while [[ $it -lt ${#array[@]} ]]
 do
     jobs=$(jobs -p | wc -l)

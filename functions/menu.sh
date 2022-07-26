@@ -26,6 +26,7 @@ menu(){
         number_of_backups=$number_of_backups
         ! [[ $number_of_backups =~ $re  ]] && echo -e "Error: -b needs to be assigned an interger\n\"""$number_of_backups""\" is not an interger" >&2 && exit
         [[ "$number_of_backups" -le 0 ]] && echo "Error: Number of backups is required to be at least 1" && exit
+        echo "Generating backup, please be patient for output.."
         backup "$number_of_backups"
       ;;
     4)

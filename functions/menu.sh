@@ -38,17 +38,29 @@ menu(){
         deleteBackup="true"
         ;;
     6)
-        echo ""
-        echo "1  Update Apps Excluding likely breaking major changes"
-        echo "2  Update Apps Including likely breaking major changes"
-        read -rt 600 -p "Please select an option by number: " updateType
-        if [[ "$updateType" == "1" ]]; then
-            update_apps="true"
-        elif [[ "$updateType" == "2" ]]; then
-            update_all_apps="true"
-        else
-            echo "INVALID ENTRY" && exit 1
-        fi
+        script=$(readlink -f "$0")
+        script_path=$(dirname "$script")
+        script_name="heavy_script.sh"
+        cd "$script_path" || exit
+        clear -x
+        echo "Choose your update options"
+        echo
+        echo "-U | Update all applications, ignores versions"
+        echo "-u | Update all applications, does not update Major releases"
+        echo "-b | Back-up your ix-applications dataset, specify a number after -b"
+        echo "-i | Add application to ignore list, one by one, see example below."
+        echo "-r | Roll-back applications if they fail to update"
+        echo "-S | Shutdown applications prior to updating"
+        echo "-v | verbose output"
+        echo "-t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
+        echo "-s | sync catalog"
+        echo "-p | Prune unused/old docker images"
+        echo 
+        echo "Example: -u 3 -b 14 -rSvsp -i nextcloud"
+
+        read -rt 600 -p "Please type the flags you wish, with options above: " update_selection
+        exec bash "$script_name" "$update_selection"
+
         ;;
     *)
         echo "Unknown option" && exit 1

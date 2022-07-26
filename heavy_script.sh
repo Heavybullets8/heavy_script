@@ -67,7 +67,7 @@ do
         # existing or starting with dash?
         if [[ -n $nextopt && $nextopt != -* ]] ; then
             OPTIND=$((OPTIND + 1))
-            ignore+=("$OPTARG")
+            ignore+=("$nextopt")
         else
             echo "Option: \"-i\" requires an argument"
             exit

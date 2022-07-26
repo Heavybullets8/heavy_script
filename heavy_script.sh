@@ -87,8 +87,8 @@ do
         eval nextopt=${!OPTIND}
         # existing or starting with dash?
         if [[ -n $nextopt && $nextopt != -* ]] ; then
-            OPTIND=$((OPTIND + 1))
-            update_limit="$OPTARG"
+            OPTIND=$((OPTIND++))
+            update_limit="$nextopt"
         else
             update_limit=1
         fi        
@@ -99,8 +99,8 @@ do
         eval nextopt=${!OPTIND}
         # existing or starting with dash?
         if [[ -n $nextopt && $nextopt != -* ]] ; then
-            OPTIND=$((OPTIND + 1))
-            update_limit="$OPTARG"
+            OPTIND=$((OPTIND++))
+            update_limit="$nextopt"
         else
             update_limit=1
         fi

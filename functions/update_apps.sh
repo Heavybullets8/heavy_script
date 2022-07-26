@@ -43,7 +43,7 @@ diff_chart=$(diff <(echo "$old_chart_ver") <(echo "$new_chart_ver")) #caluclatin
 old_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}') #Upgraded From
 new_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}') #Upraded To
 rollback_version=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
-printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name\nIgnored, skipping" && return 0 #If application is on ignore list, skip
+printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name\nIgnored, skipping" && exit #If application is on ignore list, skip
     if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #continue to update
         if [[ $stop_before_update == "true" ]]; then # Check to see if user is using -S or not
             if [[ "$status" ==  "STOPPED" ]]; then # if status is already stopped, skip while loop

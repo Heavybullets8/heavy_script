@@ -78,7 +78,7 @@ menu(){
             echo "0 was not an option.. exiting"
             exit
         elif ! [[ $up_async =~ ^[0-9]+$  ]]; then
-            echo "Error: $up_async is invalid, it needs to be an integer"
+            echo "Error: \"$up_async\" is invalid, it needs to be an integer"
             exit
         else
             update_selection+=("-u" "$up_async")

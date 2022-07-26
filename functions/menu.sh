@@ -81,6 +81,7 @@ menu(){
             exit
         else
             update_selection+=("-u" "$up_async")
+            update_list+=("-u")
         fi
         while true 
         do
@@ -101,13 +102,9 @@ menu(){
             echo 
             echo "Current Choices"
             echo "---------------"
-            for i in "${update_list[@]}"
-            do
-                echo "$i"
-            done
+            echo "${update_list[*]}"
             echo
             read -rt 600 -p "Please type the number associated with the flag above: " current_selection
-
 
             if [[ $current_selection == 0 ]]; then
                 exec bash "$script_name" "${update_selection[@]}"
@@ -121,7 +118,7 @@ menu(){
                 update_selection+=("-b" "$up_backups")
             elif [[ $current_selection == 2 ]]; then
                 read -rt 600 -p "What is the name of the application we should ignore?: " up_ignore
-                update_list+=("-b $up_ignore")
+                update_list+=("-i $up_ignore")
                 update_selection+=("-i" "$up_ignore")                
             elif [[ $current_selection == 3 ]]; then
                 update_list+=("-r")

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Version 0.1
+
 # shellcheck source=functions/backup.sh
 source functions/backup.sh
 # shellcheck source=functions/dns.sh

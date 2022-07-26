@@ -53,7 +53,8 @@ menu(){
         cd "$script_path" || exit
         clear -x
         title
-        echo "--Choose your update type--"
+        echo "Choose your update type"
+        echo "_______________________"
         echo "1) -U | Update all applications, ignores versions"
         echo "2) -u | Update all applications, does not update Major releases"
         echo
@@ -79,8 +80,8 @@ menu(){
         do
             clear -x
             title
-            echo "--Choose your update options--"
-            echo
+            echo "Choose your update options"
+            echo "__________________________"
             echo "1) -b | Back-up your ix-applications dataset, specify a number after -b"
             echo "2) -i | Add application to ignore list, one by one, see example below."
             echo "3) -r | Roll-back applications if they fail to update"

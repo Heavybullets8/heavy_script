@@ -130,6 +130,7 @@ menu(){
             if [[ $current_selection == 0 ]]; then
                 clear -x
                 echo "Running \"bash heavy_script.sh ${update_selection[*]}\""
+                echo
                 exec bash "$script_name" "${update_selection[@]}"
                 exit
             elif [[ $current_selection == 1 ]]; then

@@ -2,6 +2,8 @@
 
 
 sync(){
+echo_sync+=("\nSync Output")
+echo_sync+=("-----------")    
 cli -c 'app catalog sync_all' &> /dev/null && echo_sync+=("Catalog sync complete")
 
 #Dump the echo_array, ensures all output is in a neat order. 
@@ -13,7 +15,10 @@ done
 export -f sync
 
 prune(){
-echo -e "\nPruning Docker Images" && docker image prune -af | grep "^Total" || echo "Failed to Prune Docker Images"
+echo -e "\nDocker Prune Output"
+echo "-------------------"    
+echo "Pruned Docker Images"
+docker image prune -af | grep "^Total" || echo "Failed to Prune Docker Images"
 }
 export -f prune
 

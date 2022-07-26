@@ -147,7 +147,7 @@ if [[ "$number_of_backups" -ge 1 && "$sync" == "true" ]]; then # Run backup and 
     sync &
     wait
 fi
-[[ "$number_of_backups" -ge 1 && -z "$sync" ]] && echo "Please wait for output, this could take a while.." && backup 
-[[ "$sync" == "true" && "$number_of_backups" -lt 1 ]] && echo "Please wait for output, this could take a while.." && sync 
+[[ "$number_of_backups" -ge 1 && -z "$sync" ]] && echo "Backing up \"ix-applications\" dataset, please wait.." && backup 
+[[ "$sync" == "true" && "$number_of_backups" -lt 1 ]] && echo "Syncing catalogs, this takes a LONG time, please wait.." && sync 
 [[ "$update_all_apps" == "true" || "$update_apps" == "true" ]] && commander
 [[ "$prune" == "true" ]] && prune

@@ -108,7 +108,7 @@ menu(){
         do
             clear -x
             title
-            echo "Choose your update options"
+            echo "Choose Your Update Options"
             echo "--------------------------"
             echo "1) -b | Back-up your ix-applications dataset, specify a number after -b"
             echo "2) -i | Add application to ignore list, one by one, see example below."
@@ -174,6 +174,6 @@ menu(){
         echo "Unknown option" && exit 1
         ;;
   esac
-  echo ""
+  echo
 }
 export -f menu

@@ -64,17 +64,24 @@ menu(){
         if [[ $current_selection == 1 ]]; then
             echo -e "\nHow many applications do you want updating at the same time?"
             read -rt 600 -p "Please type an integer greater than 0: " up_async
-            update_selection+=("-U" "$up_async")
         elif [[ $current_selection == 2 ]]; then
             echo -e "\nHow many applications do you want updating at the same time?"
-            read -rt 600 -p "Please type an integer greater than 0: " up_async  
-            update_selection+=("-u" "$up_async")
+            read -rt 600 -p "Please type an integer greater than 0: " up_async
         elif [[ $current_selection == 0 ]]; then
             echo "Exiting.." 
             exit
         else
             echo "$current_selection was not an option, try again"
             exit
+        fi
+        if [[ $up_async == 0 ]]; then
+            echo "0 was not an option.. exiting"
+            exit
+        elif ! [[ $up_async =~ ^[0-9]+$  ]]; then
+            echo "Error: $up_async is invalid, it needs to be an integer"
+            exit
+        else
+            update_selection+=("-u" "$up_async")
         fi
         while true 
         do

@@ -15,7 +15,7 @@ do
     count=0
     for proc in "${processes[@]}"
     do
-        kill -0 "$proc" &> /dev/null || { ((proc_count--)) ; unset "processes[$count]" ;}
+        kill -0 "$proc" &> /dev/null || { unset "processes[$count]"; ((proc_count--)); }
     done
     #jobs=$(jobs -p | wc -l)
     if [[ "$proc_count" -ge "$update_limit" ]]; then

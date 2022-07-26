@@ -12,9 +12,10 @@ it=0
 while [[ $it -lt ${#array[@]} ]]
 do
     proc_count=${#processes[@]}
+    count=0
     for proc in "${processes[@]}"
     do
-        kill -0 "$proc" &> /dev/null || ((proc_count--))
+        kill -0 "$proc" &> /dev/null || { ((proc_count--)) ; unset "processes[$count]" ;}
     done
     #jobs=$(jobs -p | wc -l)
     if [[ "$proc_count" -ge "$update_limit" ]]; then

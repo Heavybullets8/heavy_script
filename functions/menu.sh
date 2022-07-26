@@ -43,7 +43,7 @@ menu(){
         script_name="heavy_script.sh"
         cd "$script_path" || exit
         clear -x
-
+        title
         echo "What type of update would you like?"
         echo "1) -U | Update all applications, ignores versions"
         echo "2) -u | Update all applications, does not update Major releases"
@@ -68,6 +68,7 @@ menu(){
         while true 
         do
         clear -x
+        title
         echo "Choose your update options "
         echo
         echo "1) -b | Back-up your ix-applications dataset, specify a number after -b"

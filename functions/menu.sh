@@ -63,6 +63,7 @@ menu(){
             exit
         else
             echo "$current_selection was not an option, try again"
+            exit
         fi
         while true 
         do

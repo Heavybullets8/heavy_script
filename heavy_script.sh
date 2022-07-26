@@ -56,9 +56,8 @@ do
          exit
          ;;
       b)
-        re='^[0-9]+$'
         number_of_backups=$OPTARG
-        ! [[ $OPTARG =~ $re  ]] && echo -e "Error: -b needs to be assigned an interger\n\"""$number_of_backups""\" is not an interger" >&2 && exit
+        ! [[ $OPTARG =~ ^[0-9]+$  ]] && echo -e "Error: -b needs to be assigned an interger\n\"""$number_of_backups""\" is not an interger" >&2 && exit
         [[ "$number_of_backups" -le 0 ]] && echo "Error: Number of backups is required to be at least 1" && exit
         ;;
       r)
@@ -77,9 +76,8 @@ do
         fi
         ;;
       t)
-        re='^[0-9]+$'
         timeout=$OPTARG
-        ! [[ $timeout =~ $re ]] && echo -e "Error: -t needs to be assigned an interger\n\"""$timeout""\" is not an interger" >&2 && exit
+        ! [[ $timeout =~ ^[0-9]+$ ]] && echo -e "Error: -t needs to be assigned an interger\n\"""$timeout""\" is not an interger" >&2 && exit
         ;;
       s)
         sync="true"

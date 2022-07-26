@@ -30,9 +30,8 @@ menu(){
         ;;
     4)
         read -rt 600 -p "Please type the max number of backups to keep: " number_of_backups
-        re='^[0-9]+$'
         number_of_backups=$number_of_backups
-        ! [[ $number_of_backups =~ $re  ]] && echo -e "Error: -b needs to be assigned an interger\n\"""$number_of_backups""\" is not an interger" >&2 && exit
+        ! [[ $number_of_backups =~ ^[0-9]+$  ]] && echo -e "Error: -b needs to be assigned an interger\n\"""$number_of_backups""\" is not an interger" >&2 && exit
         [[ "$number_of_backups" -le 0 ]] && echo "Error: Number of backups is required to be at least 1" && exit
         echo "Generating backup, please be patient for output.."
         backup "$number_of_backups"
@@ -107,6 +106,7 @@ menu(){
             elif [[ $current_selection == 1 ]]; then
                 echo "Up to how many backups should we keep?"
                 read -rt 600 -p "Please type an integer: " up_backups
+                ! [[ $up_backups =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
                 update_selection+=("-b" "$up_backups")
             elif [[ $current_selection == 2 ]]; then
                 read -rt 600 -p "What is the name of the application we should ignore?: " up_ignore
@@ -120,6 +120,7 @@ menu(){
             elif [[ $current_selection == 6 ]]; then
                 echo "What do you want your timeout to be?"
                 read -rt 600 -p "Please type an integer: " up_timeout
+                ! [[ $up_timeout =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
                 update_selection+=("-t" "$up_timeout")
             elif [[ $current_selection == 7 ]]; then
                 update_selection+=("-s") 

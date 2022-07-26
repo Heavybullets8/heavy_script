@@ -66,8 +66,8 @@ do
         rollback="true"
         ;;
       i)
-        [[ -z "$OPTARG" ]] && echo "\"-i\" requires an argument" && exit
         ignore+=("$OPTARG")
+        [[ -z "$ignore" ]] && echo "\"-i\" requires an argument" && exit
         ;;
       t)
         re='^[0-9]+$'
@@ -93,7 +93,7 @@ do
         verbose="true"
         ;;
       *)
-        echo -e "Invalid Option \"--$OPTARG\"\n" && help
+        echo -e "Invalid Option \"-$OPTARG\"\n" && help
         exit
         ;;
     esac

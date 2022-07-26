@@ -9,7 +9,7 @@ script_name="heavy_script.sh"
 cd "$script_path" || exit
 git fetch &> /dev/null 
 
-if  git diff --name-only origin/main | grep -q "$script_name" ; then
+if  git diff --name-only origin/beta | grep -q "$script_name" ; then
     echo "Found a new version of HeavyScript, updating myself..."
     git reset --hard -q
     git pull --force -q

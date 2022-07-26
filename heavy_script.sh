@@ -66,7 +66,7 @@ do
         eval nextopt=${!OPTIND}
         # existing or starting with dash?
         if [[ -n $nextopt && $nextopt != -* ]] ; then
-            OPTIND=$((OPTIND++))
+            OPTIND=$((OPTIND + 1))
             ignore+=("$nextopt")
         else
             echo "Option: \"-i\" requires an argument"
@@ -87,7 +87,7 @@ do
         eval nextopt=${!OPTIND}
         # existing or starting with dash?
         if [[ -n $nextopt && $nextopt != -* ]] ; then
-            OPTIND=$((OPTIND++))
+            OPTIND=$((OPTIND + 1))
             update_limit="$nextopt"
         else
             update_limit=1
@@ -99,7 +99,7 @@ do
         eval nextopt=${!OPTIND}
         # existing or starting with dash?
         if [[ -n $nextopt && $nextopt != -* ]] ; then
-            OPTIND=$((OPTIND++))
+            OPTIND=$((OPTIND + 1))
             update_limit="$nextopt"
         else
             update_limit=1

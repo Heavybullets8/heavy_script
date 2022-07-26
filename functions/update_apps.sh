@@ -15,9 +15,10 @@ do
     if [[ "$jobs" -ge "$update_limit" ]]; then
         sleep 1
     else
-        { update_apps "${array[$it]}" ;} &
+        update_apps "${array[$it]}" &
         processes+=($!)
         ((it++))
+        echo "$processes"
     fi
 done
 

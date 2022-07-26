@@ -143,6 +143,6 @@ if [[ "$number_of_backups" -ge 1 && "$sync" == "true" ]]; then # Run backup and 
     wait
 fi
 [[ "$number_of_backups" -ge 1 && "$sync" == "false" ]] && echo "Please wait for output, this could take a while.." && backup 
-[[ "$sync" == "true" && "$number_of_backups" -le 1 ]] && echo "Please wait for output, this could take a while.." && sync 
+[[ "$sync" == "true" && "$number_of_backups" -lt 1 ]] && echo "Please wait for output, this could take a while.." && sync 
 [[ "$update_all_apps" == "true" || "$update_apps" == "true" ]] && commander
 [[ "$prune" == "true" ]] && prune

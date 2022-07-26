@@ -64,7 +64,7 @@ menu(){
         read -rt 600 -p "Please type the number associated with the flag above: " current_selection
         if [[ $current_selection == 0 ]]; then
             exec bash "$script_name" "${update_selection[@]}"
-
+            exit
         else 
             update_selection+=("$current_selection")
         fi

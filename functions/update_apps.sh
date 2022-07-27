@@ -32,8 +32,6 @@ for proc in "${processes[@]}"
 do
     wait "$proc"
 done
-
-
 }
 export -f commander
 

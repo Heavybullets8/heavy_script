@@ -179,7 +179,7 @@ menu(){
                 exit
                 ;;
             *)
-                echo "That was not an option, please try again" && sleep 5
+                echo "That was not an option, please try again" && sleep 5 && menu
                 ;;
         esac
         echo

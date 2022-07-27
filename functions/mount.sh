@@ -39,7 +39,7 @@ if [[ $selection == "1" ]]; then
     exit
 elif [[ $selection == "2" ]]; then
     mapfile -t unmount_array < <(basename -a /mnt/heavyscript/* | sed "s/*//")
-    [[ -z $unmount_array ]] && echo "Theres nothing to unmount" && exit
+    [[ -z ${unmount_array[*]} ]] && echo "Theres nothing to unmount" && exit
     for i in "${unmount_array[@]}"
     do
         main=$(k3s kubectl get pvc -A | grep -E "\s$i\s" | awk '{print $1, $2, $4}')

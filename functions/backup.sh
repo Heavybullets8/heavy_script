@@ -34,22 +34,12 @@ deleteBackup(){
 clear -x && echo "pulling all restore points.."
 list_backups=$(cli -c 'app kubernetes list_backups' | sort -t '_' -Vr -k2,7 | tr -d " \t\r"  | awk -F '|'  '{print $2}' | nl | column -t)
 clear -x
-[[ -z "$list_backups" ]] && echo "No restore points available" && exit
-title 
-echo -e "Choose a restore point to delete\nThese may be out of order if they are not all HeavyScript backups"
-echo "$list_backups"
-read -pr -t 600 "Please type a number: " selection
-restore_point=$(echo "$list_backups" | grep ^"$selection " | awk '{print $2}')
-if [[ -z "$selection" ]]; then #Check for valid selection. If none, kill script
-    echo "Your selection cannot be empty"
-    exit 
-elif [[ -z "$restore_point" ]]; then #Check for valid selection. If none, kill script
-    echo "Invalid Selection: $selection, was not an option"
-    exit 
-fi
-echo -e "\nWARNING:\nYou CANNOT go back after deleting your restore point"
-echo -e "\n\nYou have chosen:\n$restore_point\n\nWould you like to continue?"  && echo -e "1  Yes\n2  No"
-read -rp -t 120 "Please type a number: " yesno || { echo "Failed to make a valid selection"; exit; }
+[[ -z "$list_backups" ]] && echo "No restore points available" && exit || { title; echo -e "Choose a restore point to delete\nThese may be out of order if they are not HeavyScript backups" ;  }
+echo "$list_backups" && read -t 600 -p "Please type a number: " selection && restore_point=$(echo "$list_backups" | grep ^"$selection " | awk '{print $2}')
+[[ -z "$selection" ]] && echo "Your selection cannot be empty" && exit #Check for valid selection. If none, kill script
+[[ -z "$restore_point" ]] && echo "Invalid Selection: $selection, was not an option" && exit #Check for valid selection. If none, kill script
+echo -e "\nWARNING:\nYou CANNOT go back after deleting your restore point" || { echo "FAILED"; exit; }
+echo -e "\n\nYou have chosen:\n$restore_point\n\nWould you like to continue?"  && echo -e "1  Yes\n2  No" && read -t 120 -p "Please type a number: " yesno || { echo "FAILED"; exit; }
 if [[ $yesno == "1" ]]; then
     echo -e "\nDeleting $restore_point" && cli -c 'app kubernetes delete_backup backup_name=''"'"$restore_point"'"' &>/dev/null && echo "Sucessfully deleted" || echo "Deletion Failed"
 elif [[ $yesno == "2" ]]; then

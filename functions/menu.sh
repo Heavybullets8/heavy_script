@@ -185,13 +185,13 @@ case $selection in
                     continue
                     ;;
                 *)
-                    echo "\"$OPTARG\" was not an option, try again" && sleep 5 && continue 
+                    echo "\"$current_selection\" was not an option, try again" && sleep 5 && continue 
                     ;;
             esac
         done
         ;;
     *)
-        echo "\"$OPTARG\" was not an option, please try agian" && sleep 5 && menu
+        echo "\"$selection\" was not an option, please try agian" && sleep 5 && menu
         ;;
 esac
 echo

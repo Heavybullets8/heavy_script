@@ -4,7 +4,7 @@
 script=$(readlink -f "$0")
 script_path=$(dirname "$script")
 script_name="heavy_script.sh"
-cd "$script_path" || exit
+cd "$script_path" || { echo "Error: Failed to change to script directory" ; exit ; } 
 
 
 # shellcheck source=functions/backup.sh

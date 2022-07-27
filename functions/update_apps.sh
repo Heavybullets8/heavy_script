@@ -14,6 +14,7 @@ it=0
 while true
 do
     status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status')
+    export status
     proc_count=${#processes[@]}
     count=0
     for proc in "${processes[@]}"

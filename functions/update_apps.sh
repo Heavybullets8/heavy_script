@@ -12,7 +12,7 @@ echo "Asynchronous Updates: $update_limit"
 
 touch temp.txt
 it=0
-while [[ $it -lt ${#array[@]} ]]
+while true
 do
     cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' > temp.txt
     proc_count=${#processes[@]}
@@ -23,18 +23,20 @@ do
     done
     if [[ "$proc_count" -ge "$update_limit" ]]; then
         sleep 3
-    else
+    elif [[ $it -lt ${#array[@]} ]]; then
         update_apps "${array[$it]}" &
         processes+=($!)
         ((it++))
+    else
+        for proc in "${processes[@]}"
+        do
+            wait "$proc"
+        done
+        break
     fi
 done
 rm temp.txt
 
-for proc in "${processes[@]}"
-do
-    wait "$proc"
-done
 }
 export -f commander
 

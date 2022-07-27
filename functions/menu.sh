@@ -46,7 +46,7 @@ menu(){
         ;;
     6)
         deleteBackup="true"
-        exec bash "$script_name" --restore
+        exec bash "$script_name" --delete-backup
         exit
         ;;
     7)

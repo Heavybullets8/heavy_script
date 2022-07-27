@@ -21,6 +21,7 @@ do
     for proc in "${processes[@]}"
     do
         kill -0 "$proc" &> /dev/null || { unset "processes[$count]"; ((proc_count--)); }
+        ((count++)) 
     done
     if [[ "$proc_count" -ge "$update_limit" ]]; then
         sleep 3
@@ -28,9 +29,10 @@ do
         update_apps "${array[$it]}" &
         processes+=($!)
         ((it++))
-    elif [[ ${#processes[@]} != 0 ]]; then # Wait for all processes to finish
+    elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
         sleep 3
-    else 
+    else # All processes must be completed, break out of loop
+        wait "${processes[*]}"
         break
     fi
 done

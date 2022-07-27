@@ -97,7 +97,7 @@ case $selection in
                 exit
             else
                 echo "$current_selection was not an option, try again"
-                exit
+                continue
             fi
         done
         while true 

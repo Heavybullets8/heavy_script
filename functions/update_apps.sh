@@ -11,20 +11,16 @@ echo "------------------------"
 echo "Asynchronous Updates: $update_limit"
 
 it=0
-while true
+while [[ $it -lt ${#array[@]} ]]
 do
-    status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status')
-    export status
     proc_count=${#processes[@]}
     count=0
     for proc in "${processes[@]}"
     do
         kill -0 "$proc" &> /dev/null || { unset "processes[$count]"; ((proc_count--)); }
     done
-    if [[ $it -eq ${#array[@]} && ${#processes[@]} == 0 ]]; then
-        break
-    elif [[ "$proc_count" -ge "$update_limit" ]]; then
-        sleep 3
+    if [[ "$proc_count" -ge "$update_limit" ]]; then
+        sleep 1
     else
         update_apps "${array[$it]}" &
         processes+=($!)
@@ -47,7 +43,8 @@ old_app_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{prin
 new_app_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}' | awk -F '_' '{print $1}' | awk -F '.' '{print $1}') #new Application MAJOR Version
 old_chart_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}' | awk -F '.' '{print $1}') # Old Chart MAJOR version
 new_chart_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}' | awk -F '_' '{print $2}' | awk -F '.' '{print $1}') # New Chart MAJOR version
-startstatus=$(echo "${array[$it]}" | awk -F ',' '{print $2}') #status of the app: STOPPED / DEPLOYING / ACTIVE
+status=$(echo "${array[$it]}" | awk -F ',' '{print $2}') #status of the app: STOPPED / DEPLOYING / ACTIVE
+startstatus=$status
 diff_app=$(diff <(echo "$old_app_ver") <(echo "$new_app_ver")) #caluclating difference in major app versions
 diff_chart=$(diff <(echo "$old_chart_ver") <(echo "$new_chart_ver")) #caluclating difference in Chart versions
 old_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}') #Upgraded From
@@ -55,7 +52,7 @@ new_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}') #Upraded To
 rollback_version=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
     if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #continue to update
         if [[ $stop_before_update == "true" ]]; then # Check to see if user is using -S or not
-            if [[ "$startstatus" ==  "STOPPED" ]]; then # if status is already stopped, skip while loop
+            if [[ "$status" ==  "STOPPED" ]]; then # if status is already stopped, skip while loop
                 echo_array+=("\n$app_name")
                 [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
                 cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo_array+=("FAILED")
@@ -64,9 +61,9 @@ rollback_version=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '
                 echo_array+=("\n$app_name")
                 [[ "$verbose" == "true" ]] && echo_array+=("Stopping prior to update..")
                 midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && SECONDS=0 || echo_array+=("FAILED")
-                while [[ "$startstatus" !=  "STOPPED" ]]
+                while [[ "$status" !=  "STOPPED" ]]
                 do
-                    status=$(echo "$status" | grep "^$app_name," | awk -F ',' '{print $2}')
+                    status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "^$app_name," | awk -F ',' '{print $2}')
                     if [[ "$status"  ==  "STOPPED" ]]; then
                         echo_array+=("Stopped")
                         [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
@@ -101,7 +98,7 @@ if [[ $rollback == "true" ]]; then
     while true
     do
         (( count++ ))
-        status=$(echo "$status" | grep "^$app_name," | awk -F ',' '{print $2}')
+        status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "^$app_name," | awk -F ',' '{print $2}')
         if [[ "$status"  ==  "ACTIVE" && "$startstatus"  ==  "STOPPED" ]]; then
             [[ "$verbose" == "true" ]] && echo_array+=("Returing to STOPPED state..")
             midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && echo_array+=("Stopped")|| echo_array+=("FAILED")
@@ -133,7 +130,7 @@ else
         while true #using a constant while loop, then breaking out of the loop with break commands below.
         do
             (( count++ ))
-            status=$(echo "$status" | grep "^$app_name," | awk -F ',' '{print $2}')
+            status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "^$app_name," | awk -F ',' '{print $2}')
             if [[ "$status"  ==  "STOPPED" ]]; then
                 [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Stopped..") && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
                 [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports stopped on FIRST time through loop, double check

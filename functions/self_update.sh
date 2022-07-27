@@ -1,7 +1,6 @@
 #!/bin/bash
 
 args=("$@")
-
 self_update() {
 git fetch &> /dev/null 
 # TODO: change beta to main once testing is complete

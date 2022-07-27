@@ -132,11 +132,11 @@ case $selection in
                     exit
                     ;;
                 1)
-                echo "Up to how many backups should we keep?"
-                read -rt 600 -p "Please type an integer: " up_backups
-                ! [[ $up_backups =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
-                [[ $up_backups == 0 ]] && echo -e "Error: Number of backups cannot be 0\nNOT adding it to the list" && sleep 5 && continue
-                update_selection+=("-b" "$up_backups")
+                    echo "Up to how many backups should we keep?"
+                    read -rt 600 -p "Please type an integer: " up_backups
+                    ! [[ $up_backups =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
+                    [[ $up_backups == 0 ]] && echo -e "Error: Number of backups cannot be 0\nNOT adding it to the list" && sleep 5 && continue
+                    update_selection+=("-b" "$up_backups")
                     ;;
                 2)
                     read -rt 600 -p "What is the name of the application we should ignore?: " up_ignore
@@ -166,47 +166,6 @@ case $selection in
                     echo "$current_selection was not an option, try again" && sleep 5 && continue 
                     ;;
             esac
-            # if [[ $current_selection == 0 ]]; then
-            #     clear -x
-            #     echo "Running \"bash heavy_script.sh ${update_selection[*]}\""
-            #     echo
-            #     exec bash "$script_name" "${update_selection[@]}"
-            #     exit
-            # elif [[ $current_selection == 1 ]]; then
-            #     echo "Up to how many backups should we keep?"
-            #     read -rt 600 -p "Please type an integer: " up_backups
-            #     ! [[ $up_backups =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
-            #     [[ $up_backups == 0 ]] && echo -e "Error: Number of backups cannot be 0\nNOT adding it to the list" && sleep 5 && continue
-
-            #     update_selection+=("-b" "$up_backups")
-            # elif [[ $current_selection == 2 ]]; then
-            #     read -rt 600 -p "What is the name of the application we should ignore?: " up_ignore
-
-            #     update_selection+=("-i" "$up_ignore")                
-            # elif [[ $current_selection == 3 ]]; then
-
-            #     update_selection+=("-r")
-            # elif [[ $current_selection == 4 ]]; then
-
-            #     update_selection+=("-S")
-            # elif [[ $current_selection == 5 ]]; then
-
-            #     update_selection+=("-v")
-            # elif [[ $current_selection == 6 ]]; then
-            #     echo "What do you want your timeout to be?"
-            #     read -rt 600 -p "Please type an integer: " up_timeout
-            #     ! [[ $up_timeout =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
-
-            #     update_selection+=("-t" "$up_timeout")
-            # elif [[ $current_selection == 7 ]]; then
-
-            #     update_selection+=("-s") 
-            # elif [[ $current_selection == 8 ]]; then
-
-            #     update_selection+=("-p")  
-            # else
-            #     echo "$current_selection was not an option, try again" && sleep 5 && continue                                                                  
-            # fi
         done
         ;;
     *)

@@ -63,7 +63,7 @@ rollback_version=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '
                 midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && SECONDS=0 || echo_array+=("FAILED")
                 while [[ "$startstatus" !=  "STOPPED" ]]
                 do
-                    #status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "^$app_name," | awk -F ',' '{print $2}')
+                    status=$(echo "$status" | grep "^$app_name," | awk -F ',' '{print $2}')
                     if [[ "$status"  ==  "STOPPED" ]]; then
                         echo_array+=("Stopped")
                         [[ "$verbose" == "true" ]] && echo_array+=("Updating..")

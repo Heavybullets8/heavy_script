@@ -53,7 +53,7 @@ bash heavy_script.sh --self-update -b 14 -i portainer -i arch -i sonarr -i radar
 > `-p` Prune docker images.
 
 > `-u` update applications as long as the major version has absolutely no change, if it does have a change it will ask the user to update manually.
-> The `5` after the `-u` means up to 5 applications will be updating and monitored at one time
+>> The `5` after the `-u` means up to 5 applications will be updating and monitored at one time
 
 > `--self-update` Will update the script prior to running anything else.
 

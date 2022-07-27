@@ -10,9 +10,11 @@ echo "------------------------"
 [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
 echo "Asynchronous Updates: $update_limit"
 
+touch temp.txt
 it=0
 while [[ $it -lt ${#array[@]} ]]
 do
+    cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' > temp.txt
     proc_count=${#processes[@]}
     count=0
     for proc in "${processes[@]}"
@@ -20,13 +22,14 @@ do
         kill -0 "$proc" &> /dev/null || { unset "processes[$count]"; ((proc_count--)); }
     done
     if [[ "$proc_count" -ge "$update_limit" ]]; then
-        sleep 1
+        sleep 3
     else
         update_apps "${array[$it]}" &
         processes+=($!)
         ((it++))
     fi
 done
+rm temp.txt
 
 for proc in "${processes[@]}"
 do
@@ -63,7 +66,7 @@ rollback_version=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '
                 midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && SECONDS=0 || echo_array+=("FAILED")
                 while [[ "$status" !=  "STOPPED" ]]
                 do
-                    status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "^$app_name," | awk -F ',' '{print $2}')
+                    status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
                     if [[ "$status"  ==  "STOPPED" ]]; then
                         echo_array+=("Stopped")
                         [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
@@ -98,7 +101,7 @@ if [[ $rollback == "true" ]]; then
     while true
     do
         (( count++ ))
-        status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "^$app_name," | awk -F ',' '{print $2}')
+        status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
         if [[ "$status"  ==  "ACTIVE" && "$startstatus"  ==  "STOPPED" ]]; then
             [[ "$verbose" == "true" ]] && echo_array+=("Returing to STOPPED state..")
             midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && echo_array+=("Stopped")|| echo_array+=("FAILED")
@@ -130,7 +133,7 @@ else
         while true #using a constant while loop, then breaking out of the loop with break commands below.
         do
             (( count++ ))
-            status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' | grep "^$app_name," | awk -F ',' '{print $2}')
+            status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
             if [[ "$status"  ==  "STOPPED" ]]; then
                 [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Stopped..") && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
                 [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports stopped on FIRST time through loop, double check

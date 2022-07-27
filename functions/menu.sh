@@ -96,7 +96,7 @@ case $selection in
                 echo "Exiting.." 
                 exit
             else
-                echo "$current_selection was not an option, try again"
+                echo "$current_selection was not an option, try again" && sleep 5
                 continue
             fi
         done

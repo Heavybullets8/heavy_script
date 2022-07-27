@@ -33,6 +33,7 @@ case $selection in
         mount="true"
         ;;
     4)
+        read -rt 600 -p "What is the maximun number of backups you would like?: " number_of_backups
         backup="true"
       ;;
     5)

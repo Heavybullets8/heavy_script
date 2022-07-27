@@ -56,10 +56,10 @@ do
          exit
          ;;
       b)
-        backup="true"
         number_of_backups=$OPTARG
         ! [[ $OPTARG =~ ^[0-9]+$  ]] && echo -e "Error: -b needs to be assigned an interger\n\"""$number_of_backups""\" is not an interger" >&2 && exit
         [[ "$number_of_backups" -le 0 ]] && echo "Error: Number of backups is required to be at least 1" && exit
+        backup="true"
         ;;
       r)
         rollback="true"

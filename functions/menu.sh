@@ -172,12 +172,13 @@ case $selection in
                     update_selection+=("-p")
                     ;;
                 99)
-                    count=1
+                    count=2
                     echo "restarting"
-                    for i in "${update_selection[@]:1}"
+                    for i in "${update_selection[@]:2}"
                     do
                         unset "update_selection[$count]"
                         echo "$i removed"
+                        ((count++))
                     done
                     continue
                     ;;

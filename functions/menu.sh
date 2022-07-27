@@ -155,7 +155,7 @@ case $selection in
                     echo "What do you want your timeout to be?"
                     read -rt 600 -p "Please type an integer: " up_timeout
                     ! [[ $up_timeout =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
-                    update_selection+=("-i" "$up_timeout")
+                    update_selection+=("-t" "$up_timeout")
                     ;;
                 7)
                     update_selection+=("-s")

@@ -3,7 +3,7 @@
 
 commander(){
 mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | tr -d " \t\r" | grep -E ",true($|,)" | sort)
-echo -e "\nAplication Update Output"
+echo -e "\n\nAplication Update Output"
 echo "------------------------"
 [[ -z $array ]] && echo "There are no updates available" && return 0 || echo "${#array[@]} update(s) available"
 [[ -z $timeout ]] && echo "Default Timeout: 500" && timeout=500 || echo "Custom Timeout: $timeout"

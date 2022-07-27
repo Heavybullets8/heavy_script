@@ -37,19 +37,28 @@ export -f title
 
 help(){
 [[ $help == "true" ]] && clear -x
+
+echo "Access the HeavyScript Menu"
+echo "---------------------------"
+echo "(Just dont send any other argument)"
+echo "bash heavy_script.sh"
+echo
 echo "Basic Utilities"
+echo "---------------"
 echo "--mount         | Initiates mounting feature, choose between unmounting and mounting PVC data"
 echo "--restore       | Opens a menu to restore a \"heavy_script\" backup that was taken on your \"ix-applications\" dataset"
 echo "--delete-backup | Opens a menu to delete backups on your system"
 echo "--dns           | list all of your applications DNS names and their web ports"
 echo
 echo "Update Options"
+echo "--------------"
 echo "-U   | Update all applications, ignores versions"
 echo "-U 5 | Same as above, but updates 5 applications at one time"
 echo "-u   | Update all applications, does not update Major releases"
 echo "-u 5 | Same as above, but updates 5 applications at one time"
 echo
 echo "Additional Options"
+echo "------------------"
 echo "-b   | Back-up your ix-applications dataset, specify a number after -b"
 echo "-i   | Add application to ignore list, one by one, see example below."
 echo "-r   | Roll-back applications if they fail to update"
@@ -60,12 +69,14 @@ echo "-s   | sync catalog"
 echo "-p   | Prune unused/old docker images"
 echo
 echo "Examples"
+echo "--------"
 echo "bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -vrsUp"
 echo "bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -vrsp -U 10"
 echo "bash /mnt/tank/scripts/heavy_script.sh -t 150 --mount"
 echo "bash /mnt/tank/scripts/heavy_script.sh --dns"
 echo "bash heavy_script.sh --restore"
 echo "bash /mnt/tank/scripts/heavy_script.sh --delete-backup"
+echo "bash heavy_script.sh"
 echo
 exit
 }

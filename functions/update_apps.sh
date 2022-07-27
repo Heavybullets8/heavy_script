@@ -10,7 +10,7 @@ echo "------------------------"
 [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
 echo "Asynchronous Updates: $update_limit"
 
-touch temp.txt
+
 it=0
 while true
 do

@@ -163,13 +163,13 @@ case $selection in
                     update_selection+=("-p")
                     ;;
                 *)
-                    echo "$current_selection was not an option, try again" && sleep 5 && continue 
+                    echo "\"$OPTARG\" was not an option, try again" && sleep 5 && continue 
                     ;;
             esac
         done
         ;;
     *)
-        echo "That was not an option, please try agian" && sleep 5 && menu
+        echo "\"$OPTARG\" was not an option, please try agian" && sleep 5 && menu
         ;;
 esac
 echo

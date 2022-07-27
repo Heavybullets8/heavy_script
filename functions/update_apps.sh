@@ -14,7 +14,8 @@ touch temp.txt
 it=0
 while true
 do
-    cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' > temp.txt
+    while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status') 
+    echo "$while_status" > temp.txt
     proc_count=${#processes[@]}
     count=0
     for proc in "${processes[@]}"

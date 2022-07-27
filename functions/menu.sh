@@ -22,15 +22,12 @@ menu(){
                 ;;
             1)
                 help="true"
-                exit
                 ;;
             2)
                 dns="true"
-                exit
                 ;;
             3)
                 mount="true"
-                exit
                 ;;
             4)
                 read -rt 600 -p "Please type the max number of backups to keep: " number_of_backups
@@ -42,15 +39,12 @@ menu(){
                 ;;
             5)
                 restore="true"
-                exit
                 ;;
             6)
                 deleteBackup="true"
-                exit
                 ;;
             7)
                 self_update="true"
-                exit
                 ;;
             8)
                 script=$(readlink -f "$0")

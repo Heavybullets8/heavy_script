@@ -35,7 +35,7 @@ case $selection in
     4)
         read -rt 600 -p "What is the maximun number of backups you would like?: " number_of_backups
         backup="true"
-      ;;
+        ;;
     5)
         restore="true"
         ;;
@@ -123,47 +123,90 @@ case $selection in
             echo
             read -rt 600 -p "Please type the number associated with the flag above: " current_selection
 
-            if [[ $current_selection == 0 ]]; then
-                clear -x
-                echo "Running \"bash heavy_script.sh ${update_selection[*]}\""
-                echo
-                exec bash "$script_name" "${update_selection[@]}"
-                exit
-            elif [[ $current_selection == 1 ]]; then
+            case $current_selection in
+                0)
+                    clear -x
+                    echo "Running \"bash heavy_script.sh ${update_selection[*]}\""
+                    echo
+                    exec bash "$script_name" "${update_selection[@]}"
+                    exit
+                    ;;
+                1)
                 echo "Up to how many backups should we keep?"
                 read -rt 600 -p "Please type an integer: " up_backups
                 ! [[ $up_backups =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
                 [[ $up_backups == 0 ]] && echo -e "Error: Number of backups cannot be 0\nNOT adding it to the list" && sleep 5 && continue
-
                 update_selection+=("-b" "$up_backups")
-            elif [[ $current_selection == 2 ]]; then
-                read -rt 600 -p "What is the name of the application we should ignore?: " up_ignore
+                    ;;
+                2)
+                    read -rt 600 -p "What is the name of the application we should ignore?: " up_ignore
+                    update_selection+=("-i" "$up_ignore")
+                    ;;
+                3)
+                    update_selection+=("-r")
+                    ;;
+                4)
+                    update_selection+=("-S")
+                    ;;
+                5)
+                    update_selection+=("-v")
+                    ;;
+                6)
+                    echo "What do you want your timeout to be?"
+                    read -rt 600 -p "Please type an integer: " up_timeout
+                    ! [[ $up_timeout =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
+                    ;;
+                7)
+                    update_selection+=("-s")
+                    ;;
+                8)
+                    update_selection+=("-p")
+                    ;;
+                *)
+                    echo "$current_selection was not an option, try again" && sleep 5 && continue 
+                    ;;
+            esac
+            # if [[ $current_selection == 0 ]]; then
+            #     clear -x
+            #     echo "Running \"bash heavy_script.sh ${update_selection[*]}\""
+            #     echo
+            #     exec bash "$script_name" "${update_selection[@]}"
+            #     exit
+            # elif [[ $current_selection == 1 ]]; then
+            #     echo "Up to how many backups should we keep?"
+            #     read -rt 600 -p "Please type an integer: " up_backups
+            #     ! [[ $up_backups =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
+            #     [[ $up_backups == 0 ]] && echo -e "Error: Number of backups cannot be 0\nNOT adding it to the list" && sleep 5 && continue
 
-                update_selection+=("-i" "$up_ignore")                
-            elif [[ $current_selection == 3 ]]; then
+            #     update_selection+=("-b" "$up_backups")
+            # elif [[ $current_selection == 2 ]]; then
+            #     read -rt 600 -p "What is the name of the application we should ignore?: " up_ignore
 
-                update_selection+=("-r")
-            elif [[ $current_selection == 4 ]]; then
+            #     update_selection+=("-i" "$up_ignore")                
+            # elif [[ $current_selection == 3 ]]; then
 
-                update_selection+=("-S")
-            elif [[ $current_selection == 5 ]]; then
+            #     update_selection+=("-r")
+            # elif [[ $current_selection == 4 ]]; then
 
-                update_selection+=("-v")
-            elif [[ $current_selection == 6 ]]; then
-                echo "What do you want your timeout to be?"
-                read -rt 600 -p "Please type an integer: " up_timeout
-                ! [[ $up_timeout =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
+            #     update_selection+=("-S")
+            # elif [[ $current_selection == 5 ]]; then
 
-                update_selection+=("-t" "$up_timeout")
-            elif [[ $current_selection == 7 ]]; then
+            #     update_selection+=("-v")
+            # elif [[ $current_selection == 6 ]]; then
+            #     echo "What do you want your timeout to be?"
+            #     read -rt 600 -p "Please type an integer: " up_timeout
+            #     ! [[ $up_timeout =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
 
-                update_selection+=("-s") 
-            elif [[ $current_selection == 8 ]]; then
+            #     update_selection+=("-t" "$up_timeout")
+            # elif [[ $current_selection == 7 ]]; then
 
-                update_selection+=("-p")  
-            else
-                echo "$current_selection was not an option, try again" && sleep 5 && continue                                                                  
-            fi
+            #     update_selection+=("-s") 
+            # elif [[ $current_selection == 8 ]]; then
+
+            #     update_selection+=("-p")  
+            # else
+            #     echo "$current_selection was not an option, try again" && sleep 5 && continue                                                                  
+            # fi
         done
         ;;
     *)

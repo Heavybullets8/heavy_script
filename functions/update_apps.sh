@@ -11,7 +11,7 @@ echo "------------------------"
 echo "Asynchronous Updates: $update_limit"
 
 it=0
-while [[ $it -lt ${#array[@]} ]]
+while true
 do
     status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status')
     proc_count=${#processes[@]}
@@ -20,7 +20,9 @@ do
     do
         kill -0 "$proc" &> /dev/null || { unset "processes[$count]"; ((proc_count--)); }
     done
-    if [[ "$proc_count" -ge "$update_limit" ]]; then
+    if [[ $it -eq ${#array[@]} && ${#processes[@]} == 0 ]]; then
+        break
+    elif [[ "$proc_count" -ge "$update_limit" ]]; then
         sleep 3
     else
         update_apps "${array[$it]}" &

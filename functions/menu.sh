@@ -123,7 +123,6 @@ case $selection in
             echo "bash heavy_script.sh ${update_selection[*]}"
             echo
             read -rt 600 -p "Please type the number associated with the flag above: " current_selection
-
             case $current_selection in
                 00)
                     clear -x

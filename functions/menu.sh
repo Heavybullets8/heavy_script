@@ -132,7 +132,7 @@ case $selection in
                     exec bash "$script_name" "${update_selection[@]}"
                     exit
                     ;;
-                1)
+                1 | -b)
                     printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-b" && echo -e "\"-b\" is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
                     echo "Up to how many backups should we keep?"
                     read -rt 600 -p "Please type an integer: " up_backups
@@ -140,35 +140,35 @@ case $selection in
                     [[ $up_backups == 0 ]] && echo -e "Error: Number of backups cannot be 0\nNOT adding it to the list" && sleep 5 && continue
                     update_selection+=("-b" "$up_backups")
                     ;;
-                2)
+                2 | -i)
                     read -rt 600 -p "What is the name of the application we should ignore?: " up_ignore
                     update_selection+=("-i" "$up_ignore")
                     ;;
-                3)
+                3 | -r)
                     printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-r" && echo -e "\"-r\" is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
                     update_selection+=("-r")
                     
                     ;;
-                4)
+                4 | -S)
                     printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-S" && echo -e "\"-S\" is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
                     update_selection+=("-S")
                     ;;
-                5)
+                5 | -v)
                     printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-v" && echo -e "\"-v\" is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
                     update_selection+=("-v")
                     ;;
-                6)
+                6 | -t)
                     printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-t" && echo -e "\"-t\" is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
                     echo "What do you want your timeout to be?"
                     read -rt 600 -p "Please type an integer: " up_timeout
                     ! [[ $up_timeout =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
                     update_selection+=("-t" "$up_timeout")
                     ;;
-                7)
+                7 | -s)
                     printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-s" && echo -e "\"-s\" is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
                     update_selection+=("-s")
                     ;;
-                8)
+                8 | -p)
                     printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-p" && echo -e "\"-p\" is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
                     update_selection+=("-p")
                     ;;

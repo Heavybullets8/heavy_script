@@ -45,8 +45,7 @@ menu(){
         restore="true"
         ;;
     6)
-        exec bash "$script_name" --delete-backup
-        exit
+        deleteBackup="true"
         ;;
     7)
         self_update="true"

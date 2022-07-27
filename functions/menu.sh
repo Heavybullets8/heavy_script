@@ -115,7 +115,8 @@ case $selection in
             echo "7) -s | sync catalog"
             echo "8) -p | Prune unused/old docker images"
             echo
-            echo "0) Done making selections, proceed with update"
+            echo "99) Remove Update Options, Restart"
+            echo "00) Done making selections, proceed with update"
             echo 
             echo "Current Choices"
             echo "---------------"
@@ -124,7 +125,7 @@ case $selection in
             read -rt 600 -p "Please type the number associated with the flag above: " current_selection
 
             case $current_selection in
-                0)
+                00)
                     clear -x
                     echo "Running \"bash heavy_script.sh ${update_selection[*]}\""
                     echo
@@ -180,6 +181,7 @@ case $selection in
                         echo "$i removed"
                         ((count++))
                     done
+                    sleep 5
                     continue
                     ;;
                 *)

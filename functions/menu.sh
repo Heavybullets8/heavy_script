@@ -1,6 +1,10 @@
 #!/bin/bash
 
 menu(){
+  script=$(readlink -f "$0")
+  script_path=$(dirname "$script")
+  script_name="heavy_script.sh"
+  cd "$script_path" || exit
   clear -x
   title
   echo "1)  Help"
@@ -42,15 +46,13 @@ menu(){
         ;;
     6)
         deleteBackup="true"
+        exec bash "$script_name" --restore
+        exit
         ;;
     7)
         self_update="true"
         ;;
     8)
-        script=$(readlink -f "$0")
-        script_path=$(dirname "$script")
-        script_name="heavy_script.sh"
-        cd "$script_path" || exit
         while true 
         do
             clear -x

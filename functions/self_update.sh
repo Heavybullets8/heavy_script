@@ -3,10 +3,6 @@
 args=("$@")
 
 self_update() {
-script=$(readlink -f "$0")
-script_path=$(dirname "$script")
-script_name="heavy_script.sh"
-cd "$script_path" || exit
 git fetch &> /dev/null 
 # TODO: change beta to main once testing is complete
 if  git diff --name-only origin/beta | grep -qs ".sh" ; then

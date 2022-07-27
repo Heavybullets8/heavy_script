@@ -3,7 +3,9 @@
 # cd to script, this ensures the script can find the source scripts below, even when ran from a seperate directory
 script=$(readlink -f "$0")
 script_path=$(dirname "$script")
+script_name="heavy_script.sh"
 cd "$script_path" || exit
+
 
 # shellcheck source=functions/backup.sh
 source functions/backup.sh

@@ -171,7 +171,7 @@ menu(){
         done
         ;;
     *)
-        echo "That was not an option, please try agian" && menu
+        echo "That was not an option, please try agian" && sleep 5 && menu
         ;;
   esac
   echo

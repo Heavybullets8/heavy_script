@@ -32,9 +32,10 @@ do
     elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
         sleep 3
     else # All processes must be completed, break out of loop
-        for proc in "${processes[@]}"; do
-            wait "$proc"
-        done
+        # Unessesary for loop. since processes have to be completed before getting to this point, it is unlikely we would ever have to wait on processes.. Will test more.
+        # for proc in "${processes[@]}"; do
+        #     wait "$proc"
+        # done
         break
     fi
 done

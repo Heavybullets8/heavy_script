@@ -1,25 +1,25 @@
 #!/bin/bash
 
 menu(){
-  script=$(readlink -f "$0")
-  script_path=$(dirname "$script")
-  script_name="heavy_script.sh"
-  cd "$script_path" || exit
-  clear -x
-  title
-  echo "1)  Help"
-  echo "2)  List DNS Names"
-  echo "3)  Mount and Unmount PVC storage"
-  echo "4)  Create a Backup"
-  echo "5)  Restore a Backup"
-  echo "6)  Delete a Backup"
-  echo "7)  Update HeavyScript"
-  echo "8)  Update Applications"
-  echo
-  echo "0)  Exit"
-  read -rt 600 -p "Please select an option by number: " selection
+script=$(readlink -f "$0")
+script_path=$(dirname "$script")
+script_name="heavy_script.sh"
+cd "$script_path" || exit
+clear -x
+title
+echo "1)  Help"
+echo "2)  List DNS Names"
+echo "3)  Mount and Unmount PVC storage"
+echo "4)  Create a Backup"
+echo "5)  Restore a Backup"
+echo "6)  Delete a Backup"
+echo "7)  Update HeavyScript"
+echo "8)  Update Applications"
+echo
+echo "0)  Exit"
+read -rt 600 -p "Please select an option by number: " selection
 
-  case $selection in
+case $selection in
     0)
         exit
         ;;
@@ -174,7 +174,7 @@ menu(){
     *)
         echo "That was not an option, please try agian" && sleep 5 && menu
         ;;
-  esac
-  echo
+esac
+echo
 }
 export -f menu

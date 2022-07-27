@@ -35,6 +35,7 @@ done
 }
 export -f commander
 
+
 update_apps(){
 app_name=$(echo "${array[$it]}" | awk -F ',' '{print $1}') #print out first catagory, name.
 printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name\nIgnored, skipping" && return 0 #If application is on ignore list, skip
@@ -86,8 +87,6 @@ rollback_version=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '
         echo_array+=("\n$app_name\nMajor Release, update manually")
         return 0
     fi
-
-
 }
 export -f update_apps
 

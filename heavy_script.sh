@@ -56,6 +56,7 @@ do
          exit
          ;;
       b)
+        backup="true"
         number_of_backups=$OPTARG
         ! [[ $OPTARG =~ ^[0-9]+$  ]] && echo -e "Error: -b needs to be assigned an interger\n\"""$number_of_backups""\" is not an interger" >&2 && exit
         [[ "$number_of_backups" -le 0 ]] && echo "Error: Number of backups is required to be at least 1" && exit
@@ -138,7 +139,7 @@ done
 [[ "$dns" == "true" ]] && dns && exit
 [[ "$restore" == "true" ]] && restore && exit
 [[ "$mount" == "true" ]] && mount && exit
-if [[ "$number_of_backups" -ge 1 && "$sync" == "true" ]]; then # Run backup and sync at the same time
+if [[ "$backup" == "true" && "$sync" == "true" ]]; then # Run backup and sync at the same time
     echo "Running the following two tasks at the same time"
     echo "------------------------------------------------"
     echo -e "Backing up ix-applications dataset\nSyncing catalog(s)"
@@ -147,7 +148,7 @@ if [[ "$number_of_backups" -ge 1 && "$sync" == "true" ]]; then # Run backup and 
     sync &
     wait
 fi
-[[ "$number_of_backups" -ge 1 && -z "$sync" ]] && echo "Backing up \"ix-applications\" dataset, please wait.." && backup 
-[[ "$sync" == "true" && "$number_of_backups" -lt 1 ]] && echo "Syncing catalogs, this takes a LONG time, please wait.." && sync 
+[[ "$backup" == "true" && -z "$sync" ]] && echo "Backing up \"ix-applications\" dataset, please wait.." && backup 
+[[ "$sync" == "true" && -z "$backup" ]] && echo "Syncing catalogs, this takes a LONG time, please wait.." && sync 
 [[ "$update_all_apps" == "true" || "$update_apps" == "true" ]] && commander
 [[ "$prune" == "true" ]] && prune

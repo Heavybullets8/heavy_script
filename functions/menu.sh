@@ -171,6 +171,16 @@ case $selection in
                     printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-p" && echo -e "\"-p\" is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
                     update_selection+=("-p")
                     ;;
+                99)
+                    count=1
+                    echo "restarting"
+                    for i in "${update_selection[@]:1}"
+                    do
+                        unset "update_selection[$count]"
+                        echo "$i removed"
+                    done
+                    continue
+                    ;;
                 *)
                     echo "\"$OPTARG\" was not an option, try again" && sleep 5 && continue 
                     ;;

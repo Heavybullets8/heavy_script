@@ -19,7 +19,6 @@ do
     do
         kill -0 "$proc" &> /dev/null || { unset "processes[$count]"; ((proc_count--)); }
     done
-    #jobs=$(jobs -p | wc -l)
     if [[ "$proc_count" -ge "$update_limit" ]]; then
         sleep 1
     else

@@ -27,12 +27,10 @@ do
         update_apps "${array[$it]}" &
         processes+=($!)
         ((it++))
-    else
-        for proc in "${processes[@]}"
-        do
-            wait "$proc"
-        done
+    elif [[ ${#processes[@]} == 0 ]]; then
         break
+    else 
+        sleep 3
     fi
 done
 rm temp.txt

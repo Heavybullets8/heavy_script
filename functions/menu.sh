@@ -137,6 +137,7 @@ case $selection in
                     ! [[ $up_backups =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
                     [[ $up_backups == 0 ]] && echo -e "Error: Number of backups cannot be 0\nNOT adding it to the list" && sleep 5 && continue
                     update_selection+=("-b" "$up_backups")
+                    printf '%s\0' "${update_selection[@]}" | grep -iFxqz "$OPTARG" && echo -e "$OPTARG is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
                     ;;
                 2)
                     read -rt 600 -p "What is the name of the application we should ignore?: " up_ignore
@@ -144,24 +145,30 @@ case $selection in
                     ;;
                 3)
                     update_selection+=("-r")
+                    printf '%s\0' "${update_selection[@]}" | grep -iFxqz "$OPTARG" && echo -e "$OPTARG is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
                     ;;
                 4)
                     update_selection+=("-S")
+                    printf '%s\0' "${update_selection[@]}" | grep -iFxqz "$OPTARG" && echo -e "$OPTARG is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
                     ;;
                 5)
                     update_selection+=("-v")
+                    printf '%s\0' "${update_selection[@]}" | grep -iFxqz "$OPTARG" && echo -e "$OPTARG is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
                     ;;
                 6)
                     echo "What do you want your timeout to be?"
                     read -rt 600 -p "Please type an integer: " up_timeout
                     ! [[ $up_timeout =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
+                    printf '%s\0' "${update_selection[@]}" | grep -iFxqz "$OPTARG" && echo -e "$OPTARG is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
                     update_selection+=("-t" "$up_timeout")
                     ;;
                 7)
                     update_selection+=("-s")
+                    printf '%s\0' "${update_selection[@]}" | grep -iFxqz "$OPTARG" && echo -e "$OPTARG is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
                     ;;
                 8)
                     update_selection+=("-p")
+                    printf '%s\0' "${update_selection[@]}" | grep -iFxqz "$OPTARG" && echo -e "$OPTARG is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
                     ;;
                 *)
                     echo "\"$OPTARG\" was not an option, try again" && sleep 5 && continue 

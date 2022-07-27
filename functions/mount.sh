@@ -29,7 +29,7 @@ if [[ $selection == "1" ]]; then
     volume_name=$(echo "$pvc" | awk '{print $4}')
     mapfile -t full_path < <(zfs list | grep "$volume_name" | awk '{print $1}')
     if [[  "${#full_path[@]}" -gt 1 ]]; then #if there is another app with the same name on another pool, use the current pools application, since the other instance is probably old, or unused, or a backup.
-            echo "$app is a name used on more than one pool.. attempting to use your current kubernetes apps pool"
+            echo "$app is using the same volume identifier on more than one pool.. attempting to use your current kubernetes apps pool"
             pool=$(cli -c 'app kubernetes config' | grep -E "dataset\s\|" | awk -F '|' '{print $3}' | awk -F '/' '{print $1}' | tr -d " \t\n\r")
             full_path=$(zfs list | grep "$volume_name" | grep "$pool" | awk '{print $1}')
     fi

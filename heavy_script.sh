@@ -71,15 +71,11 @@ do
         rollback="true"
         ;;
       i)
-        # Check next positional parameter
-        eval nextopt=${!OPTIND}
-        # existing or starting with dash?
-        if [[ -n $nextopt && $nextopt != -* ]] ; then
-            OPTIND=$((OPTIND + 1))
-            ignore+=("$nextopt")
-        else
-            echo "Option: \"-i\" requires an argument"
+        if ! [[ $OPTARG =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]]; then # Using case insensitive version of the regex used by Truenas Scale
+            echo -e "Error: \"$OPTARG\" is invalid, that is not the name youre using for your application"
             exit
+        else
+            ignore+=("$OPTARG")
         fi
         ;;
       t)

@@ -1,5 +1,9 @@
 # heavy_script
 
+## Website 
+
+[HeavySetup - Further In-Depth Explanation](https://heavysetup.info/scripts/heavyscript/about/)
+
 ## Table of contents:
 * [Arguments](#arguments)
 * [Examples](#examples)

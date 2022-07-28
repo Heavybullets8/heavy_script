@@ -9,16 +9,16 @@ if  git diff --name-only origin/beta | grep -qs ".sh" ; then
     echo "Found a new version of HeavyScript, updating myself..."
     git reset --hard -q
     git pull --force -q
-    echo -e "Running the new version...\n"
     count=0
     for i in "${args[@]}"
     do
         [[ "$i" == "--self-update" ]] && unset "args[$count]" && break
         ((count++))
     done
+    [[ -z ${args[*]} ]] && exit
+    echo -e "Running the new version...\n"
     sleep 5
     exec bash "$script_name" "${args[@]}"
-
     # Now exit this old instance
     exit
 else 

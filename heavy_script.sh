@@ -146,9 +146,9 @@ done
 [[ "$restore" == "true" ]] && restore && exit
 [[ "$mount" == "true" ]] && mount && exit
 if [[ "$backup" == "true" && "$sync" == "true" ]]; then # Run backup and sync at the same time
-    echo "🅁 🅄 🄽 🄽 🄸 🄽 🄶   🅃 🄰 🅂 🄺 🅂 :"
-    echo -e "Backing up ix-applications dataset\nSyncing catalog(s)"
-    echo -e "This can take a LONG time, please wait for the output..\n"
+    echo "🅃 🄰 🅂 🄺 🅂 :"
+    echo -e "-Backing up ix-applications dataset\n-Syncing catalog(s)"
+    echo -e "This can take a LONG time, please wait for both output..\n"
     backup &
     sync &
     wait

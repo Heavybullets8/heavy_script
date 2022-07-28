@@ -14,7 +14,7 @@ done
 export -f sync
 
 prune(){
-echo -e "\n\n🄳 🄾 🄲 🄺 🄴 🅁  🄿 🅁 🅄 🄽 🄴"  
+echo -e "\n\n🄿 🅁 🅄 🄽 🄴"  
 echo "Pruned Docker Images"
 docker image prune -af | grep "^Total" || echo "Failed to Prune Docker Images"
 }

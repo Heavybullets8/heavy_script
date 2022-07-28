@@ -142,7 +142,7 @@ case $selection in
                     ;;
                 2 | -i)
                     read -rt 600 -p "What is the name of the application we should ignore?: " up_ignore
-                    ! [[ $up_ignore =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]] && echo -e "Error: \"$up_ignore\" is invalid, that is not the name youre using for your application" && sleep 5 && continue
+                    ! [[ $up_ignore =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]] && echo -e "Error: \"$up_ignore\" is not a possible option for an application name" && sleep 5 && continue
                     update_selection+=("-i" "$up_ignore")
                     ;;
                 3 | -r)

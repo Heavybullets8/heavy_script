@@ -72,7 +72,7 @@ do
         ;;
       i)
         if ! [[ $OPTARG =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]]; then # Using case insensitive version of the regex used by Truenas Scale
-            echo -e "Error: \"$OPTARG\" is invalid, that is not the name youre using for your application"
+            echo -e "Error: \"$OPTARG\" is not a possible option for an application name"
             exit
         else
             ignore+=("$OPTARG")

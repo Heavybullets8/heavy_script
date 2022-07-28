@@ -123,7 +123,7 @@ case $selection in
             echo "---------------"
             echo "bash heavy_script.sh ${update_selection[*]}"
             echo
-            read -rt 600 -p "Please type the number associated with the flag above: " current_selection
+            read -rt 600 -p "Type the Number OR Flag: " current_selection
             case $current_selection in
                 00)
                     clear -x
@@ -142,6 +142,7 @@ case $selection in
                     ;;
                 2 | -i)
                     read -rt 600 -p "What is the name of the application we should ignore?: " up_ignore
+                    ! [[ $up_ignore =~ ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$ ]] && echo -e "Error: \"$up_ignore\" is invalid, that is not the name youre using for your application" && sleep 5 && continue
                     update_selection+=("-i" "$up_ignore")
                     ;;
                 3 | -r)

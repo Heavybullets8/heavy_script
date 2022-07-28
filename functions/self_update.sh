@@ -4,7 +4,7 @@ args=("$@")
 self_update() {
 git fetch &> /dev/null 
 echo "🅂 🄴 🄻 🄵  🅄 🄿 🄳 🄰 🅃 🄴 :"
-# TODO: change beta to main once testing is complete 
+# TODO: change beta to main once testing is complete
 if  git diff --name-only origin/beta | grep -qs ".sh" ; then
     echo "Found a new version of HeavyScript, updating myself..."
     git reset --hard -q

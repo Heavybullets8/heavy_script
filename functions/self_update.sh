@@ -15,7 +15,7 @@ if  git diff --name-only origin/beta | grep -qs ".sh" ; then
         [[ "$i" == "--self-update" ]] && unset "args[$count]" && break
         ((count++))
     done
-    [[ -z ${args[*]} ]] && exit
+    [[ -z ${args[*]} ]] && echo "No more arguments, exiting.." && exit
     echo -e "Running the new version...\n"
     sleep 5
     exec bash "$script_name" "${args[@]}"

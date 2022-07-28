@@ -2,8 +2,7 @@
 
 
 backup(){
-echo_backup+=("\nBackup Output")
-echo_backup+=("--------------")
+echo_backup+=("\n🄱 🄰 🄲 🄺 🅄 🄿 🅂")
 echo_backup+=("Number of backups was set to $number_of_backups")
 date=$(date '+%Y_%m_%d_%H_%M_%S')
 [[ "$verbose" == "true" ]] && cli -c 'app kubernetes backup_chart_releases backup_name=''"'HeavyScript_"$date"'"' &> /dev/null && echo_backup+=(HeavyScript_"$date")

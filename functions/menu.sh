@@ -114,6 +114,7 @@ case $selection in
             echo "6) -t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
             echo "7) -s | sync catalog"
             echo "8) -p | Prune unused/old docker images"
+            echo "9) --self-update | Updates HeavyScript prior to running any other commands"
             echo
             echo "99) Remove Update Options, Restart"
             echo "00) Done making selections, proceed with update"
@@ -170,6 +171,10 @@ case $selection in
                 8 | -p)
                     printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-p" && echo -e "\"-p\" is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
                     update_selection+=("-p")
+                    ;;
+                9 | --self-update )
+                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "--self-update" && echo -e "\"--self-update\" is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
+                    update_selection+=("--self-update")      
                     ;;
                 99)
                     count=2

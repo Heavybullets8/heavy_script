@@ -52,14 +52,14 @@ do
                   deleteBackup="true"
                   ;;
                 *)
-                  echo -e "Invalid Option \"--$OPTARG\"\n" && help
-                  exit
+                  echo -e "Invalid Option \"--$OPTARG\"\n"
+                  help
                   ;;
           esac
           ;;
       :)
-         echo -e "Option: \"-$OPTARG\" requires an argument\n" && help
-         exit
+         echo -e "Option: \"-$OPTARG\" requires an argument\n"
+         help
          ;;
       b)
         number_of_backups=$OPTARG
@@ -119,12 +119,12 @@ do
         verbose="true"
         ;;
       \?)
-        echo -e "Invalid Option \"-$OPTARG\"\n" && help
-        exit
+        echo -e "Invalid Option \"-$OPTARG\"\n"
+        help
         ;;
       *)
-        echo -e "Invalid Option \"-$OPTARG\"\n" && help
-        exit
+        echo -e "Invalid Option \"-$OPTARG\"\n"
+        help
         ;;
     esac
 done

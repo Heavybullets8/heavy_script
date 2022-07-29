@@ -19,7 +19,7 @@ do
             call=$(k3s kubectl get pvc -A | sort -u | awk '{print $1 "\t" $2 "\t" $4}' | column -t | sed "s/^0/ /")
             mount_list=$(echo "$call" | sed 1d | nl -s ") ")
             mount_title=$(echo "$call" | head -n 1)
-            list=$(echo -e "$mount_title \n $mount_title")
+            list=$(echo -e "$mount_title\n$mount_list")
 
             while true
             do

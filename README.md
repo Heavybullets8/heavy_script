@@ -1,5 +1,9 @@
 # heavy_script
 
+## Website 
+
+[HeavySetup - Further In-Depth Explanation](https://heavysetup.info/scripts/heavyscript/about/)
+
 ## Table of contents:
 * [Arguments](#arguments)
 * [Examples](#examples)
@@ -12,23 +16,24 @@
 
 ## Arguments
 
-| Flag            	| Example                	| Parameter 	| Description                                                                                                                                                                                                                           	|
-|-----------------	|------------------------	|-----------	|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
-| --self-update   	| --self-update          	| None      	| Updates HeavyScript prior to running it<br>_You no longer need to git pull_                                                                                                                                                           	|
-| --delete-backup 	| --delete-backup        	| None      	| Opens a menu to delete backups<br>_Useful if you need to delete old system backups or backups from other scripts_                                                                                                                     	|
-| --restore       	| --restore              	| None      	| Restore HeavyScript specific `ix-applications dataset` snapshot                                                                                                                                                                       	|
-| --mount         	| --mount                	| None      	| Initiates mounting feature<br>Choose between unmounting and mounting PVC data                                                                                                                                                         	|
-| --dns           	| --dns                  	| None      	| list all of your applications DNS names and their web ports                                                                                                                                                                           	|
-| -U              	| -U                     	| None      	| Update applications, ignoring major version changes                                                                                                                                                                                   	|
-| -u              	| -u                     	| None      	| Update applications, do NOT update if there was a major version change                                                                                                                                                                	|
-| -b              	| -b 14                  	| Integer   	| Backup `ix-appliactions` dataset<br>_Creates backups up to the number you've chosen_                                                                                                                                                  	|
-| -i              	| -i nextcloud -i sonarr 	| String    	| Applications listed will be ignored during updating<br>_List one application after another as shown in the example_                                                                                                                   	|
-| (-R\|-r)        	| -r                     	| None      	| Monitors applications after they update<br>If the app does not become "ACTIVE" after either:<br>The custom Timeout, or Default Timeout,<br>rollback the application.<br>__Warning: deprecating `-R` please begin using `-r` instead__ 	|
-| -v              	| -v                     	| None      	| Verbose Output<br>_Look at the bottom of this page for an example_                                                                                                                                                                    	|
-| -S              	| -S                     	| None      	| Shutdown the application prior to updating it                                                                                                                                                                                         	|
-| -t              	| -t 150                 	| Integer   	| Set a custom timeout to be used with either:<br>`-m` <br>_Time the script will wait for application to be "STOPPED"_<br>or<br>`-(u\|U)` <br>_Time the script will wait for application to be either "STOPPED" or "ACTIVE"_            	|
-| -s              	| -s                     	| None      	| Sync Catalogs prior to updating                                                                                                                                                                                                       	|
-| -p              	| -p                     	| None      	| Prune old/unused docker images                                                                                                                                                                                                        	|
+| Flag            	| Example                	| Parameter       	| Description                                                                                                                                                                                                                	|
+|-----------------	|------------------------	|-----------------	|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
+| NULL            	| NULL                   	| NULL            	| If you choose not to supply an option, it will open the menu for easier access to the utilities                                                                                                                            	|
+| --self-update   	| --self-update          	| None            	| Updates HeavyScript prior to running it<br>_You no longer need to git pull_                                                                                                                                                	|
+| --delete-backup 	| --delete-backup        	| None            	| Opens a menu to delete backups<br>_Useful if you need to delete old system backups or backups from other scripts_                                                                                                          	|
+| --restore       	| --restore              	| None            	| Restore HeavyScript specific `ix-applications dataset` snapshot                                                                                                                                                            	|
+| --mount         	| --mount                	| None            	| Initiates mounting feature<br>Choose between unmounting and mounting PVC data                                                                                                                                              	|
+| --dns           	| --dns                  	| None            	| list all of your applications DNS names and their web ports                                                                                                                                                                	|
+| -U              	| -U <br>-U 5            	| None or Integer 	| Update applications, ignoring major version changes<br>_Optionally, you can supply a number after the argument to update multiple applications at once_                                                                    	|
+| -u              	| -u<br>-u 5             	| None or Integer 	| Update applications, do NOT update if there was a major version change<br>_Optionally, you can supply a number after the argument to update multiple applications at once_                                                 	|
+| -b              	| -b 14                  	| Integer         	| Backup `ix-appliactions` dataset<br>_Creates backups up to the number you've chosen_                                                                                                                                       	|
+| -i              	| -i nextcloud -i sonarr 	| String          	| Applications listed will be ignored during updating<br>_List one application after another as shown in the example_                                                                                                        	|
+| -r              	| -r                     	| None            	| Monitors applications after they update<br>If the app does not become "ACTIVE" after either:<br>The custom Timeout, or Default Timeout,<br>rollback the application.                                                       	|
+| -v              	| -v                     	| None            	| Verbose Output<br>_Look at the bottom of this page for an example_                                                                                                                                                         	|
+| -S              	| -S                     	| None            	| Shutdown the application prior to updating it                                                                                                                                                                              	|
+| -t              	| -t 150                 	| Integer         	| Set a custom timeout to be used with either:<br>`-m` <br>_Time the script will wait for application to be "STOPPED"_<br>or<br>`-(u\|U)` <br>_Time the script will wait for application to be either "STOPPED" or "ACTIVE"_ 	|
+| -s              	| -s                     	| None            	| Sync Catalogs prior to updating                                                                                                                                                                                            	|
+| -p              	| -p                     	| None            	| Prune old/unused docker images                                                                                                                                                                                             	|
 
 
 <br>
@@ -37,7 +42,9 @@
 ### Examples
 #### Typical Cron Job  
 ```
-bash heavy_script.sh --self-update -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -rsup
+
+bash heavy_script.sh --self-update -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -rsp -u 5
+
 ```
 
 > `-b` is set to 14. Up to 14 snapshots of your ix-applications dataset will be saved
@@ -50,9 +57,12 @@ bash heavy_script.sh --self-update -b 14 -i portainer -i arch -i sonarr -i radar
 
 > `-s` will just sync the repositories, ensuring you are downloading the latest updates.
 
-> `-u` update applications as long as the major version has absolutely no change, if it does have a change it will ask the user to update manually.
-
 > `-p` Prune docker images.
+
+> `-u` update applications as long as the major version has absolutely no change, if it does have a change it will ask the user to update manually.
+>> The `5` after the `-u` means up to 5 applications will be updating and monitored at one time
+
+> `--self-update` Will update the script prior to running anything else.
 
 > `--self-update` Will update the script prior to running anything else.
 
@@ -82,7 +92,9 @@ bash /mnt/tank/scripts/heavy_script/heavy_script.sh --dns
 
 #### My personal Cron Job
 ```
-bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 14 -rsup
+
+bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 14 -rsp -u 10
+
 ```
 
 <br>
@@ -179,5 +191,4 @@ bash heavyscript.sh --self-update -b 14 -supr
 |---------	|-------------	|
 |  ![image](https://user-images.githubusercontent.com/20793231/167971188-07f71d02-8da3-4e0c-b9a0-cd26e7f63613.png) |   ![image](https://user-images.githubusercontent.com/20793231/167972033-dc8d4ab4-4fb2-4c8a-b7dc-b9311ae55cf8.png) |
        
-
 

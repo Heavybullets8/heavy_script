@@ -66,12 +66,12 @@ case $selection in
                     if [[ $up_async == 0 ]]; then
                         echo "Error: \"$up_async\" is less than 1"
                         echo "NOT adding it to the list"
-                        sleep 5
+                        sleep 3
                         continue
                     elif ! [[ $up_async =~ ^[0-9]+$  ]]; then
                         echo "Error: \"$up_async\" is invalid, it needs to be an integer"
                         echo "NOT adding it to the list"
-                        sleep 5
+                        sleep 3
                         continue
                     else
                         update_selection+=("-U" "$up_async")
@@ -87,12 +87,12 @@ case $selection in
                     if [[ $up_async == 0 ]]; then
                         echo "Error: \"$up_async\" is less than 1"
                         echo "NOT adding it to the list"
-                        sleep 5
+                        sleep 3
                         continue
                     elif ! [[ $up_async =~ ^[0-9]+$  ]]; then
                         echo "Error: \"$up_async\" is invalid, it needs to be an integer"
                         echo "NOT adding it to the list"
-                        sleep 5
+                        sleep 3
                         continue
                     else
                         update_selection+=("-u" "$up_async")
@@ -104,7 +104,7 @@ case $selection in
                 echo "Exiting.." 
                 exit
             else
-                echo "$current_selection was not an option, try again" && sleep 5
+                echo "$current_selection was not an option, try again" && sleep 3
                 continue
             fi
         done
@@ -147,48 +147,48 @@ case $selection in
                     exit
                     ;;
                 1 | -b)
-                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-b" && echo -e "\"-b\" is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
+                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-b" && echo -e "\"-b\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
                     echo "Up to how many backups should we keep?"
                     read -rt 600 -p "Please type an integer: " up_backups
-                    ! [[ $up_backups =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
-                    [[ $up_backups == 0 ]] && echo -e "Error: Number of backups cannot be 0\nNOT adding it to the list" && sleep 5 && continue
+                    ! [[ $up_backups =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 3 && continue
+                    [[ $up_backups == 0 ]] && echo -e "Error: Number of backups cannot be 0\nNOT adding it to the list" && sleep 3 && continue
                     update_selection+=("-b" "$up_backups")
                     ;;
                 2 | -i)
                     read -rt 600 -p "What is the name of the application we should ignore?: " up_ignore
-                    ! [[ $up_ignore =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]] && echo -e "Error: \"$up_ignore\" is not a possible option for an application name" && sleep 5 && continue
+                    ! [[ $up_ignore =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]] && echo -e "Error: \"$up_ignore\" is not a possible option for an application name" && sleep 3 && continue
                     update_selection+=("-i" "$up_ignore")
                     ;;
                 3 | -r)
-                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-r" && echo -e "\"-r\" is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
+                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-r" && echo -e "\"-r\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
                     update_selection+=("-r")
                     
                     ;;
                 4 | -S)
-                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-S" && echo -e "\"-S\" is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
+                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-S" && echo -e "\"-S\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
                     update_selection+=("-S")
                     ;;
                 5 | -v)
-                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-v" && echo -e "\"-v\" is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
+                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-v" && echo -e "\"-v\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
                     update_selection+=("-v")
                     ;;
                 6 | -t)
-                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-t" && echo -e "\"-t\" is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
+                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-t" && echo -e "\"-t\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
                     echo "What do you want your timeout to be?"
                     read -rt 600 -p "Please type an integer: " up_timeout
-                    ! [[ $up_timeout =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 5 && continue
+                    ! [[ $up_timeout =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 3 && continue
                     update_selection+=("-t" "$up_timeout")
                     ;;
                 7 | -s)
-                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-s" && echo -e "\"-s\" is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
+                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-s" && echo -e "\"-s\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
                     update_selection+=("-s")
                     ;;
                 8 | -p)
-                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-p" && echo -e "\"-p\" is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
+                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-p" && echo -e "\"-p\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
                     update_selection+=("-p")
                     ;;
                 9 | --self-update )
-                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "--self-update" && echo -e "\"--self-update\" is already on here, skipping" && sleep 5 && continue #If option is already on there, skip it
+                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "--self-update" && echo -e "\"--self-update\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
                     update_selection+=("--self-update")      
                     ;;
                 99)
@@ -200,17 +200,17 @@ case $selection in
                         echo "$i removed"
                         ((count++))
                     done
-                    sleep 5
+                    sleep 3
                     continue
                     ;;
                 *)
-                    echo "\"$current_selection\" was not an option, try again" && sleep 5 && continue 
+                    echo "\"$current_selection\" was not an option, try again" && sleep 3 && continue 
                     ;;
             esac
         done
         ;;
     *)
-        echo "\"$selection\" was not an option, please try agian" && sleep 5 && menu
+        echo "\"$selection\" was not an option, please try agian" && sleep 3 && menu
         ;;
 esac
 echo

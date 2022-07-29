@@ -73,7 +73,7 @@ do
                         ;;
                     *)
                         echo "Invalid selection \"$yesno\" was not an option" 
-                        sleep 2
+                        sleep 3
                         continue
                         ;;
                     esac
@@ -101,11 +101,11 @@ do
                 fi
             done
             rmdir /mnt/heavyscript
-            sleep 2
+            sleep 3
             ;;
         *)
             echo "Invalid selection, \"$selection\" was not an option"
-            sleep 2
+            sleep 3
             continue
             ;;
     esac

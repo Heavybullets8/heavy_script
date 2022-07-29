@@ -60,7 +60,7 @@ do
             sleep 3
             continue
         fi
-        break
+        break # Break out of the loop if all of the If statement checks above are untrue
     done
     while true
     do

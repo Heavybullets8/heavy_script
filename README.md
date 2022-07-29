@@ -62,7 +62,6 @@ bash heavy_script.sh --self-update -b 14 -i portainer -i arch -i sonarr -i radar
 
 > `--self-update` Will update the script prior to running anything else.
 
-> `--self-update` Will update the script prior to running anything else.
 
 #### Mounting PVC Data
 

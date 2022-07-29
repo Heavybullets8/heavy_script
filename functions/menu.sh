@@ -127,12 +127,18 @@ case $selection in
             echo "99) Remove Update Options, Restart"
             echo "00) Done making selections, proceed with update"
             echo 
+            echo "0) Exit"
+            echo 
             echo "Current Choices"
             echo "---------------"
             echo "bash heavy_script.sh ${update_selection[*]}"
             echo
             read -rt 600 -p "Type the Number OR Flag: " current_selection
             case $current_selection in
+                0)
+                    echo "Exiting.."
+                    exit
+                    ;;
                 00)
                     clear -x
                     echo "Running \"bash heavy_script.sh ${update_selection[*]}\""

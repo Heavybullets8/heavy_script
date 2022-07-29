@@ -57,6 +57,7 @@ do
                     read -rt 120 -p "Please type a number: " yesno
                     case $yesno in
                     1)
+                        clear -x
                         break
                         ;;
                     2)

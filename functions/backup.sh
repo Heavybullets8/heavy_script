@@ -44,7 +44,7 @@ do
     fi
     echo "$list_backups"
     read -rt 120 -p "Please type a number: " selection
-    restore_point=$(echo "$list_backups" | grep ^"$selection " | awk '{print $2}')
+    restore_point=$(echo "$list_backups" | grep ^"$selection)" | awk '{print $2}')
     #Check for valid selection. If none, kill script
     if [[ -z "$selection" ]]; then 
         echo "Your selection cannot be empty"

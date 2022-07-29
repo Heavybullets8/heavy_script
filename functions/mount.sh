@@ -22,7 +22,10 @@ do
                 clear -x
                 title
                 echo "$list" 
+                echo 
+                echo "0  Exit"
                 read -rt 120 -p "Please type a number: " selection
+                [[ $selection == 0 ]] && echo "Exiting.." && exit
                 app=$(echo -e "$list" | grep ^"$selection " | awk '{print $2}' | cut -c 4- )
                 [[ -z "$app" ]] && echo "Invalid Selection: $selection, was not an option" && sleep 3 && continue #Check for valid selection. If none, contiue
                 pvc=$(echo -e "$list" | grep ^"$selection ")

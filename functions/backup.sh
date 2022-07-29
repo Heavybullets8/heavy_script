@@ -108,21 +108,55 @@ export -f deleteBackup
 
 
 restore(){
-clear -x && echo "pulling restore points.."
-list_backups=$(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -t '_' -Vr -k2,7 | tr -d " \t\r"  | awk -F '|'  '{print $2}' | nl | column -t)
-clear -x
-[[ -z "$list_backups" ]] && echo "No HeavyScript restore points available" && exit || { title; echo "Choose a restore point" ;  }
-echo "$list_backups" && read -t 600 -p "Please type a number: " selection && restore_point=$(echo "$list_backups" | grep ^"$selection " | awk '{print $2}')
-[[ -z "$selection" ]] && echo "Your selection cannot be empty" && exit #Check for valid selection. If none, kill script
-[[ -z "$restore_point" ]] && echo "Invalid Selection: $selection, was not an option" && exit #Check for valid selection. If none, kill script
-echo -e "\nWARNING:\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible" || { echo "FAILED"; exit; }
-echo -e "\n\nYou have chosen:\n$restore_point\n\nWould you like to continue?"  && echo -e "1  Yes\n2  No" && read -t 120 -p "Please type a number: " yesno || { echo "FAILED"; exit; }
-if [[ $yesno == "1" ]]; then
-    echo -e "\nStarting Backup, this will take a LONG time." && cli -c 'app kubernetes restore_backup backup_name=''"'"$restore_point"'"' || echo "Restore FAILED"
-elif [[ $yesno == "2" ]]; then
-    echo "You've chosen NO, killing script. Good luck."
-else
-    echo "Invalid Selection"
-fi
+while true
+do
+    clear -x && echo "pulling restore points.."
+    list_backups=$(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -t '_' -Vr -k2,7 | tr -d " \t\r"  | awk -F '|'  '{print $2}' | nl -s ") " | column -t)
+    clear -x
+    if [[ -z "$list_backups" ]]; then
+        echo "No HeavyScript restore points available"
+        exit
+    else
+        title
+        echo "Choose a restore point"
+    fi
+    echo "$list_backups"
+    read -rt 120 -p "Please type a number: " selection
+    restore_point=$(echo "$list_backups" | grep ^"$selection)" | awk '{print $2}')
+    #Check for valid selection. If none, kill script
+    if [[ -z "$selection" ]]; then 
+        echo "Your selection cannot be empty"
+        sleep 3
+        continue
+    elif [[ -z "$restore_point" ]]; then
+        echo "Invalid Selection: $selection, was not an option"
+        sleep 3
+        continue
+    fi
+    while true
+    do
+        clear -x
+        echo -e "\nWARNING:\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible"
+        echo -e "\n\nYou have chosen:\n$restore_point\n\nWould you like to continue?"
+        echo -e "1)   Yes\n2)   Exit\n"
+        read -rt 120 -p "Please type a number: " yesno 
+        case $yesno in
+            1)
+                echo -e "\nStarting Backup, this will take a LONG time."
+                cli -c 'app kubernetes restore_backup backup_name=''"'"$restore_point"'"' || { echo "Failed to delete backup.."; exit; }
+                exit
+                ;;
+            2)
+                echo "Exiting"
+                exit
+                ;;
+            *)
+                echo "That was not an option, try again"
+                sleep 3
+                continue
+                ;;
+        esac
+    done
+done
 }
 export -f restore

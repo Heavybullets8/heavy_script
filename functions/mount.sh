@@ -88,7 +88,7 @@ do
                 echo "$list" 
                 read -rt 120 -p "Please type a number: " selection
                 app=$(echo -e "$list" | grep ^"$selection " | awk '{print $2}' | cut -c 4- )
-                [[ -z "$app" ]] && echo "Invalid Selection: $selection, was not an option" && exit #Check for valid selection. If none, kill script
+                [[ -z "$app" ]] && echo "Invalid Selection: $selection, was not an option" && sleep 5 && continue #Check for valid selection. If none, kill script
                 pvc=$(echo -e "$list" | grep ^"$selection ")
                 status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "^$app\b" | awk -F ',' '{print $2}'| tr -d " \t\n\r")
                 if [[ "$status" != "STOPPED" ]]; then
@@ -138,7 +138,7 @@ do
             ;;
         2)
             mapfile -t unmount_array < <(basename -a /mnt/heavyscript/* | sed "s/*//")
-            [[ -z ${unmount_array[*]} ]] && echo "Theres nothing to unmount" && exit
+            [[ -z ${unmount_array[*]} ]] && echo "Theres nothing to unmount" && sleep 3 && continue
             for i in "${unmount_array[@]}"
             do
                 main=$(k3s kubectl get pvc -A | grep -E "\s$i\s" | awk '{print $1, $2, $4}')

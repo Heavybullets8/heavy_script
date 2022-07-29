@@ -117,11 +117,13 @@ if [[ $rollback == "true" ]]; then
         elif [[ "$status"  ==  "STOPPED" ]]; then
             [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Stopped..") && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
             [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
-            echo_array+=("Stopped") && break #if reports stopped any time after the first loop, assume its extermal services.
+            echo_array+=("Stopped")
+            break #if reports stopped any time after the first loop, assume its extermal services.
         elif [[ "$status"  ==  "ACTIVE" ]]; then
             [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && sleep 15 && continue #if reports active on FIRST time through loop, double check
             [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports active on FIRST time through loop, double check
-            echo_array+=("Active") && break #if reports active any time after the first loop, assume actually active.
+            echo_array+=("Active")
+            break #if reports active any time after the first loop, assume actually active.
         else
             [[ "$verbose" == "true" ]] && echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be ACTIVE")
             sleep 15
@@ -137,7 +139,7 @@ else
             if [[ "$status"  ==  "STOPPED" ]]; then
                 [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Stopped..") && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
                 [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
-                echo_array+=("Stopped") && break #assume actually stopped anytime AFTER the first loop
+                echo_array+=("Stopped") #assume actually stopped anytime AFTER the first loop
                 break
             elif [[ "$status"  ==  "ACTIVE" ]]; then
                 [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && sleep 15 && continue #if reports active on FIRST time through loop, double check

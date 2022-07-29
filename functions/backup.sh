@@ -42,22 +42,27 @@ do
         title
         echo -e "Choose a Restore Point to Delete\nThese may be out of order if they are not HeavyScript backups"
     fi
-    echo "$list_backups"
-    echo
-    echo "0)  Exit"
-    read -rt 120 -p "Please type a number: " selection
-    [[ $selection == 0 ]] && echo "Exiting.." && exit
-    restore_point=$(echo "$list_backups" | grep ^"$selection)" | awk '{print $2}')
-    #Check for valid selection. If none, kill script
-    if [[ -z "$selection" ]]; then 
-        echo "Your selection cannot be empty"
-        sleep 3
-        continue
-    elif [[ -z "$restore_point" ]]; then
-        echo "Invalid Selection: $selection, was not an option"
-        sleep 3
-        continue
-    fi
+    while true
+    do
+        echo "$list_backups"
+        echo
+        echo "0)  Exit"
+        read -rt 120 -p "Please type a number: " selection
+        restore_point=$(echo "$list_backups" | grep ^"$selection)" | awk '{print $2}')
+        if [[ $selection == 0 ]]; then
+            echo "Exiting.." 
+            exit
+        elif [[ -z "$selection" ]]; then 
+            echo "Your selection cannot be empty"
+            sleep 3
+            continue
+        elif [[ -z "$restore_point" ]]; then
+            echo "Invalid Selection: $selection, was not an option"
+            sleep 3
+            continue
+        fi
+        break
+    done
     while true
     do
         clear -x

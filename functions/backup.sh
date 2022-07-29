@@ -40,7 +40,7 @@ do
         exit
     else
         title
-        echo -e "Choose a restore point to delete\nThese may be out of order if they are not HeavyScript backups"
+        echo -e "Choose a Restore Point to Delete\nThese may be out of order if they are not HeavyScript backups"
     fi
     echo "$list_backups"
     echo
@@ -121,7 +121,7 @@ do
         exit
     else
         title
-        echo "Choose a restore point"
+        echo "Choose a Restore Point"
     fi
     echo "$list_backups"
     echo

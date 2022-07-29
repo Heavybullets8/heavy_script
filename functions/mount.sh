@@ -90,6 +90,7 @@ do
                 fi
             done
             rmdir /mnt/heavyscript
+            sleep 2
             ;;
         *)
             echo "Invalid selection, \"$selection\" was not an option"

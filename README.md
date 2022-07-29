@@ -42,9 +42,7 @@
 ### Examples
 #### Typical Cron Job  
 ```
-
 bash heavy_script.sh --self-update -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -rsp -u 5
-
 ```
 
 > `-b` is set to 14. Up to 14 snapshots of your ix-applications dataset will be saved

@@ -121,7 +121,10 @@ do
         echo "Choose a restore point"
     fi
     echo "$list_backups"
+    echo
+    echo "0)  Exit"
     read -rt 120 -p "Please type a number: " selection
+    [[ $selection == 0 ]] && echo "Exiting.." && exit
     restore_point=$(echo "$list_backups" | grep ^"$selection)" | awk '{print $2}')
     #Check for valid selection. If none, kill script
     if [[ -z "$selection" ]]; then 

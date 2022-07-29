@@ -59,39 +59,47 @@ case $selection in
             echo
             read -rt 600 -p "Please type the number associated with the flag above: " current_selection
             if [[ $current_selection == 1 ]]; then
-                echo -e "\nHow many applications do you want updating at the same time?"
-                read -rt 600 -p "Please type an integer greater than 0: " up_async
-                if [[ $up_async == 0 ]]; then
-                    echo "Error: \"$up_async\" is less than 1"
-                    echo "NOT adding it to the list"
-                    sleep 5
-                    continue
-                elif ! [[ $up_async =~ ^[0-9]+$  ]]; then
-                    echo "Error: \"$up_async\" is invalid, it needs to be an integer"
-                    echo "NOT adding it to the list"
-                    sleep 5
-                    continue
-                else
-                    update_selection+=("-U" "$up_async")
-                    break
-                fi
+                while true
+                do
+                    echo -e "\nHow many applications do you want updating at the same time?"
+                    read -rt 600 -p "Please type an integer greater than 0: " up_async
+                    if [[ $up_async == 0 ]]; then
+                        echo "Error: \"$up_async\" is less than 1"
+                        echo "NOT adding it to the list"
+                        sleep 5
+                        continue
+                    elif ! [[ $up_async =~ ^[0-9]+$  ]]; then
+                        echo "Error: \"$up_async\" is invalid, it needs to be an integer"
+                        echo "NOT adding it to the list"
+                        sleep 5
+                        continue
+                    else
+                        update_selection+=("-U" "$up_async")
+                        break
+                    fi
+                done
+                break
             elif [[ $current_selection == 2 ]]; then
-                echo -e "\nHow many applications do you want updating at the same time?"
-                read -rt 600 -p "Please type an integer greater than 0: " up_async
-                if [[ $up_async == 0 ]]; then
-                    echo "Error: \"$up_async\" is less than 1"
-                    echo "NOT adding it to the list"
-                    sleep 5
-                    continue
-                elif ! [[ $up_async =~ ^[0-9]+$  ]]; then
-                    echo "Error: \"$up_async\" is invalid, it needs to be an integer"
-                    echo "NOT adding it to the list"
-                    sleep 5
-                    continue
-                else
-                    update_selection+=("-u" "$up_async")
-                    break
-                fi
+                while true
+                do
+                    echo -e "\nHow many applications do you want updating at the same time?"
+                    read -rt 600 -p "Please type an integer greater than 0: " up_async
+                    if [[ $up_async == 0 ]]; then
+                        echo "Error: \"$up_async\" is less than 1"
+                        echo "NOT adding it to the list"
+                        sleep 5
+                        continue
+                    elif ! [[ $up_async =~ ^[0-9]+$  ]]; then
+                        echo "Error: \"$up_async\" is invalid, it needs to be an integer"
+                        echo "NOT adding it to the list"
+                        sleep 5
+                        continue
+                    else
+                        update_selection+=("-u" "$up_async")
+                        break
+                    fi
+                done
+                break
             elif [[ $current_selection == 0 ]]; then
                 echo "Exiting.." 
                 exit

@@ -68,10 +68,10 @@
 mount(){
 clear -x
 title
-echo "1  Mount"
-echo "2  Unmount All"
+echo "1)  Mount"
+echo "2)  Unmount All"
 echo
-echo "0  Exit"
+echo "0)  Exit"
 read -rt 120 -p "Unmount All Please type a number: " selection
 
 case $selection in
@@ -114,9 +114,9 @@ case $selection in
             echo -e "Mounted\n\nUnmount with:\nzfs set mountpoint=legacy $full_path && rmdir /mnt/heavyscript/$data_name\n\nOr use the Unmount All option\n"
             while true
             do
-                echo "Would you like to mount anything else?"
-                echo "1  Yes"
-                echo "2  No"
+                echo -e "\nWould you like to mount anything else?"
+                echo "1)  Yes"
+                echo "2)  No"
                 read -rt 120 -p "Please type a number: " yesno
                 case $yesno in
                 1)
@@ -126,7 +126,8 @@ case $selection in
                     exit
                     ;;
                 *)
-                    echo "Invalid selection \"$yesno\" was not an option" sleep 3
+                    echo "Invalid selection \"$yesno\" was not an option" 
+                    sleep 2
                     continue
                     ;;
                 esac

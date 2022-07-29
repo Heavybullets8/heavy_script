@@ -35,13 +35,16 @@
 | -s              	| -s                     	| None            	| Sync Catalogs prior to updating                                                                                                                                                                                            	|
 | -p              	| -p                     	| None            	| Prune old/unused docker images                                                                                                                                                                                             	|
 
+
 <br>
 <br>
 
 ### Examples
 #### Typical Cron Job  
 ```
+
 bash heavy_script.sh --self-update -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -rsp -u 5
+
 ```
 
 > `-b` is set to 14. Up to 14 snapshots of your ix-applications dataset will be saved
@@ -58,6 +61,8 @@ bash heavy_script.sh --self-update -b 14 -i portainer -i arch -i sonarr -i radar
 
 > `-u` update applications as long as the major version has absolutely no change, if it does have a change it will ask the user to update manually.
 >> The `5` after the `-u` means up to 5 applications will be updating and monitored at one time
+
+> `--self-update` Will update the script prior to running anything else.
 
 > `--self-update` Will update the script prior to running anything else.
 
@@ -87,7 +92,9 @@ bash /mnt/tank/scripts/heavy_script/heavy_script.sh --dns
 
 #### My personal Cron Job
 ```
+
 bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 14 -rsp -u 10
+
 ```
 
 <br>

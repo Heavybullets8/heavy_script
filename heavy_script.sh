@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 # cd to script, this ensures the script can find the source scripts below, even when ran from a seperate directory
 script=$(readlink -f "$0")
 script_path=$(dirname "$script")
@@ -23,8 +24,11 @@ source functions/self_update.sh
 source functions/update_apps.sh
 
 
+
+
 #If no argument is passed, kill the script.
 [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && menu
+
 
 
 # Parse script options
@@ -153,3 +157,4 @@ fi
 [[ "$sync" == "true" && -z "$backup" ]] && echo "Syncing catalogs, this takes a LONG time, please wait.." && sync 
 [[ "$update_all_apps" == "true" || "$update_apps" == "true" ]] && commander
 [[ "$prune" == "true" ]] && prune
+

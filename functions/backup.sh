@@ -145,6 +145,7 @@ do
             sleep 3
             continue
         fi
+        break
     done
     while true
     do

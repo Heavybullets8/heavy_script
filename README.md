@@ -26,7 +26,7 @@
 | --dns           	| --dns                  	| None            	| list all of your applications DNS names and their web ports                                                                                                                                                                	|
 | -U              	| -U <br>-U 5            	| None or Integer 	| Update applications, ignoring major version changes<br>_Optionally, you can supply a number after the argument to update multiple applications at once_                                                                    	|
 | -u              	| -u<br>-u 5             	| None or Integer 	| Update applications, do NOT update if there was a major version change<br>_Optionally, you can supply a number after the argument to update multiple applications at once_                                                 	|
-| -b              	| -b 14                  	| Integer         	| Backup `ix-appliactions` dataset<br>_Creates backups up to the number you've chosen_                                                                                                                                       	|
+| -b              	| -b 10                  	| Integer         	| Backup `ix-appliactions` dataset<br>_Creates backups up to the number you've chosen_                                                                                                                                       	|
 | -i              	| -i nextcloud -i sonarr 	| String          	| Applications listed will be ignored during updating<br>_List one application after another as shown in the example_                                                                                                        	|
 | -r              	| -r                     	| None            	| Monitors applications after they update<br>If the app does not become "ACTIVE" after either:<br>The custom Timeout, or Default Timeout,<br>rollback the application.                                                       	|
 | -v              	| -v                     	| None            	| Verbose Output<br>_Look at the bottom of this page for an example_                                                                                                                                                         	|
@@ -42,10 +42,10 @@
 ### Examples
 #### Typical Cron Job  
 ```
-bash heavy_script.sh --self-update -b 14 -i portainer -i arch -i sonarr -i radarr -t 600 -rsp -u 5
+bash heavy_script.sh --self-update -b 10 -i portainer -i arch -i sonarr -i radarr -t 600 -rsp -u 5
 ```
 
-> `-b` is set to 14. Up to 14 snapshots of your ix-applications dataset will be saved
+> `-b` is set to 10. Up to 10 snapshots of your ix-applications dataset will be saved
 
 > `-i` is set to ignore portainer, arch, sonarr, and radarr. These applications will be ignored when it comes to updates.
 
@@ -88,10 +88,9 @@ bash /mnt/tank/scripts/heavy_script/heavy_script.sh --dns
 ```
 
 #### My personal Cron Job
+
 ```
-
-bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 14 -rsp -u 10
-
+bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u 10
 ```
 
 <br>
@@ -147,7 +146,7 @@ git pull
 ### Update with the scripts built-in option
 
 ```
-bash heavyscript.sh --self-update -b 14 -supr
+bash heavyscript.sh --self-update -b 10 -supr
 ```
 > The important argument here is the `--self-update`, you can still use all of your same arguments with this option.
 
@@ -166,7 +165,7 @@ bash heavyscript.sh --self-update -b 14 -supr
 | Name                   	| Value                                                                                                             	| Reason                                                                                                                                                                                         	|
 |------------------------	|-------------------------------------------------------------------------------------------------------------------	|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
 | `Description`          	| HeavyScript git pull and Update apps                                                                              	| This is up to you, put whatever you think is a good description in here                                                                                                                        	|
-| `Command`              	| `bash /PATH/TO/HEAVY_SCRIPT_DIRECTORY/heavy_script.sh --self-update -b 14 -rsup` 	| This is the command you will be running on your schedule  I personally use:  `bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 14 -rsup` 	|
+| `Command`              	| `bash /PATH/TO/HEAVY_SCRIPT_DIRECTORY/heavy_script.sh --self-update -b 10 -rsup` 	| This is the command you will be running on your schedule  I personally use:  `bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 10 -rsup` 	|
 | `Run As User`          	| `root`                                                                                                            	| Running the script as `root` is REQUIRED. You cannot access all of the kubernetes functions without this user.                                                                                 	|
 | `Schedule`             	| Up to you, I run mine everyday at `0400`                                                                          	| Again up to you                                                                                                                                                                                	|
 | `Hide Standard Output` 	| `False` or Unticked                                                                                               	| I like to receive an email report of how the script ran, what apps updated etc.                                                                                                                	|

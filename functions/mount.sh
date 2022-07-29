@@ -19,7 +19,7 @@ do
             call=$(k3s kubectl get pvc -A | sort -u | awk '{print $1 "\t" $2 "\t" $4}' | sed "s/^0/ /")
             mount_list=$(echo "$call" | sed 1d | nl -s ") ")
             mount_title=$(echo "$call" | head -n 1)
-            list=$(echo -e "# $mount_title\n$mount_list\n\n0)  Exit" | column -t)
+            list=$(echo -e "# $mount_title\n$mount_list" | column -t)
 
             while true
             do
@@ -27,12 +27,12 @@ do
                 title
                 echo "$list" 
                 echo 
-                echo "0  Exit"
+                echo "0)  Exit"
                 read -rt 120 -p "Please type a number: " selection
                 [[ $selection == 0 ]] && echo "Exiting.." && exit
-                app=$(echo -e "$list" | grep ^"$selection " | awk '{print $2}' | cut -c 4- )
+                app=$(echo -e "$list" | grep ^"$selection)" | awk '{print $2}' | cut -c 4- )
                 [[ -z "$app" ]] && echo "Invalid Selection: $selection, was not an option" && sleep 3 && continue #Check for valid selection. If none, contiue
-                pvc=$(echo -e "$list" | grep ^"$selection ")
+                pvc=$(echo -e "$list" | grep ^"$selection)")
                 status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "^$app\b" | awk -F ',' '{print $2}'| tr -d " \t\n\r")
                 if [[ "$status" != "STOPPED" ]]; then
                     [[ -z $timeout ]] && echo -e "\nDefault Timeout: 500" && timeout=500 || echo -e "\nCustom Timeout: $timeout"

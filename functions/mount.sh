@@ -10,13 +10,13 @@ do
     echo
     echo "0)  Exit"
     read -rt 120 -p "Unmount All Please type a number: " selection
-    list=$(k3s kubectl get pvc -A | sort -u | awk '{print NR-1, "\t" $1 "\t" $2 "\t" $4}' | column -t | sed "s/^0/ /")
     case $selection in
         0)
             echo "Exiting.."
             exit
             ;;
         1)
+            list=$(k3s kubectl get pvc -A | sort -u | awk '{print NR-1, "\t" $1 "\t" $2 "\t" $4}' | column -t | sed "s/^0/ /")
             while true
             do
                 clear -x

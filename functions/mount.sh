@@ -58,6 +58,7 @@ do
                     case $yesno in
                     1)
                         clear -x
+                        title
                         break
                         ;;
                     2)

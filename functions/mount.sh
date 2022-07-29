@@ -20,7 +20,6 @@ do
             mount_list=$(echo "$call" | sed 1d | nl -s ") ")
             mount_title=$(echo "$call" | head -n 1)
             list=$(echo -e "# $mount_title\n$mount_list" | column -t)
-
             while true
             do
                 clear -x

@@ -112,24 +112,24 @@ case $selection in
             echo -e "\nMounting\n$full_path\nTo\n/mnt/heavyscript/$data_name"
             zfs set mountpoint=/heavyscript/"$data_name" "$full_path" || echo "Failed to mount $app"
             echo -e "Mounted\n\nUnmount with:\nzfs set mountpoint=legacy $full_path && rmdir /mnt/heavyscript/$data_name\n\nOr use the Unmount All option\n"
-            while [[ $yesno != 0 ]]
+            while true
             do
-            echo "Would you like to mount anything else?"
-            echo "1  Yes"
-            echo "2  No"
-            read -rt 120 -p "Unmount All Please type a number: " yesno
-            case $yesno in
-            1)
-                continue
-                ;;
-            2)
-                exit
-                ;;
-            *)
-                echo "Invalid selection \"$yesno\" was not an option" sleep 3
-                continue
-                ;;
-            esac
+                echo "Would you like to mount anything else?"
+                echo "1  Yes"
+                echo "2  No"
+                read -rt 120 -p "Please type a number: " yesno
+                case $yesno in
+                1)
+                    break
+                    ;;
+                2)
+                    exit
+                    ;;
+                *)
+                    echo "Invalid selection \"$yesno\" was not an option" sleep 3
+                    continue
+                    ;;
+                esac
             done
         done
         ;;

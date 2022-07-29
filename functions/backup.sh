@@ -33,7 +33,7 @@ deleteBackup(){
 while true
 do
     clear -x && echo "pulling all restore points.."
-    list_backups=$(cli -c 'app kubernetes list_backups' | sort -t '_' -Vr -k2,7 | tr -d " \t\r"  | awk -F '|'  '{print $2}' | nl | column -t)
+    list_backups=$(cli -c 'app kubernetes list_backups' | sort -t '_' -Vr -k2,7 | tr -d " \t\r"  | awk -F '|'  '{print $2}' | nl -s \) | column -t)
     clear -x
     if [[ -z "$list_backups" ]]; then
         echo "No restore points available"
@@ -48,38 +48,43 @@ do
     #Check for valid selection. If none, kill script
     if [[ -z "$selection" ]]; then 
         echo "Your selection cannot be empty"
+        sleep 3
         continue
     elif [[ -z "$restore_point" ]]; then
         echo "Invalid Selection: $selection, was not an option"
+        sleep 3
         continue
     fi
     while true
     do
+        clear -x
         echo -e "\nWARNING:\nYou CANNOT go back after deleting your restore point" 
         echo -e "\n\nYou have chosen:\n$restore_point\n\nWould you like to continue?"
-        echo -e "Yes\n0 exit\n"
-        read -rt 120 -p "Type \"yes\" to continue, or exit with \"0\": " yesno 
+        echo -e "1)   Yes\n2)   Exit\n"
+        read -rt 120 -p "Please type a number: " yesno 
         case $yesno in
-            [Yy][Ee][Ss])
+            1)
                 echo -e "\nDeleting $restore_point"
                 cli -c 'app kubernetes delete_backup backup_name=''"'"$restore_point"'"' &>/dev/null || { echo "Failed to delete backup.."; exit; }
                 echo "Sucessfully deleted"
                 break
                 ;;
-            0|[Ee][Xx][Ii][Tt])
+            2)
                 echo "Exiting"
                 exit
                 ;;
             *)
-                echo "Invalid Selection"
+                echo "That was not an option, try again"
+                sleep 3
+                continue
                 ;;
         esac
     done
     while true
     do
         echo "Delete more?"
-        echo "1 Yes"
-        echo "2 No"
+        echo "1)  Yes"
+        echo "2)  No"
         read -rt 120 -p "Please type a number: " yesno
         case $yesno in
             1)

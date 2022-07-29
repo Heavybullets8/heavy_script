@@ -119,30 +119,33 @@ while true
 do
     clear -x && echo "pulling restore points.."
     list_backups=$(cli -c 'app kubernetes list_backups' | grep "HeavyScript_" | sort -t '_' -Vr -k2,7 | tr -d " \t\r"  | awk -F '|'  '{print $2}' | nl -s ") " | column -t)
-    clear -x
     if [[ -z "$list_backups" ]]; then
         echo "No HeavyScript restore points available"
         exit
-    else
+    fi
+    while true
+    do
+        clear -x
         title
         echo "Choose a Restore Point"
-    fi
-    echo "$list_backups"
-    echo
-    echo "0)  Exit"
-    read -rt 120 -p "Please type a number: " selection
-    [[ $selection == 0 ]] && echo "Exiting.." && exit
-    restore_point=$(echo "$list_backups" | grep ^"$selection)" | awk '{print $2}')
-    #Check for valid selection. If none, kill script
-    if [[ -z "$selection" ]]; then 
-        echo "Your selection cannot be empty"
-        sleep 3
-        continue
-    elif [[ -z "$restore_point" ]]; then
-        echo "Invalid Selection: $selection, was not an option"
-        sleep 3
-        continue
-    fi
+        echo "$list_backups"
+        echo
+        echo "0)  Exit"
+        read -rt 120 -p "Please type a number: " selection
+        restore_point=$(echo "$list_backups" | grep ^"$selection)" | awk '{print $2}')
+        if [[ $selection == 0 ]]; then
+            echo "Exiting.." 
+            exit
+        elif [[ -z "$selection" ]]; then 
+            echo "Your selection cannot be empty"
+            sleep 3
+            continue
+        elif [[ -z "$restore_point" ]]; then
+            echo "Invalid Selection: $selection, was not an option"
+            sleep 3
+            continue
+        fi
+    done
     while true
     do
         clear -x

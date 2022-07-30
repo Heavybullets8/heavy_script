@@ -1,10 +1,6 @@
 #!/bin/bash
 
 menu(){
-script=$(readlink -f "$0")
-script_path=$(dirname "$script")
-script_name="heavy_script.sh"
-cd "$script_path" || exit
 clear -x
 title
 echo "1)  Help"

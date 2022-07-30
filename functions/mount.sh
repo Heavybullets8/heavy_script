@@ -58,17 +58,15 @@ do
                 echo -e "Mounted\n\nUnmount with:\nzfs set mountpoint=legacy $full_path && rmdir /mnt/heavyscript/$data_name\n\nOr use the Unmount All option\n"
                 while true
                 do
-                    echo -e "\nWould you like to mount anything else?"
-                    echo "Y)  Yes"
-                    echo "N)  No"
-                    read -rt 120 -p "Please type a number: " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
+                    echo
+                    read -rt 120 -p "Would you like to mount anything else? (y/N) " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
                     case $yesno in
-                    [Yy])
+                    [Yy] | [Yy][Ee][Ss])
                         clear -x
                         title
                         break
                         ;;
-                    [Nn])
+                    [Nn] | [Nn][Oo])
                         exit
                         ;;
                     *)

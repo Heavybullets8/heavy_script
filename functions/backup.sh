@@ -46,7 +46,7 @@ do
         echo "$list_backups"
         echo
         echo "0)  Exit"
-        read -rt 120 -p "Please type a number: " selection
+        read -rt 240 -p "Please type a number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
         restore_point=$(echo "$list_backups" | grep ^"$selection)" | awk '{print $2}')
         if [[ $selection == 0 ]]; then
             echo "Exiting.." 
@@ -67,16 +67,16 @@ do
         clear -x
         echo -e "\nWARNING:\nYou CANNOT go back after deleting your restore point" 
         echo -e "\n\nYou have chosen:\n$restore_point\n\nWould you like to continue?"
-        echo -e "1)   Yes\n2)   Exit\n"
-        read -rt 120 -p "Please type a number: " yesno 
+        echo -e "Y)   Yes\nN)   No\n"
+        read -rt 120 -p "Please type a number: " yesno  || { echo -e "\nFailed to make a selection in time" ; exit; }
         case $yesno in
-            1)
+            [Yy])
                 echo -e "\nDeleting $restore_point"
                 cli -c 'app kubernetes delete_backup backup_name=''"'"$restore_point"'"' &>/dev/null || { echo "Failed to delete backup.."; exit; }
                 echo "Sucessfully deleted"
                 break
                 ;;
-            2)
+            [Nn])
                 echo "Exiting"
                 exit
                 ;;
@@ -90,14 +90,14 @@ do
     while true
     do
         echo "Delete more?"
-        echo "1)  Yes"
-        echo "2)  No"
-        read -rt 120 -p "Please type a number: " yesno
+        echo "Y)  Yes"
+        echo "N)  No"
+        read -rt 120 -p "Please type a number: " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
         case $yesno in
-            1)
+            [Yy])
                 break
                 ;;
-            2)
+            [Nn])
                 exit
                 ;;
             *)
@@ -131,7 +131,7 @@ do
         echo "$list_backups"
         echo
         echo "0)  Exit"
-        read -rt 120 -p "Please type a number: " selection
+        read -rt 240 -p "Please type a number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
         restore_point=$(echo "$list_backups" | grep ^"$selection)" | awk '{print $2}')
         if [[ $selection == 0 ]]; then
             echo "Exiting.." 
@@ -152,15 +152,15 @@ do
         clear -x
         echo -e "\nWARNING:\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible"
         echo -e "\n\nYou have chosen:\n$restore_point\n\nWould you like to continue?"
-        echo -e "1)   Yes\n2)   Exit\n"
-        read -rt 120 -p "Please type a number: " yesno 
+        echo -e "Y)   Yes\nN)   No\n"
+        read -rt 120 -p "Please type a number: " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
         case $yesno in
-            1)
+            [Yy])
                 echo -e "\nStarting Backup, this will take a LONG time."
                 cli -c 'app kubernetes restore_backup backup_name=''"'"$restore_point"'"' || { echo "Failed to delete backup.."; exit; }
                 exit
                 ;;
-            2)
+            [Nn])
                 echo "Exiting"
                 exit
                 ;;

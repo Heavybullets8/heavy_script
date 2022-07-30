@@ -9,7 +9,7 @@ do
     echo "2)  Unmount All"
     echo
     echo "0)  Exit"
-    read -rt 120 -p "Unmount All Please type a number: " selection
+    read -rt 120 -p "Unmount All Please type a number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
     case $selection in
         0)
             echo "Exiting.."
@@ -27,7 +27,7 @@ do
                 echo "$list" 
                 echo 
                 echo "0)  Exit"
-                read -rt 120 -p "Please type a number: " selection
+                read -rt 120 -p "Please type a number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
                 [[ $selection == 0 ]] && echo "Exiting.." && exit
                 app=$(echo -e "$list" | grep ^"$selection)" | awk '{print $2}' | cut -c 4- )
                 [[ -z "$app" ]] && echo "Invalid Selection: $selection, was not an option" && sleep 3 && continue #Check for valid selection. If none, contiue
@@ -59,16 +59,16 @@ do
                 while true
                 do
                     echo -e "\nWould you like to mount anything else?"
-                    echo "1)  Yes"
-                    echo "2)  No"
-                    read -rt 120 -p "Please type a number: " yesno
+                    echo "Y)  Yes"
+                    echo "N)  No"
+                    read -rt 120 -p "Please type a number: " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
                     case $yesno in
-                    1)
+                    [Yy])
                         clear -x
                         title
                         break
                         ;;
-                    2)
+                    [Nn])
                         exit
                         ;;
                     *)

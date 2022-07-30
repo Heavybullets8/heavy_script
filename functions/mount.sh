@@ -9,7 +9,7 @@ do
     echo "2)  Unmount All"
     echo
     echo "0)  Exit"
-    read -rt 120 -p "Unmount All Please type a number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+    read -rt 120 -p "Please type a number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
     case $selection in
         0)
             echo "Exiting.."

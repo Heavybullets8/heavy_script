@@ -67,7 +67,7 @@ do
         clear -x
         echo -e "\nWARNING:\nYou CANNOT go back after deleting your restore point" 
         echo -e "\n\nYou have chosen:\n$restore_point\n\n"
-        read -rt 120 -p "Would you like to proceed with deletion? (y/N) " yesno  || { echo -e "\nFailed to make a selection in time" ; exit; }
+        read -rt 120 -p "Would you like to proceed with deletion? (y/N): " yesno  || { echo -e "\nFailed to make a selection in time" ; exit; }
         case $yesno in
             [Yy] | [Yy][Ee][Ss])
                 echo -e "\nDeleting $restore_point"
@@ -88,7 +88,7 @@ do
     done
     while true
     do
-        read -rt 120 -p "Delete more backups? (y/N)" yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
+        read -rt 120 -p "Delete more backups? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
         case $yesno in
             [Yy] | [Yy][Ee][Ss])
                 break
@@ -148,7 +148,7 @@ do
         clear -x
         echo -e "\nWARNING:\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible"
         echo -e "\n\nYou have chosen:\n$restore_point\n\n"
-        read -rt 120 -p "Would you like to proceed with restore? (y/N) " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
+        read -rt 120 -p "Would you like to proceed with restore? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
         case $yesno in
             [Yy] | [Yy][Ee][Ss])
                 echo -e "\nStarting Backup, this will take a LONG time."

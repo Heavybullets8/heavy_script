@@ -59,7 +59,7 @@ do
                 while true
                 do
                     echo
-                    read -rt 120 -p "Would you like to mount anything else? (y/N) " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
+                    read -rt 120 -p "Would you like to mount anything else? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
                     case $yesno in
                     [Yy] | [Yy][Ee][Ss])
                         clear -x

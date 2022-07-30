@@ -22,6 +22,6 @@ do
     ixName=$(echo "$i" | awk '{print $1}')
     port=$(echo "$all_ports" | grep -E "\s$appName\s" | awk '{print $6}' | grep -Eo "^[[:digit:]]+{1}")
     echo -e "$appName.$ixName.svc.cluster.local $port"
-done | uniq | nl -b t | sed 's/\s\s\s$/- -------- ----/' | column -t -R 1 -N "#,DNS_Name,Port" -L
+done | uniq | nl -s ") " -b t | sed 's/\s\s\s$/- -------- ----/' | column -t -R 1 -N "#,DNS_Name,Port" -L
 }
 export -f dns

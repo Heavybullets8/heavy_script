@@ -13,7 +13,7 @@ echo "7)  Update HeavyScript"
 echo "8)  Update Applications"
 echo
 echo "0)  Exit"
-read -rt 600 -p "Please select an option by number: " selection
+read -rt 120 -p "Please select an option by number: " selection
 
 case $selection in
     0)
@@ -29,7 +29,7 @@ case $selection in
         mount="true"
         ;;
     4)
-        read -rt 600 -p "What is the maximun number of backups you would like?: " number_of_backups
+        read -rt 120 -p "What is the maximun number of backups you would like?: " number_of_backups
         backup="true"
         ;;
     5)
@@ -53,12 +53,12 @@ case $selection in
             echo
             echo "0) Exit"
             echo
-            read -rt 600 -p "Please type the number associated with the flag above: " current_selection
+            read -rt 120 -p "Please type the number associated with the flag above: " current_selection
             if [[ $current_selection == 1 ]]; then
                 while true
                 do
                     echo -e "\nHow many applications do you want updating at the same time?"
-                    read -rt 600 -p "Please type an integer greater than 0: " up_async
+                    read -rt 120 -p "Please type an integer greater than 0: " up_async
                     if [[ $up_async == 0 ]]; then
                         echo "Error: \"$up_async\" is less than 1"
                         echo "NOT adding it to the list"
@@ -79,7 +79,7 @@ case $selection in
                 while true
                 do
                     echo -e "\nHow many applications do you want updating at the same time?"
-                    read -rt 600 -p "Please type an integer greater than 0: " up_async
+                    read -rt 120 -p "Please type an integer greater than 0: " up_async
                     if [[ $up_async == 0 ]]; then
                         echo "Error: \"$up_async\" is less than 1"
                         echo "NOT adding it to the list"
@@ -129,7 +129,7 @@ case $selection in
             echo "---------------"
             echo "bash heavy_script.sh ${update_selection[*]}"
             echo
-            read -rt 600 -p "Type the Number OR Flag: " current_selection
+            read -rt 120 -p "Type the Number OR Flag: " current_selection
             case $current_selection in
                 0)
                     echo "Exiting.."
@@ -145,13 +145,13 @@ case $selection in
                 1 | -b)
                     printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-b" && echo -e "\"-b\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
                     echo "Up to how many backups should we keep?"
-                    read -rt 600 -p "Please type an integer: " up_backups
+                    read -rt 120 -p "Please type an integer: " up_backups
                     ! [[ $up_backups =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 3 && continue
                     [[ $up_backups == 0 ]] && echo -e "Error: Number of backups cannot be 0\nNOT adding it to the list" && sleep 3 && continue
                     update_selection+=("-b" "$up_backups")
                     ;;
                 2 | -i)
-                    read -rt 600 -p "What is the name of the application we should ignore?: " up_ignore
+                    read -rt 120 -p "What is the name of the application we should ignore?: " up_ignore
                     ! [[ $up_ignore =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]] && echo -e "Error: \"$up_ignore\" is not a possible option for an application name" && sleep 3 && continue
                     update_selection+=("-i" "$up_ignore")
                     ;;
@@ -171,7 +171,7 @@ case $selection in
                 6 | -t)
                     printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-t" && echo -e "\"-t\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
                     echo "What do you want your timeout to be?"
-                    read -rt 600 -p "Please type an integer: " up_timeout
+                    read -rt 120 -p "Please type an integer: " up_timeout
                     ! [[ $up_timeout =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 3 && continue
                     update_selection+=("-t" "$up_timeout")
                     ;;

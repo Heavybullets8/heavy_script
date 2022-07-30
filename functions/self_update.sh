@@ -3,7 +3,8 @@
 args=("$@")
 self_update() {
 git fetch &> /dev/null 
-echo "🅂 🄴 🄻 🄵   🅄 🄿 🄳 🄰 🅃 🄴"
+echo "🅂 🄴 🄻 🄵"
+echo "🅄 🄿 🄳 🄰 🅃 🄴"
 if  git diff --name-only origin/main | grep -qs ".sh" ; then
     echo "Found a new version of HeavyScript, updating myself..."
     git reset --hard -q

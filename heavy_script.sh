@@ -147,18 +147,18 @@ done
 [[ "$mount" == "true" ]] && mount && exit
 if [[ "$backup" == "true" && "$sync" == "true" ]]; then # Run backup and sync at the same time
     echo "🅃 🄰 🅂 🄺 🅂 :"
-    echo -e "-Backing up ix-applications dataset\n-Syncing catalog(s)"
-    echo -e "This can take a LONG time, please wait for both output..\n\n"
+    echo -e "-Backing up ix-applications Dataset\n-Syncing catalog(s)"
+    echo -e "This can take a LONG time, Please Wait For Both Output..\n\n"
     backup &
     sync &
     wait
 elif [[ "$backup" == "true" && -z "$sync" ]]; then # If only backup is true, run it
     echo "🅃 🄰 🅂 🄺 :"
-    echo -e "-Backing up \"ix-applications\" dataset, please wait..\n\n"
+    echo -e "-Backing up \"ix-applications\" Dataset\nPlease Wait..\n\n"
     backup
 elif [[ "$sync" == "true" && -z "$backup" ]]; then # If only sync is true, run it
     echo "🅃 🄰 🅂 🄺 :"
-    echo -e "Syncing catalogs, this takes a LONG time, please wait..\n\n"
+    echo -e "Syncing Catalog(s)\nThis Takes a LONG Time, Please Wait..\n\n"
     sync
 fi
 [[ "$update_all_apps" == "true" || "$update_apps" == "true" ]] && commander

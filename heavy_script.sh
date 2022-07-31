@@ -152,9 +152,15 @@ if [[ "$backup" == "true" && "$sync" == "true" ]]; then # Run backup and sync at
     backup &
     sync &
     wait
+elif [[ "$backup" == "true" && -z "$sync" ]]; then # If only backup is true, run it
+    echo "🅃 🄰 🅂 🄺 :"
+    echo -e "-Backing up \"ix-applications\" dataset, please wait..\n\n"
+    backup
+elif [[ "$sync" == "true" && -z "$backup" ]]; then # If only sync is true, run it
+    echo "🅃 🄰 🅂 🄺 :"
+    echo -e "Syncing catalogs, this takes a LONG time, please wait..\n\n"
+    sync
 fi
-[[ "$backup" == "true" && -z "$sync" ]] && echo "Backing up \"ix-applications\" dataset, please wait.." && backup 
-[[ "$sync" == "true" && -z "$backup" ]] && echo "Syncing catalogs, this takes a LONG time, please wait.." && sync 
 [[ "$update_all_apps" == "true" || "$update_apps" == "true" ]] && commander
 [[ "$prune" == "true" ]] && prune
 

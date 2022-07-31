@@ -15,14 +15,14 @@ if  git diff --name-only origin/main | grep -qs ".sh" ; then
         [[ "$i" == "--self-update" ]] && unset "args[$count]" && break
         ((count++))
     done
-    [[ -z ${args[*]} ]] && echo -e "No more arguments, exiting..\n" && exit
-    echo -e "Running the new version...\n"
+    [[ -z ${args[*]} ]] && echo -e "No more arguments, exiting..\n\n" && exit
+    echo -e "Running the new version...\n\n"
     sleep 5
     exec bash "$script_name" "${args[@]}"
     # Now exit this old instance
     exit
 else 
-    echo -e "HeavyScript is already the latest version\n"
+    echo -e "HeavyScript is already the latest version\n\n"
 fi
 }
 export -f self_update

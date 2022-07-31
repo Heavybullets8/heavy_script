@@ -148,7 +148,7 @@ done
 if [[ "$backup" == "true" && "$sync" == "true" ]]; then # Run backup and sync at the same time
     echo "🅃 🄰 🅂 🄺 🅂 :"
     echo -e "-Backing up ix-applications dataset\n-Syncing catalog(s)"
-    echo -e "This can take a LONG time, please wait for both output..\n"
+    echo -e "This can take a LONG time, please wait for both output..\n\n"
     backup &
     sync &
     wait

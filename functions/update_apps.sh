@@ -4,7 +4,7 @@
 commander(){
 mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | tr -d " \t\r" | grep -E ",true($|,)" | sort)
 echo -e "🅄 🄿 🄳 🄰 🅃 🄴 🅂"
-[[ -z ${array[*]} ]] && echo "There are no updates available" && return 0 || echo "Update(s) Available: ${#array[@]}"
+[[ -z ${array[*]} ]] && echo "There are no updates available" && echo -e "\n\n" && return 0 || echo "Update(s) Available: ${#array[@]}"
 echo "Asynchronous Updates: $update_limit"
 [[ -z $timeout ]] && echo "Default Timeout: 500" && timeout=500 || echo "Custom Timeout: $timeout"
 [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"

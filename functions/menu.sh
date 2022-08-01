@@ -116,7 +116,7 @@ case $selection in
             echo "Update Options"
             echo "--------------"
             echo "1) -r | Roll-back applications if they fail to update"
-            echo "2) -i | Add application to ignore list, one by one, see example below."
+            echo "2) -i | Add application to ignore list"
             echo "3) -S | Shutdown applications prior to updating"
             echo "4) -v | verbose output"
             echo "5) -t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"

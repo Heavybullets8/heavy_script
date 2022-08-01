@@ -67,7 +67,7 @@ do
     while true
     do
         clear -x
-        echo -e "\nWARNING:\nYou CANNOT go back after deleting your restore point" 
+        echo -e "WARNING:\nYou CANNOT go back after deleting your restore point" 
         echo -e "\n\nYou have chosen:\n$restore_point\n\n"
         read -rt 120 -p "Would you like to proceed with deletion? (y/N): " yesno  || { echo -e "\nFailed to make a selection in time" ; exit; }
         case $yesno in

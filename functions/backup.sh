@@ -148,7 +148,7 @@ do
     while true
     do
         clear -x
-        echo -e "\nWARNING:\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible"
+        echo -e "WARNING:\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible"
         echo -e "\n\nYou have chosen:\n$restore_point\n\n"
         read -rt 120 -p "Would you like to proceed with restore? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
         case $yesno in

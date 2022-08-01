@@ -40,7 +40,6 @@ help(){
 
 echo "Access the HeavyScript Menu"
 echo "---------------------------"
-echo "(Just dont send any other argument)"
 echo "bash heavy_script.sh"
 echo
 echo "Utilities"
@@ -51,7 +50,7 @@ echo "--delete-backup | Opens a menu to delete backups on your system"
 echo "--dns           | list all of your applications DNS names and their web ports"
 echo
 echo "Update Types"
-echo "--------------"
+echo "------------"
 echo "-U    | Update all applications, ignores versions"
 echo "-U 5  | Same as above, but updates 5 applications at one time"
 echo "-u    | Update all applications, does not update Major releases"

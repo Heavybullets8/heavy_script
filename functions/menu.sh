@@ -113,14 +113,17 @@ case $selection in
         do
             clear -x
             title
-            echo "Choose Your Update Options"
-            echo "--------------------------"
-            echo "1) -b | Back-up your ix-applications dataset, specify a number after -b"
+            echo "Update Options"
+            echo "--------------"
+            echo "1) -r | Roll-back applications if they fail to update"
             echo "2) -i | Add application to ignore list, one by one, see example below."
-            echo "3) -r | Roll-back applications if they fail to update"
-            echo "4) -S | Shutdown applications prior to updating"
-            echo "5) -v | verbose output"
-            echo "6) -t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
+            echo "3) -S | Shutdown applications prior to updating"
+            echo "4) -v | verbose output"
+            echo "5) -t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
+            echo
+            echo "Additional Options"
+            echo "------------------"
+            echo "6) -b | Back-up your ix-applications dataset, specify a number after -b"
             echo "7) -s | sync catalog"
             echo "8) -p | Prune unused/old docker images"
             echo "9) --self-update | Updates HeavyScript prior to running any other commands"
@@ -147,38 +150,37 @@ case $selection in
                     exec bash "$script_name" "${update_selection[@]}"
                     exit
                     ;;
-                1 | -b)
-                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-b" && echo -e "\"-b\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
-                    echo "Up to how many backups should we keep?"
-                    read -rt 120 -p "Please type an integer: " up_backups || { echo -e "\nFailed to make a selection in time" ; exit; }
-                    ! [[ $up_backups =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 3 && continue
-                    [[ $up_backups == 0 ]] && echo -e "Error: Number of backups cannot be 0\nNOT adding it to the list" && sleep 3 && continue
-                    update_selection+=("-b" "$up_backups")
+                1 | -r)
+                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-r" && echo -e "\"-r\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
+                    update_selection+=("-r")
                     ;;
                 2 | -i)
                     read -rt 120 -p "What is the name of the application we should ignore?: " up_ignore || { echo -e "\nFailed to make a selection in time" ; exit; }
                     ! [[ $up_ignore =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]] && echo -e "Error: \"$up_ignore\" is not a possible option for an application name" && sleep 3 && continue
                     update_selection+=("-i" "$up_ignore")
                     ;;
-                3 | -r)
-                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-r" && echo -e "\"-r\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
-                    update_selection+=("-r")
-                    
-                    ;;
-                4 | -S)
+                3 | -S)
                     printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-S" && echo -e "\"-S\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
                     update_selection+=("-S")
                     ;;
-                5 | -v)
+                4 | -v)
                     printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-v" && echo -e "\"-v\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
                     update_selection+=("-v")
                     ;;
-                6 | -t)
+                5 | -t)
                     printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-t" && echo -e "\"-t\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
                     echo "What do you want your timeout to be?"
                     read -rt 120 -p "Please type an integer: " up_timeout || { echo -e "\nFailed to make a selection in time" ; exit; }
                     ! [[ $up_timeout =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 3 && continue
                     update_selection+=("-t" "$up_timeout")
+                    ;;
+                6 | -b)
+                    printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-b" && echo -e "\"-b\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
+                    echo "Up to how many backups should we keep?"
+                    read -rt 120 -p "Please type an integer: " up_backups || { echo -e "\nFailed to make a selection in time" ; exit; }
+                    ! [[ $up_backups =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 3 && continue
+                    [[ $up_backups == 0 ]] && echo -e "Error: Number of backups cannot be 0\nNOT adding it to the list" && sleep 3 && continue
+                    update_selection+=("-b" "$up_backups")
                     ;;
                 7 | -s)
                     printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-s" && echo -e "\"-s\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it

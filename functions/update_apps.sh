@@ -54,43 +54,43 @@ diff_chart=$(diff <(echo "$old_chart_ver") <(echo "$new_chart_ver")) #caluclatin
 old_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}') #Upgraded From
 new_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}') #Upraded To
 rollback_version=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
-    if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #continue to update
-        if [[ $stop_before_update == "true" ]]; then # Check to see if user is using -S or not
-            if [[ "$startstatus" ==  "STOPPED" ]]; then # if status is already stopped, skip while loop
-                echo_array+=("\n$app_name")
-                [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
-                cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo_array+=("FAILED")
-                return 0
-            else # if status was not STOPPED, stop the app prior to updating
-                echo_array+=("\n$app_name")
-                [[ "$verbose" == "true" ]] && echo_array+=("Stopping prior to update..")
-                midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && SECONDS=0 || echo_array+=("FAILED")
-                while [[ "$status" !=  "STOPPED" ]]
-                do
-                    status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
-                    if [[ "$status"  ==  "STOPPED" ]]; then
-                        echo_array+=("Stopped")
-                        [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
-                        cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo_array+=("Failed to update")
-                        break
-                    elif [[ "$SECONDS" -ge "$timeout" ]]; then
-                        echo_array+=("Error: Run Time($SECONDS) has exceeded Timeout($timeout)")
-                        break
-                    elif [[ "$status" !=  "STOPPED" ]]; then
-                        [[ "$verbose" == "true" ]] && echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be STOPPED")
-                        sleep 10
-                    fi
-                done
-            fi
-        else #user must not be using -S, just update
+if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #continue to update
+    if [[ $stop_before_update == "true" ]]; then # Check to see if user is using -S or not
+        if [[ "$startstatus" ==  "STOPPED" ]]; then # if status is already stopped, skip while loop
             echo_array+=("\n$app_name")
             [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
             cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo_array+=("FAILED")
+            return 0
+        else # if status was not STOPPED, stop the app prior to updating
+            echo_array+=("\n$app_name")
+            [[ "$verbose" == "true" ]] && echo_array+=("Stopping prior to update..")
+            midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && SECONDS=0 || echo_array+=("FAILED")
+            while [[ "$status" !=  "STOPPED" ]]
+            do
+                status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
+                if [[ "$status"  ==  "STOPPED" ]]; then
+                    echo_array+=("Stopped")
+                    [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
+                    cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo_array+=("Failed to update")
+                    break
+                elif [[ "$SECONDS" -ge "$timeout" ]]; then
+                    echo_array+=("Error: Run Time($SECONDS) has exceeded Timeout($timeout)")
+                    break
+                elif [[ "$status" !=  "STOPPED" ]]; then
+                    [[ "$verbose" == "true" ]] && echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be STOPPED")
+                    sleep 10
+                fi
+            done
         fi
-    else
-        echo_array+=("\n$app_name\nMajor Release, update manually")
-        return 0
+    else #user must not be using -S, just update
+        echo_array+=("\n$app_name")
+        [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
+        cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo_array+=("FAILED")
     fi
+else
+    echo_array+=("\n$app_name\nMajor Release, update manually")
+    return 0
+fi
 }
 export -f update_apps
 

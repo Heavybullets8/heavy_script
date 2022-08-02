@@ -18,7 +18,7 @@ export -f sync
 prune(){
 echo -e "🄿 🅁 🅄 🄽 🄴"  
 echo "Pruned Docker Images"
-docker image prune -af | grep "^Total" || echo "Failed to Prune Docker Images"
+k3s crictl images || echo "Nothing to Prune"
 }
 export -f prune
 

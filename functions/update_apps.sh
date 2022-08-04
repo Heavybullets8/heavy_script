@@ -58,7 +58,7 @@ if  grep -qs "^$app_name," failed.txt ; then
     if diff <(grep "^$app_name," | awk -F ',' '{print $2}') <(echo "$new_full_ver") &> /dev/null ; then
         sed -i /"$app_name","$new_full_ver"/d  failed.txt
     else 
-        echo "$app_name"
+        echo -e "\n$app_name"
         echo "Skipping already failed version $new_full_ver"
         return 0
     fi

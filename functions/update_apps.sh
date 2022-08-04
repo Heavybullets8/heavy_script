@@ -56,7 +56,7 @@ new_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}') #Upraded To
 rollback_version=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
 if  grep -qs "^$app_name," failed.txt ; then
     if diff <(grep "^$app_name," failed.txt | awk -F ',' '{print $2}') <(echo "$new_full_ver") &> /dev/null ; then
-        sed -inE /"$app_name",.*/d  failed.txt
+        sed -i /"$app_name",/d  failed.txt
     else 
         echo -e "\n$app_name"
         echo "Skipping already failed version $new_full_ver"

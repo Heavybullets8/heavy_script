@@ -108,7 +108,7 @@ export -f update_apps
 after_update_actions(){
 SECONDS=0
 count=0
-if [[ $rollback == "true" ]]; then
+if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
     while true
     do
         (( count++ ))
@@ -117,15 +117,22 @@ if [[ $rollback == "true" ]]; then
             [[ "$verbose" == "true" ]] && echo_array+=("Returing to STOPPED state..")
             midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && echo_array+=("Stopped")|| echo_array+=("FAILED")
             break
-        elif [[ "$SECONDS" -ge "$timeout" && "$status"  ==  "DEPLOYING" && "$failed" != "true" ]]; then
-            echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)\nIf this is a slow starting application, set a higher timeout with -t\nIf this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration\nReverting update..")
-            midclt call chart.release.rollback "$app_name" "{\"item_version\": \"$rollback_version\"}" &> /dev/null
-            [[ "$startstatus"  ==  "STOPPED" ]] && failed="true" && after_update_actions && unset failed #run back after_update_actions function if the app was stopped prior to update
-            echo "$app_name,$new_full_ver" >> failed.txt
-            break
-        elif [[ "$SECONDS" -ge "$timeout" && "$status"  ==  "DEPLOYING" && "$failed" == "true" ]]; then
-            echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)\nThe application failed to be ACTIVE even after a rollback,\nManual intervention is required\nAbandoning")
-            break
+        elif [[ "$SECONDS" -ge "$timeout" && "$status"  ==  "DEPLOYING" ]]; then
+            if [[ $rollback == "true" ]]; then
+                if [[ "$failed" != "true" ]]; then
+                    echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)\nIf this is a slow starting application, set a higher timeout with -t\nIf this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration\nReverting update..")
+                    midclt call chart.release.rollback "$app_name" "{\"item_version\": \"$rollback_version\"}" &> /dev/null
+                    [[ "$startstatus"  ==  "STOPPED" ]] && failed="true" && after_update_actions && unset failed #run back after_update_actions function if the app was stopped prior to update
+                    echo "$app_name,$new_full_ver" >> failed.txt
+                    break
+                elif [[ "$failed" == "true" ]]; then
+                    echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)\nThe application failed to be ACTIVE even after a rollback,\nManual intervention is required\nAbandoning")
+                    break
+                fi
+            else
+                echo_array+=("Error: Run Time($SECONDS) has exceeded Timeout($timeout)")
+                break
+            fi
         elif [[ "$status"  ==  "STOPPED" ]]; then
             [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Stopped..") && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
             [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
@@ -142,34 +149,8 @@ if [[ $rollback == "true" ]]; then
             continue
         fi
     done
-else
-    if [[  "$startstatus"  ==  "STOPPED"  ]]; then
-        while true #using a constant while loop, then breaking out of the loop with break commands below.
-        do
-            (( count++ ))
-            status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
-            if [[ "$status"  ==  "STOPPED" ]]; then
-                [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Stopped..") && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
-                [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
-                echo_array+=("Stopped") #assume actually stopped anytime AFTER the first loop
-                break
-            elif [[ "$status"  ==  "ACTIVE" ]]; then
-                [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && sleep 15 && continue #if reports active on FIRST time through loop, double check
-                [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports active on FIRST time through loop, double check
-                [[ "$verbose" == "true" ]] && echo_array+=("Returing to STOPPED state..")
-                midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null && echo_array+=("Stopped")|| echo_array+=("FAILED")
-                break
-            elif [[ "$SECONDS" -ge "$timeout" ]]; then
-                echo_array+=("Error: Run Time($SECONDS) has exceeded Timeout($timeout)")
-                break
-            else
-                [[ "$verbose" == "true" ]] && echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be ACTIVE")
-                sleep 10
-                continue
-            fi
-        done
-    fi
 fi
+
 
 #Dump the echo_array, ensures all output is in a neat order. 
 for i in "${echo_array[@]}"

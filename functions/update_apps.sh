@@ -69,7 +69,7 @@ if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #con
         if [[ "$startstatus" ==  "STOPPED" ]]; then # if status is already stopped, skip while loop
             echo_array+=("\n$app_name")
             [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
-            cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo_array+=("FAILED")
+            cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver") || echo_array+=("FAILED")
             return 0
         else # if status was not STOPPED, stop the app prior to updating
             echo_array+=("\n$app_name")
@@ -81,7 +81,7 @@ if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #con
                 if [[ "$status"  ==  "STOPPED" ]]; then
                     echo_array+=("Stopped")
                     [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
-                    cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo_array+=("Failed to update")
+                    cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver")  || echo_array+=("Failed to update")
                     break
                 elif [[ "$SECONDS" -ge "$timeout" ]]; then
                     echo_array+=("Error: Run Time($SECONDS) has exceeded Timeout($timeout)")
@@ -95,12 +95,13 @@ if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #con
     else #user must not be using -S, just update
         echo_array+=("\n$app_name")
         [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
-        cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver") && after_update_actions || echo_array+=("FAILED")
+        cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver")  || echo_array+=("FAILED")
     fi
 else
     echo_array+=("\n$app_name\nMajor Release, update manually")
     return 0
 fi
+after_update_actions
 }
 export -f update_apps
 

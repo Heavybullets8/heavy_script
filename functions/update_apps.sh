@@ -55,12 +55,13 @@ old_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}') #Upgraded From
 new_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}') #Upraded To
 rollback_version=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
 if  grep -qs "^$app_name," failed.txt ; then
-    if diff <(grep "^$app_name," failed.txt | awk -F ',' '{print $2}') <(echo "$new_full_ver") &> /dev/null ; then
-        sed -i /"$app_name",/d  failed.txt
-    else 
+    failed_ver=$(grep "^$app_name," failed.txt | awk -F ',' '{print $2}')
+    if [[ "$failed_ver" == "$new_full_ver" ]] ; then
         echo -e "\n$app_name"
         echo "Skipping already failed version $new_full_ver"
         return 0
+    else 
+        sed -i /"$app_name",/d  failed.txt
     fi
 fi
 if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #continue to update

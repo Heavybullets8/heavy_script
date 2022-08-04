@@ -58,10 +58,10 @@ if  grep -qs "^$app_name," failed.txt ; then
     failed_ver=$(grep "^$app_name," failed.txt | awk -F ',' '{print $2}')
     if [[ "$failed_ver" == "$new_full_ver" ]] ; then
         echo -e "\n$app_name"
-        echo "Skipping already failed version $new_full_ver"
+        echo -e "Skipping previously failed version:\n$new_full_ver"
         return 0
     else 
-        sed -i /"$app_name",/d  failed.txt
+        sed -i /"$app_name",/d failed.txt
     fi
 fi
 if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #continue to update

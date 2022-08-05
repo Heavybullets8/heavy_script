@@ -9,7 +9,7 @@ echo "Asynchronous Updates: $update_limit"
 [[ -z $timeout ]] && echo "Default Timeout: 500" && timeout=500 || echo "Custom Timeout: $timeout"
 [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
 
-
+# previous 20% 2 min 9 seconds
 it=0
 ttl=0
 while true
@@ -29,7 +29,7 @@ do
         until [[ "$proc_count" -ge "$update_limit" || $it -ge ${#array[@]} ]]
         do
             update_apps "${array[$it]}" &
-            sleep 4
+            sleep 3
             processes+=($!)
             ((it++))
             ((proc_count++))

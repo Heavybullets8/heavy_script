@@ -12,7 +12,8 @@ echo "Asynchronous Updates: $update_limit"
 #rearange array
 for i in ${array[$@]}
 do
-    if printf '%s\0' "${ignore[@]}" | grep -iFxqz "$i" ; then
+    in=$(awk -F ',' '{print $1}')
+    if printf '%s\0' "${ignore[@]}" | grep -iFxqz "$in" ; then
         new_array+=("$i")
     elif grep -qs "^$i," failed.txt ; then
         new_array+=("$i")
@@ -21,7 +22,8 @@ done
 
 for i in ${array[$@]}
 do
-    printf '%s\0' "${new_array[@]}" | grep -iFxqz "$i" || new_array+=("$i")
+    in=$(awk -F ',' '{print $1}')
+    printf '%s\0' "${new_array[@]}" | grep -iFxqz "$in" || new_array+=("$i")
 done
 
 for i in ${new_array[$@]}

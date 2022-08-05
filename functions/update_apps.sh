@@ -32,6 +32,7 @@ do
             ((proc_count++))
             ((it++))
         done
+        sleep 3
     elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
         sleep 3
     else # All processes must be completed, break out of loop

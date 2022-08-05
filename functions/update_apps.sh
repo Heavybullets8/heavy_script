@@ -11,10 +11,12 @@ echo "Asynchronous Updates: $update_limit"
 
 proc_count=0
 it=0
+ttl=0
 while true
 do
     while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status') 
     echo "$while_status" > temp.txt
+    proc_count=${#processes[@]}
     count=0
     for proc in "${processes[@]}"
     do
@@ -25,15 +27,21 @@ do
         sleep 3
     elif [[ $it -lt ${#array[@]} ]]; then
         new_updates=0
-        until [[ "$proc_count" -ge "$update_limit" || $it -ge ${#array[@]} ]]
+        until [[ "$proc_count" -eq "$update_limit" || $it -eq ${#array[@]} ]]
         do
             update_apps "${array[$it]}" &
             processes+=($!)
-            ((proc_count++))
             ((it++))
             ((new_updates++))
         done
-        [[ $new_updates -gt 1 ]] && sleep 6
+        ((ttl++))
+        if [[ $ttl -eq 1 ]]; then
+            sleep 15
+        elif [[ $new_updates -gt 1 ]]; then 
+            sleep 6
+        else
+            sleep 3
+        fi
     elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
         sleep 3
     else # All processes must be completed, break out of loop

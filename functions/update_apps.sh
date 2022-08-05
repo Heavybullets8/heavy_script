@@ -27,7 +27,7 @@ do
         sleep 3
     elif [[ $it -lt ${#array[@]} ]]; then
         new_updates=0
-        until [[ "$proc_count" -eq "$update_limit" || $it -eq ${#array[@]} ]]
+        until [[ "$proc_count" -ge "$update_limit" || $it -ge ${#array[@]} ]]
         do
             update_apps "${array[$it]}" &
             processes+=($!)

@@ -38,13 +38,13 @@ do
         ((ttl++))
         if [[ $ttl -eq 1 ]]; then
             sleep 15
-        elif [[ $new_updates -gt 1 ]]; then 
-            sleep 6
+        # elif [[ $new_updates -gt 1 ]]; then 
+        #     sleep 15
         else
-            sleep 3
+            sleep 10
         fi
     elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
-        sleep 3
+        sleep 10
     else # All processes must be completed, break out of loop
         break
     fi
@@ -104,7 +104,7 @@ if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #con
                     break
                 elif [[ "$status" !=  "STOPPED" ]]; then
                     [[ "$verbose" == "true" ]] && echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be STOPPED")
-                    sleep 10
+                    sleep 15
                 fi
             done
         fi

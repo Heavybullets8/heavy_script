@@ -9,6 +9,26 @@ echo "Asynchronous Updates: $update_limit"
 [[ -z $timeout ]] && echo "Default Timeout: 500" && timeout=500 || echo "Custom Timeout: $timeout"
 [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
 
+#rearange array
+for i in ${array[$@]}
+do
+    if printf '%s\0' "${ignore[@]}" | grep -iFxqz "$i" ; then
+        new_array+=("$i")
+    elif grep -qs "^$i," failed.txt ; then
+        new_array+=("$i")
+    fi
+done
+
+for i in ${array[$@]}
+do
+    printf '%s\0' "${new_array[@]}" | grep -iFxqz "$i" || new_array+=("$i")
+done
+
+for i in ${new_array[$@]}
+do
+    echo "$i"
+done
+
 # previous 20% 2 min 9 seconds
 it=0
 ttl=0

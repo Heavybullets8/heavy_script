@@ -25,14 +25,16 @@ do
     if [[ "$proc_count" -ge "$update_limit" ]]; then
         sleep 3
     elif [[ $it -lt ${#array[@]} ]]; then
+        new_updates=0
         until [[ "$proc_count" -ge "$update_limit" || $it -ge ${#array[@]} ]]
         do
             update_apps "${array[$it]}" &
             processes+=($!)
             ((proc_count++))
             ((it++))
+            ((new_updates++))
         done
-        sleep 3
+        [[ $new_updates -gt 1 ]] && sleep 3
     elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
         sleep 3
     else # All processes must be completed, break out of loop

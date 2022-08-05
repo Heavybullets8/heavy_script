@@ -33,6 +33,7 @@ do
             processes+=($!)
             ((it++))
             ((new_updates++))
+            ((proc_count++))
         done
         ((ttl++))
         if [[ $ttl -eq 1 ]]; then

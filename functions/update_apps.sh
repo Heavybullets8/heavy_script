@@ -37,7 +37,7 @@ do
         done
         ((ttl++))
         if [[ $ttl -eq 1 ]]; then
-            sleep 15
+            sleep 20
         # elif [[ $new_updates -gt 1 ]]; then 
         #     sleep 15
         else

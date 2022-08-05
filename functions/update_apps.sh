@@ -9,7 +9,7 @@ echo "Asynchronous Updates: $update_limit"
 [[ -z $timeout ]] && echo "Default Timeout: 500" && timeout=500 || echo "Custom Timeout: $timeout"
 [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
 
-proc_count=0
+
 it=0
 ttl=0
 while true

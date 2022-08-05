@@ -9,13 +9,12 @@ echo "Asynchronous Updates: $update_limit"
 [[ -z $timeout ]] && echo "Default Timeout: 500" && timeout=500 || echo "Custom Timeout: $timeout"
 [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
 
-
+proc_count=0
 it=0
 while true
 do
     while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status') 
     echo "$while_status" > temp.txt
-    proc_count=${#processes[@]}
     count=0
     for proc in "${processes[@]}"
     do

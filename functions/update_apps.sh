@@ -34,7 +34,7 @@ do
             ((it++))
             ((new_updates++))
         done
-        [[ $new_updates -gt 1 ]] && sleep 3
+        [[ $new_updates -gt 1 ]] && sleep 6
     elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
         sleep 3
     else # All processes must be completed, break out of loop

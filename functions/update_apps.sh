@@ -24,7 +24,7 @@ do
         ((count++)) 
     done
     if [[ "$proc_count" -ge "$update_limit" ]]; then
-        sleep 3
+        sleep 10
     elif [[ $it -lt ${#array[@]} ]]; then
         new_updates=0
         until [[ "$proc_count" -ge "$update_limit" || $it -ge ${#array[@]} ]]

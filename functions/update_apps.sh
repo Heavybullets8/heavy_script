@@ -29,7 +29,7 @@ do
         until [[ "$proc_count" -ge "$update_limit" || $it -ge ${#array[@]} ]]
         do
             update_apps "${array[$it]}" &
-            sleep 1
+            sleep 2
             processes+=($!)
             ((it++))
             ((proc_count++))

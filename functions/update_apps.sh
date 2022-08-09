@@ -24,7 +24,6 @@ do
             break
         fi
     done
-
     proc_count=${#processes[@]}
     count=0
     for proc in "${processes[@]}"
@@ -45,7 +44,7 @@ do
         done
         ((ttl++))
         if [[ $ttl -eq 1 ]]; then
-            sleep 15
+            sleep 25
         else
             sleep 6
         fi

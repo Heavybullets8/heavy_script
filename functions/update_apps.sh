@@ -14,8 +14,16 @@ it=0
 ttl=0
 while true
 do
-    while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status') 
-    echo "$while_status" > temp.txt
+    while true
+    do
+        if ! while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null); then
+            sleep 5
+        else
+            echo "$while_status" > temp.txt
+            break
+        fi
+    done
+
     proc_count=${#processes[@]}
     count=0
     for proc in "${processes[@]}"
@@ -30,7 +38,7 @@ do
         do
             update_apps "${array[$it]}" &
             processes+=($!)
-            sleep 2
+            sleep 3
             ((it++))
             ((proc_count++))
         done

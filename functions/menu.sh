@@ -22,15 +22,12 @@ case $selection in
         ;;
     1)
         help
-        exit
         ;;
     2)
         dns 
-        exit
         ;;
     3)
         mount
-        exit
         ;;
     4)
         read -rt 120 -p "What is the maximun number of backups you would like?: " number_of_backups || echo "Failed to make a selection"
@@ -38,11 +35,9 @@ case $selection in
         ;;
     5)
         restore
-        exit
         ;;
     6)
         deleteBackup
-        exit
         ;;
     7)
         self_update

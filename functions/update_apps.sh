@@ -11,7 +11,7 @@ echo "Asynchronous Updates: $update_limit"
 
 # previous 20% 2 min 9 seconds
 it=0
-ttl=0
+first_run=0
 while true
 do
     while true
@@ -34,19 +34,24 @@ do
     if [[ "$proc_count" -ge "$update_limit" ]]; then
         sleep 6
     elif [[ $it -lt ${#array[@]} ]]; then
+        ttl=0
         until [[ "$proc_count" -ge "$update_limit" || $it -ge ${#array[@]} ]]
         do
             update_apps "${array[$it]}" &
             processes+=($!)
-            sleep 1
             ((it++))
             ((proc_count++))
+            ((ttl++))
         done
-        ((ttl++))
-        if [[ $ttl -eq 1 ]]; then
-            sleep 25
-        else
-            sleep 6
+        ((first_run++))
+        if [[ $first_run == 1 ]]; then
+            if [[ $ttl -le 5 ]]; then
+                sleep 15
+            elif [[ $ttl -le 10 ]]; then
+                sleep 25
+            elif [[ $ttl -gt 10 ]]; then
+                sleep 35
+            fi
         fi
     elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
         sleep 6

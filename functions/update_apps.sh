@@ -38,16 +38,16 @@ do
         do
             update_apps "${array[$it]}" &
             processes+=($!)
-            sleep 3
+            sleep 1
             ((it++))
             ((proc_count++))
         done
-        # ((ttl++))
-        # if [[ $ttl -eq 1 ]]; then
-        #     sleep 15
-        # else
-        #     sleep 6
-        # fi
+        ((ttl++))
+        if [[ $ttl -eq 1 ]]; then
+            sleep 15
+        else
+            sleep 6
+        fi
     elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
         sleep 6
     else # All processes must be completed, break out of loop

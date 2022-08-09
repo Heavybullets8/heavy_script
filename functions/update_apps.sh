@@ -98,7 +98,7 @@ if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #con
                     break
                 elif [[ "$status" !=  "STOPPED" ]]; then
                     [[ "$verbose" == "true" ]] && echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be STOPPED")
-                    sleep 15
+                    sleep 5
                 fi
             done
         fi
@@ -132,14 +132,14 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
                 echo_array+=("Stopped")
                 break
             else
-                [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && sleep 15 && continue #if reports active on FIRST time through loop, double check
-                [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports active on FIRST time through loop, double check
+                [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && sleep 5 && continue #if reports active on FIRST time through loop, double check
+                [[ "$count" -le 1  && -z "$verbose" ]] && sleep 5 && continue #if reports active on FIRST time through loop, double check
                 echo_array+=("Active")
                 break #if reports active any time after the first loop, assume actually active.
             fi
         elif [[ "$status"  ==  "STOPPED" ]]; then
-            [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Stopped..") && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
-            [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
+            [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Stopped..") && sleep 5 && continue #if reports stopped on FIRST time through loop, double check
+            [[ "$count" -le 1  && -z "$verbose" ]] && sleep 5 && continue #if reports stopped on FIRST time through loop, double check
             echo_array+=("Stopped")
             break #if reports stopped any time after the first loop, assume its extermal services.
         elif [[ "$SECONDS" -ge "$timeout" && "$status" == "DEPLOYING" ]]; then
@@ -167,7 +167,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
             fi
         else
             [[ "$verbose" == "true" ]] && echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be ACTIVE")
-            sleep 15
+            sleep 5
             continue
         fi
     done

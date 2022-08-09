@@ -14,7 +14,7 @@ it=0
 while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) > temp.txt
 while true
 do
-    if [ ! -e trigger ] ; then
+    if [ -f trigger ]; then
         while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null)
         echo "$while_status" > temp.txt
     fi

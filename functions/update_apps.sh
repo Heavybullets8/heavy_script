@@ -12,18 +12,23 @@ echo "Asynchronous Updates: $update_limit"
 # previous 20% 2 min 9 seconds
 it=0
 first_run=0
+while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null)
 while true
 do
-    while true
-    do
-        if ! while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null); then
-            echo "Middlewared timed out, consider lowering your async updates"
-            sleep 5
-        else
-            echo "$while_status" > temp.txt
-            break
-        fi
-    done
+    # while true
+    # do
+    #     if ! while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null); then
+    #         echo "Middlewared timed out, consider lowering your async updates"
+    #         sleep 5
+    #     else
+    #         echo "$while_status" > temp.txt
+    #         break
+    #     fi
+    # done
+    if [ ! -e "$file" ] ; then
+        while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null)
+        echo "$while_status" > temp.txt
+    fi
     proc_count=${#processes[@]}
     count=0
     for proc in "${processes[@]}"
@@ -101,6 +106,7 @@ if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #con
             [[ "$verbose" == "true" ]] && echo_array+=("Stopping prior to update..")
             midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null || echo_array+=("Error: Failed to stop $app_name")
             SECONDS=0
+            [[ ! -e trigger ]] && touch trigger
             while [[ "$status" !=  "STOPPED" ]]
             do
                 status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
@@ -135,6 +141,7 @@ export -f update_apps
 after_update_actions(){
 SECONDS=0
 count=0
+[[ ! -e trigger ]] && touch trigger
 if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
     while true
     do

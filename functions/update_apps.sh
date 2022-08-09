@@ -43,7 +43,7 @@ do
     fi
 done
 rm temp.txt
-rm trigger
+[[ -e trigger ]] && rm trigger
 echo
 echo
 }

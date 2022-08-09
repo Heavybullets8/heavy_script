@@ -8,20 +8,15 @@ script_name="heavy_script.sh"
 cd "$script_path" || { echo "Error: Failed to change to script directory" ; exit ; } 
 
 
-# shellcheck source=functions/backup.sh
 source functions/backup.sh
-# shellcheck source=functions/dns.sh
 source functions/dns.sh
-# shellcheck source=functions/menu.sh
 source functions/menu.sh
-# shellcheck source=functions/misc.sh
 source functions/misc.sh
-# shellcheck source=functions/mount.sh
 source functions/mount.sh
-# shellcheck source=functions/self_update.sh
 source functions/self_update.sh
-# shellcheck source=functions/update_apps.sh
 source functions/update_apps.sh
+source functions/cmd_to_container.sh
+source functions/script_create.sh
 
 
 
@@ -139,8 +134,8 @@ done
 [[ "$update_all_apps" == "true" && "$update_apps" == "true" ]] && echo -e "-U and -u cannot BOTH be called" && exit
 
 #Continue to call functions in specific order
-[[ "$help" == "true" ]] && help
 [[ "$self_update" == "true" ]] && self_update
+[[ "$help" == "true" ]] && help
 [[ "$deleteBackup" == "true" ]] && deleteBackup && exit
 [[ "$dns" == "true" ]] && dns && exit
 [[ "$restore" == "true" ]] && restore && exit

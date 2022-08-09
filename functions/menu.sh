@@ -264,7 +264,7 @@ case $selection in
             fi
         done
         container=$(echo "$containers" | grep ^"$selection)" | awk '{print $2}')
-        container_id=$(echo "$search" | grep "$container" | awk '{print $1}')
+        container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
         clear -x
         title
         echo "App Name: $app_name"

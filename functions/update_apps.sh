@@ -137,9 +137,11 @@ do
     updated=$(grep "^$app_name," temp.txt | awk -F ',' '{print $3}')
     if cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null || [[ $updated == "false" ]]; then
         break
-    else
+    elif [[ $count -lt 3 ]]; then
         ((count++))
         sleep 5
+    else
+        return 1
     fi
 done
 }

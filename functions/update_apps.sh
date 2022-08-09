@@ -17,6 +17,7 @@ do
     while true
     do
         if ! while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null); then
+            echo "Middlewared timed out, consider lowering your async updates"
             sleep 5
         else
             echo "$while_status" > temp.txt

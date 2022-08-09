@@ -11,6 +11,7 @@ echo "5)  Restore a Backup"
 echo "6)  Delete a Backup"
 echo "7)  Update HeavyScript"
 echo "8)  Update Applications"
+echo "9)  Command to Container"
 echo
 echo "0)  Exit"
 read -rt 120 -p "Please select an option by number: " selection
@@ -211,6 +212,40 @@ case $selection in
                     ;;
             esac
         done
+        ;;
+
+    9)
+        title 
+        clear -x
+        app_name=$(k3s kubectl get pods -A | awk '{print $1}' | sort -u | grep -v "system" | sed '1d' | sed 's/^[^-]*-//' | nl -s ") " | column -t)
+        echo "$app_name"
+        echo
+        echo "0)  Exit"
+        [[ $selection == 0 ]] && echo "Exiting.." && exit
+        read -rt 120 -p "Please type a number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+        app_name=$(echo -e "$app_name" | grep ^"$selection)" | awk '{print $2}')
+        search=$(k3s crictl ps -a -s running)
+        mapfile -t pod_id < <(echo "$search" | grep "$app_name" | awk '{print $9}')
+
+        containers=$(
+        for pod in "${pod_id[@]}"
+        do
+            echo "$search" | grep "$pod" | awk '{print $7}'
+        done | nl -s ") " | column -t) 
+        clear -x
+        title
+        echo "$containers"
+        echo
+        echo "0)  Exit"
+        read -rt 120 -p "Choose a container by number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+        [[ $selection == 0 ]] && echo "Exiting.." && exit
+
+        container=$(echo "$containers" | grep ^"$selection)" | awk '{print $2}')
+        container_id=$(echo "$search" | grep "$container" | awk '{print $1}')
+
+        read -rt 120 -p "What command would you like to submit to $app_name on $container?: " command || { echo -e "\nFailed to make a selection in time" ; exit; }
+        k3s crictl exec "$container_id" $command
+        container=$(echo -e "$app_name" | grep ^"$selection)" | awk '{print $2}')
         ;;
     *)
         echo "\"$selection\" was not an option, please try agian" && sleep 3 && menu

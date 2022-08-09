@@ -225,7 +225,7 @@ case $selection in
             echo "0)  Exit"
             read -rt 120 -p "Please type a number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
             if [[ $selection == 0 ]]; then
-                echo "Exitting.."
+                echo "Exiting.."
                 exit
             elif ! echo -e "$app_name" | grep -qs ^"$selection)" ; then
                 echo "Error: \"$selection\" was not an option.. Try again"
@@ -253,7 +253,7 @@ case $selection in
             echo "0)  Exit"
             read -rt 120 -p "Choose a container by number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
             if [[ $selection == 0 ]]; then
-                echo "Exitting.."
+                echo "Exiting.."
                 exit
             elif ! echo -e "$containers" | grep -qs ^"$selection)" ; then
                 echo "Error: \"$selection\" was not an option.. Try again"
@@ -272,7 +272,7 @@ case $selection in
         echo
         echo "0)  Exit"
         read -rt 120 -p "What command would you like to run?: " command || { echo -e "\nFailed to make a selection in time" ; exit; }
-        [[ $command == 0 ]] && echo "Exitting.." && exit
+        [[ $command == 0 ]] && echo "Exiting.." && exit
         k3s crictl exec "$container_id" $command
         container=$(echo -e "$app_name" | grep ^"$selection)" | awk '{print $2}')
         ;;

@@ -237,7 +237,7 @@ case $selection in
         done
         app_name=$(echo -e "$app_name" | grep ^"$selection)" | awk '{print $2}')
         search=$(k3s crictl ps -a -s running)
-        mapfile -t pod_id < <(echo "$search" | grep -E " $app_name(-)?[[:alnum:]]*[[:space:]]" | awk '{print $9}')
+        mapfile -t pod_id < <(echo "$search" | grep -E " $app_name( |-[[:alnum:]]*[[:space:]])" | awk '{print $9}')
 
         containers=$(
         for pod in "${pod_id[@]}"

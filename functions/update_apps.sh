@@ -65,6 +65,7 @@ do
     fi
 done
 rm temp.txt
+rm trigger
 echo
 echo
 }

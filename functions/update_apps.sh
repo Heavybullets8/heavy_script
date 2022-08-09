@@ -48,16 +48,16 @@ do
             ((proc_count++))
             ((ttl++))
         done
-        ((first_run++))
-        if [[ $first_run == 1 ]]; then
-            if [[ $ttl -le 5 ]]; then
-                sleep 15
-            elif [[ $ttl -le 10 ]]; then
-                sleep 25
-            elif [[ $ttl -gt 10 ]]; then
-                sleep 35
-            fi
-        fi
+        # ((first_run++))
+        # if [[ $first_run == 1 ]]; then
+        #     if [[ $ttl -le 5 ]]; then
+        #         sleep 15
+        #     elif [[ $ttl -le 10 ]]; then
+        #         sleep 25
+        #     elif [[ $ttl -gt 10 ]]; then
+        #         sleep 35
+        #     fi
+        # fi
     elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
         sleep 6
     else # All processes must be completed, break out of loop

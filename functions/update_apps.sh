@@ -11,20 +11,9 @@ echo "Asynchronous Updates: $update_limit"
 
 # previous 20% 2 min 9 seconds
 it=0
-# first_run=0
 while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) > temp.txt
 while true
 do
-    # while true
-    # do
-    #     if ! while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null); then
-    #         echo "Middlewared timed out, consider lowering your async updates"
-    #         sleep 5
-    #     else
-    #         echo "$while_status" > temp.txt
-    #         break
-    #     fi
-    # done
     if [ ! -e "$file" ] ; then
         while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null)
         echo "$while_status" > temp.txt
@@ -48,16 +37,6 @@ do
             ((proc_count++))
             ((ttl++))
         done
-        # ((first_run++))
-        # if [[ $first_run == 1 ]]; then
-        #     if [[ $ttl -le 5 ]]; then
-        #         sleep 15
-        #     elif [[ $ttl -le 10 ]]; then
-        #         sleep 25
-        #     elif [[ $ttl -gt 10 ]]; then
-        #         sleep 35
-        #     fi
-        # fi
     elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
         sleep 6
     else # All processes must be completed, break out of loop

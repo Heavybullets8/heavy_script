@@ -2,10 +2,11 @@
 
 args=("$@")
 self_update() {
+branch="ignore-file"
 git fetch &> /dev/null 
 echo "🅂 🄴 🄻 🄵"
 echo "🅄 🄿 🄳 🄰 🅃 🄴"
-if  git diff --name-only origin/main | grep -qs ".sh" ; then
+if  git diff --name-only origin/$branch | grep -qs ".sh" ; then
     echo "Found a new version of HeavyScript, updating myself..."
     git reset --hard -q
     git pull --force -q

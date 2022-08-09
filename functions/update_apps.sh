@@ -78,7 +78,12 @@ if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #con
         if [[ "$startstatus" ==  "STOPPED" ]]; then # if status is already stopped, skip while loop
             echo_array+=("\n$app_name")
             [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
-            update
+            if update ;then
+                echo_array+=("Updated\n$old_full_ver\n$new_full_ver")
+            else
+                echo_array+=("Failed to update")
+                return
+            fi
         else # if status was not STOPPED, stop the app prior to updating
             echo_array+=("\n$app_name")
             [[ "$verbose" == "true" ]] && echo_array+=("Stopping prior to update..")
@@ -91,7 +96,12 @@ if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #con
                 if [[ "$status"  ==  "STOPPED" ]]; then
                     echo_array+=("Stopped")
                     [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
-                    update
+                    if update ;then
+                        echo_array+=("Updated\n$old_full_ver\n$new_full_ver")
+                    else
+                        echo_array+=("Failed to update")
+                        return
+                    fi
                 elif [[ "$SECONDS" -ge "$timeout" ]]; then
                     echo_array+=("Error: Run Time($SECONDS) has exceeded Timeout($timeout)")
                     break
@@ -104,7 +114,12 @@ if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #con
     else #user must not be using -S, just update
         echo_array+=("\n$app_name")
         [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
-        update
+        if update ;then
+            echo_array+=("Updated\n$old_full_ver\n$new_full_ver")
+        else
+            echo_array+=("Failed to update")
+            return
+        fi
     fi
 else
     echo -e "\n$app_name\nMajor Release, update manually"
@@ -121,10 +136,8 @@ while [[ $count -lt 3 ]]
 do
     updated=$(grep "^$app_name," temp.txt | awk -F ',' '{print $3}')
     if cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null || [[ $updated == "false" ]]; then
-        echo_array+=("Updated\n$old_full_ver\n$new_full_ver")
         break
     else
-        echo_array+=("Failed, trying again..")
         ((count++))
         sleep 5
     fi

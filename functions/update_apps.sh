@@ -109,7 +109,7 @@ if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #con
         cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null && echo_array+=("Updated\n$old_full_ver\n$new_full_ver")  || echo_array+=("FAILED")
     fi
 else
-    echo_array+=("\n$app_name\nMajor Release, update manually")
+    echo -e "\n$app_name\nMajor Release, update manually"
     return 0
 fi
 after_update_actions

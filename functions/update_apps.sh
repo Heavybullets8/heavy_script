@@ -14,7 +14,7 @@ it=0
 while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) > temp.txt
 while true
 do
-    if [ ! -e "$file" ] ; then
+    if [ ! -e trigger ] ; then
         while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null)
         echo "$while_status" > temp.txt
     fi
@@ -28,14 +28,12 @@ do
     if [[ "$proc_count" -ge "$update_limit" ]]; then
         sleep 6
     elif [[ $it -lt ${#array[@]} ]]; then
-        ttl=0
         until [[ "$proc_count" -ge "$update_limit" || $it -ge ${#array[@]} ]]
         do
             update_apps "${array[$it]}" &
             processes+=($!)
             ((it++))
             ((proc_count++))
-            ((ttl++))
         done
     elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
         sleep 6

@@ -83,7 +83,7 @@ do
             title
 
             if ! k3s crictl exec -it "$container_id" /bin/bash ; then
-                k3s crictl exec -it "$container_id" /bin/sh
+                k3s crictl exec -it "$container_id" /bin/sh || echo "This application does not accept shell access apparently"
             fi
             break
             ;;

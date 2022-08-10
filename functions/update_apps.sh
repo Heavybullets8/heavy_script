@@ -133,13 +133,13 @@ export -f update_apps
 
 
 update(){
-[[ ! -e trigger ]] && touch trigger
 count=0
 while [[ $count -lt 3 ]]
 do
     update_avail=$(grep "^$app_name," temp.txt | awk -F ',' '{print $3}')
     if [[ $update_avail == "true" ]]; then
         if ! cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null ; then
+            [[ ! -e trigger ]] && touch trigger
             sleep 6
             ((count++))
             continue
@@ -158,8 +158,8 @@ export -f update
 after_update_actions(){
 SECONDS=0
 count=0
-# [[ ! -e trigger ]] && touch trigger
 if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
+    [[ ! -e trigger ]] && touch trigger
     while true
     do
         (( count++ ))

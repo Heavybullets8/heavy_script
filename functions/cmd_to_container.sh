@@ -24,7 +24,7 @@ do
 done
 app_name=$(echo -e "$app_name" | grep ^"$selection)" | awk '{print $2}')
 search=$(k3s crictl ps -a -s running)
-mapfile -t pod_id < <(echo "$search" | grep -E " $app_name([[:space:]]|-([-[:alnum:]])*[[:space:]])" | awk '{print $9}')
+mapfile -t pod_id < <(echo "$search" | grep -E "[[:space:]]$app_name([[:space:]]|-([-[:alnum:]])*[[:space:]])" | awk '{print $9}')
 [[ "${#pod_id[@]}" == 0 ]] && echo -e "No containers available\nAre you sure the application in running?" && exit
 containers=$(
 for pod in "${pod_id[@]}"

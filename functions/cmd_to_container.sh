@@ -41,8 +41,7 @@ elif [[ "${#containers[@]}" == 0  ]]; then
 else
     for pod in "${pod_id[@]}"
     do
-        # mapfile -t containers < <(echo "$search" | grep "$pod" | awk '{print $4}') 
-        IFS=" " read -r -a containers <<< "$(echo "$search" | grep "$pod" | awk '{print $4}')"
+        echo "$pod"
     done 
     while true
     do

@@ -45,17 +45,20 @@ else
     do
         clear -x
         title
+        cont_search=$(
         for container in "${containers[@]}"
         do
             echo "$container"
         done | nl -s ") " | column -t
+        )
+        echo "$cont_search"
         echo
         echo "0)  Exit"
         read -rt 120 -p "Choose a container by number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
         if [[ $selection == 0 ]]; then
             echo "Exiting.."
             exit
-        elif ! echo -e "${containers[@]}" | nl -s ") " | grep -qs ^"$selection)" ; then
+        elif ! echo -e "$cont_search}" | nl -s ") " | grep -qs ^"$selection)" ; then
             echo "Error: \"$selection\" was not an option.. Try again"
             sleep 3
             continue
@@ -63,7 +66,7 @@ else
             break
         fi
     done
-    container=$(echo "${containers[*]}" | grep ^"$selection)" | awk '{print $2}')
+    container=$(echo "$cont_search" | grep ^"$selection)" | awk '{print $2}')
     container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
 fi
 while true

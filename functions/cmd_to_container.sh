@@ -25,15 +25,19 @@ done
 app_name=$(echo -e "$app_name" | grep ^"$selection)" | awk '{print $2}')
 search=$(k3s crictl ps -a -s running | sed -E 's/([0-9]*|About)[[:space:]][a-z]{2,5}[[:space:]](hour)?[[:space:]]?ago//')
 mapfile -t pod_id < <(echo "$search" | grep -E "[[:space:]]$app_name([[:space:]]|-([-[:alnum:]])*[[:space:]])" | awk '{print $(NF)}')
-[[ "${#pod_id[@]}" == 0 ]] && echo -e "No containers available\nAre you sure the application in running?" && exit
-containers=$(
-for pod in "${pod_id[@]}"
-do
-    echo "$search" | grep "$pod" | awk '{print $4}'
-done | nl -s ") " | column -t) 
+
 if [[ "${#pod_id[@]}" == 1 ]]; then
-    container_id=$(echo "$search" | grep -E "[[:space:]]${containers}[[:space:]]" | awk '{print $1}')
+    container=$(echo "$search" | grep "${pod_id[*]}" | awk '{print $4}')
+    container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
+elif [[ "${#pod_id[@]}" == 0  ]]; then
+    echo -e "No containers available\nAre you sure the application in running?"
+    exit
 else
+    containers=$(
+    for pod in "${pod_id[@]}"
+    do
+        echo "$search" | grep "$pod" | awk '{print $4}'
+    done | nl -s ") " | column -t) 
     while true
     do
         clear -x

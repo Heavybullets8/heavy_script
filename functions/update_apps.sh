@@ -13,9 +13,10 @@ echo "Asynchronous Updates: $update_limit"
 it=0
 while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) > temp.txt
 echo "$while_status" > temp.txt
+rm trigger &>/dev/null
 while true
 do
-    if [ -f trigger ]; then
+    if [[ -f trigger ]]; then
         while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null)
         echo "$while_status" > temp.txt
     fi

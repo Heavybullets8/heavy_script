@@ -52,15 +52,48 @@ do
 done
 container=$(echo "$containers" | grep ^"$selection)" | awk '{print $2}')
 container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
-clear -x
-title
-echo "App Name: $app_name"
-echo "Container: $container"
-echo
-echo "0)  Exit"
-read -rt 120 -p "What command would you like to run?: " command || { echo -e "\nFailed to make a selection in time" ; exit; }
-[[ $command == 0 ]] && echo "Exiting.." && exit
-k3s crictl exec "$container_id" $command
-container=$(echo -e "$app_name" | grep ^"$selection)" | awk '{print $2}')
+while true
+do
+    clear -x
+    title
+    echo "App Name: $app_name"
+    echo "Container: $container"
+    echo
+    echo "1)  Run a single command"
+    echo "2)  Open Shell"
+    echo
+    echo "0)  Exit"
+    read -rt 120 -p "Please choose an option: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+    case $selection in
+        0)
+            echo "Exiting.."
+            exit
+            ;;
+
+        1)
+            clear -x 
+            title
+            read -rt 120 -p "What command do you want to run?: " command || { echo -e "\nFailed to make a selection in time" ; exit; }
+            k3s crictl exec -it "$container_id" $command
+            break
+            ;;
+
+        2)
+            clear -x
+            title
+
+            if ! k3s crictl exec -it "$container_id" /bin/bash ; then
+                k3s crictl exec -it "$container_id" /bin/sh
+            fi
+            break
+            ;;
+
+        *)
+            echo "That was not an option.. Try again"
+            sleep 3
+            ;;
+    esac
+done
+
 }
 export -f cmd_to_container

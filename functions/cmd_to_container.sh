@@ -82,7 +82,7 @@ do
             clear -x
             title
 
-            if ! k3s crictl exec -it "$container_id" /bin/bash ; then
+            if ! k3s crictl exec -it "$container_id" /bin/bash && $? != 130 ; then
                 k3s crictl exec -it "$container_id" /bin/sh
             fi
             break

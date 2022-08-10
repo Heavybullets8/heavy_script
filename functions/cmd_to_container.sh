@@ -48,9 +48,9 @@ else
         clear -x
         title
         cont_search=$(
-        for container in "${containers[@]}"
+        for i in "${containers[@]}"
         do
-            echo "$container"
+            echo "$i"
         done | nl -s ") " | column -t
         )
         echo "$cont_search"

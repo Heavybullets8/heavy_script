@@ -25,12 +25,14 @@ done
 app_name=$(echo -e "$app_name" | grep ^"$selection)" | awk '{print $2}')
 search=$(k3s crictl ps -a -s running | sed -E 's/([0-9]*|About)[[:space:]][a-z]{2,5}[[:space:]](hour)?[[:space:]]?ago//')
 mapfile -t pod_id < <(echo "$search" | grep -E "[[:space:]]$app_name([[:space:]]|-([-[:alnum:]])*[[:space:]])" | awk '{print $(NF)}')
+count=0
 for pod in "${pod_id[@]}"
 do
     mapfile -t containers < <(echo "$search" | grep "$pod" | awk '{print $4}') 
+    ((count++))
 done
 
-if [[ "${#containers[@]}" == 1 && "${#pod_id[@]}" == 1 ]]; then
+if [[ $count == 1 ]]; then
     container=$(echo "$search" | grep "${pod_id[*]}" | awk '{print $4}')
     container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
 elif [[ "${#containers[@]}" == 0  ]]; then

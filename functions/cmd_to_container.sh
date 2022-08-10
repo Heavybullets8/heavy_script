@@ -39,10 +39,6 @@ elif [[ "${#containers[@]}" == 0  ]]; then
     echo -e "No containers available\nAre you sure the application in running?"
     exit
 else
-    for pod in "${pod_id[@]}"
-    do
-        echo "$pod"
-    done 
     while true
     do
         clear -x

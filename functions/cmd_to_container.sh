@@ -29,7 +29,7 @@ mapfile -t pod_id < <(echo "$search" | grep -E "[[:space:]]$app_name([[:space:]]
 containers=$(
 for pod in "${pod_id[@]}"
 do
-    echo "$search" | grep "$pod" | awk '{print $7}'
+    echo "$search" | grep "$pod" | awk '{print $(NF)}'
 done | nl -s ") " | column -t) 
 while true
 do

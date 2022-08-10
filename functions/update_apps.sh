@@ -134,14 +134,19 @@ update(){
 count=0
 while [[ $count -lt 3 ]]
 do
-    updated=$(grep "^$app_name," temp.txt | awk -F ',' '{print $3}')
-    if cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null || [[ $updated == "false" ]]; then
+    update_avail=$(grep "^$app_name," temp.txt | awk -F ',' '{print $3}')
+    if [[ $update_avail == "true" ]]; then
+        if ! cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null ; then
+            sleep 6
+            ((count++))
+            continue
+        fi
         break
-    elif [[ $count -lt 3 ]]; then
-        ((count++))
-        sleep 5
+    elif [[ $update_avail == "false" ]]; then
+        break
     else
-        return 1
+        ((count++))
+        sleep 6
     fi
 done
 }

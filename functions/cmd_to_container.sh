@@ -43,13 +43,13 @@ else
     do
         clear -x
         title
-        cont_search=$(
+
         for i in "${containers[@]}"
         do
             echo "$i"
         done | nl -s ") " | column -t
-        )
-        echo "$cont_search"
+        
+
         echo
         echo "0)  Exit"
         read -rt 120 -p "Choose a container by number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }

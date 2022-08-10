@@ -32,7 +32,7 @@ do
     echo "$search" | grep "$pod" | awk '{print $4}'
 done | nl -s ") " | column -t) 
 if [[ "${#pod_id[@]}" == 1 ]]; then
-    container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
+    container_id=$(echo "$search" | grep -E "[[:space:]]${pod_id[*]}[[:space:]]" | awk '{print $1}')
 else
     while true
     do

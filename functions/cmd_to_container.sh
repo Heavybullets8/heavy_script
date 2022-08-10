@@ -28,15 +28,14 @@ mapfile -t pod_id < <(echo "$search" | grep -E "[[:space:]]$app_name([[:space:]]
 for pod in "${pod_id[@]}"
 do
     containers+=("$(echo "$search" | grep "$pod" | awk '{print $4}')") 
-    echo "${#containers[@]}"
 done
 
-if [[ "${#containers[@]}" == 1 ]]; then
-    container=$(echo "$search" | grep "${pod_id[*]}" | awk '{print $4}')
-    container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
-elif [[ "${#containers[@]}" == 0  ]]; then
+if [[ "${#containers[@]}" == 0  ]]; then
     echo -e "No containers available\nAre you sure the application in running?"
     exit
+elif [[ "${#containers[@]}" == 1 ]]; then
+    container=$(echo "$search" | grep "${pod_id[*]}" | awk '{print $4}')
+    container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
 else
     while true
     do

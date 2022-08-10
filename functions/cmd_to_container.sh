@@ -29,7 +29,6 @@ for pod in "${pod_id[@]}"
 do
     containers+=("$(echo "$search" | grep "$pod" | awk '{print $4}')") 
 done
-
 case "${#containers[@]}" in
     0)
         echo -e "No containers available\nAre you sure the application in running?"
@@ -70,42 +69,6 @@ case "${#containers[@]}" in
         container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
         ;;
 esac
-
-# if [[ "${#containers[@]}" == 0  ]]; then
-#     echo -e "No containers available\nAre you sure the application in running?"
-#     exit
-# elif [[ "${#containers[@]}" == 1 ]]; then
-#     container=$(echo "$search" | grep "${pod_id[*]}" | awk '{print $4}')
-#     container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
-# else
-#     while true
-#     do
-#         clear -x
-#         title
-#         cont_search=$(
-#         for i in "${containers[@]}"
-#         do
-#             echo "$i"
-#         done | nl -s ") " | column -t
-#         )
-#         echo "$cont_search"
-#         echo
-#         echo "0)  Exit"
-#         read -rt 120 -p "Choose a container by number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
-#         if [[ $selection == 0 ]]; then
-#             echo "Exiting.."
-#             exit
-#         elif ! echo -e "$cont_search}" | grep -qs ^"$selection)" ; then
-#             echo "Error: \"$selection\" was not an option.. Try again"
-#             sleep 3
-#             continue
-#         else
-#             break
-#         fi
-#     done
-#     container=$(echo "$cont_search" | grep ^"$selection)" | awk '{print $2}')
-#     container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
-# fi
 while true
 do
     clear -x

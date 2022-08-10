@@ -28,7 +28,7 @@ do
         ((count++)) 
     done
     if [[ "$proc_count" -ge "$update_limit" ]]; then
-        sleep 6
+        sleep 4
     elif [[ $it -lt ${#array[@]} ]]; then
         until [[ "$proc_count" -ge "$update_limit" || $it -ge ${#array[@]} ]]
         do
@@ -39,7 +39,7 @@ do
             ((proc_count++))
         done
     elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
-        sleep 6
+        sleep 4
     else # All processes must be completed, break out of loop
         break
     fi

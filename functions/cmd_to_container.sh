@@ -30,7 +30,7 @@ do
     mapfile -t containers < <(echo "$search" | grep "$pod" | awk '{print $4}') 
 done
 
-if [[ "${#containers[@]}" == 1 ]]; then
+if [[ "${#containers[@]}" == 1 && "${#pod_id[@]}" == 1 ]]; then
     container=$(echo "$search" | grep "${pod_id[*]}" | awk '{print $4}')
     container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
 elif [[ "${#containers[@]}" == 0  ]]; then

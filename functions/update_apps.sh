@@ -12,6 +12,7 @@ echo "Asynchronous Updates: $update_limit"
 # previous 20% 2 min 9 seconds
 it=0
 while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) > temp.txt
+echo "$while_status" > temp.txt
 while true
 do
     if [ -f trigger ]; then
@@ -131,6 +132,7 @@ export -f update_apps
 
 
 update(){
+[[ ! -e trigger ]] && touch trigger
 count=0
 while [[ $count -lt 3 ]]
 do
@@ -155,7 +157,7 @@ export -f update
 after_update_actions(){
 SECONDS=0
 count=0
-[[ ! -e trigger ]] && touch trigger
+# [[ ! -e trigger ]] && touch trigger
 if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
     while true
     do

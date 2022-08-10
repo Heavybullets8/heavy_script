@@ -89,7 +89,7 @@ do
         1)
             clear -x 
             title
-            read -rt 120 -p "What command do you want to run?: " command || { echo -e "\nFailed to make a selection in time" ; exit; }
+            read -rt 500 -p "What command do you want to run?: " command || { echo -e "\nFailed to make a selection in time" ; exit; }
             k3s crictl exec -it "$container_id" $command
             break
             ;;

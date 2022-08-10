@@ -55,7 +55,7 @@ else
         if [[ $selection == 0 ]]; then
             echo "Exiting.."
             exit
-        elif ! echo -e "$containers" | grep -qs ^"$selection)" ; then
+        elif ! echo -e "${containers[*]}" | grep -qs ^"$selection)" ; then
             echo "Error: \"$selection\" was not an option.. Try again"
             sleep 3
             continue
@@ -63,7 +63,7 @@ else
             break
         fi
     done
-    container=$(echo "$containers" | grep ^"$selection)" | awk '{print $2}')
+    container=$(echo "${containers[*]}" | grep ^"$selection)" | awk '{print $2}')
     container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
 fi
 while true

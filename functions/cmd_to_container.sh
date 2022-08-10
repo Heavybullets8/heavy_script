@@ -69,7 +69,6 @@ do
             echo "Exiting.."
             exit
             ;;
-
         1)
             clear -x 
             title
@@ -77,17 +76,14 @@ do
             k3s crictl exec -it "$container_id" $command
             break
             ;;
-
         2)
             clear -x
             title
-
             if ! k3s crictl exec -it "$container_id" /bin/bash 2>/dev/null; then
                 k3s crictl exec -it "$container_id" /bin/sh 2>/dev/null || echo "This container does not accept shell access, try a different one."
             fi
             break
             ;;
-
         *)
             echo "That was not an option.. Try again"
             sleep 3

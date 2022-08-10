@@ -31,27 +31,31 @@ for pod in "${pod_id[@]}"
 do
     echo "$search" | grep "$pod" | awk '{print $4}'
 done | nl -s ") " | column -t) 
-while true
-do
-    clear -x
-    title
-    echo "$containers"
-    echo
-    echo "0)  Exit"
-    read -rt 120 -p "Choose a container by number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
-    if [[ $selection == 0 ]]; then
-        echo "Exiting.."
-        exit
-    elif ! echo -e "$containers" | grep -qs ^"$selection)" ; then
-        echo "Error: \"$selection\" was not an option.. Try again"
-        sleep 3
-        continue
-    else
-        break
-    fi
-done
-container=$(echo "$containers" | grep ^"$selection)" | awk '{print $2}')
-container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
+if [[ "${#pod_id[@]}" == 1 ]]; then
+    container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
+else
+    while true
+    do
+        clear -x
+        title
+        echo "$containers"
+        echo
+        echo "0)  Exit"
+        read -rt 120 -p "Choose a container by number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+        if [[ $selection == 0 ]]; then
+            echo "Exiting.."
+            exit
+        elif ! echo -e "$containers" | grep -qs ^"$selection)" ; then
+            echo "Error: \"$selection\" was not an option.. Try again"
+            sleep 3
+            continue
+        else
+            break
+        fi
+    done
+    container=$(echo "$containers" | grep ^"$selection)" | awk '{print $2}')
+    container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
+fi
 while true
 do
     clear -x

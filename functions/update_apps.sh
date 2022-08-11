@@ -14,9 +14,11 @@ it=0
 while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null)
 echo "$while_status" > temp.txt
 rm trigger &>/dev/null
+delay=2
 while true
 do
     if [[ -f trigger ]]; then
+        delay=4
         if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) ; then
             echo "$while_status" > temp.txt
         else
@@ -31,7 +33,7 @@ do
         ((count++)) 
     done
     if [[ "$proc_count" -ge "$update_limit" ]]; then
-        sleep 4
+        sleep $delay
     elif [[ $it -lt ${#array[@]} ]]; then
         until [[ "$proc_count" -ge "$update_limit" || $it -ge ${#array[@]} ]]
         do
@@ -42,7 +44,7 @@ do
             ((proc_count++))
         done
     elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
-        sleep 4
+        sleep $delay
     else # All processes must be completed, break out of loop
         break
     fi

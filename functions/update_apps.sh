@@ -10,23 +10,64 @@ echo "Asynchronous Updates: $update_limit"
 [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
 
 # previous 20% 2 min 9 seconds
-it=0
-while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null)
-echo "$while_status" > temp.txt
-rm trigger &>/dev/null
-delay=2
+# it=0
+# while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null)
+# echo "$while_status" > temp.txt
+# rm trigger &>/dev/null
+# delay=2
+# final_check=0
+# while true
+# do
+#     if [[ -f trigger ]]; then
+#         delay=4
+#         if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) ; then
+#             echo "$while_status" > temp.txt
+#         else
+#             echo "Middlewared timed out. Consider setting a lower number for async applications"
+#             continue
+#         fi
+#     fi
+#     proc_count=${#processes[@]}
+#     count=0
+#     for proc in "${processes[@]}"
+#     do
+#         kill -0 "$proc" &> /dev/null || { unset "processes[$count]"; ((proc_count--)); }
+#         ((count++)) 
+#     done
+#     if [[ "$proc_count" -ge "$update_limit" ]]; then
+#         sleep $delay
+#     elif [[ $it -lt ${#array[@]} ]]; then
+#         until [[ "$proc_count" -ge "$update_limit" || $it -ge ${#array[@]} ]]
+#         do
+#             update_apps "${array[$it]}" &
+#             processes+=($!)
+#             sleep 4
+#             ((it++))
+#             ((proc_count++))
+#         done
+#     elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
+#         sleep $delay
+#     else # All processes must be completed, break out of loop
+#         [[ $final_check == 0 ]] && ((final_check++)) && continue
+#         break
+#     fi
+# done
+# rm temp.txt
+# [[ -f trigger ]] && rm trigger
+# echo
+# echo
+
 final_check=0
+it=0
 while true
 do
-    if [[ -f trigger ]]; then
-        delay=4
-        if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) ; then
-            echo "$while_status" > temp.txt
-        else
-            echo "Middlewared timed out. Consider setting a lower number for async applications"
-            continue
-        fi
+    if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) ; then
+        echo "$while_status" > temp.txt
+    else
+        echo "Middlewared timed out. Consider setting a lower number for async applications"
+        continue
     fi
+    echo "$while_status" > temp.txt
     proc_count=${#processes[@]}
     count=0
     for proc in "${processes[@]}"
@@ -35,27 +76,26 @@ do
         ((count++)) 
     done
     if [[ "$proc_count" -ge "$update_limit" ]]; then
-        sleep $delay
+        sleep 3
     elif [[ $it -lt ${#array[@]} ]]; then
-        until [[ "$proc_count" -ge "$update_limit" || $it -ge ${#array[@]} ]]
+        until [[ "$proc_count" -ge 2 || $it -ge ${#array[@]} ]];
         do
             update_apps "${array[$it]}" &
             processes+=($!)
-            sleep 4
-            ((it++))
             ((proc_count++))
+            ((it++))
         done
     elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
-        sleep $delay
+        sleep 3
     else # All processes must be completed, break out of loop
         [[ $final_check == 0 ]] && ((final_check++)) && continue
         break
     fi
 done
 rm temp.txt
-[[ -f trigger ]] && rm trigger
 echo
 echo
+
 }
 export -f commander
 
@@ -99,7 +139,7 @@ if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #con
             [[ "$verbose" == "true" ]] && echo_array+=("Stopping prior to update..")
             midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null || echo_array+=("Error: Failed to stop $app_name")
             SECONDS=0
-            [[ ! -e trigger ]] && touch trigger
+            # [[ ! -e trigger ]] && touch trigger
             while [[ "$status" !=  "STOPPED" ]]
             do
                 status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
@@ -147,7 +187,7 @@ do
     update_avail=$(grep "^$app_name," temp.txt | awk -F ',' '{print $3}')
     if [[ $update_avail == "true" ]]; then
         if ! cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null ; then
-            [[ ! -e trigger ]] && touch trigger && sleep 10
+            # [[ ! -e trigger ]] && touch trigger && sleep 10
             sleep 6
             ((count++))
             continue
@@ -167,7 +207,7 @@ after_update_actions(){
 SECONDS=0
 count=0
 if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
-    [[ ! -e trigger ]] && touch trigger && sleep 10
+    # [[ ! -e trigger ]] && touch trigger && sleep 10
     while true
     do
         (( count++ ))

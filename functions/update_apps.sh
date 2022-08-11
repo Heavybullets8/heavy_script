@@ -78,11 +78,12 @@ do
         sleep 3
     elif [[ $it -lt ${#array[@]} ]]; then
         loop=0
-        until [[ "$loop" -ge 2 || $it -ge ${#array[@]} ]];
+        until [[ $loop -ge 2 || $proc_count -ge $update_limit || $it -ge ${#array[@]} ]];
         do
             update_apps "${array[$it]}" &
             processes+=($!)
             ((loop++))
+            ((proc_count++))
             ((it++))
         done
     elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish

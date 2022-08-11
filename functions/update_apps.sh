@@ -61,7 +61,7 @@ it=0
 while true
 do
     if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) ; then
-        echo "$while_status" > temp.txt
+        echo -e "$it\n$while_status" > temp.txt
     else
         echo "Middlewared timed out. Consider setting a lower number for async applications"
         continue
@@ -255,7 +255,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
             fi
         else
             [[ "$verbose" == "true" ]] && echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be ACTIVE")
-            sleep 5
+            sleep 10
             continue
         fi
     done

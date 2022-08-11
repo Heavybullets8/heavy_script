@@ -17,8 +17,11 @@ rm trigger &>/dev/null
 while true
 do
     if [[ -f trigger ]]; then
-        while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null)
-        echo "$while_status" > temp.txt
+        if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) ; then
+            echo "$while_status" > temp.txt
+        else
+            continue
+        fi
     fi
     proc_count=${#processes[@]}
     count=0

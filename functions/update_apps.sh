@@ -44,7 +44,7 @@ do
             ((it++))
             ((proc_count++))
         done
-    elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
+    elif [[ ${#processes[@]} != 0 ]]; then # Wait for all processes to finish
         sleep $delay
     else # All processes must be completed, break out of loop
         break

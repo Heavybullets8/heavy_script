@@ -214,6 +214,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
             old_status=$(grep "^$app_name," temp.txt)
         else
             before_loop=$(head -n 1 temp.txt)
+            new_status=old_status
             until [[ "$new_status" != "$old_status" || $current_loop -gt 3 ]] # Wait for a change in the file BEFORE continuing
             do
                 new_status=$(grep "^$app_name," temp.txt)

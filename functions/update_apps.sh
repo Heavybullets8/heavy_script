@@ -41,7 +41,7 @@ do
         do
             update_apps "${array[$it]}" &
             processes+=($!)
-            # sleep 1.5
+            sleep 2
             ((it++))
             ((proc_count++))
         done

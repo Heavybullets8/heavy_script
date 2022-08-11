@@ -216,7 +216,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
             until [[ $while_count -lt $current_count ]] # Wait for a change in the file BEFORE continuing
             do
                 current_count=$(head -n 1 temp.txt)
-                sleep 2
+                sleep 1
             done
             while_count=$current_count
         fi

@@ -213,10 +213,15 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
     if [[ $count -lt 1 ]]; then
             old_status=$(grep "^$app_name," temp.txt)
         else
-            until [[ "$new_status" != "$old_status" ]] # Wait for a change in the file BEFORE continuing
+            before_loop=$(head -n 1 temp.txt)
+            until [[ "$new_status" != "$old_status" || $current_loop -gt 3 ]] # Wait for a change in the file BEFORE continuing
             do
                 new_status=$(grep "^$app_name," temp.txt)
                 sleep 1
+                if ! echo -e "$(head -n 1 temp.txt)" | grep -qs ^"$before_loop" ; then
+                    before_loop=$(head -n 1 temp.txt)
+                    ((current_loop++))
+                fi
             done
             old_status=$new_status
         fi
@@ -235,21 +240,21 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
         (( count++ ))
         if [[ "$status"  ==  "ACTIVE" ]]; then
             if [[ "$startstatus"  ==  "STOPPED" ]]; then
-                # [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && sleep 15 && continue #if reports active on FIRST time through loop, double check
-                # [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports active on FIRST time through loop, double check
+                [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && continue #if reports active on FIRST time through loop, double check
+                [[ "$count" -le 1  && -z "$verbose" ]] &&  continue #if reports active on FIRST time through loop, double check
                 [[ "$verbose" == "true" ]] && echo_array+=("Returing to STOPPED state..")
                 midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null || { echo_array+=("Error: Failed to stop $app_name") ; break ; }
                 echo_array+=("Stopped")
                 break
             else
-                # [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && sleep 15 && continue #if reports active on FIRST time through loop, double check
-                # [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports active on FIRST time through loop, double check
+                [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && continue #if reports active on FIRST time through loop, double check
+                [[ "$count" -le 1  && -z "$verbose" ]] &&  continue #if reports active on FIRST time through loop, double check
                 echo_array+=("Active")
                 break #if reports active any time after the first loop, assume actually active.
             fi
         elif [[ "$status"  ==  "STOPPED" ]]; then
-            # [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Stopped..") && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
-            # [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
+            [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Stopped..") && continue #if reports stopped on FIRST time through loop, double check
+            [[ "$count" -le 1  && -z "$verbose" ]] &&  continue #if reports stopped on FIRST time through loop, double check
             echo_array+=("Stopped")
             break #if reports stopped any time after the first loop, assume its extermal services.
         elif [[ "$SECONDS" -ge "$timeout" && "$status" == "DEPLOYING" ]]; then

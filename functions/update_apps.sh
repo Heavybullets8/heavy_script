@@ -210,8 +210,18 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
     # [[ ! -e trigger ]] && touch trigger && sleep 10
     while true
     do
-        (( count++ ))
+        if [[ $count -lt 1 ]]; then
+            while_count=$(head -n 1 temp.txt)
+        else
+            until [[ $while_count -lt $current_count ]] # Wait for a change in the file BEFORE continuing
+            do
+                current_count=$(head -n 1 temp.txt)
+                sleep 2
+            done
+            while_count=$current_count
+        fi
         status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
+        (( count++ ))
         if [[ "$status"  ==  "ACTIVE" ]]; then
             if [[ "$startstatus"  ==  "STOPPED" ]]; then
                 [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && sleep 10 && continue #if reports active on FIRST time through loop, double check

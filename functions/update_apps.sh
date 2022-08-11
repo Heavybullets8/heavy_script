@@ -210,35 +210,46 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
     # [[ ! -e trigger ]] && touch trigger && sleep 10
     while true
     do
-        if [[ $count -lt 1 ]]; then
-            while_count=$(head -n 1 temp.txt)
+    if [[ $count -lt 1 ]]; then
+            old_status=$(grep "^$app_name," temp.txt)
         else
-            until [[ $while_count -lt $current_count ]] # Wait for a change in the file BEFORE continuing
+            until [[ "$new_status" != "$old_status" ]] # Wait for a change in the file BEFORE continuing
             do
-                current_count=$(head -n 1 temp.txt)
+                new_status=$(grep "^$app_name," temp.txt)
                 sleep 1
             done
-            while_count=$current_count
+            old_status=$new_status
         fi
+
+        # if [[ $count -lt 1 ]]; then
+        #     while_count=$(head -n 1 temp.txt)
+        # else
+        #     until [[ $while_count -lt $current_count ]] # Wait for a change in the file BEFORE continuing
+        #     do
+        #         current_count=$(head -n 1 temp.txt)
+        #         sleep 1
+        #     done
+        #     while_count=$current_count
+        # fi
         status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
         (( count++ ))
         if [[ "$status"  ==  "ACTIVE" ]]; then
             if [[ "$startstatus"  ==  "STOPPED" ]]; then
-                [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && sleep 15 && continue #if reports active on FIRST time through loop, double check
-                [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports active on FIRST time through loop, double check
+                # [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && sleep 15 && continue #if reports active on FIRST time through loop, double check
+                # [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports active on FIRST time through loop, double check
                 [[ "$verbose" == "true" ]] && echo_array+=("Returing to STOPPED state..")
                 midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null || { echo_array+=("Error: Failed to stop $app_name") ; break ; }
                 echo_array+=("Stopped")
                 break
             else
-                [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && sleep 15 && continue #if reports active on FIRST time through loop, double check
-                [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports active on FIRST time through loop, double check
+                # [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && sleep 15 && continue #if reports active on FIRST time through loop, double check
+                # [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports active on FIRST time through loop, double check
                 echo_array+=("Active")
                 break #if reports active any time after the first loop, assume actually active.
             fi
         elif [[ "$status"  ==  "STOPPED" ]]; then
-            [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Stopped..") && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
-            [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
+            # [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Stopped..") && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
+            # [[ "$count" -le 1  && -z "$verbose" ]] && sleep 15 && continue #if reports stopped on FIRST time through loop, double check
             echo_array+=("Stopped")
             break #if reports stopped any time after the first loop, assume its extermal services.
         elif [[ "$SECONDS" -ge "$timeout" && "$status" == "DEPLOYING" ]]; then

@@ -27,12 +27,13 @@ search=$(k3s crictl ps -a -s running | sed -E 's/[[:space:]]([0-9]*|About)[a-z0-
 mapfile -t pod_id < <(echo "$search" | grep -E "[[:space:]]$app_name([[:space:]]|-([-[:alnum:]])*[[:space:]])" | awk '{print $(NF)}')
 for pod in "${pod_id[@]}"
 do
-    if [[ $(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r " | wc -l) -gt 1 ]]; then
-        readarray -t containers <<<"$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")"
-        continue
-    fi
     printf '%s\0' "${containers[@]}" | grep -Fxqz -- "$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")" && continue 
-    containers+=("$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")")
+    # if [[ $(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r " | wc -l) -gt 1 ]]; then
+        readarray -t containers <<<"$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")"
+        # continue
+    # fi
+    
+    # containers+=("$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")")
 
 done
 case "${#containers[@]}" in

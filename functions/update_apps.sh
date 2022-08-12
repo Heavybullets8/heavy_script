@@ -14,8 +14,8 @@ while_count=0
 while true
 do
     if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) ; then
-        ((while_count++))
-        echo -e "$while_count\n$while_status" > temp.txt
+        ((while_count++)) 
+        [[ -z $while_status ]] && continue || echo -e "$while_count\n$while_status" > temp.txt
     else
         echo "Middlewared timed out. Consider setting a lower number for async applications"
         continue

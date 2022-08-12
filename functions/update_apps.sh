@@ -137,27 +137,31 @@ count=0
 while true
 do
     update_avail=$(grep "^$app_name," temp.txt | awk -F ',' '{print $3}')
-    if [[ $count -gt 2 ]]; then
-        return 1
-    elif [[ $update_avail == "true" ]]; then
+    # if [[ $count -gt 2 ]]; then
+    #     return 1
+    if [[ $update_avail == "true" ]]; then
         if ! cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null ; then
             # sleep 6
             # ((count++))
             # continue
             before_loop=$(head -n 1 temp.txt)
             current_loop=0
-            until [[ "$(grep "^$app_name," temp.txt | awk -F ',' '{print $3}')" != "$update_avail" || $current_loop -gt 3 ]] # Wait for a specific change to app status, or 3 refreshes of the file to go by.
+            until [[ "$(grep "^$app_name," temp.txt | awk -F ',' '{print $3}')" != "$update_avail" ]]   # Wait for a specific change to app status, or 3 refreshes of the file to go by.
             do
-                sleep 1
-                if ! echo -e "$(head -n 1 temp.txt)" | grep -qs ^"$before_loop" ; then
+                if [[ $current_loop -gt 3 ]]; then
+                    return 1                                                                            #App failed to update, return error code to update_apps func
+                elif ! echo -e "$(head -n 1 temp.txt)" | grep -qs ^"$before_loop" ; then                # The file has been updated, but nothing changed specifically for the app.
                     before_loop=$(head -n 1 temp.txt)
                     ((current_loop++))
                 fi
+                sleep 1
             done
         fi
         break
     elif [[ $update_avail == "false" ]]; then
         break
+    else 
+        sleep 3
     fi
 done
 }

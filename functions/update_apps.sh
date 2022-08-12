@@ -141,9 +141,19 @@ do
         return 1
     elif [[ $update_avail == "true" ]]; then
         if ! cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null ; then
-            sleep 6
-            ((count++))
-            continue
+            # sleep 6
+            # ((count++))
+            # continue
+            before_loop=$(head -n 1 temp.txt)
+            current_loop=0
+            until [[ "$(grep "^$app_name," temp.txt | awk -F ',' '{print $3}')" != "$update_avail" || $current_loop -gt 3 ]] # Wait for a specific change to app status, or 3 refreshes of the file to go by.
+            do
+                sleep 1
+                if ! echo -e "$(head -n 1 temp.txt)" | grep -qs ^"$before_loop" ; then
+                    before_loop=$(head -n 1 temp.txt)
+                    ((current_loop++))
+                fi
+            done
         fi
         break
     elif [[ $update_avail == "false" ]]; then
@@ -164,6 +174,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
         else
             before_loop=$(head -n 1 temp.txt)
             new_status=$old_status
+            current_loop=0
             until [[ "$new_status" != "$old_status" || $current_loop -gt 3 ]] # Wait for a specific change to app status, or 3 refreshes of the file to go by.
             do
                 new_status=$(grep "^$app_name," temp.txt)

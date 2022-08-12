@@ -190,6 +190,8 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
                 fi
             done
             old_status=$new_status
+            status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
+            unset verify
         fi
         (( count++ ))
         if [[ "$status"  ==  "ACTIVE" ]]; then

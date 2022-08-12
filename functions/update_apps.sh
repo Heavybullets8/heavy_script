@@ -89,29 +89,12 @@ if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #con
         else # if status was not STOPPED, stop the app prior to updating
             echo_array+=("\n$app_name")
             [[ "$verbose" == "true" ]] && echo_array+=("Stopping prior to update..")
-            midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null || echo_array+=("Error: Failed to stop $app_name")
-            SECONDS=0
-            # [[ ! -e trigger ]] && touch trigger
-            while [[ "$status" !=  "STOPPED" ]]
-            do
-                status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
-                if [[ "$status"  ==  "STOPPED" ]]; then
-                    echo_array+=("Stopped")
-                    [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
-                    if update ;then
-                        echo_array+=("Updated\n$old_full_ver\n$new_full_ver")
-                    else
-                        echo_array+=("Failed to update")
-                        return
-                    fi
-                elif [[ "$SECONDS" -ge "$timeout" ]]; then
-                    echo_array+=("Error: Run Time($SECONDS) has exceeded Timeout($timeout)")
-                    break
-                elif [[ "$status" !=  "STOPPED" ]]; then
-                    [[ "$verbose" == "true" ]] && echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be STOPPED")
-                    sleep 5
-                fi
-            done
+            if stop_app ; then
+                echo_array+=("Stopped")
+            else
+                echo_array+=("Error: Failed to stop $app_name")
+                return 1
+            fi
         fi
     else #user must not be using -S, just update
         echo_array+=("\n$app_name")
@@ -133,23 +116,18 @@ export -f update_apps
 
 
 update(){
-# count=0
+current_loop=0
 while true
 do
     update_avail=$(grep "^$app_name," temp.txt | awk -F ',' '{print $3}')
-    # if [[ $count -gt 2 ]]; then
-    #     return 1
     if [[ $update_avail == "true" ]]; then
         if ! cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null ; then
             echo "Fail Trigger - Debugging"
-            # sleep 6
-            # ((count++))
-            # continue
             before_loop=$(head -n 1 temp.txt)
             current_loop=0
             until [[ "$(grep "^$app_name," temp.txt | awk -F ',' '{print $3}')" != "$update_avail" ]]   # Wait for a specific change to app status, or 3 refreshes of the file to go by.
             do
-                if [[ $current_loop -gt 3 ]]; then
+                if [[ $current_loop -gt 2 ]]; then
                     cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null || return 1     # After waiting, attempt an update once more, if fails, return error code
                 elif ! echo -e "$(head -n 1 temp.txt)" | grep -qs ^"$before_loop" ; then                # The file has been updated, but nothing changed specifically for the app.
                     before_loop=$(head -n 1 temp.txt)
@@ -167,6 +145,29 @@ do
 done
 }
 export -f update
+
+stop_app(){
+count=0
+while [[ "$status" !=  "STOPPED" ]]
+do
+    status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
+    if [[ $count -gt 2 ]]; then # If failed to stop app 3 times, return failure to parent shell
+        return 1
+    elif ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' &> /dev/null ; then
+        echo "Fail Trigger Stop - Debugging"
+        before_loop=$(head -n 1 temp.txt)
+        ((count++))
+        until [[ $(head -n 1 temp.txt) != "$before_loop" ]] # Upon failure, wait for status update before continuing
+        do
+            sleep 1
+        done
+    else 
+        break
+    fi
+done
+}
+export -f stop_app
+
 
 after_update_actions(){
 SECONDS=0
@@ -197,8 +198,12 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
                 [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && verify="true" && continue #if reports active on FIRST time through loop, double check
                 [[ "$count" -le 1  && -z "$verbose" ]] && verify="true" &&  continue #if reports active on FIRST time through loop, double check
                 [[ "$verbose" == "true" ]] && echo_array+=("Returing to STOPPED state..")
-                midclt call chart.release.scale "$app_name" '{"replica_count": 0}' &> /dev/null || { echo_array+=("Error: Failed to stop $app_name") ; break ; }
-                echo_array+=("Stopped")
+                if stop_app ; then
+                    echo_array+=("Stopped")
+                else
+                    echo_array+=("Error: Failed to stop $app_name")
+                    return 1
+                fi
                 break
             else
                 [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && verify="true" && continue #if reports active on FIRST time through loop, double check

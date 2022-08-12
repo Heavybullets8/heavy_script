@@ -23,7 +23,7 @@ do
     fi
 done
 app_name=$(echo -e "$app_name" | grep ^"$selection)" | awk '{print $2}')
-search=$(k3s crictl ps -a -s running | sed -E 's/([0-9]*|About)[[:space:]][a-z]{2,5}[[:space:]](hour)?[[:space:]]?ago//')
+search=$(k3s crictl ps -a -s running | sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//')
 mapfile -t pod_id < <(echo "$search" | grep -E "[[:space:]]$app_name([[:space:]]|-([-[:alnum:]])*[[:space:]])" | awk '{print $(NF)}')
 for pod in "${pod_id[@]}"
 do

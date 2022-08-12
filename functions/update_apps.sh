@@ -79,13 +79,6 @@ if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #con
     if [[ $stop_before_update == "true" ]]; then # Check to see if user is using -S or not
         if [[ "$startstatus" ==  "STOPPED" ]]; then # if status is already stopped, skip while loop
             echo_array+=("\n$app_name")
-            [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
-            if update ;then
-                echo_array+=("Updated\n$old_full_ver\n$new_full_ver")
-            else
-                echo_array+=("Failed to update")
-                return
-            fi
         else # if status was not STOPPED, stop the app prior to updating
             echo_array+=("\n$app_name")
             [[ "$verbose" == "true" ]] && echo_array+=("Stopping prior to update..")
@@ -98,17 +91,17 @@ if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #con
         fi
     else #user must not be using -S, just update
         echo_array+=("\n$app_name")
-        [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
-        if update ;then
-            echo_array+=("Updated\n$old_full_ver\n$new_full_ver")
-        else
-            echo_array+=("Failed to update")
-            return
-        fi
     fi
 else
     echo -e "\n$app_name\nMajor Release, update manually"
     return 0
+fi
+[[ "$verbose" == "true" ]] && echo_array+=("Updating..")
+if update ;then
+    echo_array+=("Updated\n$old_full_ver\n$new_full_ver")
+else
+    echo_array+=("Failed to update")
+return
 fi
 after_update_actions
 }

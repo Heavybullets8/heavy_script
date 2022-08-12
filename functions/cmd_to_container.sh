@@ -37,7 +37,7 @@ case "${#containers[@]}" in
         exit
         ;;
     1)
-        container=$(echo "$search" | grep "${pod_id[*]}" | awk '{print $4}')
+        container=$(echo "$search" | grep "${pod_id[0]}" | awk '{print $4}')
         container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
         ;;
 

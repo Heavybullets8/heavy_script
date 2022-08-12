@@ -150,7 +150,7 @@ do
             until [[ "$(grep "^$app_name," temp.txt | awk -F ',' '{print $3}')" != "$update_avail" ]]   # Wait for a specific change to app status, or 3 refreshes of the file to go by.
             do
                 if [[ $current_loop -gt 3 ]]; then
-                    return 1                                                                            #App failed to update, return error code to update_apps func
+                    cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null || return 1     # After waiting, attempt an update once more, if fails, return error code
                 elif ! echo -e "$(head -n 1 temp.txt)" | grep -qs ^"$before_loop" ; then                # The file has been updated, but nothing changed specifically for the app.
                     before_loop=$(head -n 1 temp.txt)
                     ((current_loop++))

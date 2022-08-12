@@ -75,9 +75,9 @@ if  grep -qs "^$app_name," failed.txt ; then
         sed -i /"$app_name",/d failed.txt
     fi
 fi
-if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #continue to update
+echo_array+=("\n$app_name")
+if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #Check for major versions or -U
     if [[ $stop_before_update == "true" && "$startstatus" !=  "STOPPED" ]]; then # Check to see if user is using -S or not
-        echo_array+=("\n$app_name")
         [[ "$verbose" == "true" ]] && echo_array+=("Stopping prior to update..")
         if stop_app ; then
             echo_array+=("Stopped")
@@ -90,7 +90,6 @@ else
     echo -e "\n$app_name\nMajor Release, update manually"
     return 0
 fi
-[[ ! $stop_before_update == "true" && "$startstatus" !=  "STOPPED" ]] && echo_array+=("\n$app_name")
 [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
 if update_app ;then
     echo_array+=("Updated\n$old_full_ver\n$new_full_ver")

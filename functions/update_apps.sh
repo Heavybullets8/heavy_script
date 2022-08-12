@@ -33,7 +33,7 @@ do
         # loop=0
         # until [[ $loop -ge 2 || $it -ge ${#array[@]} ]];
         # do
-        update_apps "${array[$it]}" &
+        pre_process "${array[$it]}" &
         processes+=($!)
         ((it++))
         # ((loop++))
@@ -52,7 +52,7 @@ echo
 export -f commander
 
 
-update_apps(){
+pre_process(){
 app_name=$(echo "${array[$it]}" | awk -F ',' '{print $1}') #print out first catagory, name.
 printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name\nIgnored, skipping" && return 0 #If application is on ignore list, skip
 old_app_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $1}' | awk -F '.' '{print $1}') #previous/current Application MAJOR Version
@@ -76,28 +76,23 @@ if  grep -qs "^$app_name," failed.txt ; then
     fi
 fi
 if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #continue to update
-    if [[ $stop_before_update == "true" ]]; then # Check to see if user is using -S or not
-        if [[ "$startstatus" ==  "STOPPED" ]]; then # if status is already stopped, skip while loop
-            echo_array+=("\n$app_name")
-        else # if status was not STOPPED, stop the app prior to updating
-            echo_array+=("\n$app_name")
-            [[ "$verbose" == "true" ]] && echo_array+=("Stopping prior to update..")
-            if stop_app ; then
-                echo_array+=("Stopped")
-            else
-                echo_array+=("Error: Failed to stop $app_name")
-                return 1
-            fi
-        fi
-    else #user must not be using -S, just update
+    if [[ $stop_before_update == "true" && "$startstatus" !=  "STOPPED" ]]; then # Check to see if user is using -S or not
         echo_array+=("\n$app_name")
+        [[ "$verbose" == "true" ]] && echo_array+=("Stopping prior to update..")
+        if stop_app ; then
+            echo_array+=("Stopped")
+        else
+            echo_array+=("Error: Failed to stop $app_name")
+            return 1
+        fi
     fi
 else
     echo -e "\n$app_name\nMajor Release, update manually"
     return 0
 fi
+[[ ! $stop_before_update == "true" && "$startstatus" !=  "STOPPED" ]] && echo_array+=("\n$app_name")
 [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
-if update ;then
+if update_app ;then
     echo_array+=("Updated\n$old_full_ver\n$new_full_ver")
 else
     echo_array+=("Failed to update")
@@ -105,10 +100,10 @@ return
 fi
 after_update_actions
 }
-export -f update_apps
+export -f pre_process
 
 
-update(){
+update_app(){
 current_loop=0
 while true
 do
@@ -137,7 +132,7 @@ do
     fi
 done
 }
-export -f update
+export -f update_app
 
 stop_app(){
 count=0

@@ -169,9 +169,9 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
     while true
     do
         status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
-        if [[ $count -lt 1 ]]; then
+        if [[ $count -lt 1 && $status != "Deploying" ]]; then                # If status shows up as Active or Stopped on the first check, verify that. Otherwise it may be a false report..
+            [[ "$verbose" == "true" ]] && echo_array+=("Verifying $status..")
             old_status=$status
-        elif [[ $verify == "true" ]]; then
             before_loop=$(head -n 1 temp.txt)
             current_loop=0
             until [[ "$status" != "$old_status" || $current_loop -gt 3 ]] # Wait for a specific change to app status, or 3 refreshes of the file to go by.
@@ -183,13 +183,10 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
                     ((current_loop++))
                 fi
             done
-            unset verify
         fi
         (( count++ ))
         if [[ "$status"  ==  "ACTIVE" ]]; then
             if [[ "$startstatus"  ==  "STOPPED" ]]; then
-                [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && verify="true" && continue #if reports active on FIRST time through loop, double check
-                [[ "$count" -le 1  && -z "$verbose" ]] && verify="true" &&  continue #if reports active on FIRST time through loop, double check
                 [[ "$verbose" == "true" ]] && echo_array+=("Returing to STOPPED state..")
                 if stop_app ; then
                     echo_array+=("Stopped")
@@ -199,16 +196,12 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
                 fi
                 break
             else
-                [[ "$count" -le 1 && "$verbose" == "true"  ]] && echo_array+=("Verifying Active..") && verify="true" && continue #if reports active on FIRST time through loop, double check
-                [[ "$count" -le 1  && -z "$verbose" ]] && verify="true" &&  continue #if reports active on FIRST time through loop, double check
                 echo_array+=("Active")
-                break #if reports active any time after the first loop, assume actually active.
+                break 
             fi
         elif [[ "$status"  ==  "STOPPED" ]]; then
-            [[ "$count" -le 1 && "$verbose" == "true"  ]] && verify="true" && echo_array+=("Verifying Stopped..") && continue #if reports stopped on FIRST time through loop, double check
-            [[ "$count" -le 1  && -z "$verbose" ]] && verify="true" &&  continue #if reports stopped on FIRST time through loop, double check
             echo_array+=("Stopped")
-            break #if reports stopped any time after the first loop, assume its extermal services.
+            break 
         elif [[ "$SECONDS" -ge "$timeout" && "$status" == "DEPLOYING" ]]; then
             if [[ $rollback == "true" ]]; then
                 if [[ "$failed" != "true" ]]; then

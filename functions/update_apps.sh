@@ -175,7 +175,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
     do
         if [[ $count -lt 1 ]]; then
             old_status=$(grep "^$app_name," temp.txt)
-        else
+        elif [[ $status != "DEPLOYING" ]]; then
             before_loop=$(head -n 1 temp.txt)
             new_status=$old_status
             current_loop=0

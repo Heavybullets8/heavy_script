@@ -141,6 +141,7 @@ do
     #     return 1
     if [[ $update_avail == "true" ]]; then
         if ! cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null ; then
+            echo "Fail Trigger - Debugging"
             # sleep 6
             # ((count++))
             # continue

@@ -27,9 +27,9 @@ search=$(k3s crictl ps -a -s running | sed -E 's/[[:space:]]([0-9]*|About)[a-z0-
 mapfile -t pod_id < <(echo "$search" | grep -E "[[:space:]]$app_name([[:space:]]|-([-[:alnum:]])*[[:space:]])" | awk '{print $(NF)}')
 for pod in "${pod_id[@]}"
 do
-    containers_temp+=("$(echo "$search" | grep "$pod" | awk '{print $4}')") 
+    containers+=("$(echo "$search" | grep "$pod" | awk '{print $4}')") 
 done
-containers=(); while IFS= read -r -d '' x; do containers+=("$x"); done < <(printf "%s\0" "${containers_temp[@]}" | sort -uz)
+# containers=(); while IFS= read -r -d '' x; do containers+=("$x"); done < <(printf "%s\0" "${containers_temp[@]}" | sort -uz)
 case "${#containers[@]}" in
     0)
         echo -e "No containers available\nAre you sure the application in running?"
@@ -49,7 +49,7 @@ case "${#containers[@]}" in
             for i in "${containers[@]}"
             do
                 echo "$i"
-            done | nl -s ") " | column -t
+            done | uniq | nl -s ") " | column -t
             )
             echo "$cont_search"
             echo

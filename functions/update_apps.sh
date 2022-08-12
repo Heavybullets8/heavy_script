@@ -62,6 +62,7 @@ new_chart_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}' | awk -F '_' '{pr
 startstatus=$(echo "${array[$it]}" | awk -F ',' '{print $2}') #status of the app: STOPPED / DEPLOYING / ACTIVE
 diff_app=$(diff <(echo "$old_app_ver") <(echo "$new_app_ver")) #caluclating difference in major app versions
 diff_chart=$(diff <(echo "$old_chart_ver") <(echo "$new_chart_ver")) #caluclating difference in Chart versions
+[[ "$diff_app" != "$diff_chart" ]] && echo -e "\n$app_name\nMajor Release, update manually" && return 
 old_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}') #Upgraded From
 new_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}') #Upraded To
 rollback_version=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
@@ -76,26 +77,23 @@ if  grep -qs "^$app_name," failed.txt ; then
     fi
 fi
 echo_array+=("\n$app_name")
-if [[ "$diff_app" == "$diff_chart" || "$update_all_apps" == "true" ]]; then #Check for major versions or -U
-    if [[ $stop_before_update == "true" && "$startstatus" !=  "STOPPED" ]]; then # Check to see if user is using -S or not
-        [[ "$verbose" == "true" ]] && echo_array+=("Stopping prior to update..")
-        if stop_app ; then
-            echo_array+=("Stopped")
-        else
-            echo_array+=("Error: Failed to stop $app_name")
-            return 1
-        fi
+if [[ $stop_before_update == "true" && "$startstatus" !=  "STOPPED" ]]; then # Check to see if user is using -S or not
+    [[ "$verbose" == "true" ]] && echo_array+=("Stopping prior to update..")
+    if stop_app ; then
+        echo_array+=("Stopped")
+    else
+        echo_array+=("Error: Failed to stop $app_name")
+        echo_array
+        return 1
     fi
-else
-    echo -e "\n$app_name\nMajor Release, update manually"
-    return 0
 fi
 [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
 if update_app ;then
     echo_array+=("Updated\n$old_full_ver\n$new_full_ver")
 else
     echo_array+=("Failed to update")
-return
+    echo_array
+    return
 fi
 after_update_actions
 }
@@ -186,6 +184,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
                     echo_array+=("Stopped")
                 else
                     echo_array+=("Error: Failed to stop $app_name")
+                    echo_array
                     return 1
                 fi
                 break
@@ -226,12 +225,17 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
         fi
     done
 fi
+echo_array
+}
+export -f after_update_actions
 
 
+echo_array(){
 #Dump the echo_array, ensures all output is in a neat order. 
 for i in "${echo_array[@]}"
 do
     echo -e "$i"
 done
+
 }
-export -f after_update_actions
+export -f echo_array

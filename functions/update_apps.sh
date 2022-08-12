@@ -173,15 +173,16 @@ count=0
 if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
     while true
     do
+        status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
         if [[ $count -lt 1 ]]; then
-            old_status=$(grep "^$app_name," temp.txt)
+            old_status=$status
         elif [[ $status != "DEPLOYING" ]]; then
             before_loop=$(head -n 1 temp.txt)
             new_status=$old_status
             current_loop=0
             until [[ "$new_status" != "$old_status" || $current_loop -gt 3 ]] # Wait for a specific change to app status, or 3 refreshes of the file to go by.
             do
-                new_status=$(grep "^$app_name," temp.txt)
+                new_status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
                 sleep 1
                 if ! echo -e "$(head -n 1 temp.txt)" | grep -qs ^"$before_loop" ; then
                     before_loop=$(head -n 1 temp.txt)
@@ -190,7 +191,6 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
             done
             old_status=$new_status
         fi
-        status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
         (( count++ ))
         if [[ "$status"  ==  "ACTIVE" ]]; then
             if [[ "$startstatus"  ==  "STOPPED" ]]; then

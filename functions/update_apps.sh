@@ -133,7 +133,7 @@ export -f update_apps
 
 
 update(){
-count=0
+# count=0
 while true
 do
     update_avail=$(grep "^$app_name," temp.txt | awk -F ',' '{print $3}')

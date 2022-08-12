@@ -29,6 +29,7 @@ for pod in "${pod_id[@]}"
 do
     printf '%s\0' "${containers[@]}" | grep -Fxqz -- "$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")" && continue 
     containers+=("$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")")
+    echo "ADDED" "$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")"
 done
 case "${#containers[@]}" in
     0)

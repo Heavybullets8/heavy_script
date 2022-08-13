@@ -188,12 +188,11 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
     while true
     do
         status=$(grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
-        if [[ $count -lt 1 && $status != "DEPLOYING" && "$(grep "^$app_name," deploying | awk -F ',' '{print $2}')" != "DEPLOYING" ]]; then                # If status shows up as Active or Stopped on the first check, verify that. Otherwise it may be a false report..
+        if [[ $count -lt 1 && $status == "ACTIVE" && "$(grep "^$app_name," deploying | awk -F ',' '{print $2}')" != "DEPLOYING" ]]; then                # If status shows up as Active or Stopped on the first check, verify that. Otherwise it may be a false report..
             [[ "$verbose" == "true" ]] && echo_array+=("Verifying $status..")
-            old_status=$status
             before_loop=$(head -n 1 temp.txt)
             current_loop=0
-            until [[ "$status" != "$old_status" || $current_loop -gt 4 ]] # Wait for a specific change to app status, or 3 refreshes of the file to go by.
+            until [[ "$status" != "ACTIVE" || $current_loop -gt 3 ]] # Wait for a specific change to app status, or 3 refreshes of the file to go by.
             do
                 status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
                 sleep 1

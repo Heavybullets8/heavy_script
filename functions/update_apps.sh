@@ -219,7 +219,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
                 echo_array+=("Active")
                 break 
             fi
-        elif [[ "$SECONDS" -ge "$timeout" && "$status" == "DEPLOYING" ]]; then
+        elif [[ "$SECONDS" -ge "$timeout" ]]; then
             if [[ $rollback == "true" ]]; then
                 if [[ "$failed" != "true" ]]; then
                     echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")

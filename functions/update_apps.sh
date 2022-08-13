@@ -17,8 +17,8 @@ while true
 do
     if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) ; then
         ((while_count++)) 
-        [[ -z $while_status ]] && continue || echo -e "$while_count\n$while_status" > temp.txt
-        mapfile -t deploying_check < <(grep ",DEPLOYING," temp.txt)
+        [[ -z $while_status ]] && continue || echo -e "$while_count\n$while_status" > all_app_status
+        mapfile -t deploying_check < <(grep ",DEPLOYING," all_app_status)
         for i in "${deploying_check[@]}"
         do
             app_name=$(echo "$i" | awk -F ',' '{print $1}')
@@ -55,7 +55,7 @@ do
         break
     fi
 done
-rm temp.txt 2>/dev/null
+rm all_app_status 2>/dev/null
 rm deploying 2>/dev/null
 echo
 echo
@@ -131,18 +131,18 @@ update_app(){
 current_loop=0
 while true
 do
-    update_avail=$(grep "^$app_name," temp.txt | awk -F ',' '{print $3}')
+    update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3}')
     if [[ $update_avail == "true" ]]; then
         if ! cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null ; then
             echo "Fail Trigger - Debugging"
-            before_loop=$(head -n 1 temp.txt)
+            before_loop=$(head -n 1 all_app_status)
             current_loop=0
-            until [[ "$(grep "^$app_name," temp.txt | awk -F ',' '{print $3}')" != "$update_avail" ]]   # Wait for a specific change to app status, or 3 refreshes of the file to go by.
+            until [[ "$(grep "^$app_name," all_app_status | awk -F ',' '{print $3}')" != "$update_avail" ]]   # Wait for a specific change to app status, or 3 refreshes of the file to go by.
             do
                 if [[ $current_loop -gt 2 ]]; then
                     cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null || return 1     # After waiting, attempt an update once more, if fails, return error code
-                elif ! echo -e "$(head -n 1 temp.txt)" | grep -qs ^"$before_loop" ; then                # The file has been updated, but nothing changed specifically for the app.
-                    before_loop=$(head -n 1 temp.txt)
+                elif ! echo -e "$(head -n 1 all_app_status)" | grep -qs ^"$before_loop" ; then                # The file has been updated, but nothing changed specifically for the app.
+                    before_loop=$(head -n 1 all_app_status)
                     ((current_loop++))
                 fi
                 sleep 1
@@ -162,14 +162,14 @@ stop_app(){
 count=0
 while [[ "$status" !=  "STOPPED" ]]
 do
-    status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
+    status=$( grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
     if [[ $count -gt 2 ]]; then # If failed to stop app 3 times, return failure to parent shell
         return 1
     elif ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' &> /dev/null ; then
         echo "Fail Trigger Stop - Debugging"
-        before_loop=$(head -n 1 temp.txt)
+        before_loop=$(head -n 1 all_app_status)
         ((count++))
-        until [[ $(head -n 1 temp.txt) != "$before_loop" ]] # Upon failure, wait for status update before continuing
+        until [[ $(head -n 1 all_app_status) != "$before_loop" ]] # Upon failure, wait for status update before continuing
         do
             sleep 1
         done
@@ -187,17 +187,17 @@ count=0
 if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
     while true
     do
-        status=$(grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
+        status=$(grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
         if [[ $count -lt 1 && $status == "ACTIVE" && "$(grep "^$app_name," deploying | awk -F ',' '{print $2}')" != "DEPLOYING" ]]; then                # If status shows up as Active or Stopped on the first check, verify that. Otherwise it may be a false report..
             [[ "$verbose" == "true" ]] && echo_array+=("Verifying $status..")
-            before_loop=$(head -n 1 temp.txt)
+            before_loop=$(head -n 1 all_app_status)
             current_loop=0
             until [[ "$status" != "ACTIVE" || $current_loop -gt 3 ]] # Wait for a specific change to app status, or 3 refreshes of the file to go by.
             do
-                status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
+                status=$( grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
                 sleep 1
-                if ! echo -e "$(head -n 1 temp.txt)" | grep -qs ^"$before_loop" ; then
-                    before_loop=$(head -n 1 temp.txt)
+                if ! echo -e "$(head -n 1 all_app_status)" | grep -qs ^"$before_loop" ; then
+                    before_loop=$(head -n 1 all_app_status)
                     ((current_loop++))
                 fi
             done

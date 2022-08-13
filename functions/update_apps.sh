@@ -17,6 +17,15 @@ do
     if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) ; then
         ((while_count++)) 
         [[ -z $while_status ]] && continue || echo -e "$while_count\n$while_status" > temp.txt
+        for i in "${while_status[@]}"
+        do
+            app_name=$(echo "$i" | awk -F ',' '{print $1}')
+            status=$(echo "$i" | awk -F ',' '{print $2}')
+            if [[ $status == "DEPLOYING" ]]; then
+                [[ ! -e deploying ]] && touch deploying
+                grep -qs "$app_name,DEPLOYING" deploying || echo "$app_name,DEPLOYING" >> deploying
+            fi
+        done
     else
         echo "Middlewared timed out. Consider setting a lower number for async applications"
         continue
@@ -46,6 +55,7 @@ do
     fi
 done
 rm temp.txt
+rm deploying
 echo
 echo
 
@@ -176,8 +186,8 @@ count=0
 if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
     while true
     do
-        status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
-        if [[ $count -lt 1 && $status != "DEPLOYING" ]]; then                # If status shows up as Active or Stopped on the first check, verify that. Otherwise it may be a false report..
+        status=$(grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
+        if [[ $count -lt 1 && $status != "DEPLOYING" && "$(grep "^$app_name," deploying | awk -F ',' '{print $2}')" != "DEPLOYING" ]]; then                # If status shows up as Active or Stopped on the first check, verify that. Otherwise it may be a false report..
             [[ "$verbose" == "true" ]] && echo_array+=("Verifying $status..")
             old_status=$status
             before_loop=$(head -n 1 temp.txt)

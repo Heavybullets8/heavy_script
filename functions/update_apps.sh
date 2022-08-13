@@ -62,7 +62,7 @@ new_chart_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}' | awk -F '_' '{pr
 startstatus=$(echo "${array[$it]}" | awk -F ',' '{print $2}') #status of the app: STOPPED / DEPLOYING / ACTIVE
 diff_app=$(diff <(echo "$old_app_ver") <(echo "$new_app_ver")) #caluclating difference in major app versions
 diff_chart=$(diff <(echo "$old_chart_ver") <(echo "$new_chart_ver")) #caluclating difference in Chart versions
-[[ "$diff_app" != "$diff_chart" ]] && echo -e "\n$app_name\nMajor Release, update manually" && return 
+[[ "$diff_app" != "$diff_chart" && $update_apps == "true" ]] && echo -e "\n$app_name\nMajor Release, update manually" && return 
 old_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}') #Upgraded From
 new_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}') #Upraded To
 rollback_version=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')

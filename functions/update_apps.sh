@@ -8,6 +8,7 @@ echo -e "🅄 🄿 🄳 🄰 🅃 🄴 🅂"
 echo "Asynchronous Updates: $update_limit"
 [[ -z $timeout ]] && echo "Default Timeout: 500" && timeout=500 || echo "Custom Timeout: $timeout"
 [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
+pool=$(cli -c 'app kubernetes config' | grep -E "dataset\s\|" | awk -F '|' '{print $3}' | awk -F '/' '{print $1}' | tr -d " \t\n\r")
 
 it=0
 while_count=0
@@ -76,6 +77,21 @@ if  grep -qs "^$app_name," failed.txt ; then
         sed -i /"$app_name",/d failed.txt
     fi
 fi
+
+
+[[ ! -e external_services ]] && touch external_services
+
+if ! grep -qs "^$app_name," external_services ; then 
+    if ! grep qs "/external-service" /mnt/"$pool"/ix-applications/releases/"$app_name"/charts/"$(find . -maxdepth 1 -type d -printf '%P\n' | sort -r | head -n 1)"/Chart.yaml ; then
+        echo "$app_name,false" >> external_services
+    else
+        echo "$app_name,true" >> external_services
+    fi
+fi
+
+
+
+
 echo_array+=("\n$app_name")
 if [[ $stop_before_update == "true" && "$startstatus" !=  "STOPPED" ]]; then # Check to see if user is using -S or not
     [[ "$verbose" == "true" ]] && echo_array+=("Stopping prior to update..")
@@ -166,7 +182,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
             old_status=$status
             before_loop=$(head -n 1 temp.txt)
             current_loop=0
-            until [[ "$status" != "$old_status" || $current_loop -gt 3 ]] # Wait for a specific change to app status, or 3 refreshes of the file to go by.
+            until [[ "$status" != "$old_status" || $current_loop -gt 4 ]] # Wait for a specific change to app status, or 3 refreshes of the file to go by.
             do
                 status=$( grep "^$app_name," temp.txt | awk -F ',' '{print $2}')
                 sleep 1

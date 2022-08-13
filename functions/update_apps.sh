@@ -14,16 +14,16 @@ it=0
 while_count=0
 while true
 do
-    if mapfile -t while_status < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) ; then
+    if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) ; then
         ((while_count++)) 
-        [[ -z ${while_status[*]} ]] && continue || echo -e "$while_count\n${while_status[*]}" > temp.txt
-        for i in "${while_status[@]}"
+        [[ -z $while_status ]] && continue || echo -e "$while_count\n$while_status" > temp.txt
+        mapfile -t deploying_check < <(grep ",DEPLOYING," temp.txt)
+        for i in "${deploying_check[@]}"
         do
             app_name=$(echo "$i" | awk -F ',' '{print $1}')
-            status=$(echo "$i" | awk -F ',' '{print $2}')
-            if [[ $status == "DEPLOYING" ]]; then
-                [[ ! -e deploying ]] && touch deploying
-                grep -qs "$app_name,DEPLOYING" deploying || echo "$app_name,DEPLOYING" >> deploying
+            [[ ! -e deploying ]] && touch deploying
+            if ! grep -qs "$app_name,DEPLOYING" deploying; then
+                echo "$app_name,DEPLOYING" >> deploying
             fi
         done
     else

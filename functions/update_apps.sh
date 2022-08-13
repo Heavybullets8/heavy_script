@@ -82,7 +82,7 @@ fi
 [[ ! -e external_services ]] && touch external_services
 
 if ! grep -qs "^$app_name," external_services ; then 
-    if ! grep qs "/external-service" /mnt/"$pool"/ix-applications/releases/"$app_name"/charts/"$(find . -maxdepth 1 -type d -printf '%P\n' | sort -r | head -n 1)"/Chart.yaml ; then
+    if ! grep qs "/external-service" /mnt/"$pool"/ix-applications/releases/"$app_name"/charts/"$(find /mnt/"$pool"/ix-applications/releases/"$app_name"/charts/ -maxdepth 1 -type d -printf '%P\n' | sort -r | head -n 1)"/Chart.yaml ; then
         echo "$app_name,false" >> external_services
     else
         echo "$app_name,true" >> external_services

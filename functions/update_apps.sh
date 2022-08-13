@@ -12,6 +12,7 @@ pool=$(cli -c 'app kubernetes config' | grep -E "dataset\s\|" | awk -F '|' '{pri
 
 it=0
 while_count=0
+rm deploying
 while true
 do
     if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) ; then

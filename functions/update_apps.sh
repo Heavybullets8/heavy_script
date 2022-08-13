@@ -29,7 +29,7 @@ do
         ((count++)) 
     done
     if [[ "$proc_count" -ge "$update_limit" ]]; then
-        sleep 3
+        sleep 5
     elif [[ $it -lt ${#array[@]} ]]; then
         # loop=0
         # until [[ $loop -ge 2 || $it -ge ${#array[@]} ]];
@@ -40,7 +40,7 @@ do
         # ((loop++))
         # done
     elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
-        sleep 3
+        sleep 5
     else # All processes must be completed, break out of loop
         break
     fi
@@ -79,7 +79,6 @@ if  grep -qs "^$app_name," failed.txt ; then
 fi
 
 [[ ! -e external_services ]] && touch external_services
-
 if ! grep -qs "^$app_name," external_services ; then 
     if ! grep qs "/external-service" /mnt/"$pool"/ix-applications/releases/"$app_name"/charts/"$(find /mnt/"$pool"/ix-applications/releases/"$app_name"/charts/ -maxdepth 1 -type d -printf '%P\n' | sort -r | head -n 1)"/Chart.yaml ; then
         echo "$app_name,false" >> external_services
@@ -87,9 +86,6 @@ if ! grep -qs "^$app_name," external_services ; then
         echo "$app_name,true" >> external_services
     fi
 fi
-
-
-
 
 echo_array+=("\n$app_name")
 if [[ $stop_before_update == "true" && "$startstatus" !=  "STOPPED" ]]; then # Check to see if user is using -S or not

@@ -192,7 +192,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
             [[ "$verbose" == "true" ]] && echo_array+=("Verifying $status..")
             before_loop=$(head -n 1 all_app_status)
             current_loop=0
-            until [[ "$status" != "ACTIVE" || $current_loop -gt 3 ]] # Wait for a specific change to app status, or 3 refreshes of the file to go by.
+            until [[ "$status" != "ACTIVE" || $current_loop -gt 4 ]] # Wait for a specific change to app status, or 3 refreshes of the file to go by.
             do
                 status=$( grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
                 sleep 1

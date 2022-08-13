@@ -78,7 +78,6 @@ if  grep -qs "^$app_name," failed.txt ; then
     fi
 fi
 
-
 [[ ! -e external_services ]] && touch external_services
 
 if ! grep -qs "^$app_name," external_services ; then 
@@ -111,7 +110,12 @@ else
     echo_array
     return
 fi
-after_update_actions
+if grep -qs "^$app_name,true" external_services ; then
+    echo_array
+    return
+else
+    after_update_actions
+fi
 }
 export -f pre_process
 

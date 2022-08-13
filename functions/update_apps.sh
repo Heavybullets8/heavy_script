@@ -12,7 +12,7 @@ pool=$(cli -c 'app kubernetes config' | grep -E "dataset\s\|" | awk -F '|' '{pri
 
 it=0
 while_count=0
-rm deploying
+rm deploying 2>/dev/null
 while true
 do
     if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) ; then
@@ -55,8 +55,8 @@ do
         break
     fi
 done
-rm temp.txt
-rm deploying
+rm temp.txt 2>/dev/null
+rm deploying 2>/dev/null
 echo
 echo
 
@@ -219,9 +219,6 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
                 echo_array+=("Active")
                 break 
             fi
-        elif [[ "$status"  ==  "STOPPED" ]]; then
-            echo_array+=("Stopped")
-            break 
         elif [[ "$SECONDS" -ge "$timeout" && "$status" == "DEPLOYING" ]]; then
             if [[ $rollback == "true" ]]; then
                 if [[ "$failed" != "true" ]]; then

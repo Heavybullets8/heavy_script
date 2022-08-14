@@ -78,20 +78,20 @@ diff_chart=$(diff <(echo "$old_chart_ver") <(echo "$new_chart_ver")) #caluclatin
 old_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}') #Upgraded From
 new_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}') #Upraded To
 rollback_version=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
-if  grep -qs "^$app_name," failed.txt ; then
-    failed_ver=$(grep "^$app_name," failed.txt | awk -F ',' '{print $2}')
+if  grep -qs "^$app_name," failed 2>/dev/null; then
+    failed_ver=$(grep "^$app_name," failed | awk -F ',' '{print $2}')
     if [[ "$failed_ver" == "$new_full_ver" ]] ; then
         echo -e "\n$app_name"
         echo -e "Skipping previously failed version:\n$new_full_ver"
         return 0
     else 
-        sed -i /"$app_name",/d failed.txt
+        sed -i /"$app_name",/d failed
     fi
 fi
 
 [[ ! -e external_services ]] && touch external_services
 if ! grep -qs "^$app_name," external_services ; then 
-    if ! grep qs "/external-service" /mnt/"$pool"/ix-applications/releases/"$app_name"/charts/"$(find /mnt/"$pool"/ix-applications/releases/"$app_name"/charts/ -maxdepth 1 -type d -printf '%P\n' | sort -r | head -n 1)"/Chart.yaml ; then
+    if ! grep qs "/external-service" /mnt/"$pool"/ix-applications/releases/"$app_name"/charts/"$(find /mnt/"$pool"/ix-applications/releases/"$app_name"/charts/ -maxdepth 1 -type d -printf '%P\n' | sort -r | head -n 1)"/Chart.yaml 2>/dev/null; then
         echo "$app_name,false" >> external_services
     else
         echo "$app_name,true" >> external_services
@@ -194,7 +194,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
             current_loop=0
             until [[ "$status" != "ACTIVE" || $current_loop -gt 4 ]] # Wait for a specific change to app status, or 3 refreshes of the file to go by.
             do
-                status=$( grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
+                status=$(grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
                 sleep 1
                 if ! echo -e "$(head -n 1 all_app_status)" | grep -qs ^"$before_loop" ; then
                     before_loop=$(head -n 1 all_app_status)
@@ -227,7 +227,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
                     echo_array+=("Reverting update..")
                     midclt call chart.release.rollback "$app_name" "{\"item_version\": \"$rollback_version\"}" &> /dev/null || { echo_array+=("Error: Failed to rollback $app_name") ; break ; }
                     [[ "$startstatus"  ==  "STOPPED" ]] && failed="true" && after_update_actions #run back after_update_actions function if the app was stopped prior to update
-                    echo "$app_name,$new_full_ver" >> failed.txt
+                    echo "$app_name,$new_full_ver" >> failed
                     break
                 else
                     echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")

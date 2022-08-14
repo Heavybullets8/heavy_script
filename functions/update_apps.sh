@@ -188,7 +188,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
     while true
     do
         status=$(grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
-        if [[ $count -lt 1 && $status == "ACTIVE" && "$(grep "^$app_name," deploying | awk -F ',' '{print $2}')" != "DEPLOYING" ]]; then                # If status shows up as Active or Stopped on the first check, verify that. Otherwise it may be a false report..
+        if [[ $count -lt 1 && $status == "ACTIVE" && "$(grep "^$app_name," deploying 2>/dev/null | awk -F ',' '{print $2}')" != "DEPLOYING" ]]; then                # If status shows up as Active or Stopped on the first check, verify that. Otherwise it may be a false report..
             [[ "$verbose" == "true" ]] && echo_array+=("Verifying $status..")
             before_loop=$(head -n 1 all_app_status)
             current_loop=0

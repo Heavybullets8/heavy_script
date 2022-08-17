@@ -48,6 +48,7 @@ echo "--mount         | Initiates mounting feature, choose between unmounting an
 echo "--restore       | Opens a menu to restore a \"heavy_script\" backup that was taken on your \"ix-applications\" dataset"
 echo "--delete-backup | Opens a menu to delete backups on your system"
 echo "--dns           | list all of your applications DNS names and their web ports"
+echo "--cmd           | Open a shell for one of your applications"
 echo
 echo "Update Types"
 echo "------------"

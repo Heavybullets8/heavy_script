@@ -41,6 +41,9 @@ do
               dns)
                   dns="true"
                   ;;
+              cmd)
+                  cmd="true"
+                  ;;
           restore)
                   restore="true"
                   ;;
@@ -136,6 +139,7 @@ done
 #Continue to call functions in specific order
 [[ "$self_update" == "true" ]] && self_update
 [[ "$help" == "true" ]] && help
+[[ "$cmd" == "true" ]] && cmd_to_container
 [[ "$deleteBackup" == "true" ]] && deleteBackup && exit
 [[ "$dns" == "true" ]] && dns && exit
 [[ "$restore" == "true" ]] && restore && exit

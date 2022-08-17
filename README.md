@@ -34,24 +34,8 @@
 | -p            	| -p                     	| None            	| Prune old/unused docker images                                                                                                                                                                                             	|
 | --self-update 	| --self-update          	| None            	| Updates HeavyScript prior to running any other commands                                                                                                                                                                    	|
 
-<br>
-<br>
 
-## Other Utilities
-> All of these can ALSO be accessed with the HeavyScript menu, that you can access simply by not providing an argument `bash heavy_script.sh`
-
-| Flag            	| Example         	| Parameter 	| Description                                                                                  	|
-|-----------------	|-----------------	|-----------	|----------------------------------------------------------------------------------------------	|
-| --mount         	| --mount         	| None      	| Initiates mounting feature, choose between unmounting and mounting PVC data                  	|
-| --restore       	| --restore       	| None      	| Opens a menu to restore a heavy_script backup that was taken on your ix-applications dataset 	|
-| --delete-backup 	| --delete-backup 	| None      	| Opens a menu to delete backups on your system                                                	|
-| --dns           	| --dns           	| None      	| list all of your applications DNS names and their web ports                                  	|
-| --cmd           	| --cmd           	| None      	| Open a shell for one of your applications                                                    	|
-
-<br>
-<br>
-
-### Examples
+### Example
 #### Typical Cron Job  
 ```
 bash heavy_script.sh --self-update -b 10 -i portainer -i arch -i sonarr -i radarr -t 600 -rsp -u 5
@@ -75,6 +59,22 @@ bash heavy_script.sh --self-update -b 10 -i portainer -i arch -i sonarr -i radar
 > `--self-update` Will update the script prior to running anything else.
 
 
+<br>
+
+## Other Utilities
+> All of these can ALSO be accessed with the HeavyScript menu, that you can access simply by not providing an argument `bash heavy_script.sh`
+
+| Flag            	| Example         	| Parameter 	| Description                                                                                  	|
+|-----------------	|-----------------	|-----------	|----------------------------------------------------------------------------------------------	|
+| --mount         	| --mount         	| None      	| Initiates mounting feature, choose between unmounting and mounting PVC data                  	|
+| --restore       	| --restore       	| None      	| Opens a menu to restore a heavy_script backup that was taken on your ix-applications dataset 	|
+| --delete-backup 	| --delete-backup 	| None      	| Opens a menu to delete backups on your system                                                	|
+| --dns           	| --dns           	| None      	| list all of your applications DNS names and their web ports                                  	|
+| --cmd           	| --cmd           	| None      	| Open a shell for one of your applications                                                    	|
+
+<br>
+
+### Examples
 #### Mounting PVC Data
 
 ```
@@ -177,7 +177,7 @@ bash heavyscript.sh --self-update -b 10 -supr
 | Name                   	| Value                                                                                                             	| Reason                                                                                                                                                                                         	|
 |------------------------	|-------------------------------------------------------------------------------------------------------------------	|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
 | `Description`          	| HeavyScript git pull and Update apps                                                                              	| This is up to you, put whatever you think is a good description in here                                                                                                                        	|
-| `Command`              	| `bash /PATH/TO/HEAVY_SCRIPT_DIRECTORY/heavy_script.sh --self-update -b 10 -rsup` 	| This is the command you will be running on your schedule  I personally use:  `bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 10 -rsup` 	|
+| `Command`              	| `bash /PATH/TO/HEAVY_SCRIPT_DIRECTORY/heavy_script.sh --self-update -b 10 -rsp -u 10` 	| This is the command you will be running on your schedule  I personally use:  `bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u 10` 	|
 | `Run As User`          	| `root`                                                                                                            	| Running the script as `root` is REQUIRED. You cannot access all of the kubernetes functions without this user.                                                                                 	|
 | `Schedule`             	| Up to you, I run mine everyday at `0400`                                                                          	| Again up to you                                                                                                                                                                                	|
 | `Hide Standard Output` 	| `False` or Unticked                                                                                               	| I like to receive an email report of how the script ran, what apps updated etc.                                                                                                                	|

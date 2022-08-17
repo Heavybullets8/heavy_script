@@ -101,10 +101,10 @@ bash /mnt/tank/scripts/heavy_script/heavy_script.sh --delete-backup
 bash /mnt/tank/scripts/heavy_script/heavy_script.sh --dns
 ```
 
-#### My personal Cron Job
+#### Open a Containers Shell
 
 ```
-bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u 10
+bash /mnt/speed/scripts/heavy_script/heavy_script.sh --cmd
 ```
 
 <br>

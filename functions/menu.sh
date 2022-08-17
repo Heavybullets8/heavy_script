@@ -14,7 +14,7 @@ echo "8)  Update Applications"
 echo "9)  Command to Container"
 echo
 echo "0)  Exit"
-read -rt 120 -p "Please select an option by number: " selection
+read -rt 120 -p "Please select an option by number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
 
 case $selection in
     0)
@@ -30,7 +30,7 @@ case $selection in
         mount
         ;;
     4)
-        read -rt 120 -p "What is the maximun number of backups you would like?: " number_of_backups || echo "Failed to make a selection"
+        read -rt 120 -p "What is the maximun number of backups you would like?: " number_of_backups || { echo -e "\nFailed to make a selection in time" ; exit; }
         backup="true"
         ;;
     5)

@@ -20,6 +20,7 @@
 > Access this with `bash heavy_script.sh`
 
 <br >
+<br >
 
 ## Update Arguments
 | Flag          	| Example                	| Parameter       	| Description                                                                                                                                                                                                                	|
@@ -60,7 +61,7 @@ bash heavy_script.sh --self-update -b 10 -i portainer -i arch -i sonarr -i radar
 
 > `--self-update` Will update the script prior to running anything else.
 
-
+<br >
 <br>
 
 ## Other Utilities
@@ -74,7 +75,6 @@ bash heavy_script.sh --self-update -b 10 -i portainer -i arch -i sonarr -i radar
 | --dns           	| --dns           	| None      	| list all of your applications DNS names and their web ports                                  	|
 | --cmd           	| --cmd           	| None      	| Open a shell for one of your applications                                                    	|
 
-<br>
 
 ### Examples
 #### Mounting PVC Data

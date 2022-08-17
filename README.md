@@ -14,27 +14,34 @@
 
 <br>
 
-## Arguments
+## Update Arguments
+| Flag          	| Example                	| Parameter       	| Description                                                                                                                                                                                                                	|
+|---------------	|------------------------	|-----------------	|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
+| -U            	| -U <br>-U 5            	| None or Integer 	| Update applications, ignoring major version changes<br>_Optionally, you can supply a number after the argument to update multiple applications at once_                                                                    	|
+| -u            	| -u<br>-u 5             	| None or Integer 	| Update applications, do NOT update if there was a major version change<br>_Optionally, you can supply a number after the argument to update multiple applications at once_                                                 	|
+| -b            	| -b 14                  	| Integer         	| Backup `ix-appliactions` dataset<br>_Creates backups up to the number you've chosen_                                                                                                                                       	|
+| -i            	| -i nextcloud -i sonarr 	| String          	| Applications listed will be ignored during updating<br>_List one application after another as shown in the example_                                                                                                        	|
+| -r            	| -r                     	| None            	| Monitors applications after they update<br>If the app does not become "ACTIVE" after either:<br>The custom Timeout, or Default Timeout,<br>rollback the application.                                                       	|
+| -v            	| -v                     	| None            	| Verbose Output<br>_Look at the bottom of this page for an example_                                                                                                                                                         	|
+| -S            	| -S                     	| None            	| Shutdown the application prior to updating it                                                                                                                                                                              	|
+| -t            	| -t 150                 	| Integer         	| Set a custom timeout to be used with either:<br>`-m` <br>_Time the script will wait for application to be "STOPPED"_<br>or<br>`-(u\|U)` <br>_Time the script will wait for application to be either "STOPPED" or "ACTIVE"_ 	|
+| -s            	| -s                     	| None            	| Sync Catalogs prior to updating                                                                                                                                                                                            	|
+| -p            	| -p                     	| None            	| Prune old/unused docker images                                                                                                                                                                                             	|
+| --self-update 	| --self-update          	| None            	| Updates HeavyScript prior to running any other commands                                                                                                                                                                    	|
 
-| Flag            	| Example                	| Parameter       	| Description                                                                                                                                                                                                                	|
-|-----------------	|------------------------	|-----------------	|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
-| NULL            	| NULL                   	| NULL            	| If you choose not to supply an option, it will open the menu for easier access to the utilities                                                                                                                            	|
-| --self-update   	| --self-update          	| None            	| Updates HeavyScript prior to running it<br>_You no longer need to git pull_                                                                                                                                                	|
-| --delete-backup 	| --delete-backup        	| None            	| Opens a menu to delete backups<br>_Useful if you need to delete old system backups or backups from other scripts_                                                                                                          	|
-| --restore       	| --restore              	| None            	| Restore HeavyScript specific `ix-applications dataset` snapshot                                                                                                                                                            	|
-| --mount         	| --mount                	| None            	| Initiates mounting feature<br>Choose between unmounting and mounting PVC data                                                                                                                                              	|
-| --dns           	| --dns                  	| None            	| list all of your applications DNS names and their web ports                                                                                                                                                                	|
-| -U              	| -U <br>-U 5            	| None or Integer 	| Update applications, ignoring major version changes<br>_Optionally, you can supply a number after the argument to update multiple applications at once_                                                                    	|
-| -u              	| -u<br>-u 5             	| None or Integer 	| Update applications, do NOT update if there was a major version change<br>_Optionally, you can supply a number after the argument to update multiple applications at once_                                                 	|
-| -b              	| -b 10                  	| Integer         	| Backup `ix-appliactions` dataset<br>_Creates backups up to the number you've chosen_                                                                                                                                       	|
-| -i              	| -i nextcloud -i sonarr 	| String          	| Applications listed will be ignored during updating<br>_List one application after another as shown in the example_                                                                                                        	|
-| -r              	| -r                     	| None            	| Monitors applications after they update<br>If the app does not become "ACTIVE" after either:<br>The custom Timeout, or Default Timeout,<br>rollback the application.                                                       	|
-| -v              	| -v                     	| None            	| Verbose Output<br>_Look at the bottom of this page for an example_                                                                                                                                                         	|
-| -S              	| -S                     	| None            	| Shutdown the application prior to updating it                                                                                                                                                                              	|
-| -t              	| -t 150                 	| Integer         	| Set a custom timeout to be used with either:<br>`-m` <br>_Time the script will wait for application to be "STOPPED"_<br>or<br>`-(u\|U)` <br>_Time the script will wait for application to be either "STOPPED" or "ACTIVE"_ 	|
-| -s              	| -s                     	| None            	| Sync Catalogs prior to updating                                                                                                                                                                                            	|
-| -p              	| -p                     	| None            	| Prune old/unused docker images                                                                                                                                                                                             	|
+<br>
+<br>
 
+## Other Utilities
+> All of these can ALSO be accessed with the HeavyScript menu, that you can access simply by not providing an argument `bash heavy_script.sh`
+
+| Flag            	| Example         	| Parameter 	| Description                                                                                  	|
+|-----------------	|-----------------	|-----------	|----------------------------------------------------------------------------------------------	|
+| --mount         	| --mount         	| None      	| Initiates mounting feature, choose between unmounting and mounting PVC data                  	|
+| --restore       	| --restore       	| None      	| Opens a menu to restore a heavy_script backup that was taken on your ix-applications dataset 	|
+| --delete-backup 	| --delete-backup 	| None      	| Opens a menu to delete backups on your system                                                	|
+| --dns           	| --dns           	| None      	| list all of your applications DNS names and their web ports                                  	|
+| --cmd           	| --cmd           	| None      	| Open a shell for one of your applications                                                    	|
 
 <br>
 <br>

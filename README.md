@@ -67,13 +67,13 @@ bash heavy_script.sh --self-update -b 10 -i portainer -i arch -i sonarr -i radar
 ## Other Utilities
 > All of these can ALSO be accessed with the HeavyScript menu, that you can access simply by not providing an argument `bash heavy_script.sh`
 
-| Flag            	| Example         	| Parameter 	| Description                                                                                  	|
-|-----------------	|-----------------	|-----------	|----------------------------------------------------------------------------------------------	|
-| --mount         	| --mount         	| None      	| Initiates mounting feature, choose between unmounting and mounting PVC data                  	|
-| --restore       	| --restore       	| None      	| Opens a menu to restore a heavy_script backup that was taken on your ix-applications dataset 	|
-| --delete-backup 	| --delete-backup 	| None      	| Opens a menu to delete backups on your system                                                	|
-| --dns           	| --dns           	| None      	| list all of your applications DNS names and their web ports                                  	|
-| --cmd           	| --cmd           	| None      	| Open a shell for one of your applications                                                    	|
+| Flag            | Description                                                                                  |
+|-----------------|----------------------------------------------------------------------------------------------|
+| --mount         | Initiates mounting feature, choose between unmounting and mounting PVC data                  |
+| --restore       | Opens a menu to restore a heavy_script backup that was taken on your ix-applications dataset |
+| --delete-backup | Opens a menu to delete backups on your system                                                |
+| --dns           | list all of your applications DNS names and their web ports                                  |
+| --cmd           | Open a shell for one of your applications                                                    |
 
 
 ### Examples

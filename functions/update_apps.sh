@@ -59,7 +59,6 @@ rm all_app_status 2>/dev/null
 rm deploying 2>/dev/null
 echo
 echo
-
 }
 export -f commander
 
@@ -157,6 +156,7 @@ do
 done
 }
 export -f update_app
+
 
 stop_app(){
 count=0

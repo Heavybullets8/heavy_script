@@ -2,7 +2,7 @@
 
 
 cmd_to_container(){
-app_name=$(k3s kubectl get pods -A | awk '{print $1}' | sort -u | grep -v "system" | sed '1d' | sed 's/^[^-]*-//' | nl -s ") " | column -t)
+app_name=$(k3s crictl pods -s ready --namespace ix | sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//' | sed '1d' | awk '{print $4}' | sort -u | nl -s ") " | column -t)
 while true
 do
     clear -x
@@ -23,8 +23,9 @@ do
     fi
 done
 app_name=$(echo -e "$app_name" | grep ^"$selection)" | awk '{print $2}')
+search=$(k3s crictl pods -s ready --namespace ix)
+mapfile -t pod_id < <(echo "$search" | grep -E "[[:space:]]$app_name([[:space:]]|-([-[:alnum:]])*[[:space:]])" | awk '{print $1}')
 search=$(k3s crictl ps -a -s running | sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//')
-mapfile -t pod_id < <(echo "$search" | grep -E "[[:space:]]$app_name([[:space:]]|-([-[:alnum:]])*[[:space:]])" | awk '{print $(NF)}')
 for pod in "${pod_id[@]}"
 do
     if [[ $(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r " | wc -l) -gt 1 ]]; then

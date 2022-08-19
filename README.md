@@ -2,7 +2,7 @@
 
 ## Website 
 
-[HeavySetup - Further In-Depth Explanation](https://heavysetup.info/scripts/heavyscript/about/)
+[HeavySetup - Further Explanation](https://heavysetup.info/scripts/heavyscript/about/)
 
 ## Table of contents:
 * [Update Arguments](#update-arguments)
@@ -142,6 +142,15 @@ From here, you can just run Heavy_Script with `bash heavy_script.sh -ARGUMENTS`
 
 ## How to Update 
 
+### Built-In Option
+
+```
+bash heavyscript.sh --self-update -b 10 -supr
+```
+> The important argument here is the `--self-update`, you can still use all of your same arguments with this option.
+
+<br >
+
 ### Manually
 
 #### Open a Terminal 
@@ -155,14 +164,6 @@ cd /mnt/speed/scripts/heavy_script
 ```
 git pull
 ```
-<br >
-
-### Built-In Option
-
-```
-bash heavyscript.sh --self-update -b 10 -supr
-```
-> The important argument here is the `--self-update`, you can still use all of your same arguments with this option.
 
 
 <br >

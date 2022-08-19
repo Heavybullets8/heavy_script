@@ -14,32 +14,31 @@
 
 <br>
 
-## Arguments
+## The Menu
 
-| Flag            	| Example                	| Parameter       	| Description                                                                                                                                                                                                                	|
-|-----------------	|------------------------	|-----------------	|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
-| NULL            	| NULL                   	| NULL            	| If you choose not to supply an option, it will open the menu for easier access to the utilities                                                                                                                            	|
-| --self-update   	| --self-update          	| None            	| Updates HeavyScript prior to running it<br>_You no longer need to git pull_                                                                                                                                                	|
-| --delete-backup 	| --delete-backup        	| None            	| Opens a menu to delete backups<br>_Useful if you need to delete old system backups or backups from other scripts_                                                                                                          	|
-| --restore       	| --restore              	| None            	| Restore HeavyScript specific `ix-applications dataset` snapshot                                                                                                                                                            	|
-| --mount         	| --mount                	| None            	| Initiates mounting feature<br>Choose between unmounting and mounting PVC data                                                                                                                                              	|
-| --dns           	| --dns                  	| None            	| list all of your applications DNS names and their web ports                                                                                                                                                                	|
-| -U              	| -U <br>-U 5            	| None or Integer 	| Update applications, ignoring major version changes<br>_Optionally, you can supply a number after the argument to update multiple applications at once_                                                                    	|
-| -u              	| -u<br>-u 5             	| None or Integer 	| Update applications, do NOT update if there was a major version change<br>_Optionally, you can supply a number after the argument to update multiple applications at once_                                                 	|
-| -b              	| -b 10                  	| Integer         	| Backup `ix-appliactions` dataset<br>_Creates backups up to the number you've chosen_                                                                                                                                       	|
-| -i              	| -i nextcloud -i sonarr 	| String          	| Applications listed will be ignored during updating<br>_List one application after another as shown in the example_                                                                                                        	|
-| -r              	| -r                     	| None            	| Monitors applications after they update<br>If the app does not become "ACTIVE" after either:<br>The custom Timeout, or Default Timeout,<br>rollback the application.                                                       	|
-| -v              	| -v                     	| None            	| Verbose Output<br>_Look at the bottom of this page for an example_                                                                                                                                                         	|
-| -S              	| -S                     	| None            	| Shutdown the application prior to updating it                                                                                                                                                                              	|
-| -t              	| -t 150                 	| Integer         	| Set a custom timeout to be used with either:<br>`-m` <br>_Time the script will wait for application to be "STOPPED"_<br>or<br>`-(u\|U)` <br>_Time the script will wait for application to be either "STOPPED" or "ACTIVE"_ 	|
-| -s              	| -s                     	| None            	| Sync Catalogs prior to updating                                                                                                                                                                                            	|
-| -p              	| -p                     	| None            	| Prune old/unused docker images                                                                                                                                                                                             	|
+![image](https://user-images.githubusercontent.com/20793231/185020236-7b389499-8081-407d-b653-10dffd70de8c.png)
+> Access this with `bash heavy_script.sh`
+
+<br >
+<br >
+
+## Update Arguments
+| Flag          	| Example                	| Parameter       	| Description                                                                                                                                                                                                                	|
+|---------------	|------------------------	|-----------------	|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
+| -U            	| -U <br>-U 5            	| None or Integer 	| Update applications, ignoring major version changes<br>_Optionally, you can supply a number after the argument to update multiple applications at once_                                                                    	|
+| -u            	| -u<br>-u 5             	| None or Integer 	| Update applications, do NOT update if there was a major version change<br>_Optionally, you can supply a number after the argument to update multiple applications at once_                                                 	|
+| -b            	| -b 14                  	| Integer         	| Backup `ix-appliactions` dataset<br>_Creates backups up to the number you've chosen_                                                                                                                                       	|
+| -i            	| -i nextcloud -i sonarr 	| String          	| Applications listed will be ignored during updating<br>_List one application after another as shown in the example_                                                                                                        	|
+| -r            	| -r                     	| None            	| Monitors applications after they update<br>If the app does not become "ACTIVE" after either:<br>The custom Timeout, or Default Timeout,<br>rollback the application.                                                       	|
+| -v            	| -v                     	| None            	| Verbose Output<br>_Look at the bottom of this page for an example_                                                                                                                                                         	|
+| -S            	| -S                     	| None            	| Shutdown the application prior to updating it                                                                                                                                                                              	|
+| -t            	| -t 150                 	| Integer         	| Set a custom timeout to be used with either:<br>`-m` <br>_Time the script will wait for application to be "STOPPED"_<br>or<br>`-(u\|U)` <br>_Time the script will wait for application to be either "STOPPED" or "ACTIVE"_ 	|
+| -s            	| -s                     	| None            	| Sync Catalogs prior to updating                                                                                                                                                                                            	|
+| -p            	| -p                     	| None            	| Prune old/unused docker images                                                                                                                                                                                             	|
+| --self-update 	| --self-update          	| None            	| Updates HeavyScript prior to running any other commands                                                                                                                                                                    	|
 
 
-<br>
-<br>
-
-### Examples
+### Example
 #### Typical Cron Job  
 ```
 bash heavy_script.sh --self-update -b 10 -i portainer -i arch -i sonarr -i radarr -t 600 -rsp -u 5
@@ -62,7 +61,22 @@ bash heavy_script.sh --self-update -b 10 -i portainer -i arch -i sonarr -i radar
 
 > `--self-update` Will update the script prior to running anything else.
 
+<br >
+<br>
 
+## Other Utilities
+> All of these can ALSO be accessed with the HeavyScript menu, that you can access simply by not providing an argument `bash heavy_script.sh`
+
+| Flag            | Description                                                                                  |
+|-----------------|----------------------------------------------------------------------------------------------|
+| --mount         | Initiates mounting feature, choose between unmounting and mounting PVC data                  |
+| --restore       | Opens a menu to restore a heavy_script backup that was taken on your ix-applications dataset |
+| --delete-backup | Opens a menu to delete backups on your system                                                |
+| --dns           | list all of your applications DNS names and their web ports                                  |
+| --cmd           | Open a shell for one of your applications                                                    |
+
+
+### Examples
 #### Mounting PVC Data
 
 ```
@@ -87,10 +101,10 @@ bash /mnt/tank/scripts/heavy_script/heavy_script.sh --delete-backup
 bash /mnt/tank/scripts/heavy_script/heavy_script.sh --dns
 ```
 
-#### My personal Cron Job
+#### Open a Containers Shell
 
 ```
-bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u 10
+bash /mnt/speed/scripts/heavy_script/heavy_script.sh --cmd
 ```
 
 <br>
@@ -165,7 +179,7 @@ bash heavyscript.sh --self-update -b 10 -supr
 | Name                   	| Value                                                                                                             	| Reason                                                                                                                                                                                         	|
 |------------------------	|-------------------------------------------------------------------------------------------------------------------	|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
 | `Description`          	| HeavyScript git pull and Update apps                                                                              	| This is up to you, put whatever you think is a good description in here                                                                                                                        	|
-| `Command`              	| `bash /PATH/TO/HEAVY_SCRIPT_DIRECTORY/heavy_script.sh --self-update -b 10 -rsup` 	| This is the command you will be running on your schedule  I personally use:  `bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 10 -rsup` 	|
+| `Command`              	| `bash /PATH/TO/HEAVY_SCRIPT_DIRECTORY/heavy_script.sh --self-update -b 10 -rsp -u 10` 	| This is the command you will be running on your schedule  I personally use:  `bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u 10` 	|
 | `Run As User`          	| `root`                                                                                                            	| Running the script as `root` is REQUIRED. You cannot access all of the kubernetes functions without this user.                                                                                 	|
 | `Schedule`             	| Up to you, I run mine everyday at `0400`                                                                          	| Again up to you                                                                                                                                                                                	|
 | `Hide Standard Output` 	| `False` or Unticked                                                                                               	| I like to receive an email report of how the script ran, what apps updated etc.                                                                                                                	|

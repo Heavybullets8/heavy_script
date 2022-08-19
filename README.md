@@ -5,8 +5,8 @@
 [HeavySetup - Further In-Depth Explanation](https://heavysetup.info/scripts/heavyscript/about/)
 
 ## Table of contents:
-* [Arguments](#arguments)
-* [Examples](#examples)
+* [Update Arguments](#update-arguments)
+* [Other Utilities](#other-utilities)
 * [How to Install](#how-to-install)
 * [How to Update](#how-to-update)
 * [Creating a Cron Job](#creating-a-cron-job)
@@ -157,7 +157,7 @@ git pull
 ```
 <br >
 
-### Update with the scripts built-in option
+### Built-In Option
 
 ```
 bash heavyscript.sh --self-update -b 10 -supr

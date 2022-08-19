@@ -133,7 +133,6 @@ do
     update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3}')
     if [[ $update_avail == "true" ]]; then
         if ! cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null ; then
-            echo "Fail Trigger - Debugging"
             before_loop=$(head -n 1 all_app_status)
             current_loop=0
             until [[ "$(grep "^$app_name," all_app_status | awk -F ',' '{print $3}')" != "$update_avail" ]]   # Wait for a specific change to app status, or 3 refreshes of the file to go by.
@@ -166,7 +165,6 @@ do
     if [[ $count -gt 2 ]]; then # If failed to stop app 3 times, return failure to parent shell
         return 1
     elif ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' &> /dev/null ; then
-        echo "Fail Trigger Stop - Debugging"
         before_loop=$(head -n 1 all_app_status)
         ((count++))
         until [[ $(head -n 1 all_app_status) != "$before_loop" ]] # Upon failure, wait for status update before continuing

@@ -2,7 +2,7 @@
 
 args=("$@")
 self_update() {
-branch="ignore-file"
+branch="main"
 git fetch &> /dev/null 
 echo "🅂 🄴 🄻 🄵"
 echo "🅄 🄿 🄳 🄰 🅃 🄴"

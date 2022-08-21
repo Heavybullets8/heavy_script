@@ -13,6 +13,7 @@ pool=$(cli -c 'app kubernetes config' | grep -E "dataset\s\|" | awk -F '|' '{pri
 it=0
 while_count=0
 rm deploying 2>/dev/null
+rm all_app_status 2>/dev/null
 while true
 do
     if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) ; then
@@ -49,13 +50,12 @@ do
         ((it++))
         # ((loop++))
         # done
-    elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
+    elif [[ $proc_count != 0 ]] || grep -qs ",DEPLOYING," all_app_status 2>/dev/null ; then # Wait for all processes to finish
         sleep 3
     else # All processes must be completed, break out of loop
         break
     fi
 done
-rm all_app_status 2>/dev/null
 rm deploying 2>/dev/null
 echo
 echo
@@ -230,14 +230,29 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
                 else
                     echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
                     echo_array+=("The application failed to be ACTIVE even after a rollback")
-                    echo_array+=("Manual intervention is required\nAbandoning")
+                    echo_array+=("Manual intervention is required\nStopping, then Abandoning")
+                    if stop_app ; then
+                        echo_array+=("Stopped")
+                    else
+                        echo_array+=("Error: Failed to stop $app_name")
+                        echo_array
+                        return 1
+                    fi
                     break
                 fi
             else
                 echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
                 echo_array+=("If this is a slow starting application, set a higher timeout with -t")
                 echo_array+=("If this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration")
-                break
+                echo_array+=("Manual intervention is required\nStopping, then Abandoning")
+                if stop_app ; then
+                    echo_array+=("Stopped")
+                else
+                    echo_array+=("Error: Failed to stop $app_name")
+                    echo_array
+                    return 1
+                fi
+            break
             fi
         else
             [[ "$verbose" == "true" ]] && echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be ACTIVE")

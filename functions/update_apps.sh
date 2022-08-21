@@ -252,7 +252,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
                     echo_array
                     return 1
                 fi
-            break
+                break
             fi
         else
             [[ "$verbose" == "true" ]] && echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be ACTIVE")

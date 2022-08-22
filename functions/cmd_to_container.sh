@@ -22,29 +22,24 @@ do
         break
     fi
 done
+rm cont_file 2> /dev/null
 app_name=$(echo -e "$app_name" | grep ^"$selection)" | awk '{print $2}')
 mapfile -t pod_id < <(k3s crictl pods -s ready --namespace ix | grep -E "[[:space:]]$app_name([[:space:]]|-([-[:alnum:]])*[[:space:]])" | awk '{print $1}')
 search=$(k3s crictl ps -a -s running | sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//')
 for pod in "${pod_id[@]}"
 do
-    if [[ $(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r " | wc -l) -gt 1 ]]; then
-        readarray -t containers <<<"$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")"
-        continue
-    fi
-    printf '%s\0' "${containers[@]}" | grep -Fxqz -- "$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")" && continue 
-    containers+=("$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")")
-
+    echo "$search" | grep "$pod" >> cont_file
 done
+mapfile -t containers < <(sort -u cont_file 2> /dev/null)
 case "${#containers[@]}" in
     0)
         echo -e "No containers available\nAre you sure the application in running?"
         exit
         ;;
     1)
-        container=$(echo "$search" | grep "${pod_id[0]}" | awk '{print $4}')
-        container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
+        container=$(grep "${pod_id[0]}" cont_file | awk '{print $4}')
+        container_id=$(grep -E "[[:space:]]${container}[[:space:]]" cont_file | awk '{print $1}')
         ;;
-
     *)
         while true
         do
@@ -53,7 +48,7 @@ case "${#containers[@]}" in
             cont_search=$(
             for i in "${containers[@]}"
             do
-                echo "$i"
+                echo "$i" | awk '{print $4}'
             done | nl -s ") " | column -t
             )
             echo "$cont_search"
@@ -72,7 +67,7 @@ case "${#containers[@]}" in
             fi
         done
         container=$(echo "$cont_search" | grep ^"$selection)" | awk '{print $2}')
-        container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
+        container_id=$(grep -E "[[:space:]]${container}[[:space:]]" cont_file | awk '{print $1}')
         ;;
 esac
 while true
@@ -113,6 +108,6 @@ do
             ;;
     esac
 done
-
+rm cont_file 2> /dev/null
 }
 export -f cmd_to_container

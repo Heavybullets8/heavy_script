@@ -32,10 +32,10 @@ do
     #     continue
     # fi
     # printf '%s\0' "${containers[@]}" | grep -Fxqz -- "$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")" && continue 
-    echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r " >> containers
+    echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r " >> cont_file
 done
 
-cat containers
+mapfile -t containers < cont_file
 
 case "${#containers[@]}" in
     0)

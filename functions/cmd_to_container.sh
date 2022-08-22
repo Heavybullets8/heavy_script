@@ -49,7 +49,7 @@ case "${#containers[@]}" in
             cont_search=$(
             for i in "${containers[@]}"
             do
-                echo "$i | awk '{print $4}'"
+                echo "$i" | awk '{print $4}'
             done | nl -s ") " | column -t
             )
             echo "$cont_search"

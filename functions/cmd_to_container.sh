@@ -35,6 +35,10 @@ do
     containers+=("$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")")
 done
 mapfile -t containers < <(echo "${containers[*]}")
+for i in "${containers[@]}"
+do
+    echo "$i"
+done
 case "${#containers[@]}" in
     0)
         echo -e "No containers available\nAre you sure the application in running?"

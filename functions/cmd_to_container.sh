@@ -39,7 +39,7 @@ for i in "${containers[@]}"
 do
     echo "$i"
 done
-printf '%s\n' "${containers[@]}"
+printf '%s \n' "${containers[@]}"
 case "${#containers[@]}" in
     0)
         echo -e "No containers available\nAre you sure the application in running?"

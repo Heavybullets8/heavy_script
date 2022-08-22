@@ -13,6 +13,7 @@ pool=$(cli -c 'app kubernetes config' | grep -E "dataset\s\|" | awk -F '|' '{pri
 it=0
 while_count=0
 rm deploying 2>/dev/null
+rm finished 2>/dev/null
 while true
 do
     if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) ; then
@@ -49,14 +50,14 @@ do
         ((it++))
         # ((loop++))
         # done
-    elif [[ $proc_count != 0 ]]; then # Wait for all processes to finish
+    elif [[ $proc_count != 0 || $(wc -l finished 2>/dev/null | awk '{ print $1 }') -lt "${#array[@]}" ]]; then # Wait for all processes to finish
         sleep 3
     else # All processes must be completed, break out of loop
         break
     fi
 done
-rm all_app_status 2>/dev/null
 rm deploying 2>/dev/null
+rm finished 2>/dev/null
 echo
 echo
 }
@@ -65,7 +66,7 @@ export -f commander
 
 pre_process(){
 app_name=$(echo "${array[$it]}" | awk -F ',' '{print $1}') #print out first catagory, name.
-printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name\nIgnored, skipping" && return 0 #If application is on ignore list, skip
+printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name\nIgnored, skipping" && final_check && return 0 #If application is on ignore list, skip
 old_app_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $1}' | awk -F '.' '{print $1}') #previous/current Application MAJOR Version
 new_app_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}' | awk -F '_' '{print $1}' | awk -F '.' '{print $1}') #new Application MAJOR Version
 old_chart_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}' | awk -F '.' '{print $1}') # Old Chart MAJOR version
@@ -73,7 +74,7 @@ new_chart_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}' | awk -F '_' '{pr
 startstatus=$(echo "${array[$it]}" | awk -F ',' '{print $2}') #status of the app: STOPPED / DEPLOYING / ACTIVE
 diff_app=$(diff <(echo "$old_app_ver") <(echo "$new_app_ver")) #caluclating difference in major app versions
 diff_chart=$(diff <(echo "$old_chart_ver") <(echo "$new_chart_ver")) #caluclating difference in Chart versions
-[[ "$diff_app" != "$diff_chart" && $update_apps == "true" ]] && echo -e "\n$app_name\nMajor Release, update manually" && return 
+[[ "$diff_app" != "$diff_chart" && $update_apps == "true" ]] && echo -e "\n$app_name\nMajor Release, update manually" && final_check && return 
 old_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}') #Upgraded From
 new_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}') #Upraded To
 rollback_version=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
@@ -82,6 +83,7 @@ if  grep -qs "^$app_name," failed 2>/dev/null; then
     if [[ "$failed_ver" == "$new_full_ver" ]] ; then
         echo -e "\n$app_name"
         echo -e "Skipping previously failed version:\n$new_full_ver"
+        final_check
         return 0
     else 
         sed -i /"$app_name",/d failed
@@ -105,6 +107,7 @@ if [[ $stop_before_update == "true" && "$startstatus" !=  "STOPPED" ]]; then # C
     else
         echo_array+=("Error: Failed to stop $app_name")
         echo_array
+        final_check
         return 1
     fi
 fi
@@ -114,13 +117,16 @@ if update_app ;then
 else
     echo_array+=("Failed to update")
     echo_array
+    final_check
     return
 fi
 if grep -qs "^$app_name,true" external_services ; then
     echo_array
+    final_check
     return
 else
     after_update_actions
+    final_check
 fi
 }
 export -f pre_process
@@ -230,13 +236,28 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
                 else
                     echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
                     echo_array+=("The application failed to be ACTIVE even after a rollback")
-                    echo_array+=("Manual intervention is required\nAbandoning")
+                    echo_array+=("Manual intervention is required\nStopping, then Abandoning")
+                    if stop_app ; then
+                        echo_array+=("Stopped")
+                    else
+                        echo_array+=("Error: Failed to stop $app_name")
+                        echo_array
+                        return 1
+                    fi
                     break
                 fi
             else
                 echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
                 echo_array+=("If this is a slow starting application, set a higher timeout with -t")
                 echo_array+=("If this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration")
+                echo_array+=("Manual intervention is required\nStopping, then Abandoning")
+                if stop_app ; then
+                    echo_array+=("Stopped")
+                else
+                    echo_array+=("Error: Failed to stop $app_name")
+                    echo_array
+                    return 1
+                fi
                 break
             fi
         else
@@ -260,3 +281,8 @@ done
 
 }
 export -f echo_array
+
+final_check(){
+    [[ ! -e finished ]] && touch finished
+    echo "$app_name,finished" >> finished
+}

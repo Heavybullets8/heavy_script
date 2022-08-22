@@ -28,7 +28,7 @@ mapfile -t pod_id < <(k3s crictl pods -s ready --namespace ix | grep -E "[[:spac
 search=$(k3s crictl ps -a -s running | sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//')
 for pod in "${pod_id[@]}"
 do
-    echo "$search" | grep "$pod" | tr -d " \t\r " >> cont_file
+    echo "$search" | grep "$pod" >> cont_file
 done
 mapfile -t containers < <(sort -u cont_file 2> /dev/null)
 # rm cont_file 2> /dev/null

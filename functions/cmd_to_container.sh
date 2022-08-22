@@ -31,7 +31,6 @@ do
     echo "$search" | grep "$pod" >> cont_file
 done
 mapfile -t containers < <(sort -u cont_file 2> /dev/null)
-# rm cont_file 2> /dev/null
 case "${#containers[@]}" in
     0)
         echo -e "No containers available\nAre you sure the application in running?"
@@ -109,6 +108,6 @@ do
             ;;
     esac
 done
-
+rm cont_file 2> /dev/null
 }
 export -f cmd_to_container

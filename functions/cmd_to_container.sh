@@ -22,6 +22,7 @@ do
         break
     fi
 done
+rm cont_file 2> /dev/null
 app_name=$(echo -e "$app_name" | grep ^"$selection)" | awk '{print $2}')
 mapfile -t pod_id < <(k3s crictl pods -s ready --namespace ix | grep -E "[[:space:]]$app_name([[:space:]]|-([-[:alnum:]])*[[:space:]])" | awk '{print $1}')
 search=$(k3s crictl ps -a -s running | sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//')
@@ -34,9 +35,8 @@ do
     # printf '%s\0' "${containers[@]}" | grep -Fxqz -- "$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")" && continue 
     echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r " >> cont_file
 done
-
-mapfile -t containers < cont_file
-
+mapfile -t containers < "$(sort -u cont_file)"
+rm cont_file 2> /dev/null
 case "${#containers[@]}" in
     0)
         echo -e "No containers available\nAre you sure the application in running?"

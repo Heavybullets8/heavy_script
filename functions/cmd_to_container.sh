@@ -32,7 +32,7 @@ do
     #     continue
     # fi
     printf '%s\0' "${containers[@]}" | grep -Fxqz -- "$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")" && continue 
-    containers+=("$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")")
+    containers+=("$(echo "$search" | grep "$pod" | awk '{print $4}' | sed 's/ /\n//')")
 done
 mapfile -t containers < <(echo "${containers[*]}")
 for i in "${containers[@]}"

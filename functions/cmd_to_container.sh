@@ -35,7 +35,8 @@ do
     # printf '%s\0' "${containers[@]}" | grep -Fxqz -- "$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")" && continue 
     echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r " >> cont_file
 done
-mapfile -t containers < "$(sort -u cont_file)"
+clean_list=$(sort -u cont_file)
+mapfile -t containers < "$clean_list"
 rm cont_file 2> /dev/null
 case "${#containers[@]}" in
     0)

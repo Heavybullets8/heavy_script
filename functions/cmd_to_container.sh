@@ -34,7 +34,8 @@ do
     printf '%s\0' "${containers[@]}" | grep -Fxqz -- "$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")" && continue 
     containers+="$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")"
 done
-IFS=" " read -r -a containers <<< "$containers"
+readarray -t containers <<<"$containers"
+
 case "${#containers[@]}" in
     0)
         echo -e "No containers available\nAre you sure the application in running?"

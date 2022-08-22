@@ -28,15 +28,10 @@ mapfile -t pod_id < <(k3s crictl pods -s ready --namespace ix | grep -E "[[:spac
 search=$(k3s crictl ps -a -s running | sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//')
 for pod in "${pod_id[@]}"
 do
-    # if [[ $(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r " | wc -l) -gt 1 ]]; then
-    #     readarray -t containers <<<"$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")"
-    #     continue
-    # fi
-    # printf '%s\0' "${containers[@]}" | grep -Fxqz -- "$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")" && continue 
-    echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r " >> cont_file
+    echo "$search" | grep "$pod" | tr -d " \t\r " >> cont_file
 done
 mapfile -t containers < <(sort -u cont_file 2> /dev/null)
-rm cont_file 2> /dev/null
+# rm cont_file 2> /dev/null
 case "${#containers[@]}" in
     0)
         echo -e "No containers available\nAre you sure the application in running?"
@@ -46,7 +41,6 @@ case "${#containers[@]}" in
         container=$(echo "$search" | grep "${pod_id[0]}" | awk '{print $4}')
         container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
         ;;
-
     *)
         while true
         do

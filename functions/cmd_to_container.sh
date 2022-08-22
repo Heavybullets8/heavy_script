@@ -31,15 +31,12 @@ do
     #     readarray -t containers <<<"$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")"
     #     continue
     # fi
-    printf '%s\0' "${containers[@]}" | grep -Fxqz -- "$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")" && continue 
-    containers+=("$(echo "$search" | grep "$pod" | awk '{print $4}' | sed 's/ /\n//')")
+    # printf '%s\0' "${containers[@]}" | grep -Fxqz -- "$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")" && continue 
+    "$(echo "$search" | grep "$pod" | awk '{print $4}' | tr -d " \t\r ")" >> containers
 done
-mapfile -t containers < <(echo "${containers[*]}")
-for i in "${containers[@]}"
-do
-    echo "$i"
-done
-printf '%s \n' "${containers[@]}"
+
+cat containers
+
 case "${#containers[@]}" in
     0)
         echo -e "No containers available\nAre you sure the application in running?"

@@ -74,7 +74,7 @@ case "${#containers[@]}" in
             fi
         done
         container=$(echo "$cont_search" | grep ^"$selection)" | awk '{print $2}')
-        container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | awk '{print $1}')
+        container_id=$(echo "$search" | grep -E "[[:space:]]${container}[[:space:]]" | grep "${pod_id[0]}" | awk '{print $1}')
         ;;
 esac
 while true

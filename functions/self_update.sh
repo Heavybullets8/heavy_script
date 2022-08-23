@@ -16,6 +16,9 @@ if  git diff --name-only origin/$branch | grep -qs ".sh" ; then
         [[ "$i" == "--self-update" ]] && unset "args[$count]" && break
         ((count++))
     done
+    echo "Updating from:"
+    echo "$hs_version"
+    echo "Updating To:"
     curl --silent "https://api.github.com/repos/HeavyBullets8/heavy_script/releases/latest" | jq -r .tag_name,.body
     [[ -z ${args[*]} ]] && echo -e "No more arguments, exiting..\n\n" && exit
     echo -e "Running the new version...\n\n"
@@ -24,8 +27,8 @@ if  git diff --name-only origin/$branch | grep -qs ".sh" ; then
     # Now exit this old instance
     exit
 else 
-    echo -e "HeavyScript is already the latest version:\n\n"
-    echo "$hs_version"
+    echo "HeavyScript is already the latest version:"
+    echo -e "$hs_version\n\n"
 fi
 }
 export -f self_update

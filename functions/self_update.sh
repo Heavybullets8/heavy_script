@@ -3,8 +3,8 @@
 args=("$@")
 self_update() {
 
-latest_ver=$(git describe --tags "$(git rev-list --tags --max-count=1)")
 git fetch --tags &>/dev/null 
+latest_ver=$(git describe --tags "$(git rev-list --tags --max-count=1)")
 echo "🅂 🄴 🄻 🄵"
 echo "🅄 🄿 🄳 🄰 🅃 🄴"
 if  [[ "$hs_version" != "$latest_ver" ]] ; then

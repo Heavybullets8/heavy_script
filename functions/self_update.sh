@@ -4,7 +4,7 @@ args=("$@")
 self_update() {
 
 latest_ver=$(git describe --tags "$(git rev-list --tags --max-count=1)")
-git fetch &> /dev/null 
+git fetch --tags &> /dev/null 
 echo "🅂 🄴 🄻 🄵"
 echo "🅄 🄿 🄳 🄰 🅃 🄴"
 if  [[ "$hs_version" != "$latest_ver" ]] ; then

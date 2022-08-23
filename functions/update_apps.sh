@@ -115,7 +115,7 @@ fi
 if update_app ;then
     echo_array+=("Updated\n$old_full_ver\n$new_full_ver")
 else
-    echo_array+=("Failed to update")
+    echo_array+=("Failed to update\nManual intervention may be required")
     echo_array
     final_check
     return

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#Version
+hs_version=$(curl --silent "https://api.github.com/repos/HeavyBullets8/heavy_script/releases/latest" | jq -r .tag_name)
 
 # cd to script, this ensures the script can find the source scripts below, even when ran from a seperate directory
 script=$(readlink -f "$0")

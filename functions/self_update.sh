@@ -2,14 +2,15 @@
 
 args=("$@")
 self_update() {
-branch="main"
+
+latest_ver=$(git describe --tags "$(git rev-list --tags --max-count=1)")
 git fetch &> /dev/null 
 echo "🅂 🄴 🄻 🄵"
 echo "🅄 🄿 🄳 🄰 🅃 🄴"
-if  git diff --name-only origin/$branch | grep -qs ".sh" ; then
+if  [[ "$hs_version" != "$latest_ver" ]] ; then
     echo "Found a new version of HeavyScript, updating myself..."
     git reset --hard -q
-    git pull --force -q
+    git checkout "$(latest_ver)"
     count=0
     for i in "${args[@]}"
     do

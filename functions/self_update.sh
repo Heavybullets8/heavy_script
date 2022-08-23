@@ -9,7 +9,7 @@ echo "🅂 🄴 🄻 🄵"
 echo "🅄 🄿 🄳 🄰 🅃 🄴"
 if  [[ "$hs_version" != "$latest_ver" ]] ; then
     echo "Found a new version of HeavyScript, updating myself..."
-    git checkout "($latest_ver)"
+    git checkout "$latest_ver"
     count=0
     for i in "${args[@]}"
     do

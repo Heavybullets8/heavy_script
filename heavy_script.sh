@@ -1,14 +1,13 @@
 #!/bin/bash
 
-#Version
-hs_version=$(git describe --tags)
-
 # cd to script, this ensures the script can find the source scripts below, even when ran from a seperate directory
 script=$(readlink -f "$0")
 script_path=$(dirname "$script")
 script_name="heavy_script.sh"
 cd "$script_path" || { echo "Error: Failed to change to script directory" ; exit ; } 
 
+#Version
+hs_version=$(git describe --tags)
 
 source functions/backup.sh
 source functions/dns.sh

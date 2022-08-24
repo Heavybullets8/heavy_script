@@ -283,7 +283,8 @@ export -f after_update_actions
 
 rollback_app(){
 count=0
-while [[ $update_avail != "true" ]]
+update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3}')
+while [[ $update_avail == "false" ]]
 do
     update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3}')
     if [[ $count -gt 2 ]]; then # If failed to rollback app 3 times, return failure to parent shell

@@ -132,13 +132,12 @@ update_app(){
 current_loop=0
 while true
 do
-    app_update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3}')
-    cont_update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $6}')
-    if [[ $app_update_avail == "true" || $cont_update_avail == "true" ]]; then
+    update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3","$6}')
+    if [[ $update_avail =~ "true" ]]; then
         if ! cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null ; then
             before_loop=$(head -n 1 all_app_status)
             current_loop=0
-            until [[ "$(grep "^$app_name," all_app_status | awk -F ',' '{print $3}')" != "$app_update_avail" || "$(grep "^$app_name," all_app_status | awk -F ',' '{print $6}')" != "$cont_update_avail" ]]   # Wait for a specific change to app status, or 3 refreshes of the file to go by.
+            until [[ "$(grep "^$app_name," all_app_status | awk -F ',' '{print $3","$6}')" != "$update_avail" ]]   # Wait for a specific change to app status, or 3 refreshes of the file to go by.
             do
                 if [[ $current_loop -gt 2 ]]; then
                     cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null || return 1     # After waiting, attempt an update once more, if fails, return error code
@@ -150,7 +149,7 @@ do
             done
         fi
         break
-    elif [[ $app_update_avail == "false" && $cont_update_avail == "false" ]]; then
+    elif [[ ! $update_avail =~ "true" ]]; then
         break
     else 
         sleep 3

@@ -9,7 +9,7 @@ echo "Asynchronous Updates: $update_limit"
 [[ -z $timeout ]] && echo "Default Timeout: 500" && timeout=500 || echo "Custom Timeout: $timeout"
 [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
 pool=$(cli -c 'app kubernetes config' | grep -E "dataset\s\|" | awk -F '|' '{print $3}' | awk -F '/' '{print $1}' | tr -d " \t\n\r")
-rm external_services 2> /dev/null/ # TODO remove later
+rm external_services 2>/dev/null/ # TODO remove later
 it=0
 while_count=0
 rm deploying 2>/dev/null

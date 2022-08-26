@@ -16,7 +16,7 @@ rm deploying 2>/dev/null
 rm finished 2>/dev/null
 while true
 do
-    if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,status' 2>/dev/null) ; then
+    if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' 2>/dev/null) ; then
         ((while_count++)) 
         [[ -z $while_status ]] && continue || echo -e "$while_count\n$while_status" > all_app_status
         mapfile -t deploying_check < <(grep ",DEPLOYING," all_app_status)
@@ -107,7 +107,6 @@ if [[ $stop_before_update == "true" && "$startstatus" !=  "STOPPED" ]]; then # C
     else
         echo_array+=("Error: Failed to stop $app_name")
         echo_array
-        final_check
         return 1
     fi
 fi
@@ -117,16 +116,13 @@ if update_app ;then
 else
     echo_array+=("Failed to update\nManual intervention may be required")
     echo_array
-    final_check
     return
 fi
 if grep -qs "^$app_name,true" external_services ; then
     echo_array
-    final_check
     return
 else
     after_update_actions
-    final_check
 fi
 }
 export -f pre_process
@@ -136,12 +132,12 @@ update_app(){
 current_loop=0
 while true
 do
-    update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3}')
-    if [[ $update_avail == "true" ]]; then
+    update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3","$6}')
+    if [[ $update_avail =~ "true" ]]; then
         if ! cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null ; then
             before_loop=$(head -n 1 all_app_status)
             current_loop=0
-            until [[ "$(grep "^$app_name," all_app_status | awk -F ',' '{print $3}')" != "$update_avail" ]]   # Wait for a specific change to app status, or 3 refreshes of the file to go by.
+            until [[ "$(grep "^$app_name," all_app_status | awk -F ',' '{print $3","$6}')" != "$update_avail" ]]   # Wait for a specific change to app status, or 3 refreshes of the file to go by.
             do
                 if [[ $current_loop -gt 2 ]]; then
                     cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null || return 1     # After waiting, attempt an update once more, if fails, return error code
@@ -153,7 +149,7 @@ do
             done
         fi
         break
-    elif [[ $update_avail == "false" ]]; then
+    elif [[ ! $update_avail =~ "true" ]]; then
         break
     else 
         sleep 3
@@ -192,7 +188,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
     while true
     do
         status=$(grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
-        if [[ $count -lt 1 && $status == "ACTIVE" && "$(grep "^$app_name," deploying 2>/dev/null | awk -F ',' '{print $2}')" != "DEPLOYING" ]]; then                # If status shows up as Active or Stopped on the first check, verify that. Otherwise it may be a false report..
+        if [[ $count -lt 1 && $status == "ACTIVE" && "$(grep "^$app_name," deploying 2>/dev/null | awk -F ',' '{print $2}')" != "DEPLOYING" ]]; then  # If status shows up as Active or Stopped on the first check, verify that. Otherwise it may be a false report..
             [[ "$verbose" == "true" ]] && echo_array+=("Verifying $status..")
             before_loop=$(head -n 1 all_app_status)
             current_loop=0
@@ -224,15 +220,29 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
             fi
         elif [[ "$SECONDS" -ge "$timeout" ]]; then
             if [[ $rollback == "true" ]]; then
-                if [[ "$failed" != "true" ]]; then
+                if [[ $old_full_ver == "$new_full_ver" ]]; then
+                    echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
+                    echo_array+=("This is the result of a container image update..")
+                    echo_array+=("Reverting is not possible, Abandoning")
+                    echo_array
+                    return 1
+                elif [[ "$failed" != "true" ]]; then
                     echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
                     echo_array+=("If this is a slow starting application, set a higher timeout with -t")
                     echo_array+=("If this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration")
                     echo_array+=("Reverting update..")
-                    midclt call chart.release.rollback "$app_name" "{\"item_version\": \"$rollback_version\"}" &> /dev/null || { echo_array+=("Error: Failed to rollback $app_name") ; break ; }
-                    [[ "$startstatus"  ==  "STOPPED" ]] && failed="true" && after_update_actions #run back after_update_actions function if the app was stopped prior to update
                     echo "$app_name,$new_full_ver" >> failed
-                    break
+                    if rollback_app ; then
+                        echo_array+=("Rolled Back")
+                    else
+                        echo_array+=("Error: Failed to rollback $app_name\nAbandoning")
+                        echo_array
+                        return 1
+                    fi                    
+                    failed="true"
+                    SECONDS=0
+                    count=0
+                    continue #run back after_update_actions function if the app was stopped prior to update
                 else
                     echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
                     echo_array+=("The application failed to be ACTIVE even after a rollback")
@@ -251,6 +261,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
                 echo_array+=("If this is a slow starting application, set a higher timeout with -t")
                 echo_array+=("If this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration")
                 echo_array+=("Manual intervention is required\nStopping, then Abandoning")
+                echo "$app_name,$new_full_ver" >> failed
                 if stop_app ; then
                     echo_array+=("Stopped")
                 else
@@ -272,15 +283,37 @@ echo_array
 export -f after_update_actions
 
 
+rollback_app(){
+count=0
+app_update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3}')
+while [[ $app_update_avail == "false" ]]
+do
+    app_update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3}')
+    if [[ $count -gt 2 ]]; then # If failed to rollback app 3 times, return failure to parent shell
+        return 1
+    elif ! cli -c "app chart_release rollback release_name=\"$app_name\" rollback_options={\"item_version\": \"$rollback_version\"}" &> /dev/null ; then
+        before_loop=$(head -n 1 all_app_status)
+        ((count++))
+        until [[ $(head -n 1 all_app_status) != "$before_loop" ]] # Upon failure, wait for status update before continuing
+        do
+            sleep 1
+        done
+    else 
+        break
+    fi
+done
+}
+
 echo_array(){
 #Dump the echo_array, ensures all output is in a neat order. 
 for i in "${echo_array[@]}"
 do
     echo -e "$i"
 done
-
+final_check
 }
 export -f echo_array
+
 
 final_check(){
     [[ ! -e finished ]] && touch finished

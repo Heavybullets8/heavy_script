@@ -162,5 +162,5 @@ elif [[ "$sync" == "true" && -z "$backup" ]]; then # If only sync is true, run i
     sync
 fi
 [[ "$update_all_apps" == "true" || "$update_apps" == "true" ]] && commander
-[[ "$prune" == "true" ]] && prune
-
+[[ "$prune" == "true" ]] && prune 
+exit 0

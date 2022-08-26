@@ -3,7 +3,8 @@
 args=("$@")
 self_update() {
 
-git fetch --tags &>/dev/null 
+git fetch --tags &>/dev/null
+git reset --hard
 latest_ver=$(git describe --tags "$(git rev-list --tags --max-count=1)")
 echo "🅂 🄴 🄻 🄵"
 echo "🅄 🄿 🄳 🄰 🅃 🄴"

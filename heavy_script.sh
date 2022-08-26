@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 # cd to script, this ensures the script can find the source scripts below, even when ran from a seperate directory
 script=$(readlink -f "$0")
 script_path=$(dirname "$script")
@@ -20,11 +21,8 @@ source functions/cmd_to_container.sh
 source functions/script_create.sh
 
 
-
-
 #If no argument is passed, kill the script.
 [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && menu
-
 
 
 # Parse script options
@@ -121,17 +119,12 @@ do
       v)
         verbose="true"
         ;;
-      \?)
-        echo -e "Invalid Option \"-$OPTARG\"\n"
-        help
-        ;;
       *)
         echo -e "Invalid Option \"-$OPTARG\"\n"
         help
         ;;
     esac
 done
-
 
 
 #exit if incompatable functions are called 

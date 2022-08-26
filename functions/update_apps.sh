@@ -9,7 +9,6 @@ echo "Asynchronous Updates: $update_limit"
 [[ -z $timeout ]] && echo "Default Timeout: 500" && timeout=500 || echo "Custom Timeout: $timeout"
 [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
 pool=$(cli -c 'app kubernetes config' | grep -E "dataset\s\|" | awk -F '|' '{print $3}' | awk -F '/' '{print $1}' | tr -d " \t\n\r")
-rm external_services 2>/dev/null # TODO remove later
 it=0
 while_count=0
 rm deploying 2>/dev/null
@@ -42,14 +41,9 @@ do
     if [[ "$proc_count" -ge "$update_limit" ]]; then
         sleep 3
     elif [[ $it -lt ${#array[@]} ]]; then
-        # loop=0
-        # until [[ $loop -ge 2 || $it -ge ${#array[@]} ]];
-        # do
         pre_process "${array[$it]}" &
         processes+=($!)
         ((it++))
-        # ((loop++))
-        # done
     elif [[ $proc_count != 0 || $(wc -l finished 2>/dev/null | awk '{ print $1 }') -lt "${#array[@]}" ]]; then # Wait for all processes to finish
         sleep 3
     else # All processes must be completed, break out of loop
@@ -78,6 +72,8 @@ diff_chart=$(diff <(echo "$old_chart_ver") <(echo "$new_chart_ver")) #caluclatin
 old_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}') #Upgraded From
 new_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}') #Upraded To
 rollback_version=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
+
+# Skip update if application previously failed on this exact update version
 if  grep -qs "^$app_name," failed 2>/dev/null; then
     failed_ver=$(grep "^$app_name," failed | awk -F ',' '{print $2}')
     if [[ "$failed_ver" == "$new_full_ver" ]] ; then
@@ -90,6 +86,7 @@ if  grep -qs "^$app_name," failed 2>/dev/null; then
     fi
 fi
 
+# Check if app is external services, append outcome to external_services file
 [[ ! -e external_services ]] && touch external_services
 if ! grep -qs "^$app_name," external_services ; then 
     if ! grep -qs "/external-service" /mnt/"$pool"/ix-applications/releases/"$app_name"/charts/"$(find /mnt/"$pool"/ix-applications/releases/"$app_name"/charts/ -maxdepth 1 -type d -printf '%P\n' | sort -r | head -n 1)"/Chart.yaml; then
@@ -99,6 +96,7 @@ if ! grep -qs "^$app_name," external_services ; then
     fi
 fi
 
+# If user is using -S, stop app prior to updating
 echo_array+=("\n$app_name")
 if [[ $stop_before_update == "true" && "$startstatus" !=  "STOPPED" ]]; then # Check to see if user is using -S or not
     [[ "$verbose" == "true" ]] && echo_array+=("Stopping prior to update..")
@@ -110,6 +108,8 @@ if [[ $stop_before_update == "true" && "$startstatus" !=  "STOPPED" ]]; then # C
         return 1
     fi
 fi
+
+# Send app through update function
 [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
 if update_app ;then
     echo_array+=("Updated\n$old_full_ver\n$new_full_ver")
@@ -118,70 +118,19 @@ else
     echo_array
     return
 fi
+
+# If app is external services, do not send for post processing
 if grep -qs "^$app_name,true" external_services ; then
     echo_array
     return
 else
-    after_update_actions
+    post_process
 fi
 }
 export -f pre_process
 
 
-update_app(){
-current_loop=0
-while true
-do
-    update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3","$6}')
-    if [[ $update_avail =~ "true" ]]; then
-        if ! cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null ; then
-            before_loop=$(head -n 1 all_app_status)
-            current_loop=0
-            until [[ "$(grep "^$app_name," all_app_status | awk -F ',' '{print $3","$6}')" != "$update_avail" ]]   # Wait for a specific change to app status, or 3 refreshes of the file to go by.
-            do
-                if [[ $current_loop -gt 2 ]]; then
-                    cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null || return 1     # After waiting, attempt an update once more, if fails, return error code
-                elif ! echo -e "$(head -n 1 all_app_status)" | grep -qs ^"$before_loop" ; then                # The file has been updated, but nothing changed specifically for the app.
-                    before_loop=$(head -n 1 all_app_status)
-                    ((current_loop++))
-                fi
-                sleep 1
-            done
-        fi
-        break
-    elif [[ ! $update_avail =~ "true" ]]; then
-        break
-    else 
-        sleep 3
-    fi
-done
-}
-export -f update_app
-
-
-stop_app(){
-count=0
-while [[ "$status" !=  "STOPPED" ]]
-do
-    status=$( grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
-    if [[ $count -gt 2 ]]; then # If failed to stop app 3 times, return failure to parent shell
-        return 1
-    elif ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' &> /dev/null ; then
-        before_loop=$(head -n 1 all_app_status)
-        ((count++))
-        until [[ $(head -n 1 all_app_status) != "$before_loop" ]] # Upon failure, wait for status update before continuing
-        do
-            sleep 1
-        done
-    else 
-        break
-    fi
-done
-}
-export -f stop_app
-
-
-after_update_actions(){
+post_process(){
 SECONDS=0
 count=0
 if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
@@ -242,7 +191,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
                     failed="true"
                     SECONDS=0
                     count=0
-                    continue #run back after_update_actions function if the app was stopped prior to update
+                    continue #run back post_process function if the app was stopped prior to update
                 else
                     echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
                     echo_array+=("The application failed to be ACTIVE even after a rollback")
@@ -280,7 +229,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
 fi
 echo_array
 }
-export -f after_update_actions
+export -f post_process
 
 
 rollback_app(){
@@ -303,6 +252,60 @@ do
     fi
 done
 }
+
+
+update_app(){
+current_loop=0
+while true
+do
+    update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3","$6}')
+    if [[ $update_avail =~ "true" ]]; then
+        if ! cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null ; then
+            before_loop=$(head -n 1 all_app_status)
+            current_loop=0
+            until [[ "$(grep "^$app_name," all_app_status | awk -F ',' '{print $3","$6}')" != "$update_avail" ]]   # Wait for a specific change to app status, or 3 refreshes of the file to go by.
+            do
+                if [[ $current_loop -gt 2 ]]; then
+                    cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null || return 1     # After waiting, attempt an update once more, if fails, return error code
+                elif ! echo -e "$(head -n 1 all_app_status)" | grep -qs ^"$before_loop" ; then                # The file has been updated, but nothing changed specifically for the app.
+                    before_loop=$(head -n 1 all_app_status)
+                    ((current_loop++))
+                fi
+                sleep 1
+            done
+        fi
+        break
+    elif [[ ! $update_avail =~ "true" ]]; then
+        break
+    else 
+        sleep 3
+    fi
+done
+}
+export -f update_app
+
+
+stop_app(){
+count=0
+while [[ "$status" !=  "STOPPED" ]]
+do
+    status=$( grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
+    if [[ $count -gt 2 ]]; then # If failed to stop app 3 times, return failure to parent shell
+        return 1
+    elif ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' &> /dev/null ; then
+        before_loop=$(head -n 1 all_app_status)
+        ((count++))
+        until [[ $(head -n 1 all_app_status) != "$before_loop" ]] # Upon failure, wait for status update before continuing
+        do
+            sleep 1
+        done
+    else 
+        break
+    fi
+done
+}
+export -f stop_app
+
 
 echo_array(){
 #Dump the echo_array, ensures all output is in a neat order. 

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 args=("$@")
 self_update() {
 

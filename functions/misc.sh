@@ -15,12 +15,14 @@ echo
 }
 export -f sync
 
+
 prune(){
 echo -e "🄿 🅁 🅄 🄽 🄴"  
 echo "Pruned Docker Images"
 docker image prune -af | grep "^Total" || echo "Failed to Prune Docker Images"
 }
 export -f prune
+
 
 title(){
 echo ' _   _                        _____           _       _   '
@@ -35,6 +37,7 @@ echo "$hs_version"
 echo
 }
 export -f title
+
 
 help(){
 [[ $help == "true" ]] && clear -x

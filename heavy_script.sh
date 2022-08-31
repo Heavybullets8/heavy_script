@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 # cd to script, this ensures the script can find the source scripts below, even when ran from a seperate directory
 script=$(readlink -f "$0")
 script_path=$(dirname "$script")
@@ -20,11 +21,8 @@ source functions/cmd_to_container.sh
 source functions/script_create.sh
 
 
-
-
 #If no argument is passed, kill the script.
 [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && menu
-
 
 
 # Parse script options
@@ -68,7 +66,6 @@ do
         number_of_backups=$OPTARG
         ! [[ $OPTARG =~ ^[0-9]+$  ]] && echo -e "Error: -b needs to be assigned an interger\n\"""$number_of_backups""\" is not an interger" >&2 && exit
         [[ "$number_of_backups" -le 0 ]] && echo "Error: Number of backups is required to be at least 1" && exit
-        backup="true"
         ;;
       r)
         rollback="true"
@@ -121,17 +118,12 @@ do
       v)
         verbose="true"
         ;;
-      \?)
-        echo -e "Invalid Option \"-$OPTARG\"\n"
-        help
-        ;;
       *)
         echo -e "Invalid Option \"-$OPTARG\"\n"
         help
         ;;
     esac
 done
-
 
 
 #exit if incompatable functions are called 
@@ -145,18 +137,18 @@ done
 [[ "$dns" == "true" ]] && dns && exit
 [[ "$restore" == "true" ]] && restore && exit
 [[ "$mount" == "true" ]] && mount && exit
-if [[ "$backup" == "true" && "$sync" == "true" ]]; then # Run backup and sync at the same time
+if [[ "$number_of_backups" -gt 1 && "$sync" == "true" ]]; then # Run backup and sync at the same time
     echo "🅃 🄰 🅂 🄺 🅂 :"
     echo -e "-Backing up ix-applications Dataset\n-Syncing catalog(s)"
     echo -e "This can take a LONG time, Please Wait For Both Output..\n\n"
     backup &
     sync &
     wait
-elif [[ "$backup" == "true" && -z "$sync" ]]; then # If only backup is true, run it
+elif [[ "$number_of_backups" -gt 1 && -z "$sync" ]]; then # If only backup is true, run it
     echo "🅃 🄰 🅂 🄺 :"
     echo -e "-Backing up \"ix-applications\" Dataset\nPlease Wait..\n\n"
     backup
-elif [[ "$sync" == "true" && -z "$backup" ]]; then # If only sync is true, run it
+elif [[ "$sync" == "true" && -z "$number_of_backups" ]]; then # If only sync is true, run it
     echo "🅃 🄰 🅂 🄺 :"
     echo -e "Syncing Catalog(s)\nThis Takes a LONG Time, Please Wait..\n\n"
     sync

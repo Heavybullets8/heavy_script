@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 menu(){
 clear -x
 title
@@ -31,7 +32,6 @@ case $selection in
         ;;
     4)
         read -rt 120 -p "What is the maximun number of backups you would like?: " number_of_backups || { echo -e "\nFailed to make a selection in time" ; exit; }
-        backup="true"
         ;;
     5)
         restore
@@ -45,7 +45,6 @@ case $selection in
     8)
         script_create
         ;;
-
     9)
         cmd_to_container
         ;;

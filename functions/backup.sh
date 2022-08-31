@@ -30,7 +30,6 @@ echo
 export -f backup
 
 
-
 deleteBackup(){
 while true
 do

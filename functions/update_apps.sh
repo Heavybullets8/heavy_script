@@ -136,6 +136,8 @@ count=0
 if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
     while true
     do
+        
+        # If app reports ACTIVE right away, assume its a false positive and wait for it to change, or trust it after 5 updates to all_app_status
         status=$(grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
         if [[ $count -lt 1 && $status == "ACTIVE" && "$(grep "^$app_name," deploying 2>/dev/null | awk -F ',' '{print $2}')" != "DEPLOYING" ]]; then  # If status shows up as Active or Stopped on the first check, verify that. Otherwise it may be a false report..
             [[ "$verbose" == "true" ]] && echo_array+=("Verifying $status..")
@@ -152,6 +154,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
             done
         fi
         (( count++ ))
+
         if [[ "$status"  ==  "ACTIVE" ]]; then
             if [[ "$startstatus"  ==  "STOPPED" ]]; then
                 [[ "$verbose" == "true" ]] && echo_array+=("Returing to STOPPED state..")

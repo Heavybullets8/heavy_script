@@ -32,7 +32,6 @@ case $selection in
         ;;
     4)
         read -rt 120 -p "What is the maximun number of backups you would like?: " number_of_backups || { echo -e "\nFailed to make a selection in time" ; exit; }
-        backup="true"
         ;;
     5)
         restore

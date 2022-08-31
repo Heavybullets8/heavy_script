@@ -51,7 +51,7 @@ do
                 mapfile -t full_path < <(zfs list | grep "$volume_name" | awk '{print $1}')
                 if [[  "${#full_path[@]}" -gt 1 ]]; then #if there is another app with the same name on another pool, use the current pools application, since the other instance is probably old, or unused, or a backup.
                         echo "$app is using the same volume identifier on more than one pool.. attempting to use your current kubernetes apps pool"
-                        pool=$(cli -c 'app kubernetes config' | grep -E "dataset\s\|" | awk -F '|' '{print $3}' | awk -F '/' '{print $1}' | tr -d " \t\n\r")
+                        pool=$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")
                         full_path=$(zfs list | grep "$volume_name" | grep "$pool" | awk '{print $1}')
                 fi
                 echo -e "\nMounting\n$full_path\nTo\n/mnt/heavyscript/$data_name"
@@ -90,7 +90,7 @@ do
                 mapfile -t path < <(find /mnt/*/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
                 if [[  "${#path[@]}" -gt 1 ]]; then #if there is another app with the same name on another pool, use the current pools application, since the other instance is probably old, or unused, or a backup.
                     echo "$i is a name used on more than one pool.. attempting to use your current kubernetes apps pool"
-                    pool=$(cli -c 'app kubernetes config' | grep -E "dataset\s\|" | awk -F '|' '{print $3}' | awk -F '/' '{print $1}' | tr -d " \t\n\r")
+                    pool=$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")
                     full_path=$(find /mnt/"$pool"/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
                     zfs set mountpoint=legacy "$full_path""$pvc" 
                     echo "$i unmounted" && rmdir /mnt/heavyscript/"$i" || echo "failed to unmount $i"

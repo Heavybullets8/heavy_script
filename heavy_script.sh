@@ -66,7 +66,6 @@ do
         number_of_backups=$OPTARG
         ! [[ $OPTARG =~ ^[0-9]+$  ]] && echo -e "Error: -b needs to be assigned an interger\n\"""$number_of_backups""\" is not an interger" >&2 && exit
         [[ "$number_of_backups" -le 0 ]] && echo "Error: Number of backups is required to be at least 1" && exit
-        backup="true"
         ;;
       r)
         rollback="true"
@@ -138,14 +137,14 @@ done
 [[ "$dns" == "true" ]] && dns && exit
 [[ "$restore" == "true" ]] && restore && exit
 [[ "$mount" == "true" ]] && mount && exit
-if [[ "$backup" == "true" && "$sync" == "true" ]]; then # Run backup and sync at the same time
+if [[ "$backup" -gt 1 && "$sync" == "true" ]]; then # Run backup and sync at the same time
     echo "🅃 🄰 🅂 🄺 🅂 :"
     echo -e "-Backing up ix-applications Dataset\n-Syncing catalog(s)"
     echo -e "This can take a LONG time, Please Wait For Both Output..\n\n"
     backup &
     sync &
     wait
-elif [[ "$backup" == "true" && -z "$sync" ]]; then # If only backup is true, run it
+elif [[ "$backup" -gt 1 && -z "$sync" ]]; then # If only backup is true, run it
     echo "🅃 🄰 🅂 🄺 :"
     echo -e "-Backing up \"ix-applications\" Dataset\nPlease Wait..\n\n"
     backup

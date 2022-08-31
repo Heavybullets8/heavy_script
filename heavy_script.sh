@@ -137,18 +137,18 @@ done
 [[ "$dns" == "true" ]] && dns && exit
 [[ "$restore" == "true" ]] && restore && exit
 [[ "$mount" == "true" ]] && mount && exit
-if [[ "$backup" -gt 1 && "$sync" == "true" ]]; then # Run backup and sync at the same time
+if [[ "$number_of_backups" -gt 1 && "$sync" == "true" ]]; then # Run backup and sync at the same time
     echo "🅃 🄰 🅂 🄺 🅂 :"
     echo -e "-Backing up ix-applications Dataset\n-Syncing catalog(s)"
     echo -e "This can take a LONG time, Please Wait For Both Output..\n\n"
     backup &
     sync &
     wait
-elif [[ "$backup" -gt 1 && -z "$sync" ]]; then # If only backup is true, run it
+elif [[ "$number_of_backups" -gt 1 && -z "$sync" ]]; then # If only backup is true, run it
     echo "🅃 🄰 🅂 🄺 :"
     echo -e "-Backing up \"ix-applications\" Dataset\nPlease Wait..\n\n"
     backup
-elif [[ "$sync" == "true" && -z "$backup" ]]; then # If only sync is true, run it
+elif [[ "$sync" == "true" && -z "$number_of_backups" ]]; then # If only sync is true, run it
     echo "🅃 🄰 🅂 🄺 :"
     echo -e "Syncing Catalog(s)\nThis Takes a LONG Time, Please Wait..\n\n"
     sync

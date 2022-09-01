@@ -2,6 +2,7 @@
 
 
 mount(){
+pool=$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")
 while true
 do
     clear -x
@@ -48,12 +49,7 @@ do
                 data_name=$(echo "$pvc" | awk '{print $3}')
                 mount=$(echo "$pvc" | awk '{print $4}')
                 volume_name=$(echo "$pvc" | awk '{print $4}')
-                mapfile -t full_path < <(zfs list | grep "$volume_name" | awk '{print $1}')
-                if [[  "${#full_path[@]}" -gt 1 ]]; then #if there is another app with the same name on another pool, use the current pools application, since the other instance is probably old, or unused, or a backup.
-                        echo "$app is using the same volume identifier on more than one pool.. attempting to use your current kubernetes apps pool"
-                        pool=$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")
-                        full_path=$(zfs list | grep "$volume_name" | grep "$pool" | awk '{print $1}')
-                fi
+                full_path=$(zfs list | grep "$volume_name" | grep "$pool" | awk '{print $1}')
                 echo -e "\nMounting\n$full_path\nTo\n/mnt/heavyscript/$data_name"
                 zfs set mountpoint=/heavyscript/"$data_name" "$full_path" || echo "Failed to mount $app"
                 echo -e "Mounted\n\nUnmount with:\nzfs set mountpoint=legacy $full_path && rmdir /mnt/heavyscript/$data_name\n\nOr use the Unmount All option\n"
@@ -87,17 +83,9 @@ do
                 main=$(k3s kubectl get pvc -A | grep -E "\s$i\s" | awk '{print $1, $2, $4}')
                 app=$(echo "$main" | awk '{print $1}' | cut -c 4-)
                 pvc=$(echo "$main" | awk '{print $3}')
-                mapfile -t path < <(find /mnt/*/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
-                if [[  "${#path[@]}" -gt 1 ]]; then #if there is another app with the same name on another pool, use the current pools application, since the other instance is probably old, or unused, or a backup.
-                    echo "$i is a name used on more than one pool.. attempting to use your current kubernetes apps pool"
-                    pool=$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")
-                    full_path=$(find /mnt/"$pool"/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
-                    zfs set mountpoint=legacy "$full_path""$pvc" 
-                    echo "$i unmounted" && rmdir /mnt/heavyscript/"$i" || echo "failed to unmount $i"
-                else
-                    zfs set mountpoint=legacy "$path""$pvc"
-                    echo "$i unmounted" && rmdir /mnt/heavyscript/"$i" || echo "failed to unmount $i"
-                fi
+                full_path=$(find /mnt/"$pool"/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
+                zfs set mountpoint=legacy "$full_path""$pvc" 
+                echo "$i unmounted" && rmdir /mnt/heavyscript/"$i" || echo "failed to unmount $i"
             done
             rmdir /mnt/heavyscript
             sleep 3

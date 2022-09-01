@@ -30,9 +30,11 @@ do
                 echo 
                 echo "0)  Exit"
                 read -rt 120 -p "Please type a number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+                
+                #Check for valid selection. If no issues, continue
                 [[ $selection == 0 ]] && echo "Exiting.." && exit
                 app=$(echo -e "$list" | grep ^"$selection)" | awk '{print $2}' | cut -c 4- )
-                [[ -z "$app" ]] && echo "Invalid Selection: $selection, was not an option" && sleep 3 && continue #Check for valid selection. If none, contiue
+                [[ -z "$app" ]] && echo "Invalid Selection: $selection, was not an option" && sleep 3 && continue 
                 pvc=$(echo -e "$list" | grep ^"$selection)")
 
                 #Stop applicaiton if not stopped
@@ -43,15 +45,13 @@ do
                         echo "Failed to stop $app"
                         exit 1
                     else
-                        status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "^$app\b" | awk -F ',' '{print $2}'| tr -d " \t\n\r")
-                        echo "$status"
                         echo "Stopped"
                     fi
                 else
                     echo -e "\n$app is already stopped"
                 fi
 
-                #Grab data then output
+                #Grab data then output and mount
                 data_name=$(echo "$pvc" | awk '{print $3}')
                 volume_name=$(echo "$pvc" | awk '{print $4}')
                 full_path=$(zfs list | grep "$volume_name" | grep "$pool" | awk '{print $1}')

@@ -2,6 +2,7 @@
 
 
 mount(){
+pool=$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")
 while true
 do
     clear -x
@@ -29,34 +30,40 @@ do
                 echo 
                 echo "0)  Exit"
                 read -rt 120 -p "Please type a number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+                
+                #Check for valid selection. If no issues, continue
                 [[ $selection == 0 ]] && echo "Exiting.." && exit
                 app=$(echo -e "$list" | grep ^"$selection)" | awk '{print $2}' | cut -c 4- )
-                [[ -z "$app" ]] && echo "Invalid Selection: $selection, was not an option" && sleep 3 && continue #Check for valid selection. If none, contiue
+                [[ -z "$app" ]] && echo "Invalid Selection: $selection, was not an option" && sleep 3 && continue 
                 pvc=$(echo -e "$list" | grep ^"$selection)")
+
+                #Stop applicaiton if not stopped
                 status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "^$app\b" | awk -F ',' '{print $2}'| tr -d " \t\n\r")
                 if [[ "$status" != "STOPPED" ]]; then
-                    [[ -z $timeout ]] && echo -e "\nDefault Timeout: 500" && timeout=500 || echo -e "\nCustom Timeout: $timeout"
-                    SECONDS=0 && echo -e "\nScaling down $app" && midclt call chart.release.scale "$app" '{"replica_count": 0}' &> /dev/null
+                    echo -e "\nStopping $app prior to mount"
+                    if ! cli -c 'app chart_release scale release_name='\""$app"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then
+                        echo "Failed to stop $app"
+                        exit 1
+                    else
+                        echo "Stopped"
+                    fi
                 else
                     echo -e "\n$app is already stopped"
                 fi
-                while [[ "$SECONDS" -le "$timeout" && "$status" != "STOPPED" ]]
-                do
-                    status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "^$app\b" | awk -F ',' '{print $2}'| tr -d " \t\n\r")
-                    echo -e "Waiting $((timeout-SECONDS)) more seconds for $app to be STOPPED" && sleep 5
-                done
+
+                #Grab data then output and mount
                 data_name=$(echo "$pvc" | awk '{print $3}')
-                mount=$(echo "$pvc" | awk '{print $4}')
                 volume_name=$(echo "$pvc" | awk '{print $4}')
-                mapfile -t full_path < <(zfs list | grep "$volume_name" | awk '{print $1}')
-                if [[  "${#full_path[@]}" -gt 1 ]]; then #if there is another app with the same name on another pool, use the current pools application, since the other instance is probably old, or unused, or a backup.
-                        echo "$app is using the same volume identifier on more than one pool.. attempting to use your current kubernetes apps pool"
-                        pool=$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")
-                        full_path=$(zfs list | grep "$volume_name" | grep "$pool" | awk '{print $1}')
+                full_path=$(zfs list | grep "$volume_name" | grep "$pool" | awk '{print $1}')
+                if ! zfs set mountpoint=/heavyscript/"$data_name" "$full_path" ; then
+                    echo "Error: Failed to mount $app"
+                    exit 1
+                else
+                    echo -e "\nMounted\n$data_name"
                 fi
-                echo -e "\nMounting\n$full_path\nTo\n/mnt/heavyscript/$data_name"
-                zfs set mountpoint=/heavyscript/"$data_name" "$full_path" || echo "Failed to mount $app"
-                echo -e "Mounted\n\nUnmount with:\nzfs set mountpoint=legacy $full_path && rmdir /mnt/heavyscript/$data_name\n\nOr use the Unmount All option\n"
+                echo -e "\nUnmount with:\nzfs set mountpoint=legacy $full_path && rmdir /mnt/heavyscript/$data_name\n\nOr use the Unmount All option\n"
+                
+                #Ask if user would like to mount something else
                 while true
                 do
                     echo
@@ -87,17 +94,9 @@ do
                 main=$(k3s kubectl get pvc -A | grep -E "\s$i\s" | awk '{print $1, $2, $4}')
                 app=$(echo "$main" | awk '{print $1}' | cut -c 4-)
                 pvc=$(echo "$main" | awk '{print $3}')
-                mapfile -t path < <(find /mnt/*/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
-                if [[  "${#path[@]}" -gt 1 ]]; then #if there is another app with the same name on another pool, use the current pools application, since the other instance is probably old, or unused, or a backup.
-                    echo "$i is a name used on more than one pool.. attempting to use your current kubernetes apps pool"
-                    pool=$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")
-                    full_path=$(find /mnt/"$pool"/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
-                    zfs set mountpoint=legacy "$full_path""$pvc" 
-                    echo "$i unmounted" && rmdir /mnt/heavyscript/"$i" || echo "failed to unmount $i"
-                else
-                    zfs set mountpoint=legacy "$path""$pvc"
-                    echo "$i unmounted" && rmdir /mnt/heavyscript/"$i" || echo "failed to unmount $i"
-                fi
+                full_path=$(find /mnt/"$pool"/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
+                zfs set mountpoint=legacy "$full_path""$pvc" 
+                echo "$i unmounted" && rmdir /mnt/heavyscript/"$i" || echo "failed to unmount $i"
             done
             rmdir /mnt/heavyscript
             sleep 3

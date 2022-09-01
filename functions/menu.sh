@@ -32,6 +32,8 @@ case $selection in
         ;;
     4)
         read -rt 120 -p "What is the maximun number of backups you would like?: " number_of_backups || { echo -e "\nFailed to make a selection in time" ; exit; }
+        ! [[ $number_of_backups =~ ^[0-9]+$  ]] && echo -e "Error: The input must be an interger\n\"""$number_of_backups""\" is not an interger" >&2 && exit
+        [[ "$number_of_backups" -le 0 ]] && echo "Error: Number of backups is required to be at least 1" && exit
         ;;
     5)
         restore

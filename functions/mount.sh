@@ -34,25 +34,24 @@ do
                 app=$(echo -e "$list" | grep ^"$selection)" | awk '{print $2}' | cut -c 4- )
                 [[ -z "$app" ]] && echo "Invalid Selection: $selection, was not an option" && sleep 3 && continue #Check for valid selection. If none, contiue
                 pvc=$(echo -e "$list" | grep ^"$selection)")
+
+                #Stop applicaiton if not stopped
                 status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "^$app\b" | awk -F ',' '{print $2}'| tr -d " \t\n\r")
                 if [[ "$status" != "STOPPED" ]]; then
-                    [[ -z $timeout ]] && echo -e "\nDefault Timeout: 500" && timeout=500 || echo -e "\nCustom Timeout: $timeout"
-                    SECONDS=0 && echo -e "\nScaling down $app" && midclt call chart.release.scale "$app" '{"replica_count": 0}' &> /dev/null
+                    cli -c 'app chart_release scale release_name='\""$app"\"\ 'scale_options={"replica_count": 0}' &> /dev/null
                 else
                     echo -e "\n$app is already stopped"
                 fi
-                while [[ "$SECONDS" -le "$timeout" && "$status" != "STOPPED" ]]
-                do
-                    status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "^$app\b" | awk -F ',' '{print $2}'| tr -d " \t\n\r")
-                    echo -e "Waiting $((timeout-SECONDS)) more seconds for $app to be STOPPED" && sleep 5
-                done
+
+                #Grab data then output
                 data_name=$(echo "$pvc" | awk '{print $3}')
-                mount=$(echo "$pvc" | awk '{print $4}')
                 volume_name=$(echo "$pvc" | awk '{print $4}')
                 full_path=$(zfs list | grep "$volume_name" | grep "$pool" | awk '{print $1}')
-                echo -e "\nMounting\n$full_path\nTo\n/mnt/heavyscript/$data_name"
+                echo -e "\nMounting\n$data_name"
                 zfs set mountpoint=/heavyscript/"$data_name" "$full_path" || echo "Failed to mount $app"
-                echo -e "Mounted\n\nUnmount with:\nzfs set mountpoint=legacy $full_path && rmdir /mnt/heavyscript/$data_name\n\nOr use the Unmount All option\n"
+                echo -e "\nMounted\n\nUnmount with:\nzfs set mountpoint=legacy $full_path && rmdir /mnt/heavyscript/$data_name\n\nOr use the Unmount All option\n"
+                
+                #Ask if user would like to mount something else
                 while true
                 do
                     echo

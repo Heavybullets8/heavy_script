@@ -38,7 +38,13 @@ do
                 #Stop applicaiton if not stopped
                 status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "^$app\b" | awk -F ',' '{print $2}'| tr -d " \t\n\r")
                 if [[ "$status" != "STOPPED" ]]; then
-                    cli -c 'app chart_release scale release_name='\""$app"\"\ 'scale_options={"replica_count": 0}' &> /dev/null
+                    echo "Stopping $app prior to mount"
+                    if ! cli -c 'app chart_release scale release_name='\""$app"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then
+                        echo "Failed to stop $app"
+                        exit 1
+                    else
+                        echo "Stopped"
+                    fi
                 else
                     echo -e "\n$app is already stopped"
                 fi
@@ -47,9 +53,13 @@ do
                 data_name=$(echo "$pvc" | awk '{print $3}')
                 volume_name=$(echo "$pvc" | awk '{print $4}')
                 full_path=$(zfs list | grep "$volume_name" | grep "$pool" | awk '{print $1}')
-                echo -e "\nMounting\n$data_name"
-                zfs set mountpoint=/heavyscript/"$data_name" "$full_path" || echo "Failed to mount $app"
-                echo -e "\nMounted\n\nUnmount with:\nzfs set mountpoint=legacy $full_path && rmdir /mnt/heavyscript/$data_name\n\nOr use the Unmount All option\n"
+                if ! zfs set mountpoint=/heavyscript/"$data_name" "$full_path" ; then
+                    echo "Error: Failed to mount $app"
+                    exit 1
+                else
+                    echo -e "\nMounted\n$data_name"
+                fi
+                echo -e "\nUnmount with:\nzfs set mountpoint=legacy $full_path && rmdir /mnt/heavyscript/$data_name\n\nOr use the Unmount All option\n"
                 
                 #Ask if user would like to mount something else
                 while true

@@ -38,11 +38,13 @@ do
                 #Stop applicaiton if not stopped
                 status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "^$app\b" | awk -F ',' '{print $2}'| tr -d " \t\n\r")
                 if [[ "$status" != "STOPPED" ]]; then
-                    echo "Stopping $app prior to mount"
+                    echo -e "\nStopping $app prior to mount"
                     if ! cli -c 'app chart_release scale release_name='\""$app"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then
                         echo "Failed to stop $app"
                         exit 1
                     else
+                        status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "^$app\b" | awk -F ',' '{print $2}'| tr -d " \t\n\r")
+                        echo "$status"
                         echo "Stopped"
                     fi
                 else

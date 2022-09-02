@@ -7,6 +7,8 @@ while true
 do
     clear -x
     title
+    echo "PVC Mount Menu"
+    echo "--------------"
     echo "1)  Mount"
     echo "2)  Unmount All"
     echo

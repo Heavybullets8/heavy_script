@@ -4,6 +4,8 @@
 menu(){
 clear -x
 title
+echo "Available Utilities"
+echo "-------------------"
 echo "1)  Help"
 echo "2)  List DNS Names"
 echo "3)  Mount and Unmount PVC storage"
@@ -35,6 +37,7 @@ case $selection in
             clear -x
             title
             echo "Backup Menu"
+            echo "-----------"
             echo "1)  Create Backup"
             echo "2)  Delete Backup"
             echo "3)  Restore Backup"

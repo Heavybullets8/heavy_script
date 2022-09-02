@@ -7,6 +7,8 @@ while true
 do
     clear -x
     title 
+    echo "Command to Container Menu"
+    echo "-------------------------"
     echo "$app_name"
     echo
     echo "0)  Exit"
@@ -45,6 +47,8 @@ case "${#containers[@]}" in
         do
             clear -x
             title
+            echo "Available Containers"
+            echo "--------------------"
             cont_search=$(
             for i in "${containers[@]}"
             do

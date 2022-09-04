@@ -104,6 +104,7 @@ if [[ "$startstatus"  ==  "DEPLOYING" ]]; then
         status=$(grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
         if [[ "$SECONDS" -ge "$timeout" ]]; then
             echo_array+=("Application is stuck Deploying, Skipping to avoid damage")
+            echo_array
             return
         fi
         sleep 5

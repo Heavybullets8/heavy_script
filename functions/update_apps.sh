@@ -96,6 +96,21 @@ if ! grep -qs "^$app_name," external_services ; then
     fi
 fi
 
+# If application is deploying prior to updating, attempt to wait for it to finish
+if [[ "$startstatus"  ==  "DEPLOYING" ]]; then
+    SECONDS=0
+    while [[ "$status"  ==  "DEPLOYING" ]]
+    do
+        status=$(grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
+        if [[ "$SECONDS" -ge "$timeout" ]]; then
+            echo_array+=("Application is stuck Deploying, Skipping to avoid damage")
+            echo_array
+            return
+        fi
+        sleep 5
+    done
+fi
+
 # If user is using -S, stop app prior to updating
 echo_array+=("\n$app_name")
 if [[ $stop_before_update == "true" && "$startstatus" !=  "STOPPED" ]]; then # Check to see if user is using -S or not

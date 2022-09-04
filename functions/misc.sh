@@ -67,7 +67,7 @@ echo "-r    | Roll-back applications if they fail to update"
 echo "-i    | Add application to ignore list, one by one, see example below."
 echo "-S    | Shutdown applications prior to updating"
 echo "-v    | verbose output"
-echo "-t 500| Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
+echo "-t 500| The amount of time HS will wait for an application to be ACTIVE. Defaults to 500 seconds"
 echo
 echo "Additional Options"
 echo "------------------"

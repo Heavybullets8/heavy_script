@@ -112,7 +112,11 @@ fi
 # Send app through update function
 [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
 if update_app ;then
-    echo_array+=("Updated\n$old_full_ver\n$new_full_ver")
+    if [[ $old_full_ver == "$new_full_ver" ]]; then
+        echo_array+=("Updated Container Image")
+    else
+        echo_array+=("Updated\n$old_full_ver\n$new_full_ver")
+    fi
 else
     echo_array+=("Failed to update\nManual intervention may be required")
     echo_array
@@ -121,6 +125,10 @@ fi
 
 # If app is external services, do not send for post processing
 if grep -qs "^$app_name,true" external_services ; then
+    echo_array
+    return
+# If app is container image update, dont send for post processing
+elif [[ $old_full_ver == "$new_full_ver" ]]; then
     echo_array
     return
 else

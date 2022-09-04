@@ -113,7 +113,7 @@ fi
 [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
 if update_app ;then
     if [[ $old_full_ver == "$new_full_ver" ]]; then
-        echo_array+=("Container Image Update")
+        echo_array+=("Updated Container Image")
     else
         echo_array+=("Updated\n$old_full_ver\n$new_full_ver")
     fi

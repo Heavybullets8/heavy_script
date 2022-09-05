@@ -26,7 +26,7 @@ do
 done
 rm cont_file 2> /dev/null
 app_name=$(echo -e "$app_name" | grep ^"$selection)" | awk '{print $2}')
-mapfile -t pod_id < <(k3s crictl pods -s ready --namespace ix | grep -E "[[:space:]]$app_name-(ix-chart-)?(custom-app-)?((([[:alnum:]]|[[a-z]]){8,10}-([-[:alnum:]]|[[a-z]]){5})|([[:alnum:]]|[[a-z]])*-0[[:space:]])" | awk '{print $1}')
+mapfile -t pod_id < <(k3s crictl pods -s ready --namespace ix | grep -v "[[:space:]]svclb-" | grep -E "[[:space:]]ix-${app_name}[[:space:]]" | awk '{print $1}')
 search=$(k3s crictl ps -a -s running | sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//')
 for pod in "${pod_id[@]}"
 do

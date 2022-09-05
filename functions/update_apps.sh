@@ -9,6 +9,31 @@ echo "Asynchronous Updates: $update_limit"
 [[ -z $timeout ]] && echo "Default Timeout: 500" && timeout=500 || echo "Custom Timeout: $timeout"
 [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
 pool=$(cli -c 'app kubernetes config' | grep -E "dataset\s\|" | awk -F '|' '{print $3}' | awk -F '/' '{print $1}' | tr -d " \t\n\r")
+
+index=0
+for app in "${array[@]}"
+do
+    app_name=$(echo "$app" | awk -F ',' '{print $1}') #print out first catagory, name.
+    old_app_ver=$(echo "$app" | awk -F ',' '{print $4}' | awk -F '_' '{print $1}' | awk -F '.' '{print $1}') #previous/current Application MAJOR Version
+    new_app_ver=$(echo "$app" | awk -F ',' '{print $5}' | awk -F '_' '{print $1}' | awk -F '.' '{print $1}') #new Application MAJOR Version
+    old_chart_ver=$(echo "$app" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}' | awk -F '.' '{print $1}') # Old Chart MAJOR version
+    new_chart_ver=$(echo "$app" | awk -F ',' '{print $5}' | awk -F '_' '{print $2}' | awk -F '.' '{print $1}') # New Chart MAJOR version
+    diff_app=$(diff <(echo "$old_app_ver") <(echo "$new_app_ver")) #caluclating difference in major app versions
+    diff_chart=$(diff <(echo "$old_chart_ver") <(echo "$new_chart_ver")) #caluclating difference in Chart versions
+
+    #Skip application if its on ignore list
+    if printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" ; then
+        echo -e "\n$app_name\nIgnored, skipping"
+        unset "array[$index]"
+    #Skip appliaction if major update and not ignoreing major versions
+    elif [[ "$diff_app" != "$diff_chart" && $update_apps == "true" ]] ; then
+        echo -e "\n$app_name\nMajor Release, update manually"
+        unset "array[$index]"
+    fi
+    ((index++))
+done
+
+
 it=0
 while_count=0
 rm deploying 2>/dev/null
@@ -56,15 +81,7 @@ export -f commander
 
 pre_process(){
 app_name=$(echo "${array[$it]}" | awk -F ',' '{print $1}') #print out first catagory, name.
-printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" && echo -e "\n$app_name\nIgnored, skipping" && final_check && return 0 #If application is on ignore list, skip
-old_app_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $1}' | awk -F '.' '{print $1}') #previous/current Application MAJOR Version
-new_app_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}' | awk -F '_' '{print $1}' | awk -F '.' '{print $1}') #new Application MAJOR Version
-old_chart_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}' | awk -F '.' '{print $1}') # Old Chart MAJOR version
-new_chart_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}' | awk -F '_' '{print $2}' | awk -F '.' '{print $1}') # New Chart MAJOR version
 startstatus=$(echo "${array[$it]}" | awk -F ',' '{print $2}') #status of the app: STOPPED / DEPLOYING / ACTIVE
-diff_app=$(diff <(echo "$old_app_ver") <(echo "$new_app_ver")) #caluclating difference in major app versions
-diff_chart=$(diff <(echo "$old_chart_ver") <(echo "$new_chart_ver")) #caluclating difference in Chart versions
-[[ "$diff_app" != "$diff_chart" && $update_apps == "true" ]] && echo -e "\n$app_name\nMajor Release, update manually" && final_check && return 
 old_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}') #Upgraded From
 new_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}') #Upraded To
 rollback_version=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
@@ -191,13 +208,7 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
             fi
         elif [[ "$SECONDS" -ge "$timeout" ]]; then
             if [[ $rollback == "true" ]]; then
-                if [[ $old_full_ver == "$new_full_ver" ]]; then
-                    echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
-                    echo_array+=("This is the result of a container image update..")
-                    echo_array+=("Reverting is not possible, Abandoning")
-                    echo_array
-                    return 1
-                elif [[ "$failed" != "true" ]]; then
+                if [[ "$failed" != "true" ]]; then
                     echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
                     echo_array+=("If this is a slow starting application, set a higher timeout with -t")
                     echo_array+=("If this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration")

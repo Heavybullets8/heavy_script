@@ -42,10 +42,9 @@ do
     fi
     ((index++))
 done
-
+array=("${array[@]}")
 [[ ${#array[@]} == 0 ]] && return
 
-array=("${array[@]}")
 
 it=0
 while_count=0

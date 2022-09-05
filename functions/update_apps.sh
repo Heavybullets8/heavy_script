@@ -43,6 +43,7 @@ do
     ((index++))
 done
 
+[[ ${#array[@]} == 0 ]] && return
 
 it=0
 while_count=0

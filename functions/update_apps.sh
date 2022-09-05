@@ -29,6 +29,16 @@ do
     elif [[ "$diff_app" != "$diff_chart" && $update_apps == "true" ]] ; then
         echo -e "\n$app_name\nMajor Release, update manually"
         unset "array[$index]"
+    # Skip update if application previously failed on this exact update version
+    elif  grep -qs "^$app_name," failed 2>/dev/null; then
+        failed_ver=$(grep "^$app_name," failed | awk -F ',' '{print $2}')
+        if [[ "$failed_ver" == "$new_full_ver" ]] ; then
+            echo -e "\n$app_name"
+            echo -e "Skipping previously failed version:\n$new_full_ver"
+        else 
+            sed -i /"$app_name",/d failed
+        fi
+        unset "array[$index]"
     fi
     ((index++))
 done
@@ -86,18 +96,6 @@ old_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}') #Upgraded From
 new_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}') #Upraded To
 rollback_version=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
 
-# Skip update if application previously failed on this exact update version
-if  grep -qs "^$app_name," failed 2>/dev/null; then
-    failed_ver=$(grep "^$app_name," failed | awk -F ',' '{print $2}')
-    if [[ "$failed_ver" == "$new_full_ver" ]] ; then
-        echo -e "\n$app_name"
-        echo -e "Skipping previously failed version:\n$new_full_ver"
-        final_check
-        return 0
-    else 
-        sed -i /"$app_name",/d failed
-    fi
-fi
 
 # Check if app is external services, append outcome to external_services file
 [[ ! -e external_services ]] && touch external_services

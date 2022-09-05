@@ -43,10 +43,10 @@ do
     ((index++))
 done
 array=("${array[@]}")
-[[ ${#array[@]} == 0 ]] && return
+[[ ${#array[@]} == 0 ]] && echo && echo && return
 
 
-it=0
+index=0
 while_count=0
 rm deploying 2>/dev/null
 rm finished 2>/dev/null
@@ -75,10 +75,10 @@ do
         ((count++)) 
     done
     processes=("${processes[@]}")
-    if [[ $it -lt ${#array[@]} && "${#processes[@]}" -lt "$update_limit" ]]; then
-        pre_process "${array[$it]}" &
+    if [[ $index -lt ${#array[@]} && "${#processes[@]}" -lt "$update_limit" ]]; then
+        pre_process "${array[$index]}" &
         processes+=($!)
-        ((it++))
+        ((index++))
     else 
         sleep 3
     fi

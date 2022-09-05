@@ -92,11 +92,11 @@ export -f commander
 
 
 pre_process(){
-app_name=$(echo "${array[$it]}" | awk -F ',' '{print $1}') #print out first catagory, name.
-startstatus=$(echo "${array[$it]}" | awk -F ',' '{print $2}') #status of the app: STOPPED / DEPLOYING / ACTIVE
-old_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $4}') #Upgraded From
-new_full_ver=$(echo "${array[$it]}" | awk -F ',' '{print $5}') #Upraded To
-rollback_version=$(echo "${array[$it]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
+app_name=$(echo "${array[$index]}" | awk -F ',' '{print $1}') #print out first catagory, name.
+startstatus=$(echo "${array[$index]}" | awk -F ',' '{print $2}') #status of the app: STOPPED / DEPLOYING / ACTIVE
+old_full_ver=$(echo "${array[$index]}" | awk -F ',' '{print $4}') #Upgraded From
+new_full_ver=$(echo "${array[$index]}" | awk -F ',' '{print $5}') #Upraded To
+rollback_version=$(echo "${array[$index]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
 
 
 # Check if app is external services, append outcome to external_services file

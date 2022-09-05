@@ -51,7 +51,7 @@ it=0
 while_count=0
 rm deploying 2>/dev/null
 rm finished 2>/dev/null
-while [[ $proc_count != 0 || $(wc -l finished 2>/dev/null | awk '{ print $1 }') -lt "${#array[@]}" ]]
+while [[ ${#processes[@]} != 0 || $(wc -l finished 2>/dev/null | awk '{ print $1 }') -lt "${#array[@]}" ]]
 do
     if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' 2>/dev/null) ; then
         ((while_count++)) 
@@ -69,14 +69,14 @@ do
         echo "Middlewared timed out. Consider setting a lower number for async applications"
         continue
     fi
-    proc_count=${#processes[@]}
     count=0
     for proc in "${processes[@]}"
     do
-        kill -0 "$proc" &> /dev/null || { unset "processes[$count]"; ((proc_count--)); }
+        kill -0 "$proc" &> /dev/null || unset "processes[$count]"
         ((count++)) 
     done
-    if [[ $it -lt ${#array[@]} && "$proc_count" -lt "$update_limit" ]]; then
+    processes=("${processes[@]}")
+    if [[ $it -lt ${#array[@]} && "${#processes[@]}" -lt "$update_limit" ]]; then
         pre_process "${array[$it]}" &
         processes+=($!)
         ((it++))

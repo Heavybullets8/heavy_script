@@ -32,25 +32,25 @@
 | -r            	| -r                     	| None            	| Monitors applications after they update<br>If the app does not become "ACTIVE" after either:<br>The custom Timeout, or Default Timeout,<br>rollback the application.                                                       	|
 | -v            	| -v                     	| None            	| Verbose Output<br>_Look at the bottom of this page for an example_                                                                                                                                                         	|
 | -S            	| -S                     	| None            	| Shutdown the application prior to updating it                                                                                                                                                                              	|
-| -t            	| -t 150                 	| Integer         	| Set a custom timeout to be used with either:<br>`-m` <br>_Time the script will wait for application to be "STOPPED"_<br>or<br>`-(u\|U)` <br>_Time the script will wait for application to be either "STOPPED" or "ACTIVE"_ 	|
+| -t            	| -t 150                 	| Integer         	| Time in seconds that HeavyScript will wait for an application to no longer be deploying before declaring failure<br>Default: 500 	|
 | -s            	| -s                     	| None            	| Sync Catalogs prior to updating                                                                                                                                                                                            	|
 | -p            	| -p                     	| None            	| Prune old/unused docker images                                                                                                                                                                                             	|
 | --self-update 	| --self-update          	| None            	| Updates HeavyScript prior to running any other commands                                                                                                                                                                    	|
 
 
 ### Example
-#### Typical Cron Job  
+#### Cron Job  
 ```
-bash heavy_script.sh --self-update -b 10 -i portainer -i arch -i sonarr -i radarr -t 600 -rsp -u 5
+bash heavy_script.sh --self-update -b 10 -i nextcloud -i sonarr -t 600 -rsp -u 5
 ```
 
 > `-b` is set to 10. Up to 10 snapshots of your ix-applications dataset will be saved
 
-> `-i` is set to ignore portainer, arch, sonarr, and radarr. These applications will be ignored when it comes to updates.
+> `-i` is set to ignore __nextcloud__ and __sonarr__. These applications will be skipped if they have an update.
 
-> `-t` I set it to 600 seconds, this means the script will wait 600 seconds for the application to become ACTIVE before timing out and continuing to a different application. 
+> `-t` I set it to 600 seconds, this means the script will wait 600 seconds for the application to become ACTIVE before timing out and rolling back to the previous version since `-r` is used. 
 
-> `-r` Will rollback applications if they fail to deploy after updating.
+> `-r` Will rollback applications if they fail to deploy within the timeout, after updating.
 
 > `-s` will just sync the repositories, ensuring you are downloading the latest updates.
 
@@ -80,7 +80,7 @@ bash heavy_script.sh --self-update -b 10 -i portainer -i arch -i sonarr -i radar
 #### Mounting PVC Data
 
 ```
-bash /mnt/tank/scripts/heavy_script.sh -t 300 --mount
+bash /mnt/tank/scripts/heavy_script.sh --mount
 ```
 
 #### Restoring ix-applications dataset

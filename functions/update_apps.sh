@@ -209,11 +209,11 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
         elif [[ "$SECONDS" -ge "$timeout" ]]; then
             if [[ $rollback == "true" ]]; then
                 if [[ "$failed" != "true" ]]; then
+                    echo "$app_name,$new_full_ver" >> failed
                     echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
                     echo_array+=("If this is a slow starting application, set a higher timeout with -t")
                     echo_array+=("If this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration")
-                    echo_array+=("Reverting update..")
-                    echo "$app_name,$new_full_ver" >> failed
+                    echo_array+=("Reverting update..")       
                     if rollback_app ; then
                         echo_array+=("Rolled Back")
                     else
@@ -239,11 +239,11 @@ if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
                     break
                 fi
             else
+                echo "$app_name,$new_full_ver" >> failed
                 echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
                 echo_array+=("If this is a slow starting application, set a higher timeout with -t")
                 echo_array+=("If this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration")
                 echo_array+=("Manual intervention is required\nStopping, then Abandoning")
-                echo "$app_name,$new_full_ver" >> failed
                 if stop_app ; then
                     echo_array+=("Stopped")
                 else

@@ -35,10 +35,10 @@ do
         if [[ "$failed_ver" == "$new_full_ver" ]] ; then
             echo -e "\n$app_name"
             echo -e "Skipping previously failed version:\n$new_full_ver"
+            unset "array[$index]"
         else 
             sed -i /"$app_name",/d failed
         fi
-        unset "array[$index]"
     fi
     ((index++))
 done

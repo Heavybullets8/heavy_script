@@ -152,7 +152,7 @@ From here, you can just run Heavy_Script with `bash heavy_script.sh -ARGUMENTS`
 
 ## How to Update 
 
-### Built-In Option (Reccommended)
+### Built-In Option (Recommended)
 
 ```
 bash heavyscript.sh --self-update -b 10 -supr

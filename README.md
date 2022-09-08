@@ -23,25 +23,26 @@
 <br >
 
 ## Update Arguments
-| Flag          	| Example                	| Parameter       	| Description                                                                                                                                                                                                                	|
-|---------------	|------------------------	|-----------------	|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
-| -U            	| -U <br>-U 5            	| None or Integer 	| Update applications, ignoring major version changes<br>_Optionally, you can supply a number after the argument to update multiple applications at once_                                                                    	|
-| -u            	| -u<br>-u 5             	| None or Integer 	| Update applications, do NOT update if there was a major version change<br>_Optionally, you can supply a number after the argument to update multiple applications at once_                                                 	|
-| -b            	| -b 14                  	| Integer         	| Backup `ix-applications` dataset<br>_Creates backups up to the number you've chosen_                                                                                                                                       	|
-| -i            	| -i nextcloud -i sonarr 	| String          	| Applications listed will be ignored during updating<br>_List one application after another as shown in the example_                                                                                                        	|
-| -r            	| -r                     	| None            	| Monitors applications after they update<br>If the app does not become "ACTIVE" after either:<br>The custom Timeout, or Default Timeout,<br>rollback the application.                                                       	|
-| -v            	| -v                     	| None            	| Verbose Output<br>_Look at the bottom of this page for an example_                                                                                                                                                         	|
-| -S            	| -S                     	| None            	| Shutdown the application prior to updating it                                                                                                                                                                              	|
-| -t            	| -t 150                 	| Integer         	| Time in seconds that HeavyScript will wait for an application to no longer be deploying before declaring failure<br>Default: 500 	|
-| -s            	| -s                     	| None            	| Sync Catalogs prior to updating                                                                                                                                                                                            	|
-| -p            	| -p                     	| None            	| Prune old/unused docker images                                                                                                                                                                                             	|
-| --self-update 	| --self-update          	| None            	| Updates HeavyScript prior to running any other commands                                                                                                                                                                    	|
+| Flag          | Example                | Parameter        | Description                                                                                                                                                                |
+|---------------|------------------------|------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -U            | -U <br>-U 5            | Optional Integer | Update applications, ignoring major version changes<br>_Optionally, you can supply a number after the argument to update multiple applications at once_                    |
+| -u            | -u<br>-u 5             | Optional Integer | Update applications, do NOT update if there was a major version change<br>_Optionally, you can supply a number after the argument to update multiple applications at once_ |
+| -b            | -b 14                  | Integer          | Snapshot ix-applications dataset<br>_Creates backups UP TO the number you've chosen_                                                                                       |
+| -i            | -i nextcloud -i sonarr | String           | Applications listed will be ignored during updating<br>_List one application after another as shown in the example_                                                        |
+| -r            | -r                     |                  | Monitors applications after they update<br>If the app does not become "ACTIVE" after the timeout, rollback the application.                                                |
+| -v            | -v                     |                  | Verbose Output<br>_Look at the bottom of this page for an example_                                                                                                         |
+| -S            | -S                     |                  | Shutdown the application prior to updating it                                                                                                                              |
+| -t            | -t 400                 | Integer          | Time in seconds that HeavyScript will wait for an application to no longer be deploying before declaring failure<br>Default: 500                                           |
+| -s            | -s                     |                  | Sync Catalogs prior to updating                                                                                                                                            |
+| -p            | -p                     |                  | Prune unused docker images                                                                                                                                                 |
+| --ignore-img  | --ignore-img           |                  | Ignore container image updates                                                                                                                                             |
+| --self-update | --self-update          |                  | Updates HeavyScript prior to running any other commands                                                                                                                    |
 
 
 ### Example
 #### Cron Job  
 ```
-bash heavy_script.sh --self-update -b 10 -i nextcloud -i sonarr -t 600 -rsp -u 5
+bash heavy_script.sh --self-update -b 10 -i nextcloud -i sonarr -t 600 --ignore-img -rsp -u 5
 ```
 
 > `-b` is set to 10. Up to 10 snapshots of your ix-applications dataset will be saved
@@ -49,6 +50,8 @@ bash heavy_script.sh --self-update -b 10 -i nextcloud -i sonarr -t 600 -rsp -u 5
 > `-i` is set to ignore __nextcloud__ and __sonarr__. These applications will be skipped if they have an update.
 
 > `-t` I set it to 600 seconds, this means the script will wait 600 seconds for the application to become ACTIVE before timing out and rolling back to the previous version since `-r` is used. 
+
+> `--ignore-img` Will not update the application if it is only a container image update
 
 > `-r` Will rollback applications if they fail to deploy within the timeout, after updating.
 
@@ -60,6 +63,13 @@ bash heavy_script.sh --self-update -b 10 -i nextcloud -i sonarr -t 600 -rsp -u 5
 >> The `5` after the `-u` means up to 5 applications will be updating and monitored at one time
 
 > `--self-update` Will update the script prior to running anything else.
+
+<br >
+
+#### My Personal Cron Job
+```
+bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u 10
+```
 
 <br >
 <br>
@@ -142,12 +152,13 @@ From here, you can just run Heavy_Script with `bash heavy_script.sh -ARGUMENTS`
 
 ## How to Update 
 
-### Built-In Option
+### Built-In Option (Reccommended)
 
 ```
 bash heavyscript.sh --self-update -b 10 -supr
 ```
 > The important argument here is the `--self-update`, you can still use all of your same arguments with this option.
+>> `--self-update` will place users on the latest tag, as well as showing the changelog when new releases come out. So this is the preferred method. Not using this method, will instead place the user on `main`, where the changes are tested, but not as rigerously as they are on the releases.
 
 <br >
 
@@ -164,7 +175,7 @@ cd /mnt/speed/scripts/heavy_script
 ```
 git pull
 ```
-
+> This is not recommended because the changes to main are not tested as much as the changes that are pushed to releases are tested, think of this method of updating as being in development. 
 
 <br >
 <br >

@@ -83,10 +83,11 @@ do
     echo
     echo "Additional Options"
     echo "------------------"
-    echo "6) -b | Back-up your ix-applications dataset, specify a number after -b"
+    echo "6) -b | Back-up your ix-applications dataset"
     echo "7) -s | sync catalog"
     echo "8) -p | Prune unused/old docker images"
-    echo "9) --self-update | Updates HeavyScript prior to running any other commands"
+    echo "9) --ignore-img   | Ignore container image updates"
+    echo "10) --self-update | Updates HeavyScript prior to running any other commands"
     echo
     echo "99) Remove Update Options, Restart"
     echo "00) Done making selections, proceed with update"
@@ -150,7 +151,11 @@ do
             printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-p" && echo -e "\"-p\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
             update_selection+=("-p")
             ;;
-        9 | --self-update )
+        9 | --ignore-img )
+            printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "--ignore-img" && echo -e "\"--ignore-img\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
+            update_selection+=("--ignore-img")      
+            ;;
+        10 | --self-update )
             printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "--self-update" && echo -e "\"--self-update\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
             update_selection+=("--self-update")      
             ;;

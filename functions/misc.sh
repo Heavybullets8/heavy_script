@@ -74,6 +74,7 @@ echo "------------------"
 echo "-b 14 | Back-up your ix-applications dataset, specify a number after -b"
 echo "-s    | sync catalog"
 echo "-p    | Prune unused/old docker images"
+echo "--ignore-img  | Ignore container image updates"
 echo "--self-update | Updates HeavyScript prior to running any other commands"
 echo
 echo "Examples"

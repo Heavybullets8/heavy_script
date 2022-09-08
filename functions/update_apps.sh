@@ -8,6 +8,7 @@ echo -e "🅄 🄿 🄳 🄰 🅃 🄴 🅂"
 echo "Asynchronous Updates: $update_limit"
 [[ -z $timeout ]] && echo "Default Timeout: 500" && timeout=500 || echo "Custom Timeout: $timeout"
 [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
+[[ $ignore_image_update == "true" ]] && echo "Image Updates: Disabled" || echo "Image Updates: Enabled"
 pool=$(cli -c 'app kubernetes config' | grep -E "dataset\s\|" | awk -F '|' '{print $3}' | awk -F '/' '{print $1}' | tr -d " \t\n\r")
 
 index=0
@@ -33,12 +34,15 @@ do
     elif  grep -qs "^$app_name," failed 2>/dev/null; then
         failed_ver=$(grep "^$app_name," failed | awk -F ',' '{print $2}')
         if [[ "$failed_ver" == "$new_full_ver" ]] ; then
-            echo -e "\n$app_name"
-            echo -e "Skipping previously failed version:\n$new_full_ver"
+            echo -e "\n$app_name\nSkipping previously failed version:\n$new_full_ver"
             unset "array[$index]"
         else 
             sed -i /"$app_name",/d failed
         fi
+    #Skip Image updates if ignore image updates is set to true
+    elif [[ $old_full_ver == "$new_full_ver" && $ignore_image_update == "true" ]]; then
+        echo -e "\n$app_name\nImage update, skipping.."
+        unset "array[$index]"
     fi
     ((index++))
 done

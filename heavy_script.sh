@@ -52,6 +52,9 @@ do
     delete-backup)
                   deleteBackup="true"
                   ;;
+       ignore-img)
+                  ignore_image_update="true"
+                  ;;
                 *)
                   echo -e "Invalid Option \"--$OPTARG\"\n"
                   help

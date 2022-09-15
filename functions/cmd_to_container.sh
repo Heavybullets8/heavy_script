@@ -62,7 +62,7 @@ case "${#containers[@]}" in
             if [[ $selection == 0 ]]; then
                 echo "Exiting.."
                 exit
-            elif ! echo -e "$cont_search}" | grep -qs ^"$selection)" ; then
+            elif ! echo -e "$cont_search" | grep -qs ^"$selection)" ; then
                 echo "Error: \"$selection\" was not an option.. Try again"
                 sleep 3
                 continue

@@ -21,8 +21,8 @@ do
     new_chart_ver=$(echo "$app" | awk -F ',' '{print $5}' | awk -F '_' '{print $2}' | awk -F '.' '{print $1}') # New Chart MAJOR version
     diff_app=$(diff <(echo "$old_app_ver") <(echo "$new_app_ver")) #caluclating difference in major app versions
     diff_chart=$(diff <(echo "$old_chart_ver") <(echo "$new_chart_ver")) #caluclating difference in Chart versions
-    old_full_ver=$(echo "${array[$index]}" | awk -F ',' '{print $4}') #Upgraded From
-    new_full_ver=$(echo "${array[$index]}" | awk -F ',' '{print $5}') #Upraded To
+    old_full_ver=$(echo "$app" | awk -F ',' '{print $4}') #Upgraded From
+    new_full_ver=$(echo "$app" | awk -F ',' '{print $5}') #Upraded To
 
     #Skip application if its on ignore list
     if printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" ; then

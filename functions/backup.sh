@@ -153,8 +153,8 @@ do
         case $yesno in
             [Yy] | [Yy][Ee][Ss])
 
-                # Set mountpoints to legacy prior to restore, ensures correct properties for the dataset are set
-                echo -e "\nSetting correct dataset properties.."
+                # Set mountpoints to legacy prior to restore, ensures correct properties for the are set
+                echo -e "\nSetting correct ZFS properties for application volumes.."
                 for pvc in $(zfs list -t filesystem -r "$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")" -o name -H | grep "/ix-applications/" | grep "volumes/pvc")
                 do
                     if zfs set mountpoint=legacy "$pvc"; then

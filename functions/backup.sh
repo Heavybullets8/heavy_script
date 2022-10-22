@@ -152,8 +152,25 @@ do
         read -rt 120 -p "Would you like to proceed with restore? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
         case $yesno in
             [Yy] | [Yy][Ee][Ss])
-                echo -e "\nStarting Backup, this will take a LONG time."
-                cli -c 'app kubernetes restore_backup backup_name=''"'"$restore_point"'"' || { echo "Failed to delete backup.."; exit; }
+
+                # Set mountpoints to legacy prior to restore, ensures correct properties for the dataset are set
+                echo -e "\nSetting correct dataset properties.."
+                for pvc in $(zfs list -t filesystem -r "$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")" -o name -H | grep "/ix-applications/" | grep "volumes/pvc")
+                do
+                    if zfs set mountpoint=legacy "$pvc"; then
+                        echo "Success for - \"$pvc\""
+                    else
+                        echo "Error: Setting properties for \"$pvc\", failed.."
+                    fi
+                done
+                echo "Finished setting properties.."
+
+                # Beginning snapshot restore
+                echo -e "\nStarting restore, this will take a LONG time."
+                if ! cli -c 'app kubernetes restore_backup backup_name=''"'"$restore_point"'"'; then
+                    echo "Restore failed, exiting.."
+                    exit 1
+                fi
                 exit
                 ;;
             [Nn] | [Nn][Oo])

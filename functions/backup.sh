@@ -152,10 +152,11 @@ do
         read -rt 120 -p "Would you like to proceed with restore? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
         case $yesno in
             [Yy] | [Yy][Ee][Ss])
+                pool=$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")
 
                 # Set mountpoints to legacy prior to restore, ensures correct properties for the are set
                 echo -e "\nSetting correct ZFS properties for application volumes.."
-                for pvc in $(zfs list -t filesystem -r "$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")" -o name -H | grep "/ix-applications/" | grep "volumes/pvc")
+                for pvc in $(zfs list -t filesystem -r "$pool"/ix-applications -o name -H | grep "volumes/pvc")
                 do
                     if zfs set mountpoint=legacy "$pvc"; then
                         echo "Success for - \"$pvc\""
@@ -163,6 +164,10 @@ do
                         echo "Error: Setting properties for \"$pvc\", failed.."
                     fi
                 done
+
+                # Ensure readonly is turned off
+                zfs set readonly=off "$pool"/ix-applications
+
                 echo "Finished setting properties.."
 
                 # Beginning snapshot restore

@@ -166,7 +166,11 @@ do
                 done
 
                 # Ensure readonly is turned off
-                zfs set readonly=off "$pool"/ix-applications
+                if ! zfs set readonly=off "$pool"/ix-applications;then
+                    echo -e "Error: Failed to set ZFS ReadOnly to \"off\""
+                    echo -e "After the restore, attempt to run the following command manually:"
+                    echo "zfs set readonly=off $pool/ix-applications"
+                fi
 
                 echo "Finished setting properties.."
 

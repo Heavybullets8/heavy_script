@@ -156,7 +156,7 @@ do
 
                 # Set mountpoints to legacy prior to restore, ensures correct properties for the are set
                 echo -e "\nSetting correct ZFS properties for application volumes.."
-                for pvc in $(zfs list -t filesystem -r "$pool"/ix-applications -o name -H | grep "volumes/pvc")
+                for pvc in $(zfs list -t filesystem -r "$pool"/ix-applications/releases -o name -H | grep "volumes/pvc")
                 do
                     if zfs set mountpoint=legacy "$pvc"; then
                         echo "Success for - \"$pvc\""

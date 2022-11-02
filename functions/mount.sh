@@ -40,7 +40,7 @@ do
                 pvc=$(echo -e "$list" | grep ^"$selection)")
 
                 #Stop applicaiton if not stopped
-                status=$(cli -m csv -c 'app chart_release query name,status' | grep -E "^$app\b" | awk -F ',' '{print $2}'| tr -d " \t\n\r")
+                status=$(cli -m csv -c 'app chart_release query name,status' | grep "^$app," | awk -F ',' '{print $2}'| tr -d " \t\n\r")
                 if [[ "$status" != "STOPPED" ]]; then
                     echo -e "\nStopping $app prior to mount"
                     if ! cli -c 'app chart_release scale release_name='\""$app"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then

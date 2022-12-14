@@ -19,7 +19,9 @@ export -f sync
 prune(){
 echo -e "🄿 🅁 🅄 🄽 🄴"  
 echo "Pruned Docker Images"
-docker image prune -af | grep "^Total" || echo "Failed to Prune Docker Images"
+if ! cli -c 'app container config prune prune_options={"remove_unused_images": true, "remove_stopped_containers": true}' | head -n -4; then
+    echo "Failed to Prune Docker Images"
+fi
 }
 export -f prune
 

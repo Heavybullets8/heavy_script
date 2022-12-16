@@ -144,6 +144,43 @@ do
         fi
         break
     done
+
+
+    # Get the date of system version and when it was updated
+    current_version=$(cli -m csv -c 'system version' | awk -F '-' '{print $3}')
+    when_updated=$(cli -m csv -c 'system bootenv query created,realname' | grep "$current_version",\
+    | awk -F ',' '{print $2}' | sed 's/[T|-]/_/g' | sed 's/:/_/g' | awk -F '_' '{print $1 $2 $3 $4 $5}')
+
+
+    # Get the date of the chosen restore point
+    restore_point_date=$(echo "$restore_point" | awk -F '_' '{print $2 $3 $4 $5 $6}' | tr -d "_")
+
+
+    # Compare the dates
+    if (("$restore_point_date" < "$when_updated" )); then
+        clear -x
+        echo "The restore point you have chosen is from an older version of Truenas Scale"
+        echo "This is not recommended, as it may cause issues with the system"
+        if read -rt 120 -p "Would you like to proceed? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }; then
+            case $yesno in
+                [Yy] | [Yy][Ee][Ss])
+                    echo "Proceeding.."
+                    sleep 3
+                    ;;
+                [Nn] | [Nn][Oo])
+                    echo "Exiting"
+                    exit
+                    ;;
+                *)
+                    echo "That was not an option, try again"
+                    sleep 3
+                    continue
+                    ;;
+            esac
+        fi
+    fi
+
+
     while true
     do
         clear -x

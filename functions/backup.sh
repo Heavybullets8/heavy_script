@@ -180,7 +180,7 @@ for app in "${borked_array[@]}"; do
     else
         borked=True
     fi
-    index+=1
+    ((index++))
 done
 
 

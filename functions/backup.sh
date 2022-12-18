@@ -151,50 +151,53 @@ done
 
 ## Check to see if empty PVC data is present in any of the applications ##
 
-# Find all pv_info.json files two subfolders deep
+# Find all pv_info.json files two subfolders deep with the restore point name
 pool=$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")
 files=$(find "$(find /mnt/"$pool"/ix-applications/backups -maxdepth 0 )" -name pv_info.json | grep "$restore_point");
 
 # Iterate over the list of files
 for file in $files; do
-    # Check if the file only contains {} subfolders two deep
-    contents=$(cat $file)
+    # Check if the file only contains {} subfolders
+    contents=$(cat "$file")
     if [[ "$contents" == '{}' ]]; then
         # Print the file if it meets the criterion
         file=$(echo "$file" | awk -F '/' '{print $7}')
-        borked_array+="$file\n"
-        borked=True
+        borked_array+=("${file}")
     fi
 done
 
-# If there is empty PVC data, exit
+
+# Grab applications that are supposed to have PVC data
+mapfile -t apps_with_pvc < <(k3s kubectl get pvc -A | sort -u | awk '{print $1 "\t" $2 "\t" $4}' | sed "s/^0/ /" | awk '{print $1}' | cut -c 4-)
+
+
+# Iterate over the list of applications with empty PVC data
+# Unset the application if it is not supposed to have PVC data
+index=0
+for app in "${borked_array[@]}"; do
+    if ! printf '%s\0' "${apps_with_pvc[@]}" | grep -iFxqz "${app}" ; then
+        unset "borked_array[$index]"
+    else
+        borked=True
+    fi
+    index+=1
+done
+
+
+
+# If there is still empty PVC data, exit
 if [[ $borked == True ]]; then
     echo "Warning!:"
     echo "The following applications have empty PVC data:"
-    for file in $borked_array; do
-        echo -e "$file"
+    for app in "${borked_array[@]}"; do
+        echo -e "$app"
     done
-    echo "You need to ensure these applications are not supposed to have PVC data before proceeding"
-    while true
-    do
-        read -rt 120 -p "Would you like to proceed? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
-        case $yesno in
-            [Yy] | [Yy][Ee][Ss])
-                echo "Proceeding.."
-                sleep 3
-                break
-                ;;
-            [Nn] | [Nn][Oo])
-                echo "Exiting"
-                exit
-                ;;
-            *)
-                echo "That was not an option, try again"
-                sleep 3
-                continue
-                ;;
-        esac
-    done 
+    echo "We have no choice but to exit"
+    echo "If you were to restore, you would lose all of your application data"
+    echo "If you are on Bluefin version: 22.12.0, and have not yet ran the patch, you will need to run it"
+    echo "Afterwards you will be able to create backups and restore them"
+    echo "This is a known ix-systems bug, and has nothing to do with HeavyScript"
+    exit
 fi
 
 
@@ -220,6 +223,7 @@ do
     clear -x
     echo "The restore point you have chosen is from an older version of Truenas Scale"
     echo "This is not recommended, as it may cause issues with the system"
+    echo "Either that, or your systems date is incorrect.."
     echo
     echo "Current SCALE Information:"
     echo "Version:       $current_version"

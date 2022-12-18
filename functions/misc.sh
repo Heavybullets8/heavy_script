@@ -98,3 +98,76 @@ echo
 exit
 }
 export -f help
+
+
+
+patch_2212_backups(){
+clear -x
+#Check TrueNAS version, skip if not 22.12.0
+if ! [ "$(cli -m csv -c 'system version' | awk -F '-' '{print $3}')" == "22.12.0" ]; then
+    echo "This patch does not apply to your version of TrueNAS"
+    return
+fi
+
+
+#Description
+echo "This patch will fix the issue with backups not restoring properly"
+echo "Due to Ix-Systems not saving PVC in backups, this patch will fix that"
+echo "Otherwise backups will not restore properly"
+echo "You only need to run this patch once, it will not run again"
+echo
+
+
+#Download patch
+echo "Downloading Backup Patch"
+if ! wget -q https://github.com/truecharts/truetool/raw/main/hotpatch/2212/HP1.patch; then
+    echo "Failed to download Backup Patch"
+    exit
+else
+    echo "Downloaded Backup Patch"
+fi
+
+echo
+
+# Apply patch
+echo "Applying Backup Patch"
+if patch -N --reject-file=/dev/null -s -p0 -d /usr/lib/python3/dist-packages/middlewared/ < HP1.patch &>/dev/null; then
+    echo "Backup Patch applied"
+    rm -rf HP1.patch
+else
+    echo "Backup Patch already applied"
+    rm -rf HP1.patch
+    exit
+fi
+
+echo
+
+#Restart middlewared
+while true
+do
+    echo "We need to restart middlewared to finish the patch"
+    echo "This will cause a short downtime for your system"
+    read -rt 120 -p "Would you like to proceed? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
+    case $yesno in
+        [Yy] | [Yy][Ee][Ss])
+            echo "Restarting middlewared"
+            service middlewared restart &
+            wait $!
+            break
+            ;;
+        [Nn] | [Nn][Oo])
+            echo "Exiting"
+            echo "Please restart middlewared manually"
+            echo "You can do: service middlewared restart"
+            exit
+            ;;
+        *)
+            echo "That was not an option, try again"
+            sleep 3
+            continue
+            ;;
+    esac
+done 
+}
+export -f patchv22120
+

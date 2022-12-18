@@ -153,6 +153,8 @@ do
             echo "Restarting middlewared"
             service middlewared restart &
             wait $!
+            echo "Restarted middlewared"
+            echo "You are set, there is no need to run this patch again"
             break
             ;;
         [Nn] | [Nn][Oo])

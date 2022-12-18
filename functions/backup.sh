@@ -149,40 +149,35 @@ do
 done
 
 
-# Boot Query
-boot_query=$(cli -m csv -c 'system bootenv query created,realname')
+## Check to see if empty PVC data is present in any of the applications ##
 
+# Find all pv_info.json files two subfolders deep
+pool=$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")
+files=$(find "$(find /mnt/"$pool"/ix-applications/backups -maxdepth 0 )" -name pv_info.json | grep "$restore_point");
 
-# Get the date of system version and when it was updated
-current_version=$(cli -m csv -c 'system version' | awk -F '-' '{print $3}')
-when_updated=$(echo "$boot_query" | grep "$current_version",\
-| awk -F ',' '{print $2}' | sed 's/[T|-]/_/g' | sed 's/:/_/g' | awk -F '_' '{print $1 $2 $3 $4 $5}')
+# Iterate over the list of files
+for file in $files; do
+    # Check if the file only contains {} subfolders two deep
+    contents=$(cat $file)
+    if [[ "$contents" == '{}' ]]; then
+        # Print the file if it meets the criterion
+        file=$(echo "$file" | awk -F '/' '{print $7}')
+        borked_array+="$file\n"
+        borked=True
+    fi
+done
 
-
-# Get the date of the chosen restore point
-restore_point_date=$(echo "$restore_point" | awk -F '_' '{print $2 $3 $4 $5 $6}' | tr -d "_")
-
-
-# Grab previous version
-previous_version=$(echo "$boot_query" | sort -nr | grep -A 1 "$current_version," | tail -n 1)
-
-
-# Compare the dates
-while (("$restore_point_date" < "$when_updated" ))
-do
-    clear -x
-    echo "The restore point you have chosen is from an older version of Truenas Scale"
-    echo "This is not recommended, as it may cause issues with the system"
-    echo
-    echo "Current SCALE Information:"
-    echo "Version:       $current_version"
-    echo "When Updated:  $(echo "$restore_point" | awk -F '_' '{print $2 "-" $3 "-" $4}')"
-    echo
-    echo "Restore Point SCALE Information:"
-    echo "Version:       $(echo "$previous_version" | awk -F ',' '{print $1}')"
-    echo "When Updated:  $(echo "$previous_version" | awk -F ',' '{print $2}' | awk -F 'T' '{print $1}')"
-    echo
-    if read -rt 120 -p "Would you like to proceed? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }; then
+# If there is empty PVC data, exit
+if [[ $borked == True ]]; then
+    echo "Warning!:"
+    echo "The following applications have empty PVC data:"
+    for file in $borked_array; do
+        echo -e "$file"
+    done
+    echo "You need to ensure these applications are not supposed to have PVC data before proceeding"
+    while true
+    do
+        read -rt 120 -p "Would you like to proceed? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
         case $yesno in
             [Yy] | [Yy][Ee][Ss])
                 echo "Proceeding.."
@@ -199,7 +194,58 @@ do
                 continue
                 ;;
         esac
-    fi
+    done 
+fi
+
+
+
+## Check the restore point, and ensure it is the same version as the current system ##
+# Boot Query
+boot_query=$(cli -m csv -c 'system bootenv query created,realname')
+
+# Get the date of system version and when it was updated
+current_version=$(cli -m csv -c 'system version' | awk -F '-' '{print $3}')
+when_updated=$(echo "$boot_query" | grep "$current_version",\
+| awk -F ',' '{print $2}' | sed 's/[T|-]/_/g' | sed 's/:/_/g' | awk -F '_' '{print $1 $2 $3 $4 $5}')
+
+# Get the date of the chosen restore point
+restore_point_date=$(echo "$restore_point" | awk -F '_' '{print $2 $3 $4 $5 $6}' | tr -d "_")
+
+# Grab previous version
+previous_version=$(echo "$boot_query" | sort -nr | grep -A 1 "$current_version," | tail -n 1)
+
+# Compare the dates
+while (("$restore_point_date" < "$when_updated" ))
+do
+    clear -x
+    echo "The restore point you have chosen is from an older version of Truenas Scale"
+    echo "This is not recommended, as it may cause issues with the system"
+    echo
+    echo "Current SCALE Information:"
+    echo "Version:       $current_version"
+    echo "When Updated:  $(echo "$restore_point" | awk -F '_' '{print $2 "-" $3 "-" $4}')"
+    echo
+    echo "Restore Point SCALE Information:"
+    echo "Version:       $(echo "$previous_version" | awk -F ',' '{print $1}')"
+    echo "When Updated:  $(echo "$previous_version" | awk -F ',' '{print $2}' | awk -F 'T' '{print $1}')"
+    echo
+    read -rt 120 -p "Would you like to proceed? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
+        case $yesno in
+            [Yy] | [Yy][Ee][Ss])
+                echo "Proceeding.."
+                sleep 3
+                break
+                ;;
+            [Nn] | [Nn][Oo])
+                echo "Exiting"
+                exit
+                ;;
+            *)
+                echo "That was not an option, try again"
+                sleep 3
+                continue
+                ;;
+        esac
 done
 
 

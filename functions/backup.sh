@@ -149,14 +149,22 @@ do
 done
 
 
+# Boot Query
+boot_query=$(cli -m csv -c 'system bootenv query created,realname')
+
+
 # Get the date of system version and when it was updated
 current_version=$(cli -m csv -c 'system version' | awk -F '-' '{print $3}')
-when_updated=$(cli -m csv -c 'system bootenv query created,realname' | grep "$current_version",\
+when_updated=$(echo "$boot_query" | grep "$current_version",\
 | awk -F ',' '{print $2}' | sed 's/[T|-]/_/g' | sed 's/:/_/g' | awk -F '_' '{print $1 $2 $3 $4 $5}')
 
 
 # Get the date of the chosen restore point
 restore_point_date=$(echo "$restore_point" | awk -F '_' '{print $2 $3 $4 $5 $6}' | tr -d "_")
+
+
+# Grab previous version
+previous_version=$(echo "$boot_query" | sort -nr | grep -A 1 "$current_version," | tail -n 1)
 
 
 # Compare the dates
@@ -165,6 +173,15 @@ do
     clear -x
     echo "The restore point you have chosen is from an older version of Truenas Scale"
     echo "This is not recommended, as it may cause issues with the system"
+    echo
+    echo "Current SCALE Information:"
+    echo "Version:       $current_version"
+    echo "When Updated:  $(echo "$restore_point" | awk -F '_' '{print $2 "-" $3 "-" $4}')"
+    echo
+    echo "Restore Point SCALE Information:"
+    echo "Version:       $(echo "$previous_version" | awk -F ',' '{print $1}')"
+    echo "When Updated:  $(echo "$previous_version" | awk -F ',' '{print $2}' | awk -F 'T' '{print $1}')"
+    echo
     if read -rt 120 -p "Would you like to proceed? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }; then
         case $yesno in
             [Yy] | [Yy][Ee][Ss])

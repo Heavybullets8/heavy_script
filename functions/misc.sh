@@ -172,5 +172,4 @@ do
     esac
 done 
 }
-export -f patchv22120
 

@@ -32,7 +32,9 @@ export -f backup
 
 deleteBackup(){
 clear -x && echo "pulling all restore points.."
+# shellcheck disable=SC2178
 list_backups=$(cli -c 'app kubernetes list_backups' | sort -t '_' -Vr -k2,7 | tr -d " \t\r"  | awk -F '|'  '{print $2}' | nl -s ") " | column -t)
+# shellcheck disable=SC2128
 if [[ -z "$list_backups" ]]; then
     echo "No restore points available"
     exit

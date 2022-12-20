@@ -1,0 +1,21 @@
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    
+name: ShellCheck
+
+jobs:
+  ShellCheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        env:
+          SHELLCHECK_OPTS: -e SC2154
+        with:
+          check_together: 'yes'
+          format: gcc
+

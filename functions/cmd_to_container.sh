@@ -95,6 +95,8 @@ do
             clear -x 
             title
             read -rt 500 -p "What command do you want to run?: " command || { echo -e "\nFailed to make a selection in time" ; exit; }
+            # shellcheck disable=SC2086
+            # Quoting $command as suggested, causes the k3s command to fail
             k3s crictl exec -it "$container_id" $command
             break
             ;;

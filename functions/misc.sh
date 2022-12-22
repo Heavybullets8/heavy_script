@@ -33,15 +33,28 @@ export -f prune
 
 
 title(){
-echo ' _   _                        _____           _       _   '
-echo '| | | |                      /  ___|         (_)     | | '
-echo '| |_| | ___  __ ___   ___   _\ `--.  ___ _ __ _ _ __ | |_'
-echo "|  _  |/ _ \/ _\` \ \ / / | | |\`--. \/ __| '__| | '_ \| __|"
-echo '| | | |  __/ (_| |\ V /| |_| /\__/ / (__| |  | | |_) | |_ '
-echo '\_| |_/\___|\__,_| \_/  \__, \____/ \___|_|  |_| .__/ \__|'
-echo '                         __/ |                 | |        '
-echo '                        |___/                  |_|        '
-echo "$hs_version"
+# Set the text color to red
+txt_red='\033[1;31m'
+
+# Set the text color to blue
+txt_blue='\033[0;34m'
+
+# Set the text color to purple
+txt_purple='\033[0;35m'
+
+# Reset the text color
+txt_reset='\033[0m'
+
+
+echo -e "${txt_red} _   _                        _____           _       _   ${txt_reset}"
+echo -e "${txt_blue}| | | |                      /  ___|         (_)     | | ${txt_reset}"
+echo -e "${txt_purple}| |_| | ___  __ ___   ___   _\\ \`--.  ___ _ __ _ _ __ | |_${txt_reset}"
+echo -e "${txt_red}|  _  |/ _ \/ _\` \\ \ / / | | |\`--. \/ __| '__| | '_ \\ __|${txt_reset}"
+echo -e "${txt_blue}| | | |  __/ (_| |\\ V /| |_| /\\__/ / (__| |  | | |_) | |_ ${txt_reset}"
+echo -e "${txt_purple}\\_| |_/\\___|\\__,_| \\_/  \\__, \\____/ \\___|_|  |_| .__/ \\__|${txt_reset}"
+echo -e "${txt_red}                         __/ |                 | |        ${txt_reset}"
+echo -e "${txt_blue}                        |___/                  |_|        ${txt_reset}"
+echo -e "${txt_purple}$hs_version${txt_reset}"
 echo
 }
 export -f title

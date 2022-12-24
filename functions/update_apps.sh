@@ -271,77 +271,97 @@ echo_array
 export -f post_process
 
 
-rollback_app(){
-count=0
-app_update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3}')
-while [[ $app_update_avail == "false" ]]
-do
+
+rollback_app() {
     app_update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3}')
-    if [[ $count -gt 2 ]]; then # If failed to rollback app 3 times, return failure to parent shell
-        return 1
-    elif ! cli -c "app chart_release rollback release_name=\"$app_name\" rollback_options={\"item_version\": \"$rollback_version\"}" &> /dev/null ; then
-        before_loop=$(head -n 1 all_app_status)
-        ((count++))
-        until [[ $(head -n 1 all_app_status) != "$before_loop" ]] # Upon failure, wait for status update before continuing
-        do
-            sleep 1
-        done
-    else 
-        break
-    fi
-done
-}
 
-
-update_app(){
-current_loop=0
-while true
-do
-    update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3","$6}')
-    if [[ $update_avail =~ "true" ]]; then
-        if ! cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null ; then
+    # Continuously try to rollback the app until it is successful or the maximum number of tries is reached
+    for (( count=0; count<3; count++ )); do
+        if [[ "$app_update_avail" == "true" ]]; then
+            return 0
+        elif cli -c "app chart_release rollback release_name=\"$app_name\" rollback_options={\"item_version\": \"$rollback_version\"}" &> /dev/null; then
+            return 0
+        else
+            # Upon failure, wait for status update before continuing
             before_loop=$(head -n 1 all_app_status)
-            current_loop=0
-            until [[ "$(grep "^$app_name," all_app_status | awk -F ',' '{print $3","$6}')" != "$update_avail" ]]   # Wait for a specific change to app status, or 3 refreshes of the file to go by.
+            until [[ $(head -n 1 all_app_status) != "$before_loop" ]] 
             do
-                if [[ $current_loop -gt 2 ]]; then
-                    cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null || return 1     # After waiting, attempt an update once more, if fails, return error code
-                elif ! echo -e "$(head -n 1 all_app_status)" | grep -qs ^"$before_loop" ; then                # The file has been updated, but nothing changed specifically for the app.
-                    before_loop=$(head -n 1 all_app_status)
-                    ((current_loop++))
-                fi
                 sleep 1
             done
         fi
-        break
-    elif [[ ! $update_avail =~ "true" ]]; then
-        break
-    else 
-        sleep 3
+    done
+
+    # If the app is still not rolled back, return an error code
+    if [[ "$app_update_avail" != "true" ]]; then
+        return 1
     fi
-done
+}
+
+
+
+update_app() {
+    # Loop until the app has been successfully updated or no updates are available
+    while true; do
+        # Check if updates are available for the app
+        update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3","$6}')
+
+        # If updates are available, try to update the app
+        if [[ $update_avail =~ "true" ]]; then
+            # Try updating the app up to 3 times
+            for (( count=0; count<3; count++ )); do
+                if cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null; then
+                    # If the update was successful, break out of the loop
+                    break
+                else
+                    # Upon failure, wait for status update before continuing
+                    before_loop=$(head -n 1 all_app_status)
+                    until [[ $(head -n 1 all_app_status) != "$before_loop" ]]; do
+                        sleep 1
+                    done
+                fi
+            done
+
+            # If the app was not successfully updated, return an error code
+            if [[ $count -eq 3 ]]; then
+                return 1
+            fi
+
+            # Break out of the loop if the update was successful
+            break
+        elif [[ ! $update_avail =~ "true" ]]; then
+            # If no updates are available, break out of the loop
+            break
+        else
+            # If the update availability is not clear, wait 3 seconds and check again
+            sleep 3
+        fi
+    done
 }
 export -f update_app
 
 
-stop_app(){
-count=0
-while [[ "$status" !=  "STOPPED" ]]
-do
-    status=$( grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
-    if [[ $count -gt 2 ]]; then # If failed to stop app 3 times, return failure to parent shell
+
+stop_app() {
+    # Continuously try to stop the app until it is stopped or the maximum number of tries is reached
+    for (( count=0; count<3; count++ )); do
+        status=$(grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
+        if [[ "$status" == "STOPPED" ]]; then
+            return 0
+        elif cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then
+            return 0
+        else
+            # Upon failure, wait for status update before continuing
+            before_loop=$(head -n 1 all_app_status)
+            until [[ $(head -n 1 all_app_status) != "$before_loop" ]]; do
+                sleep 1
+            done
+        fi
+    done
+
+    # If the app is still not stopped, return an error code
+    if [[ "$status" != "STOPPED" ]]; then
         return 1
-    elif ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' &> /dev/null ; then
-        before_loop=$(head -n 1 all_app_status)
-        ((count++))
-        until [[ $(head -n 1 all_app_status) != "$before_loop" ]] # Upon failure, wait for status update before continuing
-        do
-            sleep 1
-        done
-    else 
-        break
     fi
-done
 }
 export -f stop_app
 

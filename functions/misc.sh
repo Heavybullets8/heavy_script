@@ -33,29 +33,31 @@ export -f prune
 
 
 title(){
-# Set the text color to red
-txt_red='\033[1;31m'
+  # Set the text color to frost
+  txt_frost='\033[38;2;248;248;242m'
 
-# Set the text color to blue
-txt_blue='\033[0;34m'
+  # Set the text color to snowstorm
+  txt_snowstorm='\033[38;2;109;113;120m'
 
-# Set the text color to purple
-txt_purple='\033[0;35m'
+  # Set the text color to glacier
+  txt_glacier='\033[38;2;60;78;82m'
 
-# Reset the text color
-txt_reset='\033[0m'
+  # Set the text color to frostflower
+  txt_frostflower='\033[38;2;215;216;216m'
 
+  # Reset the text color
+  txt_reset='\033[0m'
 
-echo -e "${txt_red} _   _                        _____           _       _   ${txt_reset}"
-echo -e "${txt_blue}| | | |                      /  ___|         (_)     | | ${txt_reset}"
-echo -e "${txt_purple}| |_| | ___  __ ___   ___   _\\ \`--.  ___ _ __ _ _ __ | |_${txt_reset}"
-echo -e "${txt_red}|  _  |/ _ \/ _\` \\ \ / / | | |\`--. \/ __| '__| | '_ \\ __|${txt_reset}"
-echo -e "${txt_blue}| | | |  __/ (_| |\\ V /| |_| /\\__/ / (__| |  | | |_) | |_ ${txt_reset}"
-echo -e "${txt_purple}\\_| |_/\\___|\\__,_| \\_/  \\__, \\____/ \\___|_|  |_| .__/ \\__|${txt_reset}"
-echo -e "${txt_red}                         __/ |                 | |        ${txt_reset}"
-echo -e "${txt_blue}                        |___/                  |_|        ${txt_reset}"
-echo -e "${txt_purple}$hs_version${txt_reset}"
-echo
+  echo -e "${txt_frost} _   _                        _____           _       _   ${txt_reset}"
+  echo -e "${txt_snowstorm}| | | |                      /  ___|         (_)     | | ${txt_reset}"
+  echo -e "${txt_glacier}| |_| | ___  __ ___   ___   _\\ \`--.  ___ _ __ _ _ __ | |_${txt_reset}"
+  echo -e "${txt_frostflower}|  _  |/ _ \/ _\` \\ \ / / | | |\`--. \/ __| '__| | '_ \\ __|${txt_reset}"
+  echo -e "${txt_snowstorm}| | | |  __/ (_| |\\ V /| |_| /\\__/ / (__| |  | | |_) | |_ ${txt_reset}"
+  echo -e "${txt_glacier}\\_| |_/\\___|\\__,_| \\_/  \\__, \\____/ \\___|_|  |_| .__/ \\__|${txt_reset}"
+  echo -e "${txt_frostflower}                         __/ |                 | |        ${txt_reset}"
+  echo -e "${txt_snowstorm}                        |___/                  |_|        ${txt_reset}"
+  echo -e "${txt_snowstorm}$hs_version${txt_reset}"
+  echo
 }
 export -f title
 
@@ -144,13 +146,22 @@ echo
 
 # Apply patch
 echo "Applying Backup Patch"
-if patch -N --reject-file=/dev/null -s -p0 -d /usr/lib/python3/dist-packages/middlewared/ < HP1.patch &>/dev/null; then
-    echo "Backup Patch applied"
-    rm -rf HP1.patch
+
+# Check if patch has already been applied
+if ! patch -R --dry-run -N -s -p0 -d /usr/lib/python3/dist-packages/middlewared/ < HP1.patch &>/dev/null; then
+    # If patch has not been applied, apply it
+    if patch -N --reject-file=/dev/null -s -p0 -d /usr/lib/python3/dist-packages/middlewared/ < HP1.patch &>/dev/null; then
+        echo "Backup Patch applied"
+        rm -rf HP1.patch
+    else
+        # If patch fails to apply, exit
+        echo "Error applying Backup Patch"
+        exit 1
+    fi
 else
     echo "Backup Patch already applied"
     rm -rf HP1.patch
-    exit
+    exit 0
 fi
 
 echo
@@ -164,17 +175,22 @@ do
     read -rt 120 -p "Would you like to proceed? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
     case $yesno in
         [Yy] | [Yy][Ee][Ss])
-            echo "Restarting middlewared"
-            service middlewared restart &
-            wait $!
-            echo "Restarted middlewared"
-            echo "You are set, there is no need to run this patch again"
-            break
+            echo "Restarting middlewared..."
+            if systemctl restart middlewared ; then
+                echo "Restarted middlewared"
+                echo "You are set, there is no need to run this patch again"
+                break
+            else
+                echo "Failed to restart middlewared"
+                echo "Please restart middlewared manually"
+                echo "You can do: systemctl restart middlewared"
+                exit 1
+            fi
             ;;
         [Nn] | [Nn][Oo])
             echo "Exiting"
             echo "Please restart middlewared manually"
-            echo "You can do: service middlewared restart"
+            echo "You can do: systemctl restart middlewared"
             exit
             ;;
         *)

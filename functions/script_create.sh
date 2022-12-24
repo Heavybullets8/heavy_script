@@ -24,20 +24,25 @@ do
             do
                 echo -e "\nHow many applications do you want updating at the same time?"
                 read -rt 120 -p "Please type an integer greater than 0: " up_async || { echo -e "\nFailed to make a selection in time" ; exit; }
-                if [[ $up_async == 0 ]]; then
-                    echo "Error: \"$up_async\" is less than 1"
-                    echo "NOT adding it to the list"
-                    sleep 3
-                    continue
-                elif ! [[ $up_async =~ ^[0-9]+$  ]]; then
-                    echo "Error: \"$up_async\" is invalid, it needs to be an integer"
-                    echo "NOT adding it to the list"
-                    sleep 3
-                    continue
-                else
-                    update_selection+=("-U" "$up_async")
-                    break
-                fi
+
+                case $up_async in
+                    "" | *[!0-9]*)
+                        echo "Error: \"$up_async\" is invalid, it needs to be an integer"
+                        echo "NOT adding it to the list"
+                        sleep 3
+                        continue
+                        ;;
+                    0)
+                        echo "Error: \"$up_async\" is less than 1"
+                        echo "NOT adding it to the list"
+                        sleep 3
+                        continue
+                        ;;
+                    *)
+                        update_selection+=("-U" "$up_async")
+                        break
+                        ;;
+                esac
             done
             break
             ;;
@@ -46,20 +51,25 @@ do
             do
                 echo -e "\nHow many applications do you want updating at the same time?"
                 read -rt 120 -p "Please type an integer greater than 0: " up_async || { echo -e "\nFailed to make a selection in time" ; exit; }
-                if [[ $up_async == 0 ]]; then
-                    echo "Error: \"$up_async\" is less than 1"
-                    echo "NOT adding it to the list"
-                    sleep 3
-                    continue
-                elif ! [[ $up_async =~ ^[0-9]+$  ]]; then
-                    echo "Error: \"$up_async\" is invalid, it needs to be an integer"
-                    echo "NOT adding it to the list"
-                    sleep 3
-                    continue
-                else
-                    update_selection+=("-u" "$up_async")
-                    break
-                fi
+
+                case $up_async in
+                    "" | *[!0-9]*)
+                        echo "Error: \"$up_async\" is invalid, it needs to be an integer"
+                        echo "NOT adding it to the list"
+                        sleep 3
+                        continue
+                        ;;
+                    0)
+                        echo "Error: \"$up_async\" is less than 1"
+                        echo "NOT adding it to the list"
+                        sleep 3
+                        continue
+                        ;;
+                    *)
+                        update_selection+=("-u" "$up_async")
+                        break
+                        ;;
+                esac
             done
             break
             ;;
@@ -112,52 +122,50 @@ do
             exit
             ;;
         1 | -r)
-            printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-r" && echo -e "\"-r\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
-            update_selection+=("-r")
+            option="-r"
             ;;
         2 | -i)
             read -rt 120 -p "What is the name of the application we should ignore?: " up_ignore || { echo -e "\nFailed to make a selection in time" ; exit; }
             ! [[ $up_ignore =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]] && echo -e "Error: \"$up_ignore\" is not a possible option for an application name" && sleep 3 && continue
             update_selection+=("-i" "$up_ignore")
+            continue
             ;;
         3 | -S)
-            printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-S" && echo -e "\"-S\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
-            update_selection+=("-S")
+            option="-S"
             ;;
         4 | -v)
-            printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-v" && echo -e "\"-v\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
-            update_selection+=("-v")
+            option="-v"
             ;;
         5 | -t)
-            printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-t" && echo -e "\"-t\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
+            option="-t"
+            add_option_to_array "${update_selection[@]}" "$option"
             echo "What do you want your timeout to be?"
             read -rt 120 -p "Please type an integer: " up_timeout || { echo -e "\nFailed to make a selection in time" ; exit; }
             ! [[ $up_timeout =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 3 && continue
             update_selection+=("-t" "$up_timeout")
+            continue
             ;;
         6 | -b)
-            printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-b" && echo -e "\"-b\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
+            option="-b"
+            add_option_to_array "${update_selection[@]}" "$option"
             echo "Up to how many backups should we keep?"
             read -rt 120 -p "Please type an integer: " up_backups || { echo -e "\nFailed to make a selection in time" ; exit; }
             ! [[ $up_backups =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 3 && continue
             [[ $up_backups == 0 ]] && echo -e "Error: Number of backups cannot be 0\nNOT adding it to the list" && sleep 3 && continue
             update_selection+=("-b" "$up_backups")
+            continue
             ;;
         7 | -s)
-            printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-s" && echo -e "\"-s\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
-            update_selection+=("-s")
+            option="-s"
             ;;
         8 | -p)
-            printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "-p" && echo -e "\"-p\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
-            update_selection+=("-p")
+            option="-p"
             ;;
         9 | --ignore-img )
-            printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "--ignore-img" && echo -e "\"--ignore-img\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
-            update_selection+=("--ignore-img")      
+            option="--ignore-img"    
             ;;
         10 | --self-update )
-            printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "--self-update" && echo -e "\"--self-update\" is already on here, skipping" && sleep 3 && continue #If option is already on there, skip it
-            update_selection+=("--self-update")      
+            option="--self-update"     
             ;;
         99)
             count=2
@@ -175,6 +183,23 @@ do
             echo "\"$current_selection\" was not an option, try again" && sleep 3 && continue 
             ;;
     esac
+    # Check if the option is already in the array
+    add_option_to_array "${update_selection[@]}" "$option"
+
 done
 }
 export -f script_create
+
+
+add_option_to_array() {
+  # Check if the option is already in the array
+  if printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "$option"; then
+    echo "$option is already in the array, skipping"
+    sleep 3
+    return
+  fi
+
+  # Add the option to the array
+  update_selection+=("$option")
+}
+

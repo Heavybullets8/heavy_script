@@ -21,7 +21,7 @@ source functions/cmd_to_container.sh
 source functions/script_create.sh
 
 
-#If no argument is passed, kill the script.
+#If no argument is passed, open menu function.
 [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && menu
 
 
@@ -147,11 +147,11 @@ if [[ "$number_of_backups" -gt 1 && "$sync" == "true" ]]; then # Run backup and 
     backup &
     sync &
     wait
-elif [[ "$number_of_backups" -gt 1 && -z "$sync" ]]; then # If only backup is true, run it
+elif [[ "$number_of_backups" -gt 1 ]]; then # If only backup is true, run it
     echo "🅃 🄰 🅂 🄺 :"
     echo -e "-Backing up \"ix-applications\" Dataset\nPlease Wait..\n\n"
     backup
-elif [[ "$sync" == "true" && -z "$number_of_backups" ]]; then # If only sync is true, run it
+elif [[ "$sync" == "true" ]]; then # If only sync is true, run it
     echo "🅃 🄰 🅂 🄺 :"
     echo -e "Syncing Catalog(s)\nThis Takes a LONG Time, Please Wait..\n\n"
     sync

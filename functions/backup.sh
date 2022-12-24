@@ -10,11 +10,11 @@ current_date_time=$(date '+%Y_%m_%d_%H_%M_%S')
 
 # Create a new backup with the current date and time as the name
 if [[ "$verbose" == "true" ]]; then
-  cli -c "app kubernetes backup_chart_releases backup_name='HeavyScript_$current_date_time'" &> /dev/null
+  cli -c "app kubernetes backup_chart_releases backup_name=\"HeavyScript_$current_date_time\"" &> /dev/null
   echo_backup+=("HeavyScript_$current_date_time")
 else
   echo_backup+=("\nNew Backup Name:")
-  cli -c "app kubernetes backup_chart_releases backup_name='HeavyScript_$current_date_time'" | tail -n 1 &> /dev/null
+  cli -c "app kubernetes backup_chart_releases backup_name=\"HeavyScript_$current_date_time\"" | tail -n 1 &> /dev/null
   echo_backup+=("HeavyScript_$current_date_time")
 fi
 
@@ -27,7 +27,7 @@ if [[  ${#list_backups[@]}  -gt  "$number_of_backups" ]]; then
   overflow=$(( ${#list_backups[@]} - "$number_of_backups" ))
   mapfile -t list_overflow < <(cli -c 'app kubernetes list_backups' | grep -E "HeavyScript_|TrueTool_"  | sort -t '_' -V -k2,7 | awk -F '|'  '{print $2}'| tr -d " \t\r" | head -n "$overflow")
   for i in "${list_overflow[@]}"; do
-    cli -c "app kubernetes delete_backup backup_name='$i'" &> /dev/null || echo_backup+=("Failed to delete $i")
+    cli -c "app kubernetes delete_backup backup_name=\"$i\"" &> /dev/null || echo_backup+=("Failed to delete $i")
     echo_backup+=("$i")
   done
 fi
@@ -424,3 +424,4 @@ do
         esac
 done
 }
+

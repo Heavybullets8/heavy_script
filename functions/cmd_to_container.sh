@@ -7,34 +7,34 @@ declare -A app_map
 app_names=$(k3s crictl pods -s ready --namespace ix | sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//' | sed '1d' | awk '{print $4}' | cut -c4- | sort -u)
 num=1
 for app in $app_names; do
-  app_map[$num]=$app
-  num=$((num+1))
+    app_map[$num]=$app
+    num=$((num+1))
 done
 
 # Display menu and get selection from user
 while true; do
-  clear -x
-  title 
-  echo "Command to Container Menu"
-  echo "-------------------------"
-  for i in "${!app_map[@]}"; do
-    printf "%d) %s\n" "$i" "${app_map[$i]}"
-  done | sort -n
-  echo
-  echo "0)  Exit"
-  read -r -t 120 -p "Please type a number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+    clear -x
+    title 
+    echo "Command to Container Menu"
+    echo "-------------------------"
+    for i in "${!app_map[@]}"; do
+        printf "%d) %s\n" "$i" "${app_map[$i]}"
+    done | sort -n
+    echo
+    echo "0)  Exit"
+    read -r -t 120 -p "Please type a number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
 
-  # Validate selection
-  if [[ $selection == 0 ]]; then
-    echo "Exiting.."
-    exit
-  elif ! [[ $selection =~ ^[0-9]+$ ]] || ! [[ ${app_map[$selection]} ]]; then
-    echo "Error: \"$selection\" was not an option.. Try again"
-    sleep 3
-    continue
-  else
-    break
-  fi
+    # Validate selection
+    if [[ $selection == 0 ]]; then
+        echo "Exiting.."
+        exit
+    elif ! [[ $selection =~ ^[0-9]+$ ]] || ! [[ ${app_map[$selection]} ]]; then
+        echo "Error: \"$selection\" was not an option.. Try again"
+        sleep 3
+        continue
+    else
+        break
+    fi
 done
 
 

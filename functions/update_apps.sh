@@ -157,17 +157,16 @@ else
     return
 fi
 
-# If app is external services, do not send for post processing
-if grep -qs "^$app_name,true" external_services ; then
-    echo_array
-    return
-# If app is container image update, dont send for post processing
-elif [[ $old_full_ver == "$new_full_ver" ]]; then
-    echo_array
-    return
+# Check if app is external services or a container image update
+if grep -qs "^$app_name,true" external_services || [[ "$old_full_ver" == "$new_full_ver" ]]; then
+  # If app is external services or a container image update, do not send for post processing
+  echo_array
+  return
 else
-    post_process
+  # If app is not external services or a container image update, send for post processing
+  post_process
 fi
+
 }
 export -f pre_process
 

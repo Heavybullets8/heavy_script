@@ -15,68 +15,47 @@ do
     echo
     read -rt 120 -p "Type the Number or Flag: " current_selection || { echo -e "\nFailed to make a selection in time" ; exit; }
     case $current_selection in
-        0 | [Ee][Xx][Ii][Tt])
-            echo "Exiting.."
-            exit
-            ;;
-        1 | -U) 
-            while true
-            do
-                echo -e "\nHow many applications do you want updating at the same time?"
-                read -rt 120 -p "Please type an integer greater than 0: " up_async || { echo -e "\nFailed to make a selection in time" ; exit; }
+    0 | [Ee][Xx][Ii][Tt])
+        echo "Exiting.."
+        exit
+        ;;
+    1 | 2 | -U | -u)
+        if [[ $current_selection == 1 ]] ;then
+            current_selection='-U'
+        elif [[ $current_selection == 2 ]] ;then
+            current_selection='-u'
+        fi
 
-                case $up_async in
-                    "" | *[!0-9]*)
-                        echo "Error: \"$up_async\" is invalid, it needs to be an integer"
-                        echo "NOT adding it to the list"
-                        sleep 3
-                        continue
-                        ;;
-                    0)
-                        echo "Error: \"$up_async\" is less than 1"
-                        echo "NOT adding it to the list"
-                        sleep 3
-                        continue
-                        ;;
-                    *)
-                        update_selection+=("-U" "$up_async")
-                        break
-                        ;;
-                esac
-            done
-            break
-            ;;
-        2 | -u)
-            while true
-            do
-                echo -e "\nHow many applications do you want updating at the same time?"
-                read -rt 120 -p "Please type an integer greater than 0: " up_async || { echo -e "\nFailed to make a selection in time" ; exit; }
+        while true
+        do
+        echo -e "\nHow many applications do you want updating at the same time?"
+        read -rt 120 -p "Please type an integer greater than 0: " up_async || { echo -e "\nFailed to make a selection in time" ; exit; }
 
-                case $up_async in
-                    "" | *[!0-9]*)
-                        echo "Error: \"$up_async\" is invalid, it needs to be an integer"
-                        echo "NOT adding it to the list"
-                        sleep 3
-                        continue
-                        ;;
-                    0)
-                        echo "Error: \"$up_async\" is less than 1"
-                        echo "NOT adding it to the list"
-                        sleep 3
-                        continue
-                        ;;
-                    *)
-                        update_selection+=("-u" "$up_async")
-                        break
-                        ;;
-                esac
-            done
-            break
-            ;;
-        *)
-            echo "$current_selection was not an option, try again" && sleep 3
+        case $up_async in
+            "" | *[!0-9]*)
+            echo "Error: \"$up_async\" is invalid, it needs to be an integer"
+            echo "NOT adding it to the list"
+            sleep 3
             continue
             ;;
+            0)
+            echo "Error: \"$up_async\" is less than 1"
+            echo "NOT adding it to the list"
+            sleep 3
+            continue
+            ;;
+            *)
+            update_selection+=("$current_selection" "$up_async")
+            break
+            ;;
+        esac
+        done
+        break
+        ;;
+    *)
+        echo "$current_selection was not an option, try again" && sleep 3
+        continue
+        ;;
     esac
 done
 while true 
@@ -99,8 +78,9 @@ do
     echo "9) --ignore-img   | Ignore container image updates"
     echo "10) --self-update | Updates HeavyScript prior to running any other commands"
     echo
-    echo "99) Remove Update Options, Restart"
-    echo "00) Done making selections, proceed with update"
+    echo "88) Undo"
+    echo "99) Remove ALL Options"
+    echo "00) Proceed with update"
     echo 
     echo "0) Exit"
     echo 
@@ -137,23 +117,19 @@ do
             option="-v"
             ;;
         5 | -t)
-            option="-t"
-            add_option_to_array "${update_selection[@]}" "$option"
             echo "What do you want your timeout to be?"
             read -rt 120 -p "Please type an integer: " up_timeout || { echo -e "\nFailed to make a selection in time" ; exit; }
             ! [[ $up_timeout =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 3 && continue
-            update_selection+=("-t" "$up_timeout")
-            continue
+            option="-t"
+            value="$up_timeout"
             ;;
         6 | -b)
-            option="-b"
-            add_option_to_array "${update_selection[@]}" "$option"
             echo "Up to how many backups should we keep?"
             read -rt 120 -p "Please type an integer: " up_backups || { echo -e "\nFailed to make a selection in time" ; exit; }
             ! [[ $up_backups =~ ^[0-9]+$ ]] && echo -e "Error: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list" && sleep 3 && continue
             [[ $up_backups == 0 ]] && echo -e "Error: Number of backups cannot be 0\nNOT adding it to the list" && sleep 3 && continue
-            update_selection+=("-b" "$up_backups")
-            continue
+            option="-b"
+            value="$up_backups"
             ;;
         7 | -s)
             option="-s"
@@ -167,16 +143,49 @@ do
         10 | --self-update )
             option="--self-update"     
             ;;
+        88)
+            # Check if the array has less than or equal to 2 elements
+            if [[ ${#update_selection[@]} -eq 2 ]]; then
+                echo "Error: You cannot remove the update option and the number of updates"
+                sleep 3 
+                continue
+            fi
+
+            # Initialize a flag to track if we have found a hyphenated element
+            found_hyphenated=0
+
+            # Loop through the array in reverse order
+            for ((i=${#update_selection[@]}-1; i>=0; i--)); do
+                echo "Checking ${update_selection[i]}"
+                # Check if the current element is hyphenated
+                if [[ ${update_selection[i]} =~ ^- ]]; then
+                    # Set the flag to indicate that we have found a hyphenated element
+                    found_hyphenated=1
+                fi
+                # If we have found a hyphenated element, unset the current element
+                if [[ $found_hyphenated -eq 1 ]]; then
+                    echo "Removed ${update_selection[i]} from the array"
+                    unset "update_selection[$i]"
+                    # Break out of the loop
+                    break
+                else
+                    echo "Removed ${update_selection[i]} from the array"
+                    unset "update_selection[$i]"
+                fi
+            done
+
+            # Reindex the array
+            update_selection=( "${update_selection[@]}" )
+            continue
+            ;;
         99)
             count=2
             echo "restarting"
             for i in "${update_selection[@]:2}"
             do
                 unset "update_selection[$count]"
-                echo "$i removed"
                 ((count++))
             done
-            sleep 3
             continue
             ;;
         *)
@@ -185,7 +194,8 @@ do
     esac
     # Check if the option is already in the array
     add_option_to_array "${update_selection[@]}" "$option"
-
+    unset option
+    unset value
 done
 }
 export -f script_create
@@ -200,6 +210,6 @@ add_option_to_array() {
   fi
 
   # Add the option to the array
-  update_selection+=("$option")
+    update_selection+=("$option" "$value")
 }
 

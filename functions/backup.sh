@@ -7,15 +7,17 @@ echo_backup+=("Number of backups was set to $number_of_backups")
 
 # Get current date and time in a specific format
 current_date_time=$(date '+%Y_%m_%d_%H_%M_%S')
+: ${backup_prefix:=HeavyScript}
+backup_name="${backup_prefix}_${current_date_time}"
 
 # Create a new backup with the current date and time as the name
 if [[ "$verbose" == "true" ]]; then
-  cli -c "app kubernetes backup_chart_releases backup_name=\"HeavyScript_$current_date_time\"" &> /dev/null
-  echo_backup+=("HeavyScript_$current_date_time")
+  cli -c "app kubernetes backup_chart_releases backup_name=\"$backup_name\"" &> /dev/null
+  echo_backup+=("$backup_name")
 else
-  echo_backup+=("\nNew Backup Name:")
-  cli -c "app kubernetes backup_chart_releases backup_name=\"HeavyScript_$current_date_time\"" | tail -n 1 &> /dev/null
-  echo_backup+=("HeavyScript_$current_date_time")
+  echo_backup+=("\nNew Backup Name: ${backup_name}")
+  cli -c "app kubernetes backup_chart_releases backup_name=\"$backup_name\"" | tail -n 1 &> /dev/null
+  echo_backup+=("$backup_name")
 fi
 
 # Get a list of backups sorted by name in descending order

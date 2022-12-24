@@ -117,8 +117,8 @@ do
         2)
             clear -x
             title
-            if ! k3s crictl exec -it "$container_id" /bin/bash 2>/dev/null; then
-                k3s crictl exec -it "$container_id" /bin/sh 2>/dev/null || echo "This container does not accept shell access, try a different one."
+            if ! k3s crictl exec -it "$container_id" bash -c '[[ -e /bin/bash ]] && exec /bin/bash || exec /bin/sh'; then
+                echo "This container does not accept shell access, try a different one."
             fi
             break
             ;;

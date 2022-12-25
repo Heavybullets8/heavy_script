@@ -33,8 +33,8 @@ choose_branch() {
     title
 
     # Display a menu to the user, including the option to choose the latest tag
-    PS3="Choose a branch or the latest tag ($latest_tag): "
-    select choice in "${branch_names[@]}" "Latest Tag"; do
+    PS3="Choose a branch or the latest tag: "
+    select choice in "${branch_names[@]}" "Latest Tag ($latest_tag)"; do
         if [[ -n $choice ]]; then
             # The user made a selection, check if they chose the latest tag
             if [[ $choice == "Latest Tag" ]]; then

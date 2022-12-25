@@ -37,7 +37,7 @@ choose_branch() {
     select choice in "${branch_names[@]}" "Latest Tag ($latest_tag)"; do
         if [[ -n $choice ]]; then
             # The user made a selection, check if they chose the latest tag
-            if [[ $choice == "Latest Tag" ]]; then
+            if [[ $choice == "Latest Tag ($latest_tag)" ]]; then
                 # The user chose the latest tag, check it out using git checkout
                 git config --local advice.detachedHead false
                 git checkout --force "$latest_tag"

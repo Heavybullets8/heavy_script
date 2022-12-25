@@ -34,10 +34,10 @@ choose_branch() {
 
     # Display a menu to the user, including the option to choose the latest tag
     PS3="Choose a branch or the latest tag ($latest_tag): "
-    select choice in "${branch_names[@]}" "LATEST"; do
+    select choice in "${branch_names[@]}" "Latest Tag"; do
         if [[ -n $choice ]]; then
             # The user made a selection, check if they chose the latest tag
-            if [[ $choice == "LATEST" ]]; then
+            if [[ $choice == "Latest Tag" ]]; then
                 # The user chose the latest tag, check it out using git checkout
                 git config --local advice.detachedHead false
                 git checkout --force "$latest_tag"

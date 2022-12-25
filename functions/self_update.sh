@@ -64,10 +64,9 @@ git reset --hard &>/dev/null
 
 # Check if using a tag or branch
 if ! [[ "$hs_version" =~ v\d+\.\d+\.\d+ ]]; then
-
     # Check for updates on the main branch
     updates=$(git log HEAD..origin/"$hs_version" --oneline)
-
+    # Check if there are any updates available
     if [[ -n "$updates" ]]; then
         # Perform a git pull operation to update the branch to the latest commit
         if ! git pull --force --quiet; then

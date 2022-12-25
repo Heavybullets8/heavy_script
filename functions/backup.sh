@@ -9,14 +9,18 @@ echo_backup+=("Number of backups was set to $number_of_backups")
 current_date_time=$(date '+%Y_%m_%d_%H_%M_%S')
 
 # Create a new backup with the current date and time as the name
-if [[ "$verbose" == "true" ]]; then
-  cli -c "app kubernetes backup_chart_releases backup_name=\"HeavyScript_$current_date_time\"" &> /dev/null
-  echo_backup+=("HeavyScript_$current_date_time")
-else
-  echo_backup+=("\nNew Backup Name:")
-  cli -c "app kubernetes backup_chart_releases backup_name=\"HeavyScript_$current_date_time\"" | tail -n 1 &> /dev/null
-  echo_backup+=("HeavyScript_$current_date_time")
+if ! output=$(cli -c "app kubernetes backup_chart_releases backup_name=\"HeavyScript_$current_date_time\""); then
+    echo "Error: Failed to create new backup" >&2
+    return 1
 fi
+if [[ "$verbose" == "true" ]]; then
+    echo_backup+=("$output")
+else
+    echo_backup+=("\nNew Backup Name:" "$(echo "$output" | tail -n 1)")
+fi
+
+
+
 
 # Get a list of backups sorted by name in descending order
 mapfile -t list_backups < <(cli -c 'app kubernetes list_backups' | grep -E "HeavyScript_|TrueTool_" | sort -t '_' -Vr -k2,7 | awk -F '|'  '{print $2}'| tr -d " \t\r")

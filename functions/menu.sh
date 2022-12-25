@@ -13,7 +13,7 @@ echo "4)  Backup Options"
 echo "5)  Update HeavyScript"
 echo "6)  Update Applications"
 echo "7)  Command to Container"
-echo "8)  Patch 22.12.0"
+echo "8)  Misc"
 echo
 echo "0)  Exit"
 read -rt 120 -p "Please select an option by number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
@@ -80,8 +80,37 @@ case $selection in
     7)
         cmd_to_container
         ;;
-    8)
-        patch_2212_backups
+    8)  
+        # Give users the option to run patch_2212_backups or choose_branch
+        while [[ $misc_selection != true ]]
+        do
+            clear -x
+            title
+            echo "Misc Menu"
+            echo "-----------"
+            echo "1)  Patch 2212 Backups"
+            echo "2)  Choose Branch"
+            echo
+            echo "0)  Exit"
+            read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+            case $misc_selection in
+                0)
+                    echo "Exiting.."
+                    exit
+                    ;;
+                1)
+                    misc_selection=true
+                    patch_2212_backups
+                    ;;
+                2)
+                    misc_selection=true
+                    choose_branch
+                    ;;
+                *)
+                    echo "\"$selection\" was not an option, please try agian" && sleep 3 && continue
+                    ;;
+            esac
+        done
         ;;
     *)
         echo "\"$selection\" was not an option, please try agian" && sleep 3 && menu

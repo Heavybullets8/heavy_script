@@ -7,8 +7,19 @@ script_path=$(dirname "$script")
 script_name="heavy_script.sh"
 cd "$script_path" || { echo "Error: Failed to change to script directory" ; exit ; } 
 
-#Version
-hs_version=$(git describe --tags)
+# Get the name of the latest tag
+latest_tag=$(git describe --tags --abbrev=0)
+
+# Check if the current version is a branch or a tag
+current_version=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$current_version" == "HEAD" ]]; then
+  # The current version is a tag, assign the name of the latest tag to the hs_version variable
+  hs_version=${latest_tag}
+else
+  # The current version is a branch, assign the name of the current branch to the hs_version variable
+  hs_version=${current_version}
+fi
+
 
 source functions/backup.sh
 source functions/dns.sh

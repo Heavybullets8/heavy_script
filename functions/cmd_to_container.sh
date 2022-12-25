@@ -98,7 +98,7 @@ esac
 
 rm cont_file 2> /dev/null
 
-if [[ $logs == true || $1 == "logs" ]];
+if [[ $logs == "true" || $1 == "logs" ]];
 then
     # ask for number of lines to display
     while true

@@ -78,7 +78,8 @@ if ! [[ "$hs_version" =~ v\d+\.\d+\.\d+ ]]; then
         if ! git pull --force --quiet; then
             # The git pull operation failed, print an error message and exit
             echo "Failed to merge commits from: $hs_version."
-            exit 1
+            echo "If this issue persists, please ensure the branch exists and is not protected."
+            echo "If it does not exist, please change to a different branch or tag from the menu."
         fi
         echo "Merged new commits from: $hs_version."
     else
@@ -86,7 +87,6 @@ if ! [[ "$hs_version" =~ v\d+\.\d+\.\d+ ]]; then
     fi
 # The current version is a tag, check if there is a newer tag available
 else
-    latest_ver=$(git describe --tags "$(git rev-list --tags --max-count=1)")
     if  [[ "$hs_version" != "$latest_ver" ]] ; then
         echo "Found a new version of HeavyScript, updating myself..."
         git checkout "$latest_ver" &>/dev/null 

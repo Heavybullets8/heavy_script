@@ -5,6 +5,9 @@ args=("$@")
 
 
 choose_branch() {
+    clear -x
+    echo "Pulling git information.."
+
     # Use git ls-remote to list the available branches
     options=$(git ls-remote --heads)
 
@@ -25,6 +28,9 @@ choose_branch() {
 
     # Get the name of the latest tag
     latest_tag=$(git describe --tags --abbrev=0)
+
+    clear -x
+    title
 
     # Display a menu to the user, including the option to choose the latest tag
     PS3="Choose a branch or the latest tag ($latest_tag): "

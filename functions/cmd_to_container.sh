@@ -16,7 +16,7 @@ while true; do
     clear -x
     title 
 
-    if [[ "$1" == "logs" ]]; then
+    if [[ $logs == "true" || $1 == "logs" ]];then
         echo "Logs to Container Menu"
         echo "----------------------"
     else

@@ -15,8 +15,15 @@ done
 while true; do
     clear -x
     title 
-    echo "Command to Container Menu"
-    echo "-------------------------"
+
+    if [[ "$1" == "logs" ]]; then
+        echo "Logs to Container Menu"
+        echo "----------------------"
+    else
+        echo "Command to Container Menu"
+        echo "-------------------------"
+    fi
+
     for i in "${!app_map[@]}"; do
         printf "%d) %s\n" "$i" "${app_map[$i]}"
     done | sort -n
@@ -88,6 +95,34 @@ case "${#containers[@]}" in
         container_id=$(grep -E "[[:space:]]${container}[[:space:]]" cont_file | awk '{print $1}')
         ;;
 esac
+
+rm cont_file 2> /dev/null
+
+if [[ $logs == true || $1 == "logs" ]];
+then
+    # ask for number of lines to display
+    while true
+    do
+        clear -x
+        title
+        echo "App Name: ${app_map[$selection]}"
+        echo "Container: $container"
+        echo
+        read -rt 120 -p "How many lines of logs do you want to display?: " lines || { echo -e "\nFailed to make a selection in time" ; exit; }
+        if ! [[ $lines =~ ^[0-9]+$ ]]; then
+            echo "Error: \"$lines\" was not a number.. Try again"
+            sleep 3
+            continue
+        else
+            break
+        fi
+    done
+
+    k3s crictl logs -f "$container_id"
+    exit
+fi
+
+
 while true
 do
     clear -x
@@ -128,6 +163,6 @@ do
             ;;
     esac
 done
-rm cont_file 2> /dev/null
+
 }
 export -f cmd_to_container

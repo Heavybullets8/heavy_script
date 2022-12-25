@@ -13,7 +13,8 @@ echo "4)  Backup Options"
 echo "5)  Update HeavyScript"
 echo "6)  Update Applications"
 echo "7)  Command to Container"
-echo "8)  Misc"
+echo "8)  Container Logs"
+echo "9)  Misc"
 echo
 echo "0)  Exit"
 read -rt 120 -p "Please select an option by number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
@@ -80,7 +81,11 @@ case $selection in
     7)
         cmd_to_container
         ;;
-    8)  
+    8) 
+        logs="true"
+        cmd_to_container "$logs"
+        ;;
+    9)  
         # Give users the option to run patch_2212_backups or choose_branch
         while [[ $misc_selection != true ]]
         do

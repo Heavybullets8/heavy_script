@@ -66,6 +66,9 @@ do
        ignore-img)
                   ignore_image_update="true"
                   ;;
+              logs)
+                  logs="true"
+                  ;;
                 *)
                   echo -e "Invalid Option \"--$OPTARG\"\n"
                   help
@@ -146,7 +149,7 @@ done
 #Continue to call functions in specific order
 [[ "$self_update" == "true" ]] && self_update
 [[ "$help" == "true" ]] && help
-[[ "$cmd" == "true" ]] && cmd_to_container && exit
+[[ "$cmd" == "true" || "$logs" == "true" ]] && cmd_to_container && exit
 [[ "$deleteBackup" == "true" ]] && deleteBackup && exit
 [[ "$dns" == "true" ]] && dns && exit
 [[ "$restore" == "true" ]] && restore && exit

@@ -96,6 +96,7 @@ case "${#containers[@]}" in
         ;;
 esac
 
+rm cont_file 2> /dev/null
 
 if [[ $logs == true || $1 == "logs" ]];
 then
@@ -118,7 +119,6 @@ then
     done
 
     k3s crictl logs -f "$container_id"
-    rm cont_file 2> /dev/null
     exit
 fi
 
@@ -163,6 +163,5 @@ do
             ;;
     esac
 done
-rm cont_file 2> /dev/null
 }
 export -f cmd_to_container

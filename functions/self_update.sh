@@ -72,10 +72,12 @@ if ! [[ "$hs_version" =~ v\d+\.\d+\.\d+ ]]; then
         # Perform a git pull operation to update the branch to the latest commit
         if ! git pull --force --quiet; then
             # The git pull operation failed, print an error message and exit
-            echo "Failed to update HeavyScript to the latest commit."
+            echo "Failed to merge commits from: $hs_version."
             exit 1
         fi
-        echo "HeavyScript has been updated to the latest commit in $hs_version."
+        echo "Merged new commits from: $hs_version."
+    else
+        echo "No new commits on: $hs_version."
     fi
 # The current version is a tag, check if there is a newer tag available
 else

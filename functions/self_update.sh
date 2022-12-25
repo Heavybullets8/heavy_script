@@ -67,7 +67,11 @@ if ! [[ "$hs_version" =~ v\d+\.\d+\.\d+ ]]; then
     # The current version is not the latest tag, print a message indicating that the script is on a branch
     echo "HeavyScript is on branch $hs_version, updating to the latest commit..."
 
-    if ! git cherry &>/dev/null; then
+
+    # Check for updates on the main branch
+    updates=$(git log HEAD..origin/main --oneline)
+
+    if [[ -n "$updates" ]]; then
         # Perform a git pull operation to update the branch to the latest commit
         if ! git pull --force --quiet; then
             # The git pull operation failed, print an error message and exit

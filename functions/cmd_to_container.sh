@@ -44,10 +44,10 @@ while true; do
     fi
 done
 
-
+app_name=${app_map[$selection]}
 
 rm cont_file 2> /dev/null
-mapfile -t pod_id < <(k3s crictl pods -s ready --namespace ix | grep -v "[[:space:]]svclb-" | grep -E "[[:space:]]ix-${app_map[$selection]}[[:space:]]" | awk '{print $1}')
+mapfile -t pod_id < <(k3s crictl pods -s ready --namespace ix | grep -v "[[:space:]]svclb-" | grep -E "[[:space:]]ix-${app_name}[[:space:]]" | awk '{print $1}')
 search=$(k3s crictl ps -a -s running | sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//')
 for pod in "${pod_id[@]}"
 do
@@ -96,7 +96,6 @@ case "${#containers[@]}" in
         ;;
 esac
 
-rm cont_file 2> /dev/null
 
 if [[ $logs == true || $1 == "logs" ]];
 then
@@ -105,7 +104,7 @@ then
     do
         clear -x
         title
-        echo "App Name: ${app_map[$selection]}"
+        echo "App Name: ${app_name}"
         echo "Container: $container"
         echo
         read -rt 120 -p "How many lines of logs do you want to display?: " lines || { echo -e "\nFailed to make a selection in time" ; exit; }
@@ -119,6 +118,7 @@ then
     done
 
     k3s crictl logs -f "$container_id"
+    rm cont_file 2> /dev/null
     exit
 fi
 
@@ -127,7 +127,7 @@ while true
 do
     clear -x
     title
-    echo "App Name: ${app_map[$selection]}"
+    echo "App Name: ${app_name}"
     echo "Container: $container"
     echo
     echo "1)  Run a single command"
@@ -163,6 +163,6 @@ do
             ;;
     esac
 done
-
+rm cont_file 2> /dev/null
 }
 export -f cmd_to_container

@@ -64,12 +64,9 @@ git reset --hard &>/dev/null
 
 # Check if using a tag or branch
 if ! [[ "$hs_version" =~ v\d+\.\d+\.\d+ ]]; then
-    # The current version is not the latest tag, print a message indicating that the script is on a branch
-    echo "HeavyScript is on branch $hs_version, updating to the latest commit..."
-
 
     # Check for updates on the main branch
-    updates=$(git log HEAD..origin/main --oneline)
+    updates=$(git log HEAD..origin/"$hs_version" --oneline)
 
     if [[ -n "$updates" ]]; then
         # Perform a git pull operation to update the branch to the latest commit
@@ -78,6 +75,7 @@ if ! [[ "$hs_version" =~ v\d+\.\d+\.\d+ ]]; then
             echo "Failed to update HeavyScript to the latest commit."
             exit 1
         fi
+        echo "HeavyScript has been updated to the latest commit in $hs_version."
     fi
 # The current version is a tag, check if there is a newer tag available
 else

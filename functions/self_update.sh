@@ -41,6 +41,7 @@ choose_branch() {
                 # The user chose a branch, check it out using git checkout
                 git checkout --force "$choice"
                 echo "You chose $choice"
+                git pull --force --quiet
                 break
             fi
         else

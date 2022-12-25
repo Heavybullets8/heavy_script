@@ -149,7 +149,7 @@ done
 #Continue to call functions in specific order
 [[ "$self_update" == "true" ]] && self_update
 [[ "$help" == "true" ]] && help
-[[ "$cmd" == "true" || "$logs" == "true" ]] && cmd_to_container && exit
+[[ "$cmd" == "true" || "$logs" == "true" ]] && container_shell_or_logs && exit
 [[ "$deleteBackup" == "true" ]] && deleteBackup && exit
 [[ "$dns" == "true" ]] && dns && exit
 [[ "$restore" == "true" ]] && restore && exit

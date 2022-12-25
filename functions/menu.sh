@@ -79,11 +79,11 @@ case $selection in
         script_create
         ;;
     7)
-        cmd_to_container
+        container_shell_or_logs
         ;;
     8) 
         logs="true"
-        cmd_to_container "$logs"
+        container_shell_or_logs "$logs"
         ;;
     9)  
         # Give users the option to run patch_2212_backups or choose_branch

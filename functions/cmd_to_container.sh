@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-cmd_to_container(){
+container_shell_or_logs(){
 # Store the app names and their corresponding numbers in a map
 declare -A app_map
 app_names=$(k3s crictl pods -s ready --namespace ix | sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//' | sed '1d' | awk '{print $4}' | cut -c4- | sort -u)

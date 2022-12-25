@@ -108,8 +108,8 @@ then
         echo "App Name: ${app_name}"
         echo "Container: $container"
         echo
-        read -rt 120 -p "How many lines of logs do you want to display?: " lines || { echo -e "\nFailed to make a selection in time" ; exit; }
-        if ! [[ $lines =~ ^[0-9]+$ ]]; then
+        read -rt 120 -p "How many lines of logs do you want to display?(\"-1\" for all): " lines || { echo -e "\nFailed to make a selection in time" ; exit; }
+        if ! [[ $lines =~ ^[0-9]+$|^-1$ ]]; then
             echo "Error: \"$lines\" was not a number.. Try again"
             sleep 3
             continue
@@ -118,7 +118,11 @@ then
         fi
     done
 
-    k3s crictl logs -f "$container_id"
+    # Display logs
+    if ! k3s crictl logs -f "$container_id" --tail "$lines"; then
+        echo "Failed to retrieve logs for container: $container_id"
+        exit
+    fi
     exit
 fi
 

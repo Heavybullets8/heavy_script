@@ -168,4 +168,4 @@ do
     esac
 done
 }
-export -f cmd_to_container
+export -f container_shell_or_logs

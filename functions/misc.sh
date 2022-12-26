@@ -191,7 +191,7 @@ echo
 
 # Apply patch
 echo "Applying Backup Patch"
-if patch -N --reject-file=/dev/null -s -p0 -d /usr/lib/python3/dist-packages/middlewared/plugins/kubernetes_linux/backup.py < patches/backup_patch2.patch &>/dev/null; then
+if patch -N --reject-file=/dev/null -s -p0 -d /usr/lib/python3/dist-packages/middlewared/plugins/kubernetes_linux/backup.py < patches/backups.patch &>/dev/null; then
     echo "Backup Patch applied"
 else
     echo "Backup Patch already applied"

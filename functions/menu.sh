@@ -14,6 +14,7 @@ echo "5)  Update HeavyScript"
 echo "6)  Update Applications"
 echo "7)  Command to Container"
 echo "8)  Patch 22.12.0"
+echo "9)  Patch 22.12.0 (2)"
 echo
 echo "0)  Exit"
 read -rt 120 -p "Please select an option by number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
@@ -82,6 +83,9 @@ case $selection in
         ;;
     8)
         patch_2212_backups
+        ;;
+    9) 
+        patch_2212_backups2
         ;;
     *)
         echo "\"$selection\" was not an option, please try agian" && sleep 3 && menu

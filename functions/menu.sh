@@ -176,7 +176,7 @@ menu(){
                         ;;
                     2)
                         misc_selection=true
-                        choose_branch
+                        patch_2212_backups2
                         ;;
                     *)
                         echo "\"$selection\" was not an option, please try agian" && sleep 3 && continue

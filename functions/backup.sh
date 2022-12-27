@@ -257,21 +257,18 @@ restore(){
         fi
     done
 
-
     # Grab applications that are supposed to have PVC data
     mapfile -t apps_with_pvc < <(k3s kubectl get pvc -A | sort -u | awk '{print $1 "\t" $2 "\t" $4}' | sed "s/^0/ /" | awk '{print $1}' | cut -c 4-)
 
 
     # Iterate over the list of applications with empty PVC data
     # Unset the application if it is not supposed to have PVC data
-    index=0
-    for app in "${borked_array[@]}"; do
+    for app in "${!borked_array[@]}"; do
         if ! printf '%s\0' "${apps_with_pvc[@]}" | grep -iFxqz "${app}" ; then
-            unset "borked_array[$index]"
+            unset "borked_array[$app]"
         else
             borked=True
         fi
-        ((index++))
     done
 
 

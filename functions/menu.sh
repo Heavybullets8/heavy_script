@@ -83,8 +83,8 @@ menu(){
             do
                 clear -x
                 title
-                echo "Misc Menu"
-                echo "-----------"
+                echo "HeavyScript Options Menu"
+                echo "------------------------"
                 echo "1)  Self Update"
                 echo "2)  Choose Branch"
                 echo
@@ -121,8 +121,8 @@ menu(){
             do
                 clear -x
                 title
-                echo "Misc Menu"
-                echo "-----------"
+                echo "Command to Container / Container Logs Menu"
+                echo "------------------------------------------"
                 echo "1)  Command to Container"
                 echo "2)  Container Logs"
                 echo
@@ -155,8 +155,8 @@ menu(){
             do
                 clear -x
                 title
-                echo "Misc Menu"
-                echo "-----------"
+                echo "Patch Menu"
+                echo "----------"
                 echo "1)  Patch 22.12.0 Restore"
                 echo "- This will fix the issue with the 22.12.0 patch where backups are created with empty PVC data"
                 echo

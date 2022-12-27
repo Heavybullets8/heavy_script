@@ -30,7 +30,7 @@ choose_branch() {
     mapfile -t branch_names < <(printf '%s\n' "${branch_names[@]}" | sort)
 
     # Get the name of the latest tag
-    latest_tag=$(git describe --tags --abbrev=0)
+    latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
 
     clear -x
     title
@@ -91,12 +91,12 @@ if ! [[ "$hs_version" =~ v\d+\.\d+\.\d+ ]]; then
 # The current version is a tag, check if there is a newer tag available
 else
     git fetch --tags &>/dev/null
-    latest_ver=$(git describe --tags "$(git rev-list --tags --max-count=1)")
-    if  [[ "$hs_version" != "$latest_ver" ]] ; then
+    latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
+    if  [[ "$hs_version" != "$latest_tag" ]] ; then
         echo "Found a new version of HeavyScript, updating myself..."
-        git checkout "$latest_ver" &>/dev/null 
+        git checkout "$latest_tag" &>/dev/null 
         echo "Updating from: $hs_version"
-        echo "Updating To: $latest_ver"
+        echo "Updating To: $latest_tag"
         echo "Changelog:"
         curl --silent "https://api.github.com/repos/HeavyBullets8/heavy_script/releases/latest" | jq -r .body
         echo 

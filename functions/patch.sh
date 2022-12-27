@@ -53,7 +53,6 @@ patch_2212_backups(){
 
 patch_2212_backups2(){
     clear -x
-    #Check TrueNAS version, skip if not 22.12.0
     check_truenas_version
 
 

@@ -157,8 +157,10 @@ menu(){
                 title
                 echo "Misc Menu"
                 echo "-----------"
-                echo "1)  Patch 2212 Backups"
-                echo "2)  Choose Branch"
+                echo "1)  Patch 22.12.0 Restore"
+                echo "- This will fix the issue with the 22.12.0 patch where backups are created with empty PVC data"
+                echo "2)  Patch 22.12.0 Backups"
+                echo "- This will fix the issue with the 22.12.0 patch where backups fail on certain applications"
                 echo
                 echo "0)  Exit"
                 read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "\nFailed to make a selection in time" ; exit; }

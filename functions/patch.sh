@@ -52,7 +52,6 @@ patch_2212_backups(){
     echo
 
     restart_middlewared
-
 }
 
 

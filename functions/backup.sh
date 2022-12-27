@@ -45,147 +45,21 @@ backup(){
     echo
     echo
 }
-export -f backup
-
-
-deleteBackup(){
-    clear -x && echo "pulling all restore points.."
-    # shellcheck disable=SC2178
-    list_backups=$(cli -c 'app kubernetes list_backups' | sort -t '_' -Vr -k2,7 | tr -d " \t\r"  | awk -F '|'  '{print $2}' | nl -s ") " | column -t)
-    # shellcheck disable=SC2128
-    if [[ -z "$list_backups" ]]; then
-        echo "No restore points available"
-        exit
-    fi
-
-    #Select a restore point
-    while true
-    do
-        clear -x
-        title
-        echo -e "Choose a Restore Point to Delete\nThese may be out of order if they are not HeavyScript backups"
-        echo "$list_backups"
-        echo
-        echo "0)  Exit"
-        read -rt 240 -p "Please type a number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
-        restore_point=$(echo "$list_backups" | grep ^"$selection)" | awk '{print $2}')
-        if [[ $selection == 0 ]]; then
-            echo "Exiting.." 
-            exit
-        elif [[ -z "$selection" ]]; then 
-            echo "Your selection cannot be empty"
-            sleep 3
-            continue
-        elif [[ -z "$restore_point" ]]; then
-            echo "Invalid Selection: $selection, was not an option"
-            sleep 3
-            continue
-        fi
-        break # Break out of the loop if all of the If statement checks above are untrue
-    done
-
-    #Confirm deletion
-    while true
-    do
-        clear -x
-        echo -e "WARNING:\nYou CANNOT go back after deleting your restore point" 
-        echo -e "\n\nYou have chosen:\n$restore_point\n\n"
-        read -rt 120 -p "Would you like to proceed with deletion? (y/N): " yesno  || { echo -e "\nFailed to make a selection in time" ; exit; }
-        case $yesno in
-            [Yy] | [Yy][Ee][Ss])
-                echo -e "\nDeleting $restore_point"
-                cli -c 'app kubernetes delete_backup backup_name=''"'"$restore_point"'"' &>/dev/null || { echo "Failed to delete backup.."; exit; }
-                echo "Sucessfully deleted"
-                break
-                ;;
-            [Nn] | [Nn][Oo])
-                echo "Exiting"
-                exit
-                ;;
-            *)
-                echo "That was not an option, try again"
-                sleep 3
-                continue
-                ;;
-        esac
-    done
-
-    #Check if there are more backups to delete
-    while true
-    do
-        read -rt 120 -p "Delete more backups? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
-        case $yesno in
-            [Yy] | [Yy][Ee][Ss])
-                break
-                ;;
-            [Nn] | [Nn][Oo])
-                exit
-                ;;
-            *)
-                echo "$yesno was not an option, try again" 
-                sleep 2
-                continue
-                ;;
-
-        esac
-
-    done
-}
-export -f deleteBackup
-
-
-restore(){
-    clear -x && echo "pulling restore points.."
-    list_backups=$(cli -c 'app kubernetes list_backups' | tr -d " \t\r" | sed '1d;$d')
-
-    # heavyscript backups
-    mapfile -t hs_tt_backups < <(echo "$list_backups" | grep -E "HeavyScript_|Truetool_" | sort -t '_' -Vr -k2,7 | awk -F '|'  '{print $2}')
-    # system backups
-    mapfile -t system_backups < <(echo "$list_backups" | grep "system-update--" | sort -t '-' -Vr -k3,5 |  awk -F '|'  '{print $2}')
-    # other backups
-    mapfile -t other_backups < <(echo "$list_backups" | grep -v -E "HeavyScript_|Truetool_|system-update--" | sort -t '-' -Vr -k3,5 | awk -F '|'  '{print $2}')
-
-
-    #Check if there are any restore points
-    if [[ ${#hs_tt_backups[@]} -eq 0 ]] && [[ ${#system_backups[@]} -eq 0 ]] && [[ ${#other_backups[@]} -eq 0 ]]; then
-        echo "No restore points available"
-        exit
-    fi
-
-
-    # Initialize the restore_points array
-    restore_points=()
-
-    # Append the elements of the hs_tt_backups array
-    for i in "${hs_tt_backups[@]}"; do
-        restore_points+=("$i")
-    done
-
-    # Append the elements of the system_backups array
-    for i in "${system_backups[@]}"; do
-        restore_points+=("$i")
-    done
-
-    # Append the elements of the other_backups array
-    for i in "${other_backups[@]}"; do
-        restore_points+=("$i")
-    done
-
-
-    # Add line numbers to the array elements
-    for i in "${!restore_points[@]}"; do
-    restore_points[i]="$((i+1))) ${restore_points[i]}"
-    done
 
 
 
+choose_restore(){
     #select a restore point
     count=1
     while true
     do
         clear -x
         title
-        echo "Choose a Restore Point"
+        if [[ "$1" == "delete" ]]; then
+            echo "Choose a restore point to delete"
+        else
+            echo "Choose a restore point to restore"
+        fi
         echo
 
         {
@@ -257,9 +131,117 @@ restore(){
         # Break out of the loop
         break
     done
+}
+export -f choose_restore
 
 
+list_backups_func(){
+    clear -x && echo "pulling restore points.."
+    list_backups=$(cli -c 'app kubernetes list_backups' | tr -d " \t\r" | sed '1d;$d')
 
+    # heavyscript backups
+    mapfile -t hs_tt_backups < <(echo "$list_backups" | grep -E "HeavyScript_|Truetool_" | sort -t '_' -Vr -k2,7 | awk -F '|'  '{print $2}')
+    # system backups
+    mapfile -t system_backups < <(echo "$list_backups" | grep "system-update--" | sort -t '-' -Vr -k3,5 |  awk -F '|'  '{print $2}')
+    # other backups
+    mapfile -t other_backups < <(echo "$list_backups" | grep -v -E "HeavyScript_|Truetool_|system-update--" | sort -t '-' -Vr -k3,5 | awk -F '|'  '{print $2}')
+
+
+    #Check if there are any restore points
+    if [[ ${#hs_tt_backups[@]} -eq 0 ]] && [[ ${#system_backups[@]} -eq 0 ]] && [[ ${#other_backups[@]} -eq 0 ]]; then
+        echo "No restore points available"
+        exit
+    fi
+
+
+    # Initialize the restore_points array
+    restore_points=()
+
+    # Append the elements of the hs_tt_backups array
+    for i in "${hs_tt_backups[@]}"; do
+        restore_points+=("$i")
+    done
+
+    # Append the elements of the system_backups array
+    for i in "${system_backups[@]}"; do
+        restore_points+=("$i")
+    done
+
+    # Append the elements of the other_backups array
+    for i in "${other_backups[@]}"; do
+        restore_points+=("$i")
+    done
+
+
+    # Add line numbers to the array elements
+    for i in "${!restore_points[@]}"; do
+    restore_points[i]="$((i+1))) ${restore_points[i]}"
+    done
+}
+export -f list_backups
+
+
+deleteBackup(){
+    while true; do
+        list_backups_func
+
+        choose_restore "delete"
+
+        #Confirm deletion
+        while true
+        do
+            clear -x
+            echo -e "WARNING:\nYou CANNOT go back after deleting your restore point" 
+            echo -e "\n\nYou have chosen:\n$restore_point\n\n"
+            read -rt 120 -p "Would you like to proceed with deletion? (y/N): " yesno  || { echo -e "\nFailed to make a selection in time" ; exit; }
+            case $yesno in
+                [Yy] | [Yy][Ee][Ss])
+                    echo -e "\nDeleting $restore_point"
+                    cli -c 'app kubernetes delete_backup backup_name=''"'"$restore_point"'"' &>/dev/null || { echo "Failed to delete backup.."; exit; }
+                    echo "Sucessfully deleted"
+                    break
+                    ;;
+                [Nn] | [Nn][Oo])
+                    echo "Exiting"
+                    exit
+                    ;;
+                *)
+                    echo "That was not an option, try again"
+                    sleep 3
+                    continue
+                    ;;
+            esac
+        done
+
+        #Check if there are more backups to delete
+        while true
+        do
+            read -rt 120 -p "Delete more backups? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
+            case $yesno in
+                [Yy] | [Yy][Ee][Ss])
+                    break
+                    ;;
+                [Nn] | [Nn][Oo])
+                    exit
+                    ;;
+                *)
+                    echo "$yesno was not an option, try again" 
+                    sleep 2
+                    continue
+                    ;;
+
+            esac
+
+        done
+    done
+}
+export -f deleteBackup
+
+
+restore(){
+    list_backups_func
+
+    choose_restore "restore"
 
     ## Check to see if empty PVC data is present in any of the applications ##
 
@@ -294,7 +276,6 @@ restore(){
         fi
         ((index++))
     done
-
 
 
     # If there is still empty PVC data, exit

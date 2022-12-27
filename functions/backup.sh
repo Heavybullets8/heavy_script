@@ -137,13 +137,18 @@ export -f choose_restore
 
 list_backups_func(){
     clear -x && echo "pulling restore points.."
+    #shellcheck disable=SC2178
     list_backups=$(cli -c 'app kubernetes list_backups' | tr -d " \t\r" | sed '1d;$d')
 
+    
     # heavyscript backups
+    #shellcheck disable=SC2128
     mapfile -t hs_tt_backups < <(echo "$list_backups" | grep -E "HeavyScript_|Truetool_" | sort -t '_' -Vr -k2,7 | awk -F '|'  '{print $2}')
     # system backups
+    #shellcheck disable=SC2128
     mapfile -t system_backups < <(echo "$list_backups" | grep "system-update--" | sort -t '-' -Vr -k3,5 |  awk -F '|'  '{print $2}')
     # other backups
+    #shellcheck disable=SC2128
     mapfile -t other_backups < <(echo "$list_backups" | grep -v -E "HeavyScript_|Truetool_|system-update--" | sort -t '-' -Vr -k3,5 | awk -F '|'  '{print $2}')
 
 
@@ -178,7 +183,7 @@ list_backups_func(){
     restore_points[i]="$((i+1))) ${restore_points[i]}"
     done
 }
-export -f list_backups
+export -f list_backups_func
 
 
 deleteBackup(){

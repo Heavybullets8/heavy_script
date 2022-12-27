@@ -159,6 +159,7 @@ menu(){
                 echo "-----------"
                 echo "1)  Patch 22.12.0 Restore"
                 echo "- This will fix the issue with the 22.12.0 patch where backups are created with empty PVC data"
+                echo
                 echo "2)  Patch 22.12.0 Backups"
                 echo "- This will fix the issue with the 22.12.0 patch where backups fail on certain applications"
                 echo

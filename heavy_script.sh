@@ -13,11 +13,11 @@ current_tag=$(git describe --tags --abbrev=0)
 # Check if the current version is a branch or a tag
 current_version=$(git rev-parse --abbrev-ref HEAD)
 if [[ "$current_version" == "HEAD" ]]; then
-  # The current version is a tag, assign the name of the current tag to the hs_version variable
-  hs_version=${current_tag}
+    # The current version is a tag, assign the name of the current tag to the hs_version variable
+    hs_version=${current_tag}
 else
-  # The current version is a branch, assign the name of the current branch to the hs_version variable
-  hs_version=${current_version}
+    # The current version is a branch, assign the name of the current branch to the hs_version variable
+    hs_version=${current_version}
 fi
 
 

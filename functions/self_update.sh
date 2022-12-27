@@ -62,8 +62,6 @@ choose_branch() {
 
 
 
-
-
 self_update() {
     echo "🅂 🄴 🄻 🄵"
     echo "🅄 🄿 🄳 🄰 🅃 🄴"
@@ -77,13 +75,15 @@ self_update() {
         # Check if there are any updates available
         if [[ -n "$updates" ]]; then
             # Perform a git pull operation to update the branch to the latest commit
-            if ! git pull --force --quiet; then
+            if git pull --force --quiet; then
+                echo "Merged new commits from: $hs_version."
+                updated=true
+            else
                 # The git pull operation failed, print an error message and exit
                 echo "Failed to merge commits from: $hs_version."
                 echo "If this issue persists, please ensure the branch exists and is not protected."
                 echo "If it does not exist, please change to a different branch or tag from the menu."
             fi
-            echo "Merged new commits from: $hs_version."
         else
             echo "No new commits on: $hs_version."
         fi
@@ -99,12 +99,12 @@ self_update() {
             echo "Changelog:"
             curl --silent "https://api.github.com/repos/HeavyBullets8/heavy_script/releases/latest" | jq -r .body
             echo 
+            updated=true
         else 
             echo "HeavyScript is already the latest version:"
             echo -e "$hs_version\n\n"
         fi
     fi
-
 
     # Unset the self-update argument
     for i in "${!args[@]}"; do
@@ -114,12 +114,17 @@ self_update() {
         fi
     done
 
-
+    # Check if there are any arguments left
     [[ -z ${args[*]} ]] && echo -e "No more arguments, exiting..\n\n" && exit
-    echo -e "Running the new version...\n\n"
-    sleep 5
-    exec bash "$script_name" "${args[@]}"
-    # Now exit this old instance
-    exit
+
+    # Check if the script was updated, and if so, run the new version
+    if [[ "$updated" == true ]]; then
+        echo -e "Running the new version...\n\n"
+        sleep 5
+        exec bash "$script_name" "${args[@]}"
+        # Now exit this old instance
+        exit
+    fi
+
 }
 export -f self_update

@@ -3,11 +3,7 @@
 
 patch_2212_backups(){
     clear -x
-    #Check TrueNAS version, skip if not 22.12.0
-    if ! [ "$(cli -m csv -c 'system version' | awk -F '-' '{print $3}')" == "22.12.0" ]; then
-        echo "This patch does not apply to your version of TrueNAS"
-        return
-    fi
+    check_truenas_version
 
 
     #Description

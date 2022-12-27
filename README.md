@@ -84,6 +84,7 @@ bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u
 | --delete-backup | Opens a menu to delete backups on your system                                                |
 | --dns           | list all of your applications DNS names and their web ports                                  |
 | --cmd           | Open a shell for one of your applications                                                    |
+| --logs          | Open logs for one of your applications                                                       |
 
 
 ### Examples

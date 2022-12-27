@@ -76,7 +76,8 @@ help(){
     echo "--delete-backup | Opens a menu to delete backups on your system"
     echo "--dns           | list all of your applications DNS names and their web ports"
     echo "--cmd           | Open a shell for one of your applications"
-    echo
+    echo "--logs          | Open the log file for one of your applications"
+    echo 
     echo "Update Types"
     echo "------------"
     echo "-U    | Update all applications, ignores versions"

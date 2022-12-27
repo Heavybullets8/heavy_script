@@ -21,6 +21,7 @@ else
 fi
 
 
+source functions/patch.sh
 source functions/backup.sh
 source functions/dns.sh
 source functions/menu.sh

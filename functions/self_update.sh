@@ -8,6 +8,9 @@ choose_branch() {
     clear -x
     echo "Pulling git information.."
 
+    # Fetch all branches and tags from the remote
+    git fetch --all &>/dev/null
+
     # Use git ls-remote to list the available branches
     options=$(git ls-remote --heads)
 
@@ -65,11 +68,11 @@ self_update() {
 
 echo "🅂 🄴 🄻 🄵"
 echo "🅄 🄿 🄳 🄰 🅃 🄴"
-git fetch --tags &>/dev/null
 git reset --hard &>/dev/null
 
 # Check if using a tag or branch
 if ! [[ "$hs_version" =~ v\d+\.\d+\.\d+ ]]; then
+    git fetch &>/dev/null
     # Check for updates on the main branch
     updates=$(git log HEAD..origin/"$hs_version" --oneline)
     # Check if there are any updates available
@@ -87,6 +90,8 @@ if ! [[ "$hs_version" =~ v\d+\.\d+\.\d+ ]]; then
     fi
 # The current version is a tag, check if there is a newer tag available
 else
+    git fetch --tags &>/dev/null
+    latest_ver=$(git describe --tags "$(git rev-list --tags --max-count=1)")
     if  [[ "$hs_version" != "$latest_ver" ]] ; then
         echo "Found a new version of HeavyScript, updating myself..."
         git checkout "$latest_ver" &>/dev/null 
@@ -102,12 +107,14 @@ else
 fi
 
 
-count=0
-for i in "${args[@]}"
-do
-    [[ "$i" == "--self-update" ]] && unset "args[$count]" && break
-    ((count++))
+# Unset the self-update argument
+for i in "${!args[@]}"; do
+  if [[ "${args[$i]}" == "--self-update" ]]; then
+    unset "args[$i]"
+    break
+  fi
 done
+
 
 [[ -z ${args[*]} ]] && echo -e "No more arguments, exiting..\n\n" && exit
 echo -e "Running the new version...\n\n"

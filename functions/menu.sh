@@ -18,6 +18,7 @@ menu(){
     echo "0)  Exit"
     read -rt 120 -p "Please select an option by number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
 
+
     case $selection in
         0)
             echo "Exiting.."

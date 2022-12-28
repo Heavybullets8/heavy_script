@@ -7,9 +7,21 @@ script_path=$(dirname "$script")
 script_name="heavy_script.sh"
 cd "$script_path" || { echo "Error: Failed to change to script directory" ; exit ; } 
 
-#Version
-hs_version=$(git describe --tags)
+# Get the name of the latest tag
+current_tag=$(git describe --tags --abbrev=0)
 
+# Check if the current version is a branch or a tag
+current_version=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$current_version" == "HEAD" ]]; then
+    # The current version is a tag, assign the name of the current tag to the hs_version variable
+    hs_version=${current_tag}
+else
+    # The current version is a branch, assign the name of the current branch to the hs_version variable
+    hs_version=${current_version}
+fi
+
+
+source functions/patch.sh
 source functions/backup.sh
 source functions/dns.sh
 source functions/menu.sh
@@ -21,7 +33,7 @@ source functions/cmd_to_container.sh
 source functions/script_create.sh
 
 
-#If no argument is passed, kill the script.
+#If no argument is passed, open menu function.
 [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && menu
 
 
@@ -54,6 +66,9 @@ do
                   ;;
        ignore-img)
                   ignore_image_update="true"
+                  ;;
+              logs)
+                  logs="true"
                   ;;
                 *)
                   echo -e "Invalid Option \"--$OPTARG\"\n"
@@ -135,7 +150,7 @@ done
 #Continue to call functions in specific order
 [[ "$self_update" == "true" ]] && self_update
 [[ "$help" == "true" ]] && help
-[[ "$cmd" == "true" ]] && cmd_to_container && exit
+[[ "$cmd" == "true" || "$logs" == "true" ]] && container_shell_or_logs && exit
 [[ "$deleteBackup" == "true" ]] && deleteBackup && exit
 [[ "$dns" == "true" ]] && dns && exit
 [[ "$restore" == "true" ]] && restore && exit
@@ -147,11 +162,11 @@ if [[ "$number_of_backups" -gt 1 && "$sync" == "true" ]]; then # Run backup and 
     backup &
     sync &
     wait
-elif [[ "$number_of_backups" -gt 1 && -z "$sync" ]]; then # If only backup is true, run it
+elif [[ "$number_of_backups" -gt 1 ]]; then # If only backup is true, run it
     echo "🅃 🄰 🅂 🄺 :"
     echo -e "-Backing up \"ix-applications\" Dataset\nPlease Wait..\n\n"
     backup
-elif [[ "$sync" == "true" && -z "$number_of_backups" ]]; then # If only sync is true, run it
+elif [[ "$sync" == "true" ]]; then # If only sync is true, run it
     echo "🅃 🄰 🅂 🄺 :"
     echo -e "Syncing Catalog(s)\nThis Takes a LONG Time, Please Wait..\n\n"
     sync

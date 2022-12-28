@@ -16,7 +16,7 @@
 
 ## The Menu
 
-![image](https://user-images.githubusercontent.com/20793231/185020236-7b389499-8081-407d-b653-10dffd70de8c.png)
+![image](https://user-images.githubusercontent.com/20793231/209697976-b7a6ec9c-dee7-4707-82d9-58eb7a2d8248.png)
 > Access this with `bash heavy_script.sh`
 
 <br >
@@ -84,6 +84,7 @@ bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u
 | --delete-backup | Opens a menu to delete backups on your system                                                |
 | --dns           | list all of your applications DNS names and their web ports                                  |
 | --cmd           | Open a shell for one of your applications                                                    |
+| --logs          | Open logs for one of your applications                                                       |
 
 
 ### Examples

@@ -74,11 +74,8 @@ commander(){
             echo "Middlewared timed out. Consider setting a lower number for async applications"
             continue
         fi
-        count=0
-        for proc in "${processes[@]}"
-        do
-            kill -0 "$proc" &> /dev/null || unset "processes[$count]"
-            ((count++)) 
+        for i in "${!processes[@]}"; do
+            kill -0 "${processes[i]}" &> /dev/null || unset "processes[$i]"
         done
         processes=("${processes[@]}")
         if [[ $index -lt ${#array[@]} && "${#processes[@]}" -lt "$update_limit" ]]; then

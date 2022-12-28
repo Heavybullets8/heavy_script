@@ -34,7 +34,6 @@ choose_branch() {
 
     clear -x
     title
-    git reset --hard &>/dev/null
     # Display a menu to the user, including the option to choose the latest tag
     PS3="Choose a branch or the latest tag: "
     select choice in "${branch_names[@]}" "Latest Tag ($latest_tag)"; do
@@ -47,6 +46,7 @@ choose_branch() {
                 echo "You chose the latest tag: $latest_tag"
                 break
             else
+                git reset --hard &>/dev/null
                 # The user chose a branch, check it out using git checkout
                 git checkout --force "$choice"
                 echo "You chose $choice"

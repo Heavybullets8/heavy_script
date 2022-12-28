@@ -68,7 +68,7 @@ self_update() {
     git reset --hard &>/dev/null
 
     # Check if using a tag or branch
-    if ! [[ "$hs_version" =~ v\d+\.\d+\.\d+ ]]; then
+    if ! [[ "$hs_version" =~ v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+ ]]; then
         git fetch &>/dev/null
         # Check for updates on the main branch
         updates=$(git log HEAD..origin/"$hs_version" --oneline)

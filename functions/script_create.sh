@@ -210,6 +210,11 @@ add_option_to_array() {
     fi
 
     # Add the option to the array
-    update_selection+=("$option" "$value")
+    if [[ $1 == "" ]]; then
+        update_selection+=("$option")
+    else
+        update_selection+=("$option" "$value")
+    fi
+
 }
 

@@ -192,10 +192,13 @@ script_create(){
                 echo "\"$current_selection\" was not an option, try again" && sleep 3 && continue 
                 ;;
         esac
-        # Check if the option is already in the array
-        add_option_to_array "${update_selection[@]}" "$option"
-        unset option
-        unset value
+        if [[ -n "$option" ]]; then
+            # Check if the option is already in the array
+            add_option_to_array "${update_selection[@]}" "$option"
+            unset option
+            unset value
+        fi
+
     done
 }
 export -f script_create
@@ -209,12 +212,15 @@ add_option_to_array() {
         return
     fi
 
-    # Add the option to the array
-    if [[ $1 == "" ]]; then
-        update_selection+=("$option")
-    else
-        update_selection+=("$option" "$value")
-    fi
+    # Trim leading and trailing whitespace from the option
+    option="${option#"${option%%[![:space:]]*}"}"
+    option="${option%"${option##*[![:space:]]}"}"
 
+    # Add the option to the array
+    if [[ -n "$value" ]]; then
+        update_selection+=("$option" "$value")
+    else
+        update_selection+=("$option")
+    fi
 }
 

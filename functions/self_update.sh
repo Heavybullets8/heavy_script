@@ -34,7 +34,7 @@ choose_branch() {
 
     clear -x
     title
-
+    git reset --hard &>/dev/null
     # Display a menu to the user, including the option to choose the latest tag
     PS3="Choose a branch or the latest tag: "
     select choice in "${branch_names[@]}" "Latest Tag ($latest_tag)"; do

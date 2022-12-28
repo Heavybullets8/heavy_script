@@ -85,7 +85,7 @@ self_update() {
                 echo "If it does not exist, please change to a different branch or tag from the menu."
             fi
         else
-            echo "No new commits on: $hs_version."
+            echo -e "No new commits on: $hs_version.\n\n"
         fi
     # The current version is a tag, check if there is a newer tag available
     else

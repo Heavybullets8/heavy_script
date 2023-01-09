@@ -156,7 +156,7 @@ From here, you can just run Heavy_Script with `bash heavy_script.sh -ARGUMENTS`
 ### Built-In Option (Recommended)
 
 ```
-bash heavyscript.sh --self-update -b 10 -supr
+bash heavy_script.sh --self-update -b 10 -supr
 ```
 > The important argument here is the `--self-update`, you can still use all of your same arguments with this option.
 >> `--self-update` will place users on the latest tag, as well as showing the changelog when new releases come out. So this is the preferred method. Not using this method, will instead place the user on `main`, where the changes are tested, but not as rigerously as they are on the releases.

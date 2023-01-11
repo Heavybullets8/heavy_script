@@ -119,7 +119,7 @@ container_shell_or_logs(){
         done
 
         # Display logs
-        if ! k3s crictl logs -f "$container_id" --tail "$lines"; then
+        if ! k3s crictl logs --tail "$lines" -f "$container_id"; then
             echo "Failed to retrieve logs for container: $container_id"
             exit
         fi

@@ -24,13 +24,13 @@ backup(){
 
     # If there are more backups than the allowed number, delete the oldest ones
     if [[  ${#current_backups[@]}  -gt  "$number_of_backups" ]]; then
-    echo_backup+=("\nDeleted the oldest backup(s) for exceeding limit:")
-    overflow=$(( ${#current_backups[@]} - "$number_of_backups" ))
-    mapfile -t list_overflow < <(cli -c 'app kubernetes list_backups' | grep -E "HeavyScript_|TrueTool_"  | sort -t '_' -V -k2,7 | awk -F '|'  '{print $2}'| tr -d " \t\r" | head -n "$overflow")
-    for i in "${list_overflow[@]}"; do
-        cli -c "app kubernetes delete_backup backup_name=\"$i\"" &> /dev/null || echo_backup+=("Failed to delete $i")
-        echo_backup+=("$i")
-    done
+        echo_backup+=("\nDeleted the oldest backup(s) for exceeding limit:")
+        overflow=$(( ${#current_backups[@]} - "$number_of_backups" ))
+        mapfile -t list_overflow < <(cli -c 'app kubernetes list_backups' | grep -E "HeavyScript_|TrueTool_"  | sort -t '_' -V -k2,7 | awk -F '|'  '{print $2}'| tr -d " \t\r" | head -n "$overflow")
+        for i in "${list_overflow[@]}"; do
+            cli -c "app kubernetes delete_backup backup_name=\"$i\"" &> /dev/null || echo_backup+=("Failed to delete $i")
+            echo_backup+=("$i")
+        done
     fi
 
     #Dump the echo_array, ensures all output is in a neat order. 
@@ -63,8 +63,8 @@ choose_restore(){
             echo "$(tput bold)# HeavyScript/Truetool_Backups$(tput sgr0)"
             # Print the HeavyScript and Truetool backups with numbers
             for ((i=0; i<${#hs_tt_backups[@]}; i++)); do
-            echo "$count) ${hs_tt_backups[i]}"
-            ((count++))
+                echo "$count) ${hs_tt_backups[i]}"
+                ((count++))
             done
         fi
 
@@ -74,8 +74,8 @@ choose_restore(){
             echo -e "\n$(tput bold)# System_Backups$(tput sgr0)"
             # Print the system backups with numbers
             for ((i=0; i<${#system_backups[@]}; i++)); do
-            echo "$count) ${system_backups[i]}"
-            ((count++))
+                echo "$count) ${system_backups[i]}"
+                ((count++))
             done
         fi
 
@@ -85,8 +85,8 @@ choose_restore(){
             echo -e "\n$(tput bold)# Other_Backups$(tput sgr0)"
             # Print the other backups with numbers
             for ((i=0; i<${#other_backups[@]}; i++)); do
-            echo "$count) ${other_backups[i]}"
-            ((count++))
+                echo "$count) ${other_backups[i]}"
+                ((count++))
             done 
         fi
         } | column -t -L
@@ -172,7 +172,7 @@ list_backups_func(){
 
     # Add line numbers to the array elements
     for i in "${!restore_points[@]}"; do
-    restore_points[i]="$((i+1))) ${restore_points[i]}"
+        restore_points[i]="$((i+1))) ${restore_points[i]}"
     done
 }
 export -f list_backups_func

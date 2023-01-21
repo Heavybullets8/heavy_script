@@ -89,31 +89,31 @@ mount(){
                 done
                 ;;
             2)
-            # Unmount all pvcs in the heavyscript directory
-            mapfile -t unmount_array < <(basename -a /mnt/heavyscript/* | sed "s/*//")
-            if [[ -z ${unmount_array[*]} ]]; then
-                echo "There are no PVCS to unmount."
-                sleep 3
-            else
-                for pvc_name in "${unmount_array[@]}"; do
-                    # Get the PVC details
-                    main=$(k3s kubectl get pvc -A | grep -E "\s$pvc_name\s" | awk '{print $1, $2, $4}')
-                    app=$(echo "$main" | awk '{print $1}' | cut -c 4-)
-                    pvc=$(echo "$main" | awk '{print $3}')
-                    full_path=$(find /mnt/"$pool"/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
+                # Unmount all pvcs in the heavyscript directory
+                mapfile -t unmount_array < <(basename -a /mnt/heavyscript/* | sed "s/*//")
+                if [[ -z ${unmount_array[*]} ]]; then
+                    echo "There are no PVCS to unmount."
+                    sleep 3
+                else
+                    for pvc_name in "${unmount_array[@]}"; do
+                        # Get the PVC details
+                        main=$(k3s kubectl get pvc -A | grep -E "\s$pvc_name\s" | awk '{print $1, $2, $4}')
+                        app=$(echo "$main" | awk '{print $1}' | cut -c 4-)
+                        pvc=$(echo "$main" | awk '{print $3}')
+                        full_path=$(find /mnt/"$pool"/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
 
-                    # Set the mountpoint to "legacy" and unmount
-                    if zfs set mountpoint=legacy "$full_path""$pvc"; then
-                        echo "$pvc_name unmounted successfully."
-                        rmdir /mnt/heavyscript/"$pvc_name"
-                    else
-                        echo "Failed to unmount $pvc_name."
-                    fi
-                done
-                rmdir /mnt/heavyscript
-                sleep 3
-            fi
-            ;;
+                        # Set the mountpoint to "legacy" and unmount
+                        if zfs set mountpoint=legacy "$full_path""$pvc"; then
+                            echo "$pvc_name unmounted successfully."
+                            rmdir /mnt/heavyscript/"$pvc_name"
+                        else
+                            echo "Failed to unmount $pvc_name."
+                        fi
+                    done
+                    rmdir /mnt/heavyscript
+                    sleep 3
+                fi
+                ;;
             *)
                 echo "Invalid selection, \"$selection\" was not an option"
                 sleep 3

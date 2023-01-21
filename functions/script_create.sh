@@ -15,47 +15,47 @@ script_create(){
         echo
         read -rt 120 -p "Type the Number or Flag: " current_selection || { echo -e "\nFailed to make a selection in time" ; exit; }
         case $current_selection in
-        0 | [Ee][Xx][Ii][Tt])
-            echo "Exiting.."
-            exit
-            ;;
-        1 | 2 | -U | -u)
-            if [[ $current_selection == 1 ]] ;then
-                current_selection='-U'
-            elif [[ $current_selection == 2 ]] ;then
-                current_selection='-u'
-            fi
-
-            while true
-            do
-            echo -e "\nHow many applications do you want updating at the same time?"
-            read -rt 120 -p "Please type an integer greater than 0: " up_async || { echo -e "\nFailed to make a selection in time" ; exit; }
-
-            case $up_async in
-                "" | *[!0-9]*)
-                echo "Error: \"$up_async\" is invalid, it needs to be an integer"
-                echo "NOT adding it to the list"
-                sleep 3
-                continue
+            0 | [Ee][Xx][Ii][Tt])
+                echo "Exiting.."
+                exit
                 ;;
-                0)
-                echo "Error: \"$up_async\" is less than 1"
-                echo "NOT adding it to the list"
-                sleep 3
-                continue
-                ;;
-                *)
-                update_selection+=("$current_selection" "$up_async")
+            1 | 2 | -U | -u)
+                if [[ $current_selection == 1 ]] ;then
+                    current_selection='-U'
+                elif [[ $current_selection == 2 ]] ;then
+                    current_selection='-u'
+                fi
+
+                while true
+                do
+                    echo -e "\nHow many applications do you want updating at the same time?"
+                    read -rt 120 -p "Please type an integer greater than 0: " up_async || { echo -e "\nFailed to make a selection in time" ; exit; }
+
+                    case $up_async in
+                        "" | *[!0-9]*)
+                            echo "Error: \"$up_async\" is invalid, it needs to be an integer"
+                            echo "NOT adding it to the list"
+                            sleep 3
+                            continue
+                            ;;
+                        0)
+                            echo "Error: \"$up_async\" is less than 1"
+                            echo "NOT adding it to the list"
+                            sleep 3
+                            continue
+                            ;;
+                        *)
+                            update_selection+=("$current_selection" "$up_async")
+                            break
+                            ;;
+                    esac
+                done
                 break
                 ;;
-            esac
-            done
-            break
-            ;;
-        *)
-            echo "$current_selection was not an option, try again" && sleep 3
-            continue
-            ;;
+            *)
+                echo "$current_selection was not an option, try again" && sleep 3
+                continue
+                ;;
         esac
     done
     while true 

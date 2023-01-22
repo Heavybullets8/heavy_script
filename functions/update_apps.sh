@@ -125,6 +125,7 @@ pre_process(){
             fi
             sleep 5
         done
+        startstatus="$status"
     fi
 
     # If user is using -S, stop app prior to updating

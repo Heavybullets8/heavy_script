@@ -155,9 +155,15 @@ pre_process(){
     fi
 
 
-    # Send through post_processing if: The app is not external services, rollbacks are enabled, or the app is not stopped
-    if ! grep -qs "^$app_name,true" external_services || [[ "$old_full_ver" != "$new_full_ver" || $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then 
-        post_process
+    # If rollbacks are enabled, or startstatus is stopped
+    if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
+        # If app is external services, OR version is the same (container image update), skip post processing
+        if grep -qs "^$app_name,true" external_services || [[ "$old_full_ver" == "$new_full_ver" ]]; then 
+            echo_array
+            return
+        else
+            post_process
+        fi
     else
         echo_array
         return

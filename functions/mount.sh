@@ -37,12 +37,13 @@ mount(){
                     echo "$list" 
                     echo 
                     echo "0)  Exit"
-                    read -rt 120 -p "Please type a number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+                    read -rt 120 -p "Please type a number: " selection || { echo -e "\n\033[1;31mFailed to make a selection in time\033[0m" ; exit; }
+
                     
                     #Check for valid selection. If no issues, continue
                     [[ $selection == 0 ]] && echo "Exiting.." && exit
                     app=$(echo -e "$list" | grep ^"$selection)" | awk '{print $2}' | cut -c 4- )
-                    [[ -z "$app" ]] && echo "Invalid Selection: $selection, was not an option" && sleep 3 && continue 
+                    [[ -z "$app" ]] && echo -e "\033[1;31mInvalid Selection: $selection, was not an option\033[0m" && sleep 3 && continue 
                     pvc=$(echo -e "$list" | grep ^"$selection)")
 
                     #Stop applicaiton if not stopped
@@ -50,14 +51,15 @@ mount(){
                     if [[ "$status" != "STOPPED" ]]; then
                         echo -e "\nStopping $app prior to mount"
                         if ! cli -c 'app chart_release scale release_name='\""$app"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then
-                            echo "Failed to stop $app"
+                            echo -e "\033[1;31mFailed to stop $app\033[0m"
                             exit 1
                         else
-                            echo "Stopped"
+                            echo -e "\033[1;32mStopped\033[0m"
                         fi
                     else
-                        echo -e "\n$app is already stopped"
+                        echo -e "\n\033[1;32m$app is already stopped\033[0m"
                     fi
+                    sleep 2
 
                     #Grab data then output and mount
                     data_name=$(echo "$pvc" | awk '{print $3}')
@@ -84,7 +86,8 @@ mount(){
 
                         # Ask user for input
                         echo
-                        read -r -t 120 -p "Please select a pool by number: " pool_num || { echo -e "\nFailed to make a selection in time" ; exit; }
+                        read -r -t 120 -p "Please select a pool by number: " pool_num || { echo -e "\n\033[1;31mFailed to make a selection in time\033[0m" ; exit; }
+
 
                         # Check if the input is valid
                         if [[ $pool_num -ge 1 ]] && [[ $pool_num -le ${#pool_query[@]} ]]; then
@@ -92,7 +95,8 @@ mount(){
                             # Exit the loop
                             break
                         else
-                            echo "Invalid selection, please try again."
+                            echo -e "\033[1;31mInvalid selection please try again\033[0m" 
+                            sleep 3
                         fi
                     done
 
@@ -149,7 +153,7 @@ mount(){
                     while true
                     do
                         echo
-                        read -rt 120 -p "Would you like to mount anything else? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
+                        read -rt 120 -p "Would you like to mount anything else? (y/N): " yesno || { echo -e "\n\033[1;31mFailed to make a selection in time\033[0m" ; exit; }
                         case $yesno in
                         [Yy] | [Yy][Ee][Ss])
                             clear -x
@@ -160,7 +164,7 @@ mount(){
                             exit
                             ;;
                         *)
-                            echo "Invalid selection \"$yesno\" was not an option" 
+                            echo -e "\033[1;31mInvalid selection \"$yesno\" was not an option\033[0m" 
                             sleep 3
                             continue
                             ;;
@@ -185,7 +189,7 @@ mount(){
 
                 # Check if the unmount_array is empty
                 if [[ -z ${unmount_array[*]} ]]; then
-                    echo "There are no PVCS to unmount."
+                    echo -e "\033[1;33mThere are no PVCS to unmount.\033[0m"
                     sleep 3
                 else
                     for pvc_name in "${unmount_array[@]}"; do
@@ -210,7 +214,7 @@ mount(){
                 fi
                 ;;
             *)
-                echo "Invalid selection, \"$selection\" was not an option"
+                echo -e "\033[1;31mInvalid selection, \"$selection\" was not an option\033[0m" 
                 sleep 3
                 continue
                 ;;

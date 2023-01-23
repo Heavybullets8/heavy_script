@@ -106,7 +106,7 @@ script_create(){
                 ;;
             2 | -i)
                 read -rt 120 -p "What is the name of the application we should ignore?: " up_ignore || { echo -e "\033[1;31m\nFailed to make a selection in time\033[0m" ; exit; }
-                ! [[ $up_ignore =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]] && echo -e "\033[0;31mError: "$up_ignore" is not a possible option for an application name\033[0m" && sleep 3 && continue
+                ! [[ $up_ignore =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]] && echo -e "\033[0;31mError: \"$up_timeout\" is not a possible option for an application name\033[0m" && sleep 3 && continue
                 update_selection+=("-i" "$up_ignore")
                 continue
                 ;;
@@ -119,7 +119,7 @@ script_create(){
             5 | -t)
                 echo "What do you want your timeout to be?"
                 read -rt 120 -p "Please type an integer: " up_timeout || { echo -e "\033[1;31m\nFailed to make a selection in time\033[0m" ; exit; }
-                ! [[ $up_timeout =~ ^[0-9]+$ ]] && echo -e "\033[31mError: "$up_timeout" is invalid, it needs to be an integer\nNOT adding it to the list\033[0m" && sleep 3 && continue
+                ! [[ $up_timeout =~ ^[0-9]+$ ]] && echo -e "\033[31mError: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list\033[0m" && sleep 3 && continue
                 option="-t"
                 value="$up_timeout"
                 ;;
@@ -156,7 +156,6 @@ script_create(){
 
                 # Loop through the array in reverse order
                 for ((i=${#update_selection[@]}-1; i>=0; i--)); do
-                    echo -e "\033[34mChecking ${update_selection[i]}\033[0m"
                     # Check if the current element is hyphenated
                     if [[ ${update_selection[i]} =~ ^- ]]; then
                         # Set the flag to indicate that we have found a hyphenated element
@@ -164,12 +163,9 @@ script_create(){
                     fi
                     # If we have found a hyphenated element, unset the current element
                     if [[ $found_hyphenated -eq 1 ]]; then
-                        echo -e "\033[32mRemoved ${update_selection[i]} from the array\033[0m"
-                        unset "update_selection[$i]"
                         # Break out of the loop
                         break
                     else
-                        echo -e "\033[32mRemoved ${update_selection[i]} from the array\033[0m"
                         unset "update_selection[$i]"
                     fi
                 done
@@ -180,7 +176,6 @@ script_create(){
                 ;;
             99)
                 count=2
-                echo -e "\033[32mrestarting\033[0m"
                 for i in "${update_selection[@]:2}"
                 do
                     unset "update_selection[$count]"

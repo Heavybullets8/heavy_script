@@ -17,11 +17,11 @@ container_shell_or_logs(){
         title 
 
         if [[ $logs == "true" || $1 == "logs" ]];then
-            echo "Logs to Container Menu"
-            echo "----------------------"
+            echo -e "\033[1mLogs to Container Menu\033[0m"
+            echo -e "\033[1m----------------------\033[0m"
         else
-            echo "Command to Container Menu"
-            echo "-------------------------"
+            echo -e "\033[1mCommand to Container Menu\033[0m"
+            echo -e "\033[1m-------------------------\033[0m"
         fi
 
         for i in "${!app_map[@]}"; do
@@ -29,14 +29,14 @@ container_shell_or_logs(){
         done | sort -n
         echo
         echo "0)  Exit"
-        read -r -t 120 -p "Please type a number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+        read -r -t 120 -p "Please type a number: " selection || { echo -e "\033[1;31m\nFailed to make a selection in time\033[0m" ; exit; }
 
         # Validate selection
         if [[ $selection == 0 ]]; then
             echo "Exiting.."
             exit
         elif ! [[ $selection =~ ^[0-9]+$ ]] || ! [[ ${app_map[$selection]} ]]; then
-            echo "Error: \"$selection\" was not an option.. Try again"
+            echo -e "\033[1;31mError: \"$selection\" was not an option.. Try again\033[0m"
             sleep 3
             continue
         else
@@ -56,7 +56,7 @@ container_shell_or_logs(){
     mapfile -t containers < <(sort -u cont_file 2> /dev/null)
     case "${#containers[@]}" in
         0)
-            echo -e "No containers available\nAre you sure the application in running?"
+            echo -e "\033[1;31mNo containers available\nAre you sure the application in running?\033[0m"
             exit
             ;;
         1)
@@ -68,8 +68,8 @@ container_shell_or_logs(){
             do
                 clear -x
                 title
-                echo "Available Containers"
-                echo "--------------------"
+                echo -e "\033[1mAvailable Containers\033[0m"
+                echo -e "\033[1m--------------------\033[0m"
                 cont_search=$(
                 for i in "${containers[@]}"
                 do
@@ -79,12 +79,12 @@ container_shell_or_logs(){
                 echo "$cont_search"
                 echo
                 echo "0)  Exit"
-                read -rt 120 -p "Choose a container by number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+                read -rt 120 -p "Choose a container by number: " selection || { echo -e "\033[1;31m\nFailed to make a selection in time\033[0m" ; exit; }
                 if [[ $selection == 0 ]]; then
                     echo "Exiting.."
                     exit
                 elif ! echo -e "$cont_search" | grep -qs ^"$selection)" ; then
-                    echo "Error: \"$selection\" was not an option.. Try again"
+                    echo -e "\033[1;31mError: \"$selection\" was not an option.. Try again\033[0m"
                     sleep 3
                     continue
                 else
@@ -105,12 +105,12 @@ container_shell_or_logs(){
         do
             clear -x
             title
-            echo "App Name: ${app_name}"
-            echo "Container: $container"
+            echo -e "\033[1mApp Name:\033[0m \033[1;34m${app_name}\033[0m"
+            echo -e "\033[1mContainer:\033[0m \033[1;34m$container\033[0m"
             echo
-            read -rt 120 -p "How many lines of logs do you want to display?(\"-1\" for all): " lines || { echo -e "\nFailed to make a selection in time" ; exit; }
+            read -rt 120 -p "How many lines of logs do you want to display?(\"-1\" for all): " lines || { echo -e "\033[1;31m\nFailed to make a selection in time\033[0m" ; exit; }
             if ! [[ $lines =~ ^[0-9]+$|^-1$ ]]; then
-                echo "Error: \"$lines\" was not a number.. Try again"
+                echo -e "\033[1;31mError: \"$lines\" was not a number.. Try again\033[0m"
                 sleep 3
                 continue
             else
@@ -120,7 +120,7 @@ container_shell_or_logs(){
 
         # Display logs
         if ! k3s crictl logs --tail "$lines" -f "$container_id"; then
-            echo "Failed to retrieve logs for container: $container_id"
+            echo -e "\033[1;31mFailed to retrieve logs for container: $container_id\033[0m"
             exit
         fi
         exit
@@ -131,14 +131,14 @@ container_shell_or_logs(){
     do
         clear -x
         title
-        echo "App Name: ${app_name}"
-        echo "Container: $container"
+        echo -e "\033[1mApp Name:\033[0m \033[1;34m${app_name}\033[0m"
+        echo -e "\033[1mContainer:\033[0m \033[1;34m$container\033[0m"
         echo
         echo "1)  Run a single command"
         echo "2)  Open Shell"
         echo
         echo "0)  Exit"
-        read -rt 120 -p "Please choose an option: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+        read -rt 120 -p "Please choose an option: " selection || { echo -e "\033[1;31m\nFailed to make a selection in time\033[0m" ; exit; }
         case $selection in
             0)
                 echo "Exiting.."
@@ -147,7 +147,7 @@ container_shell_or_logs(){
             1)
                 clear -x 
                 title
-                read -rt 500 -p "What command do you want to run?: " command || { echo -e "\nFailed to make a selection in time" ; exit; }
+                read -rt 500 -p "What command do you want to run?: " command || { echo -e "\033[1;31m\nFailed to make a selection in time\033[0m" ; exit; }
                 # shellcheck disable=SC2086
                 # Quoting $command as suggested, causes the k3s command to fail
                 k3s crictl exec -it "$container_id" $command
@@ -157,12 +157,12 @@ container_shell_or_logs(){
                 clear -x
                 title
                 if ! k3s crictl exec -it "$container_id" sh -c '[[ -e /bin/bash ]] && exec /bin/bash || exec /bin/sh'; then
-                    echo "This container does not accept shell access, try a different one."
+                    echo -e "\033[1;31mThis container does not accept shell access, try a different one.\033[0m"
                 fi
                 break
                 ;;
             *)
-                echo "That was not an option.. Try again"
+                echo -e "\033[1;31mThat was not an option.. Try again\033[0m"
                 sleep 3
                 ;;
         esac

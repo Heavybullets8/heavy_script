@@ -158,10 +158,18 @@ add_script_to_global_path(){
         echo "Script path added to .zshrc"
     fi
 
+    echo "Refreshing the terminal.."
+    sleep 1
+
     # Reload the .bashrc and .zshrc files
-    source ~/.bashrc
-    source ~/.zshrc
+    if [ "$SHELL" == "/usr/bin/zsh" ]; then
+        # shellcheck source=/dev/null
+        source "$HOME/.bashrc" 2> /dev/null
+        exec zsh
 
-    echo "heavy_script.sh is now accessible from any directory in both bash and zsh"
-
+    else
+        # shellcheck source=/dev/null
+        source "$HOME/.bashrc" 2> /dev/null
+        exec bash
+    fi
 }

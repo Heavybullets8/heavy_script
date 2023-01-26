@@ -88,6 +88,7 @@ menu(){
                 echo -e "${bold}------------------------${reset}"
                 echo "1)  Self Update"
                 echo "2)  Choose Branch"
+                echo "3)  Add Script to Global Path"
                 echo
                 echo "0)  Exit"
                 read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
@@ -103,6 +104,10 @@ menu(){
                     2)
                         misc_selection=true
                         choose_branch
+                        ;;
+                    3)
+                        misc_selection=true
+                        add_script_to_global_path
                         ;;
                     *)
                         echo -e "${blue}\"$selection\"${red} was not an option, please try agian${reset}" && sleep 3 && continue

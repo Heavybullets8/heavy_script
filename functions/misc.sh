@@ -113,3 +113,55 @@ help(){
     echo
     exit
 }
+
+add_script_to_global_path(){
+
+    if [ "$(id -u)" != "0" ]; then
+        echo "This script must be run as root" 
+        exit 1
+    fi
+
+    # Make sure the script is executable
+    chmod +x heavy_script.sh
+
+    # Check if the script path is already in the .bashrc file
+    if grep -q "$script_path" ~/.bashrc; then
+        echo "Script path is already in .bashrc"
+        # check if the path is correct
+        if grep -q "$script_path" ~/.bashrc; then
+            echo "Path is correct in .bashrc"
+        else
+            # replace the wrong path with the correct path
+            sed -i "s|.*heavy_script.sh.*|export PATH=$PATH:$script_path|" ~/.bashrc
+            echo "Path is corrected in .bashrc"
+        fi
+    else
+        # Append the script location to the PATH variable in the .bashrc file
+        echo "export PATH=$PATH:$script_path" >> ~/.bashrc
+        echo "Script path added to .bashrc"
+    fi
+
+    # Check if the script path is already in the .zshrc file
+    if grep -q "$script_path" ~/.zshrc; then
+        echo "Script path is already in .zshrc"
+        # check if the path is correct
+        if grep -q "$script_path" ~/.zshrc; then
+            echo "Path is correct in .zshrc"
+        else
+            # replace the wrong path with the correct path
+            sed -i "s|.*heavy_script.sh.*|export PATH=$PATH:$script_path|" ~/.zshrc
+            echo "Path is corrected in .zshrc"
+        fi
+    else
+        # Append the script location to the PATH variable in the .zshrc file
+        echo "export PATH=$PATH:$script_path" >> ~/.zshrc
+        echo "Script path added to .zshrc"
+    fi
+
+    # Reload the .bashrc and .zshrc files
+    source ~/.bashrc
+    source ~/.zshrc
+
+    echo "heavy_script.sh is now accessible from any directory in both bash and zsh"
+
+}

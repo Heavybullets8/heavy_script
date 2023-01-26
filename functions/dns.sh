@@ -3,7 +3,7 @@
 
 dns(){
     clear -x
-    echo "Generating DNS Names.."
+    echo -e "${blue}Generating DNS Names..${reset}"
 
     # Pulling pod names
     k3s crictl pods --namespace ix -s Ready | sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//' | grep -v 'svclb-' | sed '1d'  >> dns_file

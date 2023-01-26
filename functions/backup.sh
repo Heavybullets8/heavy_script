@@ -52,15 +52,15 @@ choose_restore(){
         clear -x
         title
         if [[ "$1" == "delete" ]]; then
-            echo "Choose a restore point to delete"
+            echo -e "${bold}Choose a restore point to delete${reset}"
         else
-            echo "Choose a restore point to restore"
+            echo -e "${bold}Choose a restore point to restore${reset}"
         fi
         echo
 
         {
         if [[ ${#hs_tt_backups[@]} -gt 0 ]]; then
-            echo "$(tput bold)# HeavyScript/Truetool_Backups$(tput sgr0)"
+            echo "${bold}# HeavyScript/Truetool_Backups${reset}"
             # Print the HeavyScript and Truetool backups with numbers
             for ((i=0; i<${#hs_tt_backups[@]}; i++)); do
                 echo "$count) ${hs_tt_backups[i]}"
@@ -71,7 +71,7 @@ choose_restore(){
 
         # Check if the system backups array is non-empty
         if [[ ${#system_backups[@]} -gt 0 ]]; then
-            echo -e "\n$(tput bold)# System_Backups$(tput sgr0)"
+            echo -e "\n${bold}# System_Backups${reset}"
             # Print the system backups with numbers
             for ((i=0; i<${#system_backups[@]}; i++)); do
                 echo "$count) ${system_backups[i]}"
@@ -82,7 +82,7 @@ choose_restore(){
 
         # Check if the other backups array is non-empty
         if [[ ${#other_backups[@]} -gt 0 ]]; then
-            echo -e "\n$(tput bold)# Other_Backups$(tput sgr0)"
+            echo -e "\n${bold}# Other_Backups${reset}"
             # Print the other backups with numbers
             for ((i=0; i<${#other_backups[@]}; i++)); do
                 echo "$count) ${other_backups[i]}"
@@ -94,7 +94,7 @@ choose_restore(){
         echo
         echo "0)  Exit"
         # Prompt the user to select a restore point
-        read -rt 240 -p "Please type a number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+        read -rt 240 -p "Please type a number: " selection || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
 
         # Check if the user wants to exit
         if [[ $selection == 0 ]]; then
@@ -102,7 +102,7 @@ choose_restore(){
             exit
         # Check if the user's input is empty
         elif [[ -z "$selection" ]]; then 
-            echo "Your selection cannot be empty"
+            echo -e "${red}Your selection cannot be empty${reset}"
             sleep 3
             continue
         else
@@ -117,7 +117,7 @@ choose_restore(){
 
             # If the user's selection is not a valid option, inform them and prompt them to try again
             if [[ $found -eq 0 ]]; then
-                echo "Invalid Selection: $selection, was not an option"
+                echo -e "${red}Invalid Selection: ${blue}$selection${red}, was not an option${reset}"
                 sleep 3
                 continue
             fi
@@ -132,7 +132,7 @@ export -f choose_restore
 
 
 list_backups_func(){
-    clear -x && echo "pulling restore points.."
+    clear -x && echo -e "${blue}pulling restore points..${reset}"
 
     list_backups=$(cli -c 'app kubernetes list_backups' | tr -d " \t\r" | sed '1d;$d')
 
@@ -146,7 +146,7 @@ list_backups_func(){
 
     #Check if there are any restore points
     if [[ ${#hs_tt_backups[@]} -eq 0 ]] && [[ ${#system_backups[@]} -eq 0 ]] && [[ ${#other_backups[@]} -eq 0 ]]; then
-        echo "No restore points available"
+        echo -e "${yellow}No restore points available${reset}"
         exit
     fi
 
@@ -188,14 +188,14 @@ deleteBackup(){
         while true
         do
             clear -x
-            echo -e "WARNING:\nYou CANNOT go back after deleting your restore point" 
-            echo -e "\n\nYou have chosen:\n$restore_point\n\n"
-            read -rt 120 -p "Would you like to proceed with deletion? (y/N): " yesno  || { echo -e "\nFailed to make a selection in time" ; exit; }
+            echo -e "${yellow}WARNING:\nYou CANNOT go back after deleting your restore point${reset}" 
+            echo -e "\n\n${yellow}You have chosen:\n${blue}$restore_point\n\n${reset}"
+            read -rt 120 -p "Would you like to proceed with deletion? (y/N): " yesno  || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
             case $yesno in
                 [Yy] | [Yy][Ee][Ss])
                     echo -e "\nDeleting $restore_point"
-                    cli -c 'app kubernetes delete_backup backup_name=''"'"$restore_point"'"' &>/dev/null || { echo "Failed to delete backup.."; exit; }
-                    echo "Sucessfully deleted"
+                    cli -c 'app kubernetes delete_backup backup_name=''"'"$restore_point"'"' &>/dev/null || { echo "${red}Failed to delete backup..${reset}"; exit; }
+                    echo -e "${green}Sucessfully deleted${reset}"
                     break
                     ;;
                 [Nn] | [Nn][Oo])
@@ -203,7 +203,7 @@ deleteBackup(){
                     exit
                     ;;
                 *)
-                    echo "That was not an option, try again"
+                    echo -e "${red}That was not an option, try again${reset}"
                     sleep 3
                     continue
                     ;;
@@ -213,7 +213,7 @@ deleteBackup(){
         #Check if there are more backups to delete
         while true
         do
-            read -rt 120 -p "Delete more backups? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
+            read -rt 120 -p "Delete more backups? (y/N): " yesno || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
             case $yesno in
                 [Yy] | [Yy][Ee][Ss])
                     break
@@ -222,7 +222,7 @@ deleteBackup(){
                     exit
                     ;;
                 *)
-                    echo "$yesno was not an option, try again" 
+                    echo -e "${blue}$yesno ${red}was not an option, try again${reset}" 
                     sleep 2
                     continue
                     ;;
@@ -274,16 +274,16 @@ restore(){
 
     # If there is still empty PVC data, exit
     if [[ $borked == True ]]; then
-        echo "Warning!:"
-        echo "The following applications have empty PVC data:"
+        echo -e "${yellow}Warning!:"
+        echo -e "The following applications have empty PVC data:${reset}"
         for app in "${borked_array[@]}"; do
             echo -e "$app"
         done
-        echo "We have no choice but to exit"
-        echo "If you were to restore, you would lose all of your application data"
-        echo "If you are on Bluefin version: 22.12.0, and have not yet ran the patch, you will need to run it"
-        echo "Afterwards you will be able to create backups and restore them"
-        echo "This is a known ix-systems bug, and has nothing to do with HeavyScript"
+        echo -e "${red}We have no choice but to exit"
+        echo -e "If you were to restore, you would lose all of your application data"
+        echo -e "If you are on Bluefin version: 22.12.0, and have not yet ran the patch, you will need to run it"
+        echo -e "Afterwards you will be able to create backups and restore them"
+        echo -e "This is a known ix-systems bug, and has nothing to do with HeavyScript${reset}"
         exit
     fi
 
@@ -298,9 +298,9 @@ restore(){
     while true
     do
         clear -x
-        echo -e "WARNING:\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible"
-        echo -e "\n\nYou have chosen:\n$restore_point\n\n"
-        read -rt 120 -p "Would you like to proceed with restore? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
+        echo -e "${yellow}WARNING:\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible${reset}"
+        echo -e "\n\nYou have chosen:\n${blue}$restore_point${reset}\n\n"
+        read -rt 120 -p "Would you like to proceed with restore? (y/N): " yesno || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case $yesno in
             [Yy] | [Yy][Ee][Ss])
                 pool=$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")
@@ -310,25 +310,25 @@ restore(){
                 for pvc in $(zfs list -t filesystem -r "$pool"/ix-applications/releases -o name -H | grep "volumes/pvc")
                 do
                     if zfs set mountpoint=legacy "$pvc"; then
-                        echo "Success for - \"$pvc\""
+                        echo -e "${green}Success for - ${blue}\"$pvc\"${reset}"
                     else
-                        echo "Error: Setting properties for \"$pvc\", failed.."
+                        echo -e "${red}Error: Setting properties for ${blue}\"$pvc\"${red}, failed..${reset}"
                     fi
                 done
 
                 # Ensure readonly is turned off
                 if ! zfs set readonly=off "$pool"/ix-applications;then
-                    echo -e "Error: Failed to set ZFS ReadOnly to \"off\""
+                    echo -e "${red}Error: Failed to set ZFS ReadOnly to \"off\""
                     echo -e "After the restore, attempt to run the following command manually:"
-                    echo "zfs set readonly=off $pool/ix-applications"
+                    echo -e "${blue}zfs set readonly=off $pool/ix-applications${reset}"
                 fi
 
-                echo "Finished setting properties.."
+                echo "${green}Finished setting properties..${reset}"
 
                 # Beginning snapshot restore
                 echo -e "\nStarting restore, this will take a LONG time."
                 if ! cli -c 'app kubernetes restore_backup backup_name=''"'"$restore_point"'"'; then
-                    echo "Restore failed, exiting.."
+                    echo -e  "${red}Restore failed, exiting..${reset}"
                     exit 1
                 fi
                 exit
@@ -338,7 +338,7 @@ restore(){
                 exit
                 ;;
             *)
-                echo "That was not an option, try again"
+                echo -e  "${red}That was not an option, try again..${red}"
                 sleep 3
                 continue
                 ;;
@@ -374,18 +374,18 @@ check_restore_point_version() {
         echo "This is not recommended, as it may cause issues with the system"
         echo "Either that, or your systems date is incorrect.."
         echo
-        echo "Current SCALE Information:"
-        echo "Version:       $current_version"
-        echo "When Updated:  $(echo "$restore_point" | awk -F '_' '{print $2 "-" $3 "-" $4}')"
+        echo -e "${bold}Current SCALE Information:"
+        echo -e "${bold}Version:${reset}       ${blue}$current_version${reset}"
+        echo -e "${bold}When Updated:${reset}  ${blue}$(echo "$restore_point" | awk -F '_' '{print $2 "-" $3 "-" $4}')${reset}"
         echo
-        echo "Restore Point SCALE Information:"
-        echo "Version:       $(echo "$previous_version" | awk -F ',' '{print $1}')"
-        echo "When Updated:  $(echo "$previous_version" | awk -F ',' '{print $2}' | awk -F 'T' '{print $1}')"
+        echo -e "${bold}Restore Point SCALE Information:${reset}"
+        echo -e "${bold}Version:${reset}       ${blue}$(echo "$previous_version" | awk -F ',' '{print $1}')${reset}"
+        echo -e "${bold}When Updated:${reset}  ${blue}$(echo "$previous_version" | awk -F ',' '{print $2}' | awk -F 'T' '{print $1}')${reset}"
         echo
-        read -rt 120 -p "Would you like to proceed? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
+        read -rt 120 -p "Would you like to proceed? (y/N): " yesno || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
             case $yesno in
                 [Yy] | [Yy][Ee][Ss])
-                    echo "Proceeding.."
+                    echo -e "${green}Proceeding..${reset}"
                     sleep 3
                     break
                     ;;
@@ -394,7 +394,7 @@ check_restore_point_version() {
                     exit
                     ;;
                 *)
-                    echo "That was not an option, try again"
+                    echo -e "${red}That was not an option, try again${reset}"
                     sleep 3
                     continue
                     ;;

@@ -71,7 +71,7 @@ restart_middlewared(){
         echo "We need to restart middlewared to finish the patch"
         echo "This will cause a short downtime for some minor services approximately 10-30 seconds"
         echo "Applications should not be affected"
-        read -rt 120 -p "Would you like to proceed? (y/N): " yesno || { echo -e "\nFailed to make a selection in time" ; exit; }
+        read -rt 120 -p "Would you like to proceed? (y/N): " yesno || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case $yesno in
             [Yy] | [Yy][Ee][Ss])
                 echo "Restarting middlewared..."

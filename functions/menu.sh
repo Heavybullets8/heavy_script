@@ -59,7 +59,7 @@ menu(){
                         ;;
                     1)
                         read -rt 120 -p "What is the maximun number of backups you would like?: " number_of_backups || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
-                        ! [[ $number_of_backups =~ ^[0-9]+$  ]] && echo -e "${red}Error: The input must be an interger\n\"""$number_of_backups""\" is not an interger${reset}" >&2 && exit
+                        ! [[ $number_of_backups =~ ^[0-9]+$  ]] && echo -e "${red}Error: The input must be an interger\n${blue}\"""$number_of_backups""\"${red} is not an interger${reset}" >&2 && exit
                         [[ "$number_of_backups" -le 0 ]] && echo -e "${red}Error: Number of backups is required to be at least 1${reset}" && exit
                         backup_selection=true
                         ;;
@@ -105,7 +105,7 @@ menu(){
                         choose_branch
                         ;;
                     *)
-                        echo -e "${red}\"$selection\" was not an option, please try agian${reset}" && sleep 3 && continue
+                        echo -e "${blue}\"$selection\"${red} was not an option, please try agian${reset}" && sleep 3 && continue
                         ;;
                 esac
             done
@@ -143,7 +143,7 @@ menu(){
                         container_shell_or_logs "logs"
                         ;;
                     *)
-                        echo -e "${red}\"$selection\" was not an option, please try agian${reset}" && sleep 3 && continue
+                        echo -e "${blue}\"$selection\"${red} was not an option, please try agian${reset}" && sleep 3 && continue
                         ;;
                 esac
             done
@@ -159,10 +159,10 @@ menu(){
                 echo "Patch Menu"
                 echo "----------"
                 echo "1)  Patch 22.12.0 Restore"
-                echo -e "\033[1;30m- - Fixes issue on 22.12.0 where restore points were being saved with empty PVC data${reset}"
+                echo -e "${gray}- - Fixes issue on 22.12.0 where restore points were being saved with empty PVC data${reset}"
                 echo
                 echo "2)  Patch 22.12.0 Backups"
-                echo -e "\033[1;30m- - Fixes issue on 22.12.0 where backups would fail on certain applications${reset}"
+                echo -e "${gray}- - Fixes issue on 22.12.0 where backups would fail on certain applications${reset}"
                 echo
                 echo "0)  Exit"
                 read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
@@ -180,13 +180,13 @@ menu(){
                         patch_2212_backups2
                         ;;
                     *)
-                        echo -e "${red}\"$selection\" was not an option, please try agian${reset}" && sleep 3 && continue
+                        echo -e "${blue}\"$selection\"${red} was not an option, please try agian${reset}" && sleep 3 && continue
                         ;;
                 esac
             done
             ;;
         *)
-            echo -e "${red}\"$selection\" was not an option, please try agian${reset}" && sleep 3 && menu
+            echo -e "${blue}\"$selection\"${red} was not an option, please try agian${reset}" && sleep 3 && menu
             ;;
     esac
     echo

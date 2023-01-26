@@ -84,7 +84,7 @@ container_shell_or_logs(){
                     echo "Exiting.."
                     exit
                 elif ! echo -e "$cont_search" | grep -qs ^"$selection)" ; then
-                    echo -e "${red}Error: \"$selection\" was not an option.. Try again${reset}"
+                    echo -e "${red}Error: ${blue}\"$selection\"${red} was not an option.. Try again${reset}"
                     sleep 3
                     continue
                 else
@@ -110,7 +110,7 @@ container_shell_or_logs(){
             echo
             read -rt 120 -p "How many lines of logs do you want to display?(\"-1\" for all): " lines || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
             if ! [[ $lines =~ ^[0-9]+$|^-1$ ]]; then
-                echo -e "${red}Error: \"$lines\" was not a number.. Try again${reset}"
+                echo -e "${red}Error: ${blue}\"$lines\"${red} was not a number.. Try again${reset}"
                 sleep 3
                 continue
             else
@@ -131,7 +131,7 @@ container_shell_or_logs(){
     do
         clear -x
         title
-        echo -e "${bold}App Name:${reset} ${blue}${app_name}${reset}"
+        echo -e "${bold}App Name:${reset} ${blue}$app_name${reset}"
         echo -e "${bold}Container:${reset} ${blue}$container${reset}"
         echo
         echo "1)  Run a single command"

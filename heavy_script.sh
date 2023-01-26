@@ -37,8 +37,9 @@ reset='\033[0m'
 red='\033[0;31m'
 yellow='\033[1;33m'
 blue='\033[0;34m'
-light_blue='\033[1;36m'
 bold='\033[1m'
+gray='\033[1;30m'
+
 
 #If no argument is passed, open menu function.
 [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && menu

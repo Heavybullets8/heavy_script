@@ -19,7 +19,7 @@ mount(){
         echo "2)  Unmount All"
         echo
         echo "0)  Exit"
-        read -rt 120 -p "Please type a number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+        read -rt 120 -p "Please type a number: " selection || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case $selection in
             0)
                 echo "Exiting.."
@@ -43,21 +43,21 @@ mount(){
                     #Check for valid selection. If no issues, continue
                     [[ $selection == 0 ]] && echo "Exiting.." && exit
                     app=$(echo -e "$list" | grep ^"$selection)" | awk '{print $2}' | cut -c 4- )
-                    [[ -z "$app" ]] && echo -e "${red}Invalid Selection: $selection, was not an option${reset}" && sleep 3 && continue 
+                    [[ -z "$app" ]] && echo -e "${red}Invalid Selection: ${blue}$selection${red}, was not an option${reset}" && sleep 3 && continue 
                     pvc=$(echo -e "$list" | grep ^"$selection)")
 
                     #Stop applicaiton if not stopped
                     status=$(cli -m csv -c 'app chart_release query name,status' | grep "^$app," | awk -F ',' '{print $2}'| tr -d " \t\n\r")
                     if [[ "$status" != "STOPPED" ]]; then
-                        echo -e "\nStopping $app prior to mount"
+                        echo -e "\nStopping ${blue}$app${reset} prior to mount"
                         if ! cli -c 'app chart_release scale release_name='\""$app"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then
-                            echo -e "${red}Failed to stop $app${reset}"
+                            echo -e "${red}Failed to stop ${blue}$app${reset}"
                             exit 1
                         else
-                            echo -e "\033[1;32mStopped${reset}"
+                            echo -e "${green}Stopped${reset}"
                         fi
                     else
-                        echo -e "\n\033[1;32m$app is already stopped${reset}"
+                        echo -e "\n${green}$app is already stopped${reset}"
                     fi
                     sleep 2
 
@@ -72,8 +72,8 @@ mount(){
                     do
                         clear -x
                         title
-                        echo -e "Selected App: ${blue}$app${reset}"
-                        echo -e "Selected PVC: ${blue}$data_name${reset}"
+                        echo -e "${bold}Selected App:${reset} ${blue}$app${reset}"
+                        echo -e "${bold}Selected PVC:${reset} ${blue}$data_name${reset}"
                         echo
                         echo "Available Pools:"
 
@@ -134,7 +134,7 @@ mount(){
                     echo -e "${bold}Selected Pool:${reset} ${blue}$pool_name${reset}"
                     echo -e "${bold}Mounted To:${reset} ${blue}$path/mounted_pvc/$data_name${reset}"
                     if [[ $mount_fauilure != true ]]; then
-                        echo -e "${bold}Status:${reset} \033[1;32mSuccessfully Mounted${reset}"
+                        echo -e "${bold}Status:${reset} ${green}Successfully Mounted${reset}"
                     else
                         echo -e "${bold}Status:${reset} ${red}Mount Failure${reset}"
                     fi
@@ -164,7 +164,7 @@ mount(){
                             exit
                             ;;
                         *)
-                            echo -e "${red}Invalid selection \"$yesno\" was not an option${reset}" 
+                            echo -e "${red}Invalid selection ${blue}\"$yesno\"${red} was not an option${reset}" 
                             sleep 3
                             continue
                             ;;
@@ -189,7 +189,7 @@ mount(){
 
                 # Check if the unmount_array is empty
                 if [[ -z ${unmount_array[*]} ]]; then
-                    echo -e "\033[1;33mThere are no PVCS to unmount.${reset}"
+                    echo -e "${yellow}There are no PVCS to unmount.${reset}"
                     sleep 3
                 else
                     for pvc_name in "${unmount_array[@]}"; do
@@ -201,10 +201,10 @@ mount(){
 
                         # Set the mountpoint to "legacy" and unmount
                         if zfs set mountpoint=legacy "$full_path""$pvc"; then
-                            echo -e "\033[1;32m$pvc_name unmounted successfully.${reset}"
+                            echo -e "${blue}$pvc_name ${green}unmounted successfully.${reset}"
                             rmdir /mnt/*/mounted_pvc/"$pvc_name" 2>/dev/null || rmdir /mnt/mounted_pvc/"$pvc_name" 2>/dev/null
                         else
-                            echo -e "${red}Failed to unmount $pvc_name.${reset}"
+                            echo -e "${red}Failed to unmount ${blue}$pvc_name.${reset}"
                         fi
 
                     done
@@ -214,7 +214,7 @@ mount(){
                 fi
                 ;;
             *)
-                echo -e "${red}Invalid selection, \"$selection\" was not an option${reset}" 
+                echo -e "${red}Invalid selection, ${blue}\"$selection\"${red} was not an option${reset}" 
                 sleep 3
                 continue
                 ;;

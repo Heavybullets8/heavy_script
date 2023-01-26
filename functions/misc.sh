@@ -115,8 +115,8 @@ help(){
 }
 
 add_script_to_global_path(){
-    title
     clear -x
+    title
 
     if [ "$(id -u)" != "0" ]; then
         echo -e "${red}This script must be run as root${reset}}" 

@@ -36,6 +36,7 @@ source functions/script_create.sh
 reset='\033[0m'
 red='\033[0;31m'
 yellow='\033[1;33m'
+green='\033[0;32m'
 blue='\033[0;34m'
 bold='\033[1m'
 gray='\033[1;30m'

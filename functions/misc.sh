@@ -127,38 +127,38 @@ add_script_to_global_path(){
     chmod +x "$script_name"
 
     # Check if the script path is already in the .bashrc file
-    if grep -q "$script_path" "$HOME.bashrc"; then
+    if grep -q "$script_path" "$HOME/.bashrc"; then
         echo -e "${yellow}Script path is already in .bashrc${reset}"
         # check if the path is correct
-        if grep -q "$script_path" "$HOME.bashrc"; then
+        if grep -q "$script_path" "$HOME/.bashrc"; then
             echo -e "${green}Path is correct in .bashrc${reset}"
         else
             # replace the wrong path with the correct path
-            sed -i "s|.*heavy_script.sh.*|export PATH=$PATH:$script_path|" "$HOME.bashrc"
+            sed -i "s|.*heavy_script.sh.*|export PATH=$PATH:$script_path|" "$HOME/.bashrc"
             echo -e "${green}Path is corrected in .bashrc${reset}"
         fi
     else
         # Append the script location to the PATH variable in the .bashrc file
-        echo "export PATH=$PATH:$script_path" >> "$HOME.bashrc"
+        echo "export PATH=$PATH:$script_path" >> "$HOME/.bashrc"
         echo -e "${green}Script path added to .bashrc${reset}"
     fi
 
     echo
 
     # Check if the script path is already in the .zshrc file
-    if grep -q "$script_path" "$HOME.zshrc"; then
+    if grep -q "$script_path" "$HOME/.zshrc"; then
         echo -e "${yellow}Script path is already in .zshrc${reset}"
         # check if the path is correct
-        if grep -q "$script_path" "$HOME.zshrc"; then
+        if grep -q "$script_path" "$HOME/.zshrc"; then
             echo -e "${green}Path is correct in .zshrc${reset}"
         else
             # replace the wrong path with the correct path
-            sed -i "s|.*heavy_script.sh.*|export PATH=$PATH:$script_path|" "$HOME.zshrc"
+            sed -i "s|.*heavy_script.sh.*|export PATH=$PATH:$script_path|" "$HOME/.zshrc"
             echo -e "${green}Path is corrected in .zshrc${reset}"
         fi
     else
         # Append the script location to the PATH variable in the .zshrc file
-        echo "export PATH=$PATH:$script_path" >> "$HOME.zshrc"
+        echo "export PATH=$PATH:$script_path" >> "$HOME/.zshrc"
         echo -e "${green}Script path added to .zshrc${reset}"
     fi
 

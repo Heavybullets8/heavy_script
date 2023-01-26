@@ -134,7 +134,7 @@ add_script_to_global_path(){
             echo -e "${green}Path is correct in .bashrc${reset}"
         else
             # replace the wrong path with the correct path
-            sed -i "s|.*heavy_script.sh.*|export PATH=$PATH:$script_path|" "$HOME/.bashrc"
+            sed -i "s|.*heavy_script.*|export PATH=$PATH:$script_path|" "$HOME/.bashrc"
             echo -e "${green}Path is corrected in .bashrc${reset}"
         fi
     else
@@ -153,7 +153,7 @@ add_script_to_global_path(){
             echo -e "${green}Path is correct in .zshrc${reset}"
         else
             # replace the wrong path with the correct path
-            sed -i "s|.*heavy_script.sh.*|export PATH=$PATH:$script_path|" "$HOME/.zshrc"
+            sed -i "s|.*heavy_script.*|export PATH=$PATH:$script_path|" "$HOME/.zshrc"
             echo -e "${green}Path is corrected in .zshrc${reset}"
         fi
     else

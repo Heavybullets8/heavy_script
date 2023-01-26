@@ -122,7 +122,7 @@ add_script_to_global_path(){
     fi
 
     # Make sure the script is executable
-    chmod +x heavy_script.sh
+    chmod +x "$script_name"
 
     # Check if the script path is already in the .bashrc file
     if grep -q "$script_path" ~/.bashrc; then

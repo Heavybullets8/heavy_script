@@ -162,6 +162,7 @@ add_script_to_global_path(){
         echo -e "${green}Script path added to .zshrc${reset}"
     fi
 
+    echo 
     echo -e "${blue}Refreshing the terminal..${reset}"
     sleep 1
 

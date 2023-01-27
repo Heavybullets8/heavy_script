@@ -9,29 +9,22 @@ if [[ $(id -u) != 0 ]]; then
     exit 1
 fi
 
-# Define a function to update the repository
 update_repo() {
     local script_dir="$1"
-    local success=false
     cd "$script_dir"
-
     git reset --hard &>/dev/null
-    if git pull --tags &>/dev/null; then
-        echo "Successfully pulled the latest tags."
-        success=true
-    else
+    if ! git pull --tags ; then
         echo "Failed to pull the latest tags."
+        return 1
     fi
-
-    if git checkout "$(git describe --tags "$(git rev-list --tags --max-count=1)")" &>/dev/null; then
-        echo "Successfully checked out the latest release."
-        success=true
-    else
+    if ! git checkout "$(git describe --tags "$(git rev-list --tags --max-count=1)")" &>/dev/null; then
         echo "Failed to check out the latest release."
+        return 1
     fi
-
-    return $success
+    echo "Successfully updated the repository"
+    return 0
 }
+
 
 # Define variables
 script_name='heavyscript'

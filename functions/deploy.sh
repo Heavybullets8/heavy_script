@@ -13,10 +13,7 @@ update_repo() {
     local script_dir="$1"
     cd "$script_dir"
     git reset --hard &>/dev/null
-    if ! git pull --tags ; then
-        echo "Failed to pull the latest tags."
-        return 1
-    fi
+    git fetch --tags &>/dev/null
     if ! git checkout "$(git describe --tags "$(git rev-list --tags --max-count=1)")" &>/dev/null; then
         echo "Failed to check out the latest release."
         return 1

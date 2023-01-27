@@ -52,10 +52,11 @@ else
     # Clone the script repository
     echo "Cloning $script_name repository..."
     cd "$HOME" || exit 1
-    if ! git clone "https://github.com/Heavybullets8/heavy_script.git";then
+    if ! git clone "https://github.com/Heavybullets8/heavy_script.git"; then
         echo "Failed to clone the repository"
         exit 1
     fi
+    
     cd "$script_dir" || exit 1
     if ! update_repo "$script_dir"; then
         exit 1
@@ -69,11 +70,11 @@ if [[ ! -d "$bin_dir" ]]; then
     mkdir "$bin_dir"
 fi
 
-# Create the script wrapper if it does not exist
-if [[ ! -x "$script_wrapper" ]]; then
-    echo "Creating $script_wrapper wrapper..."
-    ln -sf "$script_dir/bin/$script_name" "$script_wrapper"
-fi
+# Create symlink inside bin, to the script
+echo "Creating $script_wrapper wrapper..."
+ln -sf "$script_dir/bin/$script_name" "$script_wrapper"
+chmod +x "$script_dir/bin/$script_name"
+
 
 # Add $HOME/bin to PATH in .bashrc and .zshrc
 for rc_file in .bashrc .zshrc; do
@@ -88,5 +89,4 @@ for rc_file in .bashrc .zshrc; do
     fi
 done
 
-# Give the script executable permissions
-chmod +x "$script_dir/bin/$script_name"
+

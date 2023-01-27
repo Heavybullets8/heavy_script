@@ -42,34 +42,18 @@ script_wrapper="$bin_dir/$script_name"
 
 # Check if the script repository already exists
 if [[ -d "$script_dir" ]]; then
+    echo "The $script_name repository already exists."
     if [[ -d "$script_dir/.git" ]]; then
-        while true; do
-            read -rt 120 -p "The script repository already exists. Do you want to update/reinstall it? [y/n]" user_input
-            case $user_input in
-                [Yy] | [Yy][Ee][Ss])
-                    echo "Updating $script_name repository..."
-                    if update_repo "$script_dir"; then
-                        echo "Successfully updated the repository"
-                    else
-                        echo "Failed to update the repository"
-                        exit 1
-                    fi
-                    break
-                    ;;
-                [Nn] | [Nn][Oo])
-                    echo "Exiting the script."
-                    exit 0
-                    ;;
-                *)
-                    echo "Invalid input, please try again."
-                    sleep 2
-                    continue
-                    ;;
-            esac
-        done
+        echo "Reinstalling $script_name repository..."
+        if update_repo "$script_dir"; then
+            echo "Successfully updated the repository"
+        else
+            echo "Failed to reinstall the repository"
+            exit 1
+        fi
     else
         # Convert the directory into a git repository
-        echo "The directory exists but it is not a git repository. Converting it into a git repository..."
+        echo "Converting it into a git repository..."
         cd "$script_dir"
         git init
         git remote add origin "https://github.com/Heavybullets8/heavy_script.git"

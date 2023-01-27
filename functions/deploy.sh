@@ -9,6 +9,30 @@ if [[ $(id -u) != 0 ]]; then
     exit 1
 fi
 
+# Define a function to update the repository
+update_repo() {
+    local script_dir="$1"
+    local success=false
+    cd "$script_dir"
+
+    git reset --hard &>/dev/null
+    if git pull --tags &>/dev/null; then
+        echo "Successfully pulled the latest tags."
+        success=true
+    else
+        echo "Failed to pull the latest tags."
+    fi
+
+    if git checkout "$(git describe --tags "$(git rev-list --tags --max-count=1)")" &>/dev/null; then
+        echo "Successfully checked out the latest release."
+        success=true
+    else
+        echo "Failed to check out the latest release."
+    fi
+
+    return $success
+}
+
 # Define variables
 script_name='heavyscript'
 script_dir="$HOME/heavy_script"
@@ -25,17 +49,20 @@ if [[ -d "$script_dir" ]]; then
             case $user_input in
                 [Yy] | [Yy][Ee][Ss])
                     echo "Updating $script_name repository..."
-                    cd "$script_dir"
-                    git reset --hard &>/dev/null
-                    git pull --tags
-                    git checkout "$(git describe --tags "$(git rev-list --tags --max-count=1)")"
+                    if update_repo "$script_dir"; then
+                        echo "Successfully updated the repository"
+                    else
+                        echo "Failed to update the repository"
+                        exit 1
+                    fi
+                    break
                     ;;
                 [Nn] | [Nn][Oo])
                     echo "Exiting the script."
                     exit 0
                     ;;
                 *)
-                    echo "Invalid input."
+                    echo "Invalid input, please try again."
                     sleep 2
                     continue
                     ;;
@@ -47,9 +74,12 @@ if [[ -d "$script_dir" ]]; then
         cd "$script_dir"
         git init
         git remote add origin "https://github.com/Heavybullets8/heavy_script.git"
-        git reset --hard &>/dev/null
-        git pull --tags
-        git checkout "$(git describe --tags "$(git rev-list --tags --max-count=1)")"
+        if update_repo "$script_dir"; then
+            echo "Successfully updated the repository"
+        else
+            echo "Failed to update the repository"
+            exit 1
+        fi
     fi
 else
     # Clone the script repository
@@ -57,10 +87,13 @@ else
     cd "$HOME"
     git clone "https://github.com/Heavybullets8/heavy_script.git"
     cd heavy_script
-    git checkout "$(git describe --tags "$(git rev-list --tags --max-count=1)")"
+    if update_repo "$script_dir"; then
+        echo "Successfully updated the repository"
+    else
+        echo "Failed to update the repository"
+        exit 1
+    fi
 fi
-
-
 
 
 # Create the bin directory if it does not exist
@@ -87,5 +120,8 @@ for rc_file in .bashrc .zshrc; do
         echo "export PATH=$bin_dir:\$PATH" >> "$HOME/$rc_file"
     fi
 done
+
+# Give the script executable permissions
+chmod +x "$script_dir/bin/$script_name"
 
 

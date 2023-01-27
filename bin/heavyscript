@@ -1,0 +1,21 @@
+#!/bin/bash
+
+script_dir="$HOME/heavy_script"
+
+# Exit if the script directory doesn't exist
+if [[ ! -d "$script_dir" ]]; then
+    echo "Error: $script_dir does not exist."
+    exit 1
+fi
+
+# Save the current working directory
+orig_cwd="$(pwd)"
+
+# Change to the script directory
+cd "$script_dir" || { echo "Error: Failed to change to $script_dir"; exit 1; }
+
+# Pass all arguments '$@' to heavy_script.sh
+bash ./heavy_script.sh "$@"
+
+# Change back to the original working directory
+cd "$orig_cwd" || { echo "Error: Failed to change to $orig_cwd"; exit 1; }

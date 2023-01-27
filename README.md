@@ -1,4 +1,4 @@
-# heavy_script
+# HeavyScript
 
 ## Website 
 
@@ -17,7 +17,7 @@
 ## The Menu
 
 ![image](https://user-images.githubusercontent.com/20793231/209697976-b7a6ec9c-dee7-4707-82d9-58eb7a2d8248.png)
-> Access this with `bash heavy_script.sh`
+> Access this with `heavyscript`
 
 <br >
 <br >
@@ -42,7 +42,7 @@
 ### Example
 #### Cron Job  
 ```
-bash heavy_script.sh --self-update -b 10 -i nextcloud -i sonarr -t 600 --ignore-img -rsp -u 5
+heavyscript --self-update -b 10 -i nextcloud -i sonarr -t 600 --ignore-img -rsp -u 5
 ```
 
 > `-b` is set to 10. Up to 10 snapshots of your ix-applications dataset will be saved
@@ -68,19 +68,19 @@ bash heavy_script.sh --self-update -b 10 -i nextcloud -i sonarr -t 600 --ignore-
 
 #### My Personal Cron Job
 ```
-bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u 10
+heavyscript --self-update -b 10 -rsp -u 10
 ```
 
 <br >
 <br>
 
 ## Other Utilities
-> All of these can ALSO be accessed with the HeavyScript menu, that you can access simply by not providing an argument `bash heavy_script.sh`
+> All of these can ALSO be accessed with the HeavyScript menu, that you can access simply by not providing an argument `heavyscript`
 
 | Flag            | Description                                                                                  |
 |-----------------|----------------------------------------------------------------------------------------------|
 | --mount         | Initiates mounting feature, choose between unmounting and mounting PVC data                  |
-| --restore       | Opens a menu to restore a heavy_script backup that was taken on your ix-applications dataset |
+| --restore       | Opens a menu to restore a HeavyScript backup that was taken on your ix-applications dataset |
 | --delete-backup | Opens a menu to delete backups on your system                                                |
 | --dns           | list all of your applications DNS names and their web ports                                  |
 | --cmd           | Open a shell for one of your applications                                                    |
@@ -91,31 +91,31 @@ bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u
 #### Mounting PVC Data
 
 ```
-bash /mnt/tank/scripts/heavy_script.sh --mount
+heavyscript --mount
 ```
 
 #### Restoring ix-applications dataset
 
 ```
-bash /mnt/tank/scripts/heavy_script/heavy_script.sh --restore
+heavyscript --restore
 ```
 
 #### Deleting Backups
 
 ```
-bash /mnt/tank/scripts/heavy_script/heavy_script.sh --delete-backup
+heavyscript --delete-backup
 ```
 
 #### List All DNS Names
 
 ```
-bash /mnt/tank/scripts/heavy_script/heavy_script.sh --dns
+heavyscript --dns
 ```
 
 #### Open a Containers Shell
 
 ```
-bash /mnt/speed/scripts/heavy_script/heavy_script.sh --cmd
+heavyscript --cmd
 ```
 
 <br>
@@ -124,30 +124,14 @@ bash /mnt/speed/scripts/heavy_script/heavy_script.sh --cmd
 
 ## How to Install
 
-### Create a Scripts Dataset
-
-I created a `scripts` dataset on my Truenas SCALE system, this is where all my scripts will remain.
-
-### Open a Terminal 
-
-**Change Directory to your scripts folder**
+### One Line Install
 ```
-cd /mnt/speed/scripts
+curl -s https://raw.githubusercontent.com/Heavybullets8/heavy_script/main/functions/deploy.sh | bash 
 ```
 
-**Git Clone Heavy_Script**
-```
-git clone https://github.com/Heavybullets8/heavy_script.git
-```
+From here, you can just run HeavyScript with `heavyscript -ARGUMENTS`
 
-**Change Directory to Heavy_Script folder**
-```
-cd heavy_script
-```
-
-From here, you can just run Heavy_Script with `bash heavy_script.sh -ARGUMENTS`
-
-> Note: `chmod +x` is NOT required. Doing this will break the `git pull` (or self update) function. Just run the script with `bash heavy_script.sh`
+> Note: `chmod +x` is already applied to the script, with the one line install, self updates will also chmod the required files.
 
 <br>
 
@@ -156,7 +140,7 @@ From here, you can just run Heavy_Script with `bash heavy_script.sh -ARGUMENTS`
 ### Built-In Option (Recommended)
 
 ```
-bash heavy_script.sh --self-update -b 10 -supr
+heavyscript --self-update -b 10 -supr
 ```
 > The important argument here is the `--self-update`, you can still use all of your same arguments with this option.
 >> `--self-update` will place users on the latest tag, as well as showing the changelog when new releases come out. So this is the preferred method. Not using this method, will instead place the user on `main`, where the changes are tested, but not as rigerously as they are on the releases.
@@ -170,6 +154,12 @@ bash heavy_script.sh --self-update -b 10 -supr
 **Change Directory to your heavy_script folder**
 ```
 cd /mnt/speed/scripts/heavy_script
+```
+
+Or, if you used the one click install.
+
+```
+cd /root/heavy_script
 ```
 
 **git pull**
@@ -192,7 +182,7 @@ git pull
 | Name                   	| Value                                                                                                             	| Reason                                                                                                                                                                                         	|
 |------------------------	|-------------------------------------------------------------------------------------------------------------------	|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
 | `Description`          	| HeavyScript git pull and Update apps                                                                              	| This is up to you, put whatever you think is a good description in here                                                                                                                        	|
-| `Command`              	| `bash /PATH/TO/HEAVY_SCRIPT_DIRECTORY/heavy_script.sh --self-update -b 10 -rsp -u 10` 	| This is the command you will be running on your schedule  I personally use:  `bash /mnt/speed/scripts/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u 10` 	|
+| `Command`              	| `heavyscript --self-update -b 10 -rsp -u 10` 	| This is the command you will be running on your schedule  I personally use:  `heavyscript --self-update -b 10 -rsp -u 10` 	|
 | `Run As User`          	| `root`                                                                                                            	| Running the script as `root` is REQUIRED. You cannot access all of the kubernetes functions without this user.                                                                                 	|
 | `Schedule`             	| Up to you, I run mine everyday at `0400`                                                                          	| Again up to you                                                                                                                                                                                	|
 | `Hide Standard Output` 	| `False` or Unticked                                                                                               	| I like to receive an email report of how the script ran, what apps updated etc.                                                                                                                	|
@@ -207,8 +197,8 @@ git pull
 ### Additional Information
 
 #### Verbose vs Non-Verbose 
--  Verbose used `bash heavy_script.sh -b 5 -Srupv`
-- Non-Verbose used `bash heavy_script.sh -b 5 -Srup`
+-  Verbose used `heavyscript -b 5 -Srupv`
+- Non-Verbose used `heavyscript -b 5 -Srup`
 
 | Verbose 	| Non-Verbose 	|
 |---------	|-------------	|

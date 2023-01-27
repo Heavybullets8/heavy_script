@@ -89,6 +89,7 @@ menu(){
                 echo "1)  Self Update"
                 echo "2)  Choose Branch"
                 echo "3)  Add Script to Global Path"
+                echo -e "${gray}This will download the one liner, and add it to your global path, you only need to do this once.${reset} "
                 echo
                 echo "0)  Exit"
                 read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }

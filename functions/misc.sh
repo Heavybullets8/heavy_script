@@ -119,11 +119,11 @@ add_script_to_global_path(){
     if curl -s https://raw.githubusercontent.com/Heavybullets8/heavy_script/main/functions/deploy.sh | bash ;then
         echo
         echo "HeavyScript has been added to your global path"
-        echo "You can now run heavyscript by just typing ${blue}heavyscript${reset}"
+        echo -e "You can now run heavyscript by just typing ${blue}heavyscript${reset}"
         echo "You can also remove your scripts dataset, or just the heavy_script folder"
-        echo "HeavyScript has been redownloaded to: ${blue}/root/heavy_script ${reset}"
+        echo -e "HeavyScript has been redownloaded to: ${blue}/root/heavy_script ${reset}"
         echo "Do not forget to change your CronJobs!"
     else
-        echo "${red}Failed to add HeavyScript to your global path${reset}"
+        echo -e "${red}Failed to add HeavyScript to your global path${reset}"
     fi
 }

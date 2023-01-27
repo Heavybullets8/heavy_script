@@ -131,7 +131,7 @@ curl -s https://raw.githubusercontent.com/Heavybullets8/heavy_script/main/functi
 
 From here, you can just run HeavyScript with `heavyscript -ARGUMENTS`
 
-> Note: `chmod +x` is NOT required. Doing this will break the `git pull` (or self update) function. Just run the script with `heavyscript`
+> Note: `chmod +x` is already applied to the script, with the one line install, self updates will also chmod the required files.
 
 <br>
 
@@ -154,6 +154,12 @@ heavyscript --self-update -b 10 -supr
 **Change Directory to your heavy_script folder**
 ```
 cd /mnt/speed/scripts/heavy_script
+```
+
+Or, if you used the one click install.
+
+```
+cd /root/heavy_script
 ```
 
 **git pull**

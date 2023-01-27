@@ -67,7 +67,7 @@ help(){
 
     echo "Access the HeavyScript Menu"
     echo "---------------------------"
-    echo "bash heavy_script.sh"
+    echo "heavy_script"
     echo
     echo "Utilities"
     echo "---------"
@@ -103,13 +103,12 @@ help(){
     echo
     echo "Examples"
     echo "--------"
-    echo "bash heavy_script.sh"
-    echo "bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -t 600 -vrsUp --self-update"
-    echo "bash heavy_script.sh -b 14 -i portainer -i arch -i sonarr -t 600 -vrsp -U 10 --self-update"
-    echo "bash /mnt/tank/scripts/heavy_script.sh -t 150 --mount"
-    echo "bash /mnt/tank/scripts/heavy_script.sh --dns"
-    echo "bash heavy_script.sh --restore"
-    echo "bash /mnt/tank/scripts/heavy_script.sh --delete-backup"
+    echo "heavyscript -b 14 -i portainer -i arch -i sonarr -t 600 -vrsUp --self-update"
+    echo "heavyscript -b 14 -i portainer -i arch -i sonarr -t 600 -vrsp -U 10 --self-update"
+    echo "heavyscript-t 150 --mount"
+    echo "heavyscript --dns"
+    echo "heavyscript --restore"
+    echo "heavyscript --delete-backup"
     echo
     exit
 }
@@ -117,76 +116,14 @@ help(){
 add_script_to_global_path(){
     clear -x
     title
-
-    if [ "$(id -u)" != "0" ]; then
-        echo -e "${red}This script must be run as root${reset}}" 
-        exit 1
-    fi
-
-    # Make sure the script is executable
-    chmod +x "$script_name"
-
-    echo -e "${bold}Bash${reset}"
-    echo -e "${bold}----${reset}"
-    # Check if the script path is already in the .bashrc file
-    if grep -q "$script_path" "$HOME/.bashrc"; then
-        echo -e "${yellow}Script path is already in .bashrc${reset}"
-        # check if the path is correct
-        if grep -q "$script_path" "$HOME/.bashrc"; then
-            echo -e "${green}Path is correct in .bashrc${reset}"
-        else
-            # replace the wrong path with the correct path
-            sed -i "s|.*heavy_script.*|export PATH=$PATH:$script_path|" "$HOME/.bashrc"
-            echo -e "${green}Path is corrected in .bashrc${reset}"
-            terminal_restart=true
-        fi
+    if curl -s https://raw.githubusercontent.com/Heavybullets8/heavy_script/main/functions/deploy.sh | bash ;then
+        echo
+        echo "HeavyScript has been added to your global path"
+        echo "You can now run heavyscript by just typing ${blue}heavyscript${reset}"
+        echo "You can also remove your scripts dataset, or just the heavy_script folder"
+        echo "HeavyScript has been redownloaded to: ${blue}/root/heavy_script ${reset}"
+        echo "Do not forget to change your CronJobs!"
     else
-        # Append the script location to the PATH variable in the .bashrc file
-        echo "export PATH=$PATH:$script_path" >> "$HOME/.bashrc"
-        echo -e "${green}Script path added to .bashrc${reset}"
-        terminal_restart=true
+        echo "${red}Failed to add HeavyScript to your global path${reset}"
     fi
-
-    echo
-
-    echo -e "${bold}ZSH${reset}"
-    echo -e "${bold}---${reset}"
-    # Check if the script path is already in the .zshrc file
-    if grep -q "$script_path" "$HOME/.zshrc"; then
-        echo -e "${yellow}Script path is already in .zshrc${reset}"
-        # check if the path is correct
-        if grep -q "$script_path" "$HOME/.zshrc"; then
-            echo -e "${green}Path is correct in .zshrc${reset}"
-        else
-            # replace the wrong path with the correct path
-            sed -i "s|.*heavy_script.*|export PATH=$PATH:$script_path|" "$HOME/.zshrc"
-            echo -e "${green}Path is corrected in .zshrc${reset}"
-            terminal_restart=true
-        fi
-    else
-        # Append the script location to the PATH variable in the .zshrc file
-        echo "export PATH=$PATH:$script_path" >> "$HOME/.zshrc"
-        echo -e "${green}Script path added to .zshrc${reset}"
-        terminal_restart=true
-    fi
-
-    # Restart the terminal if the script path was added to the .bashrc or .zshrc file
-    if [[ $terminal_restart == true ]]; then
-        echo 
-        echo -e "${blue}Refreshing the terminal..${reset}"
-        sleep 1
-
-        # Reload the .bashrc and .zshrc files
-        if [ "$SHELL" == "/usr/bin/zsh" ]; then
-            # shellcheck source=/dev/null
-            source "$HOME/.zshrc" 2> /dev/null
-            exec zsh
-
-        else
-            # shellcheck source=/dev/null
-            source "$HOME/.bashrc" 2> /dev/null
-            exec bash
-        fi
-    fi
-
 }

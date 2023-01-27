@@ -118,7 +118,7 @@ add_script_to_global_path(){
     title
     if curl -s https://raw.githubusercontent.com/Heavybullets8/heavy_script/main/functions/deploy.sh | bash ;then
         echo
-        echo "${green}HeavyScript has been added to your global path${reset}"
+        echo -e "${green}HeavyScript has been added to your global path${reset}"
         echo 
         echo -e "${bold}Terminal Emulator${reset}"
         echo -e "${bold}-----------------${reset}"

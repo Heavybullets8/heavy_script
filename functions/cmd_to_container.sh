@@ -120,7 +120,7 @@ container_shell_or_logs(){
 
         # Display logs
         if ! k3s crictl logs --tail "$lines" -f "$container_id"; then
-            echo -e "${red}Failed to retrieve logs for container: $container_id${reset}"
+            echo -e "${red}Failed to retrieve logs for container: ${blue}$container_id${reset}"
             exit
         fi
         exit

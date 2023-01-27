@@ -161,8 +161,8 @@ menu(){
             do
                 clear -x
                 title
-                echo "Patch Menu"
-                echo "----------"
+                echo -e "${bold}Patch Menu${reset}"
+                echo -e "${bold}----------${reset}"
                 echo "1)  Patch 22.12.0 Restore"
                 echo -e "${gray}- - Fixes issue on 22.12.0 where restore points were being saved with empty PVC data${reset}"
                 echo

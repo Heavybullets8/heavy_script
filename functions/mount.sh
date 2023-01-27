@@ -8,7 +8,7 @@ mount(){
     mapfile -t pool_query < <(cli -m csv -c "storage pool query name,path" | sed -e '1d' -e '/^$/d')
 
     # Add an option for the root directory
-    pool_query+=("Root,/mnt")
+    pool_query+=("root,/mnt")
     while true
     do
         clear -x
@@ -81,7 +81,9 @@ mount(){
                         # Print options with numbers
                         for line in "${pool_query[@]}"; do
                             (( i++ ))
-                            echo "$i) $line"
+                            pool=$(echo "$line" | awk -F ',' '{print $1}')
+                            path=$(echo "$line" | awk -F ',' '{print $2}')
+                            echo "$i) $pool $path"
                         done
 
                         # Ask user for input
@@ -115,7 +117,7 @@ mount(){
 
                     clear -x
                     title
-                    if  [[ $pool_name == "Root" ]]; then
+                    if  [[ $pool_name == "root" ]]; then
                         # Mount the PVC to the selected dataset                    
                         if ! zfs set mountpoint=/mounted_pvc/"$data_name" "$full_path" ; then
                             mount_fauilure=true

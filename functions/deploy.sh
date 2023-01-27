@@ -69,7 +69,7 @@ else
     echo "Cloning $script_name repository..."
     cd "$HOME"
     git clone "https://github.com/Heavybullets8/heavy_script.git"
-    cd heavy_script
+    cd "$script_dir"
     if update_repo "$script_dir"; then
         echo "Successfully updated the repository"
     else

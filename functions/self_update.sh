@@ -58,7 +58,7 @@ choose_branch() {
             echo "Invalid selection. Please try again."
         fi
     done
-    chmod +x "$script_name" ; chmod +x "$script_path"/bin/"$script_name" 2>/dev/null
+    chmod +x "$script_name" ; chmod +x "$script_path"/bin/heavyscript 2>/dev/null
 }
 
 
@@ -115,7 +115,7 @@ self_update() {
         fi
     done
 
-    chmod +x "$script_name" ; chmod +x "$script_path"/bin/"$script_name" 2>/dev/null
+    chmod +x "$script_name" ; chmod +x "$script_path"/bin/heavyscript 2>/dev/null
 
     # Check if there are any arguments left
     [[ -z ${args[*]} ]] && echo -e "No more arguments, exiting..\n\n" && exit

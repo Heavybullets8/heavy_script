@@ -35,9 +35,7 @@ if [[ -d "$script_dir" ]]; then
     echo "The $script_name repository already exists."
     if [[ -d "$script_dir/.git" ]]; then
         echo "Reinstalling $script_name repository..."
-        if update_repo "$script_dir"; then
-            echo "Successfully updated the repository"
-        else
+        if ! update_repo "$script_dir"; then
             echo "Failed to reinstall the repository"
             exit 1
         fi
@@ -47,10 +45,8 @@ if [[ -d "$script_dir" ]]; then
         cd "$script_dir"
         git init
         git remote add origin "https://github.com/Heavybullets8/heavy_script.git"
-        if update_repo "$script_dir"; then
-            echo "Successfully updated the repository"
-        else
-            echo "Failed to update the repository"
+        if ! update_repo "$script_dir"; then
+            echo "Failed to convert to git repository"
             exit 1
         fi
     fi
@@ -60,10 +56,7 @@ else
     cd "$HOME"
     git clone "https://github.com/Heavybullets8/heavy_script.git"
     cd "$script_dir"
-    if update_repo "$script_dir"; then
-        echo "Successfully updated the repository"
-    else
-        echo "Failed to update the repository"
+    if ! update_repo "$script_dir"; then
         exit 1
     fi
 fi
@@ -78,7 +71,7 @@ fi
 # Create the script wrapper if it does not exist
 if [[ ! -x "$script_wrapper" ]]; then
     echo "Creating $script_wrapper wrapper..."
-    ln -s "$script_dir/bin/$script_name" "$script_wrapper"
+    ln -s "$script_dir/bin/$script_name" "$script_wrapper" &>/dev/null
 fi
 
 # Add $HOME/bin to PATH in .bashrc and .zshrc

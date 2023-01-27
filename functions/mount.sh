@@ -13,8 +13,8 @@ mount(){
     do
         clear -x
         title
-        echo "PVC Mount Menu"
-        echo "--------------"
+        echo -e "${bold}PVC Mount Menu${reset}"
+        echo -e "${bold}--------------${reset}"
         echo "1)  Mount"
         echo "2)  Unmount All"
         echo

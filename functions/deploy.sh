@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Exit on errors
-set -e
 
 # Check user's permissions 
 if [[ $(id -u) != 0 ]]; then
@@ -53,9 +51,12 @@ if [[ -d "$script_dir" ]]; then
 else
     # Clone the script repository
     echo "Cloning $script_name repository..."
-    cd "$HOME"
-    git clone "https://github.com/Heavybullets8/heavy_script.git"
-    cd "$script_dir"
+    cd "$HOME" || exit 1
+    if ! git clone "https://github.com/Heavybullets8/heavy_script.git";then
+        echo "Failed to clone the repository"
+        exit 1
+    fi
+    cd "$script_dir" || exit 1
     if ! update_repo "$script_dir"; then
         exit 1
     fi
@@ -71,7 +72,7 @@ fi
 # Create the script wrapper if it does not exist
 if [[ ! -x "$script_wrapper" ]]; then
     echo "Creating $script_wrapper wrapper..."
-    ln -s "$script_dir/bin/$script_name" "$script_wrapper" &>/dev/null
+    ln -sf "$script_dir/bin/$script_name" "$script_wrapper"
 fi
 
 # Add $HOME/bin to PATH in .bashrc and .zshrc

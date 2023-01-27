@@ -9,7 +9,7 @@ fi
 
 update_repo() {
     local script_dir="$1"
-    cd "$script_dir"
+    cd "$script_dir" || return 1
     git reset --hard &>/dev/null
     git fetch --tags &>/dev/null
     if ! git checkout "$(git describe --tags "$(git rev-list --tags --max-count=1)")" &>/dev/null; then
@@ -40,7 +40,7 @@ if [[ -d "$script_dir" ]]; then
     else
         # Convert the directory into a git repository
         echo "Converting it into a git repository..."
-        cd "$script_dir"
+        cd "$script_dir" || exit 1
         git init
         git remote add origin "https://github.com/Heavybullets8/heavy_script.git"
         if ! update_repo "$script_dir"; then

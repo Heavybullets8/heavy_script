@@ -118,11 +118,25 @@ add_script_to_global_path(){
     title
     if curl -s https://raw.githubusercontent.com/Heavybullets8/heavy_script/main/functions/deploy.sh | bash ;then
         echo
-        echo "HeavyScript has been added to your global path"
+        echo "${green}HeavyScript has been added to your global path${reset}"
+        echo 
+        echo -e "${bold}Terminal Emulator${reset}"
+        echo -e "${bold}-----------------${reset}"
         echo -e "You can now run heavyscript by just typing ${blue}heavyscript${reset}"
-        echo "You can also remove your scripts dataset, or just the heavy_script folder"
-        echo -e "HeavyScript has been redownloaded to: ${blue}/root/heavy_script ${reset}"
-        echo "Do not forget to change your CronJobs!"
+        echo -e "Example: ${blue}heavyscript -b 14 -rsp --self-update -u 10${reset}"
+        echo -e "Example: ${blue}heavyscript --logs${reset}"
+        echo
+        echo -e "${bold}CronJobs${reset}"
+        echo -e "${bold}--------${reset}"
+        echo -e "CronJobs still require the entire path, and prefaced with ${blue}bash ${reset}"
+        echo -e "Example of my personal cron: ${blue}bash /root/heavy_script/heavy_script.sh -b 14 -rsp --self-update -u 10${reset}"
+        echo "It is highly recommended that you update your cron to use the new path"
+        echo
+        echo -e "${bold}Note${reset}"
+        echo -e "${bold}----${reset}"
+        echo -e "HeavyScript has been redownloaded to: ${blue}/root/heavy_script${reset}"
+        echo "It is recommended that you remove your old copy of HeavyScript"
+        echo "If you keep your old copy, you'll have to update both, manage both etc."
     else
         echo -e "${red}Failed to add HeavyScript to your global path${reset}"
     fi

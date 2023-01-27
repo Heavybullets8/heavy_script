@@ -41,8 +41,12 @@
 
 ### Example
 #### Cron Job  
+> Note: CronJobs still require to be prefaced with bash, and pointed to the actual script, including the entire file path, as shown below. 
+
+> `heavyscript --ARGUMENTS` will NOT work. 
+
 ```
-heavyscript --self-update -b 10 -i nextcloud -i sonarr -t 600 --ignore-img -rsp -u 5
+bash /root/heavy_script/heavy_script.sh --self-update -b 10 -i nextcloud -i sonarr -t 600 --ignore-img -rsp -u 5
 ```
 
 > `-b` is set to 10. Up to 10 snapshots of your ix-applications dataset will be saved
@@ -68,7 +72,7 @@ heavyscript --self-update -b 10 -i nextcloud -i sonarr -t 600 --ignore-img -rsp 
 
 #### My Personal Cron Job
 ```
-heavyscript --self-update -b 10 -rsp -u 10
+bash /root/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u 10
 ```
 
 <br >

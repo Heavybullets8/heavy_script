@@ -4,8 +4,8 @@
 menu(){
     clear -x
     title
-    echo "Available Utilities"
-    echo "-------------------"
+    echo -e "${bold}Available Utilities${reset}"
+    echo -e "${bold}-------------------${reset}"
     echo "1)  Help"
     echo "2)  List DNS Names"
     echo "3)  Mount and Unmount PVC storage"
@@ -16,7 +16,7 @@ menu(){
     echo "8)  Patches"
     echo
     echo "0)  Exit"
-    read -rt 120 -p "Please select an option by number: " selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+    read -rt 120 -p "Please select an option by number: " selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
 
 
     case $selection in
@@ -44,23 +44,23 @@ menu(){
             do
                 clear -x
                 title
-                echo "Backup Menu"
-                echo "-----------"
+                echo -e "${bold}Backup Menu${reset}"
+                echo -e "${bold}-----------${reset}"
                 echo "1)  Create Backup"
                 echo "2)  Delete Backup"
                 echo "3)  Restore Backup"
                 echo
                 echo "0)  Exit"
-                read -rt 120 -p "Please select an option by number: " backup_selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+                read -rt 120 -p "Please select an option by number: " backup_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
                 case $backup_selection in
                     0)
                         echo "Exiting.."
                         exit
                         ;;
                     1)
-                        read -rt 120 -p "What is the maximun number of backups you would like?: " number_of_backups || { echo -e "\nFailed to make a selection in time" ; exit; }
-                        ! [[ $number_of_backups =~ ^[0-9]+$  ]] && echo -e "Error: The input must be an interger\n\"""$number_of_backups""\" is not an interger" >&2 && exit
-                        [[ "$number_of_backups" -le 0 ]] && echo "Error: Number of backups is required to be at least 1" && exit
+                        read -rt 120 -p "What is the maximun number of backups you would like?: " number_of_backups || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
+                        ! [[ $number_of_backups =~ ^[0-9]+$  ]] && echo -e "${red}Error: The input must be an interger\n${blue}\"""$number_of_backups""\"${red} is not an interger${reset}" >&2 && exit
+                        [[ "$number_of_backups" -le 0 ]] && echo -e "${red}Error: Number of backups is required to be at least 1${reset}" && exit
                         backup_selection=true
                         ;;
                     2)
@@ -72,7 +72,7 @@ menu(){
                         restore
                         ;;
                     *)
-                        echo "\"$selection\" was not an option, please try agian" && sleep 3 && continue
+                        echo -e "${red}\"$selection\" was not an option, please try agian${reset}" && sleep 3 && continue
                         ;;
                 esac
             done
@@ -84,13 +84,14 @@ menu(){
             do
                 clear -x
                 title
-                echo "HeavyScript Options Menu"
-                echo "------------------------"
+                echo -e "${bold}HeavyScript Options Menu${reset}"
+                echo -e "${bold}------------------------${reset}"
                 echo "1)  Self Update"
                 echo "2)  Choose Branch"
+                echo "3)  Add Script to Global Path"
                 echo
                 echo "0)  Exit"
-                read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+                read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
                 case $misc_selection in
                     0)
                         echo "Exiting.."
@@ -104,8 +105,12 @@ menu(){
                         misc_selection=true
                         choose_branch
                         ;;
+                    3)
+                        misc_selection=true
+                        add_script_to_global_path
+                        ;;
                     *)
-                        echo "\"$selection\" was not an option, please try agian" && sleep 3 && continue
+                        echo -e "${blue}\"$selection\"${red} was not an option, please try agian${reset}" && sleep 3 && continue
                         ;;
                 esac
             done
@@ -122,13 +127,13 @@ menu(){
             do
                 clear -x
                 title
-                echo "Command to Container / Container Logs Menu"
-                echo "------------------------------------------"
+                echo -e "${bold}Command to Container / Container Logs Menu${reset}"
+                echo -e "${bold}------------------------------------------${reset}"
                 echo "1)  Command to Container"
                 echo "2)  Container Logs"
                 echo
                 echo "0)  Exit"
-                read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+                read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
                 case $misc_selection in
                     0)
                         echo "Exiting.."
@@ -143,7 +148,7 @@ menu(){
                         container_shell_or_logs "logs"
                         ;;
                     *)
-                        echo "\"$selection\" was not an option, please try agian" && sleep 3 && continue
+                        echo -e "${blue}\"$selection\"${red} was not an option, please try agian${reset}" && sleep 3 && continue
                         ;;
                 esac
             done
@@ -156,16 +161,16 @@ menu(){
             do
                 clear -x
                 title
-                echo "Patch Menu"
-                echo "----------"
+                echo -e "${bold}Patch Menu${reset}"
+                echo -e "${bold}----------${reset}"
                 echo "1)  Patch 22.12.0 Restore"
-                echo "- - Fixes issue on 22.12.0 where restore points were being saved with empty PVC data"
+                echo -e "${gray}- - Fixes issue on 22.12.0 where restore points were being saved with empty PVC data${reset}"
                 echo
                 echo "2)  Patch 22.12.0 Backups"
-                echo "- - Fixes issue on 22.12.0 where backups would fail on certain applications"
+                echo -e "${gray}- - Fixes issue on 22.12.0 where backups would fail on certain applications${reset}"
                 echo
                 echo "0)  Exit"
-                read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "\nFailed to make a selection in time" ; exit; }
+                read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
                 case $misc_selection in
                     0)
                         echo "Exiting.."
@@ -180,13 +185,13 @@ menu(){
                         patch_2212_backups2
                         ;;
                     *)
-                        echo "\"$selection\" was not an option, please try agian" && sleep 3 && continue
+                        echo -e "${blue}\"$selection\"${red} was not an option, please try agian${reset}" && sleep 3 && continue
                         ;;
                 esac
             done
             ;;
         *)
-            echo "\"$selection\" was not an option, please try agian" && sleep 3 && menu
+            echo -e "${blue}\"$selection\"${red} was not an option, please try agian${reset}" && sleep 3 && menu
             ;;
     esac
     echo

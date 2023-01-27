@@ -44,7 +44,7 @@ script_wrapper="$bin_dir/$script_name"
 if [[ -d "$script_dir" ]]; then
     if [[ -d "$script_dir/.git" ]]; then
         while true; do
-            read -rp "The script repository already exists. Do you want to update/reinstall it? [y/n]" user_input
+            read -rt 120 -p "The script repository already exists. Do you want to update/reinstall it? [y/n]" user_input
             case $user_input in
                 [Yy] | [Yy][Ee][Ss])
                     echo "Updating $script_name repository..."

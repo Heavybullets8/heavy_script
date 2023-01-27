@@ -12,7 +12,7 @@ update_repo() {
     cd "$script_dir" || return 1
     git reset --hard &>/dev/null
     git fetch --tags &>/dev/null
-    if ! git checkout "$(git describe --tags "$(git rev-list --tags --max-count=1)")" &>/dev/null; then
+    if ! git checkout --force "$(git describe --tags "$(git rev-list --tags --max-count=1)")" &>/dev/null; then
         echo "Failed to check out the latest release."
         return 1
     fi
@@ -56,7 +56,7 @@ else
         echo "Failed to clone the repository"
         exit 1
     fi
-    
+
     cd "$script_dir" || exit 1
     if ! update_repo "$script_dir"; then
         exit 1

@@ -106,13 +106,13 @@ heavyscript --self-update -b 10 -supr
 
 
 - Command: `bash /root/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u 10`
-> The `bash`, as well as the full path to the script is required for cron jobs to work properly.
+   > The `bash`, as well as the full path to the script is required for cron jobs to work properly.
 - Run as: root
-> Running as root is required for the script to work properly.
+   > Running as root is required for the script to work properly.
 - Schedule: I run mine daily at 4:00 AM
 - Hide Standard Output: Unchecked
 - Hide Standard Error: Unchecked
-> Keep these both unchecked so you can recive an email.
+   > Keep these both unchecked so you can recive an email.
 
 
 <br >

@@ -68,9 +68,10 @@ curl -s https://raw.githubusercontent.com/Heavybullets8/heavy_script/main/functi
 
 This will:
 - Download HeavyScript, then place you on the latest release
-- Place it in `/root`
-- Make it executable
-- Allow you to run HeavyScrip from any directory with `heavyscript`
+- Place HeavyScript in `/root`
+- Make HeavyScript executable
+- Allow you to run HeavyScript from any directory with `heavyscript`
+ > This does not include Cron Jobs, see the Cron section for more information.
 
 From here, you can just run HeavyScript with `heavyscript -ARGUMENTS`
 

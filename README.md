@@ -102,7 +102,8 @@ heavyscript --self-update -b 10 -supr
 4. Cron Jobs
    1. Click Add
 
-image.png
+![image](https://user-images.githubusercontent.com/20793231/215238304-0ef18468-acc9-417a-8dc3-cbb5a88a36d2.png)
+
 
 - Command: `bash /root/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u 10`
 > The `bash`, as well as the full path to the script is required for cron jobs to work properly.

@@ -9,7 +9,7 @@
 * [Other Utilities](#other-utilities)
 * [How to Install](#how-to-install)
 * [How to Update](#how-to-update)
-* [Creating a Cron Job](#creating-a-cron-job)
+* [Cron Jobs](#cron-jobs)
 * [Additional Information](#additional-information)
 
 <br>
@@ -39,42 +39,6 @@
 | --self-update | --self-update          |                  | Updates HeavyScript prior to running any other commands                                                                                                                    |
 
 
-### Example
-#### Cron Job  
-> Note: CronJobs still require to be prefaced with bash, and pointed to the actual script, including the entire file path, as shown below. 
-
-> `heavyscript --ARGUMENTS` will NOT work. 
-
-```
-bash /root/heavy_script/heavy_script.sh --self-update -b 10 -i nextcloud -i sonarr -t 600 --ignore-img -rsp -u 5
-```
-
-> `-b` is set to 10. Up to 10 snapshots of your ix-applications dataset will be saved
-
-> `-i` is set to ignore __nextcloud__ and __sonarr__. These applications will be skipped if they have an update.
-
-> `-t` I set it to 600 seconds, this means the script will wait 600 seconds for the application to become ACTIVE before timing out and rolling back to the previous version since `-r` is used. 
-
-> `--ignore-img` Will not update the application if it is only a container image update
-
-> `-r` Will rollback applications if they fail to deploy within the timeout, after updating.
-
-> `-s` will just sync the repositories, ensuring you are downloading the latest updates.
-
-> `-p` Prune docker images.
-
-> `-u` update applications as long as the major version has absolutely no change, if it does have a change it will ask the user to update manually.
->> The `5` after the `-u` means up to 5 applications will be updating and monitored at one time
-
-> `--self-update` Will update the script prior to running anything else.
-
-<br >
-
-#### My Personal Cron Job
-```
-bash /root/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u 10
-```
-
 <br >
 <br>
 
@@ -91,37 +55,6 @@ bash /root/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u 10
 | --logs          | Open logs for one of your applications                                                       |
 
 
-### Examples
-#### Mounting PVC Data
-
-```
-heavyscript --mount
-```
-
-#### Restoring ix-applications dataset
-
-```
-heavyscript --restore
-```
-
-#### Deleting Backups
-
-```
-heavyscript --delete-backup
-```
-
-#### List All DNS Names
-
-```
-heavyscript --dns
-```
-
-#### Open a Containers Shell
-
-```
-heavyscript --cmd
-```
-
 <br>
 <br>
 
@@ -133,49 +66,35 @@ heavyscript --cmd
 curl -s https://raw.githubusercontent.com/Heavybullets8/heavy_script/main/functions/deploy.sh | bash 
 ```
 
+This will:
+- Download HeavyScript, then place you on the latest release
+- Place it in `/root`
+- Make it executable
+- Allow you to run HeavyScrip from any directory with `heavyscript`
+
 From here, you can just run HeavyScript with `heavyscript -ARGUMENTS`
 
-> Note: `chmod +x` is already applied to the script, with the one line install, self updates will also chmod the required files.
-
 <br>
-
+<br>
+ 
 ## How to Update 
 
-### Built-In Option (Recommended)
+### --self-update
 
 ```
 heavyscript --self-update -b 10 -supr
 ```
-> The important argument here is the `--self-update`, you can still use all of your same arguments with this option.
->> `--self-update` will place users on the latest tag, as well as showing the changelog when new releases come out. So this is the preferred method. Not using this method, will instead place the user on `main`, where the changes are tested, but not as rigerously as they are on the releases.
 
-<br >
-
-### Manually
-
-#### Open a Terminal 
-
-**Change Directory to your heavy_script folder**
-```
-cd /mnt/speed/scripts/heavy_script
-```
-
-Or, if you used the one click install.
-
-```
-cd /root/heavy_script
-```
-
-**git pull**
-```
-git pull
-```
-> This is not recommended because the changes to main are not tested as much as the changes that are pushed to releases are tested, think of this method of updating as being in development. 
+--self-update will:
+- Update HeavyScript to the latest release, no matter if you're on a branch or tag
+- Lets you use any other arugments you want
 
 <br >
 <br >
 
-## Creating a Cron Job
+## Cron Jobs
+
+### How to Create a Cron Job
 
 1. TrueNAS SCALE GUI
 2. System Settings
@@ -183,16 +102,25 @@ git pull
 4. Cron Jobs
    1. Click Add
 
-| Name                   	| Value                                                                                                             	| Reason                                                                                                                                                                                         	|
-|------------------------	|-------------------------------------------------------------------------------------------------------------------	|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
-| `Description`          	| HeavyScript git pull and Update apps                                                                              	| This is up to you, put whatever you think is a good description in here                                                                                                                        	|
-| `Command`              	| `heavyscript --self-update -b 10 -rsp -u 10` 	| This is the command you will be running on your schedule  I personally use:  `heavyscript --self-update -b 10 -rsp -u 10` 	|
-| `Run As User`          	| `root`                                                                                                            	| Running the script as `root` is REQUIRED. You cannot access all of the kubernetes functions without this user.                                                                                 	|
-| `Schedule`             	| Up to you, I run mine everyday at `0400`                                                                          	| Again up to you                                                                                                                                                                                	|
-| `Hide Standard Output` 	| `False` or Unticked                                                                                               	| I like to receive an email report of how the script ran, what apps updated etc.                                                                                                                	|
-| `Hide Standard Error`  	| `False`  or Unticked                                                                                              	| I want to see any errors that occur                                                                                                                                                            	|
-| `Enabled`              	| `True` or Ticked                                                                                                  	| This will Enable the script to run on your schedule                                                                                                                                            	|
+image.png
 
+- Command: `bash /root/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u 10`
+> The `bash`, as well as the full path to the script is required for cron jobs to work properly.
+- Run as: root
+> Running as root is required for the script to work properly.
+- Schedule: I run mine daily at 4:00 AM
+- Hide Standard Output: Unchecked
+- Hide Standard Error: Unchecked
+> Keep these both unchecked so you can recive an email.
+
+
+<br >
+
+### My Personal Cron Job
+
+```
+bash /root/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u 10
+```
 
 
 <br >

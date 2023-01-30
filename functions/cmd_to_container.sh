@@ -156,7 +156,7 @@ container_shell_or_logs(){
             2)
                 clear -x
                 title
-                if ! k3s crictl exec -it "$container_id" sh -c '[[ -e /bin/bash ]] && exec /bin/bash || exec /bin/sh'; then
+                if ! k3s crictl exec -it "$container_id" sh -c '[ -e /bin/bash ] && exec /bin/bash || exec /bin/sh'; then
                     echo -e "${red}This container does not accept shell access, try a different one.${reset}"
                 fi
                 break

@@ -16,7 +16,7 @@
 
 ## The Menu
 
-![image](https://user-images.githubusercontent.com/20793231/209697976-b7a6ec9c-dee7-4707-82d9-58eb7a2d8248.png)
+![image](https://user-images.githubusercontent.com/20793231/215516528-90c226bc-37f6-4ece-95d7-8e66ec07f5c0.png)
 > Access this with `heavyscript`
 
 <br >

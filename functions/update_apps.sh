@@ -158,11 +158,13 @@ pre_process(){
 
     # If rollbacks are enabled, or startstatus is stopped
     if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
-        # If app is external services, OR version is the same (container image update), skip post processing
+        # If app is external services, skip post processing
         if grep -qs "^$app_name,true" external_services; then 
             echo_array
             return
         elif [[ "$old_full_ver" == "$new_full_ver" ]]; then 
+            # restart the app if it was a container image update.
+            [[ "$verbose" == "true" ]] && echo_array+=("Restarting $app_name..")
             if ! restart_app; then
                 echo_array+=("Failed to restart $app_name")
             else

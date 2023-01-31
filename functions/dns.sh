@@ -16,11 +16,16 @@ dns(){
     count=0
     for i in "${ix_name_array[@]}"
     do
-        [[ count -le 0 ]] && echo -e "\n" && ((count++))
+        [[ count -le 0 ]] && echo -e "\n"
         full_app_name=$(grep -E "\s$i\s" "dns_file" | awk '{print $3}' | sed 's/-[^-]*-[^-]*$//' | sed 's/-0//' | head -n 1)
         app_name=$(echo "$i" | cut -c 4-)
         port=$(echo "$all_ports" | grep -E "\s$full_app_name\s" | awk '{print $6}' | grep -Eo "^[[:digit:]]+{1}")
-        echo -e "$app_name $full_app_name.$i.svc.cluster.local $port"
+        if ((count % 2 == 0)); then
+            echo -e "\033[47m$app_name $full_app_name.$i.svc.cluster.local $port\033[0m"
+        else
+            echo -e "$app_name $full_app_name.$i.svc.cluster.local $port"
+        fi
+        ((count++))
     done | nl -s ") " -b t | sed '0,/\s\s\s/{s/\s\s\s/- ---- -------- ----/}'| column -t -N "#,Name,DNS_Name,Port"
     rm dns_file
 }

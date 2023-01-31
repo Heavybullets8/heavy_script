@@ -21,7 +21,7 @@ dns(){
         app_name=$(echo "$i" | cut -c 4-)
         port=$(echo "$all_ports" | grep -E "\s$full_app_name\s" | awk '{print $6}' | grep -Eo "^[[:digit:]]+{1}")
         if ((count % 2 == 0)); then
-            echo -e "\033[47m$app_name $full_app_name.$i.svc.cluster.local $port\033[0m"
+            echo -e "\033[90m$app_name $full_app_name.$i.svc.cluster.local $port${reset}"
         else
             echo -e "$app_name $full_app_name.$i.svc.cluster.local $port"
         fi

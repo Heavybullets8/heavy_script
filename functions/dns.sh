@@ -23,7 +23,7 @@ dns(){
         if ((count % 2 == 0)); then
             echo -e "\033[90m$app_name $full_app_name.$i.svc.cluster.local $port${reset}"
         else
-            echo -e "${reset}$app_name $full_app_name.$i.svc.cluster.local $port"
+            echo -e "${reset}$app_name $full_app_name.$i.svc.cluster.local $port${reset}"
         fi
         ((count++))
     done | nl -s ") " -b t | sed '0,/\s\s\s/{s/\s\s\s/- ---- -------- ----/}'| column -t -N "#,Name,DNS_Name,Port"

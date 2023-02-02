@@ -6,14 +6,19 @@ dns(){
     echo -e "${blue}Generating DNS Names..${reset}"
 
     # Pulling pod names
-    k3s crictl pods --namespace ix -s Ready | 
+    if ! k3s crictl pods --namespace ix -s Ready | 
         sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//' |
         grep -v 'svclb-' |
-        sed '1d' > dns_file
-    mapfile -t ix_name_array < <(< dns_file awk '{print $4}' | sort -u )
+        sed '1d' > dns_file; then
+        echo "Error: failed to retrieve pod names" >&2
+        return 1
+    fi
 
     # Pulling all ports
-    all_ports=$(k3s kubectl get service -A)
+    if ! all_ports=$(k3s kubectl get service -A); then
+        echo "Error: failed to retrieve port information" >&2
+        return 1
+    fi
 
     clear -x
     for i in "${ix_name_array[@]}"

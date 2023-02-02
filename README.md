@@ -132,7 +132,7 @@ bash /root/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u 10
 
 #### Verbose vs Non-Verbose 
 -  Verbose used `heavyscript -b 5 -Srupv`
-- Non-Verbose used `heavyscript -b 5 -Srup`
+-  Non-Verbose used `heavyscript -b 5 -Srup`
 
 | Verbose 	| Non-Verbose 	|
 |---------	|-------------	|

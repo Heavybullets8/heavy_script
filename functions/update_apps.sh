@@ -158,8 +158,18 @@ pre_process(){
 
     # If rollbacks are enabled, or startstatus is stopped
     if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
-        # If app is external services, OR version is the same (container image update), skip post processing
-        if grep -qs "^$app_name,true" external_services || [[ "$old_full_ver" == "$new_full_ver" ]]; then 
+        # If app is external services, skip post processing
+        if grep -qs "^$app_name,true" external_services; then 
+            echo_array
+            return
+        elif [[ "$old_full_ver" == "$new_full_ver" ]]; then 
+            # restart the app if it was a container image update.
+            [[ "$verbose" == "true" ]] && echo_array+=("Restarting $app_name..")
+            if ! restart_app; then
+                echo_array+=("Failed to restart $app_name")
+            else
+                echo_array+=("Restarted $app_name")
+            fi
             echo_array
             return
         else
@@ -172,6 +182,16 @@ pre_process(){
 
 }
 export -f pre_process
+
+
+restart_app(){
+    dep_name=$(k3s kubectl -n ix-"$app_name" get deploy | sed -e '1d' -e 's/ .*//')
+    if k3s kubectl -n ix-"$app_name" rollout restart deploy "$dep_name"; then
+        return 0
+    else
+        return 1
+    fi
+}
 
 
 post_process(){

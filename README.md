@@ -48,7 +48,7 @@
 | Flag            | Description                                                                                  |
 |-----------------|----------------------------------------------------------------------------------------------|
 | --mount         | Initiates mounting feature, choose between unmounting and mounting PVC data                  |
-| --restore       | Opens a menu to restore a HeavyScript backup that was taken on your ix-applications dataset |
+| --restore       | Opens a menu to restore a HeavyScript backup that was taken on your ix-applications dataset  |
 | --delete-backup | Opens a menu to delete backups on your system                                                |
 | --dns           | list all of your applications DNS names and their web ports                                  |
 | --cmd           | Open a shell for one of your applications                                                    |
@@ -71,7 +71,7 @@ This will:
 - Place HeavyScript in `/root`
 - Make HeavyScript executable
 - Allow you to run HeavyScript from any directory with `heavyscript`
- > This does not include Cron Jobs, see the Cron section for more information.
+   > This does not include Cron Jobs, see the Cron section for more information.
 
 From here, you can just run HeavyScript with `heavyscript -ARGUMENTS`
 
@@ -88,7 +88,7 @@ heavyscript --self-update -b 10 -supr
 
 --self-update will:
 - Update HeavyScript to the latest release, no matter if you're on a branch or tag
-- Lets you use any other arugments you want
+- Lets you use any other arguments you want
 
 <br >
 <br >

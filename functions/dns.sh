@@ -13,7 +13,8 @@ dns(){
         echo "Error: failed to retrieve pod names" >&2
         return 1
     fi
-
+    mapfile -t ix_name_array < <(< dns_file awk '{print $4}' | sort -u )
+    
     # Pulling all ports
     if ! all_ports=$(k3s kubectl get service -A); then
         echo "Error: failed to retrieve port information" >&2

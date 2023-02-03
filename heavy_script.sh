@@ -157,13 +157,20 @@ done
 [[ "$update_all_apps" == "true" && "$update_apps" == "true" ]] && echo -e "-U and -u cannot BOTH be called" && exit
 
 #Continue to call functions in specific order
-[[ "$self_update" == "true" ]] && self_update
+if [[ "$self_update" == "true" ]]; then self_update; fi
+
 [[ "$help" == "true" ]] && help
+
 [[ "$cmd" == "true" || "$logs" == "true" ]] && container_shell_or_logs && exit
+
 [[ "$deleteBackup" == "true" ]] && deleteBackup && exit
+
 [[ "$dns" == "true" ]] && dns && exit
+
 [[ "$restore" == "true" ]] && restore && exit
+
 [[ "$mount" == "true" ]] && mount && exit
+
 if [[ "$number_of_backups" -gt 1 && "$sync" == "true" ]]; then # Run backup and sync at the same time
     echo "🅃 🄰 🅂 🄺 🅂 :"
     echo -e "-Backing up ix-applications Dataset\n-Syncing catalog(s)"
@@ -180,6 +187,11 @@ elif [[ "$sync" == "true" ]]; then # If only sync is true, run it
     echo -e "Syncing Catalog(s)\nThis Takes a LONG Time, Please wait..\n\n"
     sync
 fi
-[[ "$update_all_apps" == "true" || "$update_apps" == "true" ]] && commander
-[[ "$prune" == "true" ]] && prune 
-exit 0
+
+if [[ "$update_all_apps" == "true" || "$update_apps" == "true" ]]; then 
+    commander
+fi
+
+if [[ "$prune" == "true" ]]; then
+    prune 
+fi

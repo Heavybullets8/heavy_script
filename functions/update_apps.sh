@@ -240,7 +240,6 @@ post_process(){
 
     while true
     do
-        
         # If app reports ACTIVE right away, assume its a false positive and wait for it to change, or trust it after 5 updates to all_app_status
         status=$(grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
         # If status shows up as Active or Stopped on the first check, verify that. Otherwise it may be a false report..

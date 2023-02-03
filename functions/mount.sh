@@ -128,13 +128,13 @@ mount(){
                     if  [[ $pool_name == "root" ]]; then
                         # Mount the PVC to the selected dataset                    
                         if ! zfs set mountpoint=/mounted_pvc/"$data_name" "$full_path" ; then
-                            mount_fauilure=true
+                            mount_failure=true
                         fi
                         root_mount=true
                     else
                         # Mount the PVC to the selected dataset                    
                         if ! zfs set mountpoint=/"$pool_name"/mounted_pvc/"$data_name" "$full_path" ; then
-                            mount_fauilure=true
+                            mount_failure=true
                         fi
                     fi
 
@@ -143,7 +143,7 @@ mount(){
                     echo -e "${bold}Selected PVC:${reset} ${blue}$data_name${reset}"
                     echo -e "${bold}Selected Pool:${reset} ${blue}$pool_name${reset}"
                     echo -e "${bold}Mounted To:${reset} ${blue}$path/mounted_pvc/$data_name${reset}"
-                    if [[ $mount_fauilure != true ]]; then
+                    if [[ $mount_failure != true ]]; then
                         echo -e "${bold}Status:${reset} ${green}Successfully Mounted${reset}"
                     else
                         echo -e "${bold}Status:${reset} ${red}Mount Failure${reset}"
@@ -219,7 +219,6 @@ mount(){
 
                     done
                     rmdir /mnt/*/mounted_pvc 2>/dev/null ; rmdir /mnt/mounted_pvc 2>/dev/null
-
                     sleep 3
                 fi
                 ;;

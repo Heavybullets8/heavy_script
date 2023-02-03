@@ -387,7 +387,7 @@ update_app() {
             for (( count=0; count<3; count++ )); do
                 if cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null; then
                     # If the update was successful, break out of the loop
-                    break
+                    return 0
                 else
                     # Upon failure, wait for status update before continuing
                     before_loop=$(head -n 1 all_app_status)

@@ -18,14 +18,14 @@ mount(){
         title
         echo -e "${bold}PVC Mount Menu${reset}"
         echo -e "${bold}--------------${reset}"
-        echo "1)  Mount"
-        echo "2)  Unmount All"
+        echo -e "1)  Mount"
+        echo -e "2)  Unmount All"
         echo
-        echo "0)  Exit"
+        echo -e "0)  Exit"
         read -rt 120 -p "Please type a number: " selection || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case $selection in
             0)
-                echo "Exiting.."
+                echo -e "Exiting.."
                 exit
                 ;;
             1)
@@ -33,22 +33,22 @@ mount(){
                        sort -u | 
                        awk '{print $1 "\t" $2 "\t" $4}' | 
                        sed "s/^0/ /")
-                mount_list=$(echo "$call" | sed 1d | nl -s ") ")
-                mount_title=$(echo "$call" | head -n 1)
+                mount_list=$(echo -e "$call" | sed 1d | nl -s ") ")
+                mount_title=$(echo -e "$call" | head -n 1)
                 list=$(echo -e "# $mount_title\n$mount_list" | column -t)
                 while true
                 do
                     clear -x
                     title
-                    echo "$list" 
+                    echo -e "$list" 
                     echo 
-                    echo "0)  Exit"
+                    echo -e "0)  Exit"
                     read -rt 120 -p "Please type a number: " selection || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
 
                     
                     #Check for valid selection. If no issues, continue
                     if [[ $selection == 0 ]]; then
-                        echo "Exiting.."
+                        echo -e "Exiting.."
                         exit
                     fi
                     app=$(echo -e "$list" | 
@@ -82,8 +82,8 @@ mount(){
                     sleep 2
 
                     #Grab data then output and mount
-                    data_name=$(echo "$pvc" | awk '{print $3}')
-                    volume_name=$(echo "$pvc" | awk '{print $4}')
+                    data_name=$(echo -e "$pvc" | awk '{print $3}')
+                    volume_name=$(echo -e "$pvc" | awk '{print $4}')
                     full_path=$(zfs list -t filesystem -r "$ix_apps_pool"/ix-applications/releases/"$app"/volumes -o name -H | grep "$volume_name")
 
 
@@ -95,15 +95,15 @@ mount(){
                         echo -e "${bold}Selected App:${reset} ${blue}$app${reset}"
                         echo -e "${bold}Selected PVC:${reset} ${blue}$data_name${reset}"
                         echo
-                        echo "Available Pools:"
+                        echo -e "Available Pools:"
 
                         i=0
                         # Print options with numbers
                         for line in "${pool_query[@]}"; do
                             (( i++ ))
-                            pool=$(echo "$line" | awk -F ',' '{print $1}')
-                            path=$(echo "$line" | awk -F ',' '{print $2}')
-                            echo "$i) $pool $path"
+                            pool=$(echo -e "$line" | awk -F ',' '{print $1}')
+                            path=$(echo -e "$line" | awk -F ',' '{print $2}')
+                            echo -e "$i) $pool $path"
                         done
 
                         # Ask user for input
@@ -124,7 +124,7 @@ mount(){
 
 
                     # Get the path of the selected pool
-                    path=$(echo "$selected_pool" | cut -d',' -f2 | tr -d '[:space:]')
+                    path=$(echo -e "$selected_pool" | cut -d',' -f2 | tr -d '[:space:]')
 
 
                     # Check if the folder "mounted_pvc" exists on the selected pool
@@ -133,7 +133,7 @@ mount(){
                         mkdir "$path/mounted_pvc"
                     fi
 
-                    pool_name=$(echo "$selected_pool" | cut -d',' -f1)
+                    pool_name=$(echo -e "$selected_pool" | cut -d',' -f1)
 
                     clear -x
                     title
@@ -167,7 +167,7 @@ mount(){
                         echo -e "${bold}Unmount Manually with:${reset}\n${blue}zfs set mountpoint=legacy $full_path && rmdir /mnt/*/mounted_pvc/$data_name${reset}"
                     fi
                     echo
-                    echo "Or use the Unmount All option"
+                    echo -e "Or use the Unmount All option"
 
 
                     
@@ -200,7 +200,7 @@ mount(){
 
                 # Iterate through all available pools
                 for line in "${pool_query[@]}"; do
-                    pool_path=$(echo "$line" | cut -d',' -f2 | tr -d '[:space:]')
+                    pool_path=$(echo -e "$line" | cut -d',' -f2 | tr -d '[:space:]')
                     # Check if the folder "mounted_pvc" exists in the current pool
                     if [ -d "$pool_path/mounted_pvc" ]; then
                         # If it exists, add the contents of the folder to the unmount_array
@@ -217,8 +217,8 @@ mount(){
                     for pvc_name in "${unmount_array[@]}"; do
                         # Get the PVC details
                         main=$(k3s kubectl get pvc -A | grep -E "\s$pvc_name\s" | awk '{print $1, $2, $4}')
-                        app=$(echo "$main" | awk '{print $1}' | cut -c 4-)
-                        pvc=$(echo "$main" | awk '{print $3}')
+                        app=$(echo -e "$main" | awk '{print $1}' | cut -c 4-)
+                        pvc=$(echo -e "$main" | awk '{print $3}')
                         full_path=$(find /mnt/"$ix_apps_pool"/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
 
                         # Set the mountpoint to "legacy" and unmount

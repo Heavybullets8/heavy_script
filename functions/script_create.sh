@@ -8,15 +8,15 @@ script_create(){
         title
         echo -e "${bold}Choose Your Update Type${reset}"
         echo -e "${bold}-----------------------${reset}"
-        echo "1) -U | Update all applications, ignores versions"
-        echo "2) -u | Update all applications, does not update Major releases"
+        echo -e "1) -U | Update all applications, ignores versions"
+        echo -e "2) -u | Update all applications, does not update Major releases"
         echo
-        echo "0) Exit"
+        echo -e "0) Exit"
         echo
         read -rt 120 -p "Type the Number or Flag: " current_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
         case $current_selection in
             0 | [Ee][Xx][Ii][Tt])
-                echo "Exiting.."
+                echo -e "Exiting.."
                 exit
                 ;;
             1 | 2 | -U | -u)
@@ -65,25 +65,25 @@ script_create(){
         title
         echo -e "${bold}Update Options${reset}"
         echo -e "${bold}--------------${reset}"
-        echo "1) -r | Roll-back applications if they fail to update"
-        echo "2) -i | Add application to ignore list"
-        echo "3) -S | Shutdown applications prior to updating"
-        echo "4) -v | verbose output"
-        echo "5) -t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
+        echo -e "1) -r | Roll-back applications if they fail to update"
+        echo -e "2) -i | Add application to ignore list"
+        echo -e "3) -S | Shutdown applications prior to updating"
+        echo -e "4) -v | verbose output"
+        echo -e "5) -t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
         echo
         echo -e "${bold}Additional Options${reset}"
         echo -e "${bold}------------------${reset}"
-        echo "6) -b | Back-up your ix-applications dataset"
-        echo "7) -s | sync catalog"
-        echo "8) -p | Prune unused/old docker images"
-        echo "9) --ignore-img   | Ignore container image updates"
-        echo "10) --self-update | Updates HeavyScript prior to running any other commands"
+        echo -e "6) -b | Back-up your ix-applications dataset"
+        echo -e "7) -s | sync catalog"
+        echo -e "8) -p | Prune unused/old docker images"
+        echo -e "9) --ignore-img   | Ignore container image updates"
+        echo -e "10) --self-update | Updates HeavyScript prior to running any other commands"
         echo
-        echo "88) Undo"
-        echo "99) Remove ALL Options"
-        echo "00) Proceed with update"
+        echo -e "88) Undo"
+        echo -e "99) Remove ALL Options"
+        echo -e "00) Proceed with update"
         echo 
-        echo "0) Exit"
+        echo -e "0) Exit"
         echo 
         echo -e "${bold}Current Choices${reset}"
         echo -e "${bold}---------------${reset}"
@@ -92,7 +92,7 @@ script_create(){
         read -rt 600 -p "Type the Number or Flag: " current_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
         case $current_selection in
             0 | [Ee][Xx][Ii][Tt])
-                echo "Exiting.."
+                echo -e "Exiting.."
                 exit
                 ;;
             00)
@@ -122,7 +122,7 @@ script_create(){
                 option="-v"
                 ;;
             5 | -t)
-                echo "What do you want your timeout to be?"
+                echo -e "What do you want your timeout to be?"
                 read -rt 120 -p "Please type an integer: " up_timeout || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
                 if ! [[ $up_timeout =~ ^[0-9]+$ ]]; then
                     echo -e "${red}Error: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list${reset}"
@@ -133,7 +133,7 @@ script_create(){
                 value="$up_timeout"
                 ;;
             6 | -b)
-                echo "Up to how many backups should we keep?"
+                echo -e "Up to how many backups should we keep?"
                 read -rt 120 -p "Please type an integer: " up_backups || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
                 if ! [[ $up_backups =~ ^[0-9]+$ ]]; then
                     echo -e "${red}Error: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list${reset}"

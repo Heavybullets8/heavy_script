@@ -10,13 +10,13 @@ backup(){
 
     # Create a new backup with the current date and time as the name
     if ! output=$(cli -c "app kubernetes backup_chart_releases backup_name=\"HeavyScript_$current_date_time\""); then
-        echo "Error: Failed to create new backup" >&2
+        echo -e "Error: Failed to create new backup" >&2
         return 1
     fi
     if [[ "$verbose" == "true" ]]; then
         echo_backup+=("$output")
     else
-        echo_backup+=("\nNew Backup Name:" "$(echo "$output" | tail -n 1)")
+        echo_backup+=("\nNew Backup Name:" "$(echo -e "$output" | tail -n 1)")
     fi
 
     # Get a list of backups sorted by name in descending order
@@ -71,10 +71,10 @@ choose_restore(){
 
         {
         if [[ ${#hs_tt_backups[@]} -gt 0 ]]; then
-            echo "${bold}# HeavyScript/Truetool_Backups${reset}"
+            echo -e "${bold}# HeavyScript/Truetool_Backups${reset}"
             # Print the HeavyScript and Truetool backups with numbers
             for ((i=0; i<${#hs_tt_backups[@]}; i++)); do
-                echo "$count) ${hs_tt_backups[i]}"
+                echo -e "$count) ${hs_tt_backups[i]}"
                 ((count++))
             done
         fi
@@ -85,7 +85,7 @@ choose_restore(){
             echo -e "\n${bold}# System_Backups${reset}"
             # Print the system backups with numbers
             for ((i=0; i<${#system_backups[@]}; i++)); do
-                echo "$count) ${system_backups[i]}"
+                echo -e "$count) ${system_backups[i]}"
                 ((count++))
             done
         fi
@@ -96,20 +96,20 @@ choose_restore(){
             echo -e "\n${bold}# Other_Backups${reset}"
             # Print the other backups with numbers
             for ((i=0; i<${#other_backups[@]}; i++)); do
-                echo "$count) ${other_backups[i]}"
+                echo -e "$count) ${other_backups[i]}"
                 ((count++))
             done 
         fi
         } | column -t -L
 
         echo
-        echo "0)  Exit"
+        echo -e "0)  Exit"
         # Prompt the user to select a restore point
         read -rt 240 -p "Please type a number: " selection || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
 
         # Check if the user wants to exit
         if [[ $selection == 0 ]]; then
-            echo "Exiting.." 
+            echo -e "Exiting.." 
             exit
         # Check if the user's input is empty
         elif [[ -z "$selection" ]]; then 
@@ -148,19 +148,19 @@ list_backups_func(){
     list_backups=$(cli -c 'app kubernetes list_backups' | tr -d " \t\r" | sed '1d;$d')
 
     # heavyscript backups
-    mapfile -t hs_tt_backups < <(echo "$list_backups" | 
+    mapfile -t hs_tt_backups < <(echo -e "$list_backups" | 
                                  grep -E "HeavyScript_|Truetool_" | 
                                  sort -t '_' -Vr -k2,7 | 
                                  awk -F '|'  '{print $2}')
 
     # system backups
-    mapfile -t system_backups < <(echo "$list_backups" | 
+    mapfile -t system_backups < <(echo -e "$list_backups" | 
                                   grep "system-update--" | 
                                   sort -t '-' -Vr -k3,5 | 
                                   awk -F '|'  '{print $2}')
 
     # other backups
-    mapfile -t other_backups < <(echo "$list_backups" | 
+    mapfile -t other_backups < <(echo -e "$list_backups" | 
                                  grep -v -E "HeavyScript_|Truetool_|system-update--" | 
                                  sort -t '-' -Vr -k3,5 | 
                                  awk -F '|'  '{print $2}')
@@ -216,12 +216,12 @@ deleteBackup(){
             case $yesno in
                 [Yy] | [Yy][Ee][Ss])
                     echo -e "\nDeleting $restore_point"
-                    cli -c 'app kubernetes delete_backup backup_name=''"'"$restore_point"'"' &>/dev/null || { echo "${red}Failed to delete backup..${reset}"; exit; }
+                    cli -c 'app kubernetes delete_backup backup_name=''"'"$restore_point"'"' &>/dev/null || { echo -e "${red}Failed to delete backup..${reset}"; exit; }
                     echo -e "${green}Sucessfully deleted${reset}"
                     break
                     ;;
                 [Nn] | [Nn][Oo])
-                    echo "Exiting"
+                    echo -e "Exiting"
                     exit
                     ;;
                 *)
@@ -277,7 +277,7 @@ restore(){
         contents=$(cat "$file")
         if [[ "$contents" == '{}' ]]; then
             # Print the file if it meets the criterion
-            file=$(echo "$file" | awk -F '/' '{print $7}')
+            file=$(echo -e "$file" | awk -F '/' '{print $7}')
             borked_array+=("${file}")
         fi
     done
@@ -358,7 +358,7 @@ restore(){
                     echo -e "${blue}zfs set readonly=off $pool/ix-applications${reset}"
                 fi
 
-                echo "${green}Finished setting properties..${reset}"
+                echo -e "${green}Finished setting properties..${reset}"
 
                 # Beginning snapshot restore
                 echo -e "\nStarting restore, this will take a LONG time."
@@ -369,7 +369,7 @@ restore(){
                 exit
                 ;;
             [Nn] | [Nn][Oo])
-                echo "Exiting"
+                echo -e "Exiting"
                 exit
                 ;;
             *)
@@ -392,34 +392,34 @@ check_restore_point_version() {
 
     # Get the date of system version and when it was updated
     current_version=$(cli -m csv -c 'system version' | awk -F '-' '{print $3}')
-    when_updated=$(echo "$boot_query" | 
+    when_updated=$(echo -e "$boot_query" | 
                    grep "$current_version", | 
                    sed -n 's/.*\([0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}\)T\([0-9]\{2\}:[0-9]\{2\}\).*/\1\2/p' | 
                    tr -d -- "-:")
 
     # Get the date of the chosen restore point
     # Extract the date information from the restore point string, which is formatted as "restore_point_<date>_<time>"
-    restore_point_date=$(echo "$restore_point" | awk -F '_' '{print $2 $3 $4 $5 $6}' | tr -d "_")
+    restore_point_date=$(echo -e "$restore_point" | awk -F '_' '{print $2 $3 $4 $5 $6}' | tr -d "_")
 
 
     # Grab previous version
-    previous_version=$(echo "$boot_query" | sort -nr | grep -A 1 "$current_version," | tail -n 1)
+    previous_version=$(echo -e "$boot_query" | sort -nr | grep -A 1 "$current_version," | tail -n 1)
 
     # Compare the dates
     while (("$restore_point_date" < "$when_updated" ))
     do
         clear -x
-        echo "The restore point you have chosen is from an older version of Truenas Scale"
-        echo "This is not recommended, as it may cause issues with the system"
-        echo "Either that, or your systems date is incorrect.."
+        echo -e "The restore point you have chosen is from an older version of Truenas Scale"
+        echo -e "This is not recommended, as it may cause issues with the system"
+        echo -e "Either that, or your systems date is incorrect.."
         echo
         echo -e "${bold}Current SCALE Information:"
         echo -e "${bold}Version:${reset}       ${blue}$current_version${reset}"
-        echo -e "${bold}When Updated:${reset}  ${blue}$(echo "$restore_point" | awk -F '_' '{print $2 "-" $3 "-" $4}')${reset}"
+        echo -e "${bold}When Updated:${reset}  ${blue}$(echo -e "$restore_point" | awk -F '_' '{print $2 "-" $3 "-" $4}')${reset}"
         echo
         echo -e "${bold}Restore Point SCALE Information:${reset}"
-        echo -e "${bold}Version:${reset}       ${blue}$(echo "$previous_version" | awk -F ',' '{print $1}')${reset}"
-        echo -e "${bold}When Updated:${reset}  ${blue}$(echo "$previous_version" | awk -F ',' '{print $2}' | awk -F 'T' '{print $1}')${reset}"
+        echo -e "${bold}Version:${reset}       ${blue}$(echo -e "$previous_version" | awk -F ',' '{print $1}')${reset}"
+        echo -e "${bold}When Updated:${reset}  ${blue}$(echo -e "$previous_version" | awk -F ',' '{print $2}' | awk -F 'T' '{print $1}')${reset}"
         echo
         read -rt 120 -p "Would you like to proceed? (y/N): " yesno || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
             case $yesno in
@@ -429,7 +429,7 @@ check_restore_point_version() {
                     break
                     ;;
                 [Nn] | [Nn][Oo])
-                    echo "Exiting"
+                    echo -e "Exiting"
                     exit
                     ;;
                 *)

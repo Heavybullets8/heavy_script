@@ -10,14 +10,14 @@ dns(){
         sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//' |
         grep -v 'svclb-' |
         sed '1d' > dns_file; then
-        echo "Error: failed to retrieve pod names" >&2
+        echo -e "${red}Error: failed to retrieve pod names${reset}" >&2
         return 1
     fi
     mapfile -t ix_name_array < <(< dns_file awk '{print $4}' | sort -u )
     
     # Pulling all ports
     if ! all_ports=$(k3s kubectl get service -A); then
-        echo "Error: failed to retrieve port information" >&2
+        echo -e "${red}Error: failed to retrieve port information${reset}" >&2
         return 1
     fi
 
@@ -29,8 +29,8 @@ dns(){
                         sed 's/-[^-]*-[^-]*$//' | 
                         sed 's/-0//' | 
                         head -n 1)
-        app_name=$(echo "$i" | cut -c 4-)
-        port=$(echo "$all_ports" | 
+        app_name=$(echo -e "$i" | cut -c 4-)
+        port=$(echo -e "$all_ports" | 
                grep -E "\s$full_app_name\s" | 
                awk '{print $6}' | 
                grep -Eo "^[[:digit:]]+{1}")

@@ -6,22 +6,22 @@ menu(){
     title
     echo -e "${bold}Available Utilities${reset}"
     echo -e "${bold}-------------------${reset}"
-    echo "1)  Help"
-    echo "2)  List DNS Names"
-    echo "3)  Mount and Unmount PVC storage"
-    echo "4)  Backup Options"
-    echo "5)  HeavyScript Options"
-    echo "6)  Update Applications"
-    echo "7)  Command to Container / Container Logs"
-    echo "8)  Patches"
+    echo -e "1)  Help"
+    echo -e "2)  List DNS Names"
+    echo -e "3)  Mount and Unmount PVC storage"
+    echo -e "4)  Backup Options"
+    echo -e "5)  HeavyScript Options"
+    echo -e "6)  Update Applications"
+    echo -e "7)  Command to Container / Container Logs"
+    echo -e "8)  Patches"
     echo
-    echo "0)  Exit"
+    echo -e "0)  Exit"
     read -rt 120 -p "Please select an option by number: " selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
 
 
     case $selection in
         0)
-            echo "Exiting.."
+            echo -e "Exiting.."
             exit
             ;;
         1)
@@ -46,15 +46,15 @@ menu(){
                 title
                 echo -e "${bold}Backup Menu${reset}"
                 echo -e "${bold}-----------${reset}"
-                echo "1)  Create Backup"
-                echo "2)  Delete Backup"
-                echo "3)  Restore Backup"
+                echo -e "1)  Create Backup"
+                echo -e "2)  Delete Backup"
+                echo -e "3)  Restore Backup"
                 echo
-                echo "0)  Exit"
+                echo -e "0)  Exit"
                 read -rt 120 -p "Please select an option by number: " backup_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
                 case $backup_selection in
                     0)
-                        echo "Exiting.."
+                        echo -e "Exiting.."
                         exit
                         ;;
                     1)
@@ -94,16 +94,16 @@ menu(){
                 title
                 echo -e "${bold}HeavyScript Options Menu${reset}"
                 echo -e "${bold}------------------------${reset}"
-                echo "1)  Self Update"
-                echo "2)  Choose Branch"
-                echo "3)  Add Script to Global Path"
+                echo -e "1)  Self Update"
+                echo -e "2)  Choose Branch"
+                echo -e "3)  Add Script to Global Path"
                 echo -e "${gray}This will download the one liner, and add it to your global path, you only need to do this once.${reset} "
                 echo
-                echo "0)  Exit"
+                echo -e "0)  Exit"
                 read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
                 case $misc_selection in
                     0)
-                        echo "Exiting.."
+                        echo -e "Exiting.."
                         exit
                         ;;
                     1)
@@ -140,14 +140,14 @@ menu(){
                 title
                 echo -e "${bold}Command to Container / Container Logs Menu${reset}"
                 echo -e "${bold}------------------------------------------${reset}"
-                echo "1)  Command to Container"
-                echo "2)  Container Logs"
+                echo -e "1)  Command to Container"
+                echo -e "2)  Container Logs"
                 echo
-                echo "0)  Exit"
+                echo -e "0)  Exit"
                 read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
                 case $misc_selection in
                     0)
-                        echo "Exiting.."
+                        echo -e "Exiting.."
                         exit
                         ;;
                     1)
@@ -176,17 +176,17 @@ menu(){
                 title
                 echo -e "${bold}Patch Menu${reset}"
                 echo -e "${bold}----------${reset}"
-                echo "1)  Patch 22.12.0 Restore"
+                echo -e "1)  Patch 22.12.0 Restore"
                 echo -e "${gray}- - Fixes issue on 22.12.0 where restore points were being saved with empty PVC data${reset}"
                 echo
-                echo "2)  Patch 22.12.0 Backups"
+                echo -e "2)  Patch 22.12.0 Backups"
                 echo -e "${gray}- - Fixes issue on 22.12.0 where backups would fail on certain applications${reset}"
                 echo
-                echo "0)  Exit"
+                echo -e "0)  Exit"
                 read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
                 case $misc_selection in
                     0)
-                        echo "Exiting.."
+                        echo -e "Exiting.."
                         exit
                         ;;
                     1)

@@ -30,12 +30,14 @@ backup(){
     if [[ ${#current_backups[@]} -gt "$number_of_backups" ]]; then
         echo_backup+=("\nDeleted the oldest backup(s) for exceeding limit:")
         overflow=$(( ${#current_backups[@]} - "$number_of_backups" ))
+        # Place excess backups into an array for deletion
         mapfile -t list_overflow < <(cli -c 'app kubernetes list_backups' | 
                                      grep -E "HeavyScript_|TrueTool_"  | 
                                      sort -t '_' -V -k2,7 | 
                                      awk -F '|'  '{print $2}'| 
                                      tr -d " \t\r" | 
                                      head -n "$overflow")
+
         for i in "${list_overflow[@]}"; do
             cli -c "app kubernetes delete_backup backup_name=\"$i\"" &> /dev/null || echo_backup+=("Failed to delete $i")
             echo_backup+=("$i")
@@ -150,11 +152,13 @@ list_backups_func(){
                                  grep -E "HeavyScript_|Truetool_" | 
                                  sort -t '_' -Vr -k2,7 | 
                                  awk -F '|'  '{print $2}')
+
     # system backups
     mapfile -t system_backups < <(echo "$list_backups" | 
                                   grep "system-update--" | 
                                   sort -t '-' -Vr -k3,5 | 
                                   awk -F '|'  '{print $2}')
+
     # other backups
     mapfile -t other_backups < <(echo "$list_backups" | 
                                  grep -v -E "HeavyScript_|Truetool_|system-update--" | 
@@ -390,13 +394,13 @@ check_restore_point_version() {
     current_version=$(cli -m csv -c 'system version' | awk -F '-' '{print $3}')
     when_updated=$(echo "$boot_query" | 
                    grep "$current_version", | 
-                   awk -F ',' '{print $2}' | 
-                   sed 's/[T|-]/_/g' | 
-                   sed 's/:/_/g' | 
-                   awk -F '_' '{print $1 $2 $3 $4 $5}')
+                   sed -n 's/.*\([0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}\)T\([0-9]\{2\}:[0-9]\{2\}\).*/\1\2/p' | 
+                   tr -d -- "-:")
 
     # Get the date of the chosen restore point
+    # Extract the date information from the restore point string, which is formatted as "restore_point_<date>_<time>"
     restore_point_date=$(echo "$restore_point" | awk -F '_' '{print $2 $3 $4 $5 $6}' | tr -d "_")
+
 
     # Grab previous version
     previous_version=$(echo "$boot_query" | sort -nr | grep -A 1 "$current_version," | tail -n 1)

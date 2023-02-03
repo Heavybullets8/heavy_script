@@ -161,12 +161,13 @@ script_create(){
                         # Set the flag to indicate that we have found a hyphenated element
                         found_hyphenated=1
                     fi
+                    # Unset the current element
+                    unset "update_selection[$i]"
+
                     # If we have found a hyphenated element, unset the current element
                     if [[ $found_hyphenated -eq 1 ]]; then
                         # Break out of the loop
                         break
-                    else
-                        unset "update_selection[$i]"
                     fi
                 done
 

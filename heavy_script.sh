@@ -43,8 +43,9 @@ gray='\033[1;30m'
 
 
 #If no argument is passed, open menu function.
-[[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && menu
-
+if [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]]; then
+    menu
+fi
 
 # Parse script options
 while getopts ":si:rb:t:uUpSRv-:" opt

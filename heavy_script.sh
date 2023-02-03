@@ -167,17 +167,17 @@ done
 if [[ "$number_of_backups" -gt 1 && "$sync" == "true" ]]; then # Run backup and sync at the same time
     echo "🅃 🄰 🅂 🄺 🅂 :"
     echo -e "-Backing up ix-applications Dataset\n-Syncing catalog(s)"
-    echo -e "This can take a LONG time, Please Wait For Both Output..\n\n"
+    echo -e "Please wait for the output of both tasks..\n\n"
     backup &
     sync &
     wait
 elif [[ "$number_of_backups" -gt 1 ]]; then # If only backup is true, run it
     echo "🅃 🄰 🅂 🄺 :"
-    echo -e "-Backing up \"ix-applications\" Dataset\nPlease Wait..\n\n"
+    echo -e "-Backing up \"ix-applications\" Dataset\nPlease wait..\n\n"
     backup
 elif [[ "$sync" == "true" ]]; then # If only sync is true, run it
     echo "🅃 🄰 🅂 🄺 :"
-    echo -e "Syncing Catalog(s)\nThis Takes a LONG Time, Please Wait..\n\n"
+    echo -e "Syncing Catalog(s)\nThis Takes a LONG Time, Please wait..\n\n"
     sync
 fi
 [[ "$update_all_apps" == "true" || "$update_apps" == "true" ]] && commander

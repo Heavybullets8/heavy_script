@@ -20,13 +20,22 @@ backup(){
     fi
 
     # Get a list of backups sorted by name in descending order
-    mapfile -t current_backups < <(cli -c 'app kubernetes list_backups' | grep -E "HeavyScript_|TrueTool_" | sort -t '_' -Vr -k2,7 | awk -F '|'  '{print $2}'| tr -d " \t\r")
+    mapfile -t current_backups < <(cli -c 'app kubernetes list_backups' | 
+                                   grep -E "HeavyScript_|TrueTool_" | 
+                                   sort -t '_' -Vr -k2,7 | 
+                                   awk -F '|'  '{print $2}'| 
+                                   tr -d " \t\r")
 
     # If there are more backups than the allowed number, delete the oldest ones
     if [[ ${#current_backups[@]} -gt "$number_of_backups" ]]; then
         echo_backup+=("\nDeleted the oldest backup(s) for exceeding limit:")
         overflow=$(( ${#current_backups[@]} - "$number_of_backups" ))
-        mapfile -t list_overflow < <(cli -c 'app kubernetes list_backups' | grep -E "HeavyScript_|TrueTool_"  | sort -t '_' -V -k2,7 | awk -F '|'  '{print $2}'| tr -d " \t\r" | head -n "$overflow")
+        mapfile -t list_overflow < <(cli -c 'app kubernetes list_backups' | 
+                                     grep -E "HeavyScript_|TrueTool_"  | 
+                                     sort -t '_' -V -k2,7 | 
+                                     awk -F '|'  '{print $2}'| 
+                                     tr -d " \t\r" | 
+                                     head -n "$overflow")
         for i in "${list_overflow[@]}"; do
             cli -c "app kubernetes delete_backup backup_name=\"$i\"" &> /dev/null || echo_backup+=("Failed to delete $i")
             echo_backup+=("$i")
@@ -137,11 +146,20 @@ list_backups_func(){
     list_backups=$(cli -c 'app kubernetes list_backups' | tr -d " \t\r" | sed '1d;$d')
 
     # heavyscript backups
-    mapfile -t hs_tt_backups < <(echo "$list_backups" | grep -E "HeavyScript_|Truetool_" | sort -t '_' -Vr -k2,7 | awk -F '|'  '{print $2}')
+    mapfile -t hs_tt_backups < <(echo "$list_backups" | 
+                                 grep -E "HeavyScript_|Truetool_" | 
+                                 sort -t '_' -Vr -k2,7 | 
+                                 awk -F '|'  '{print $2}')
     # system backups
-    mapfile -t system_backups < <(echo "$list_backups" | grep "system-update--" | sort -t '-' -Vr -k3,5 |  awk -F '|'  '{print $2}')
+    mapfile -t system_backups < <(echo "$list_backups" | 
+                                  grep "system-update--" | 
+                                  sort -t '-' -Vr -k3,5 | 
+                                  awk -F '|'  '{print $2}')
     # other backups
-    mapfile -t other_backups < <(echo "$list_backups" | grep -v -E "HeavyScript_|Truetool_|system-update--" | sort -t '-' -Vr -k3,5 | awk -F '|'  '{print $2}')
+    mapfile -t other_backups < <(echo "$list_backups" | 
+                                 grep -v -E "HeavyScript_|Truetool_|system-update--" | 
+                                 sort -t '-' -Vr -k3,5 | 
+                                 awk -F '|'  '{print $2}')
 
 
     #Check if there are any restore points
@@ -243,7 +261,10 @@ restore(){
     ## Check to see if empty PVC data is present in any of the applications ##
 
     # Find all pv_info.json files two subfolders deep with the restore point name
-    pool=$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")
+    pool=$(cli -c 'app kubernetes config' | 
+           grep -E "pool\s\|" | 
+           awk -F '|' '{print $3}' | 
+           tr -d " \t\n\r")
     files=$(find "$(find /mnt/"$pool"/ix-applications/backups -maxdepth 0 )" -name pv_info.json | grep "$restore_point")
 
     # Iterate over the list of files
@@ -258,7 +279,12 @@ restore(){
     done
 
     # Grab applications that are supposed to have PVC data
-    mapfile -t apps_with_pvc < <(k3s kubectl get pvc -A | sort -u | awk '{print $1 "\t" $2 "\t" $4}' | sed "s/^0/ /" | awk '{print $1}' | cut -c 4-)
+    mapfile -t apps_with_pvc < <(k3s kubectl get pvc -A | 
+                                 sort -u | 
+                                 awk '{print $1 "\t" $2 "\t" $4}' | 
+                                 sed "s/^0/ /" | 
+                                 awk '{print $1}' | 
+                                 cut -c 4-)
 
 
     # Iterate over the list of applications with empty PVC data
@@ -298,12 +324,17 @@ restore(){
     while true
     do
         clear -x
-        echo -e "${yellow}WARNING:\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible${reset}"
+        echo -e "${yellow}WARNING:\nThis is NOT guranteed to work\n 
+                This is ONLY supposed to be used as a LAST RESORT\n 
+                Consider rolling back your applications instead if possible${reset}"
         echo -e "\n\nYou have chosen:\n${blue}$restore_point${reset}\n\n"
         read -rt 120 -p "Would you like to proceed with restore? (y/N): " yesno || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case $yesno in
             [Yy] | [Yy][Ee][Ss])
-                pool=$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")
+                pool=$(cli -c 'app kubernetes config' | 
+                       grep -E "pool\s\|" | 
+                       awk -F '|' '{print $3}' | 
+                       tr -d " \t\n\r")
 
                 # Set mountpoints to legacy prior to restore, ensures correct properties for the are set
                 echo -e "\nSetting correct ZFS properties for application volumes.."
@@ -357,8 +388,12 @@ check_restore_point_version() {
 
     # Get the date of system version and when it was updated
     current_version=$(cli -m csv -c 'system version' | awk -F '-' '{print $3}')
-    when_updated=$(echo "$boot_query" | grep "$current_version",\
-    | awk -F ',' '{print $2}' | sed 's/[T|-]/_/g' | sed 's/:/_/g' | awk -F '_' '{print $1 $2 $3 $4 $5}')
+    when_updated=$(echo "$boot_query" | 
+                   grep "$current_version", | 
+                   awk -F ',' '{print $2}' | 
+                   sed 's/[T|-]/_/g' | 
+                   sed 's/:/_/g' | 
+                   awk -F '_' '{print $1 $2 $3 $4 $5}')
 
     # Get the date of the chosen restore point
     restore_point_date=$(echo "$restore_point" | awk -F '_' '{print $2 $3 $4 $5 $6}' | tr -d "_")

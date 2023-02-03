@@ -4,7 +4,12 @@
 container_shell_or_logs(){
     # Store the app names and their corresponding numbers in a map
     declare -A app_map
-    app_names=$(k3s crictl pods -s ready --namespace ix | sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//' | sed '1d' | awk '{print $4}' | cut -c4- | sort -u)
+    app_names=$(k3s crictl pods -s ready --namespace ix | 
+                sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//' | 
+                sed '1d' | 
+                awk '{print $4}' | 
+                cut -c4- | 
+                sort -u)
     num=1
     for app in $app_names; do
         app_map[$num]=$app
@@ -47,8 +52,12 @@ container_shell_or_logs(){
     app_name=${app_map[$selection]}
 
     rm cont_file 2> /dev/null
-    mapfile -t pod_id < <(k3s crictl pods -s ready --namespace ix | grep -v "[[:space:]]svclb-" | grep -E "[[:space:]]ix-${app_name}[[:space:]]" | awk '{print $1}')
-    search=$(k3s crictl ps -a -s running | sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//')
+    mapfile -t pod_id < <(k3s crictl pods -s ready --namespace ix | 
+                          grep -v "[[:space:]]svclb-" | 
+                          grep -E "[[:space:]]ix-${app_name}[[:space:]]" | 
+                          awk '{print $1}')
+    search=$(k3s crictl ps -a -s running | 
+             sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//')
     for pod in "${pod_id[@]}"
     do
         echo "$search" | grep "$pod" >> cont_file

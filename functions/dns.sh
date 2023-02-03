@@ -24,9 +24,16 @@ dns(){
     clear -x
     for i in "${ix_name_array[@]}"
     do
-        full_app_name=$(grep -E "\s$i\s" "dns_file" | awk '{print $3}' | sed 's/-[^-]*-[^-]*$//' | sed 's/-0//' | head -n 1)
+        full_app_name=$(grep -E "\s$i\s" "dns_file" | 
+                        awk '{print $3}' | 
+                        sed 's/-[^-]*-[^-]*$//' | 
+                        sed 's/-0//' | 
+                        head -n 1)
         app_name=$(echo "$i" | cut -c 4-)
-        port=$(echo "$all_ports" | grep -E "\s$full_app_name\s" | awk '{print $6}' | grep -Eo "^[[:digit:]]+{1}")
+        port=$(echo "$all_ports" | 
+               grep -E "\s$full_app_name\s" | 
+               awk '{print $6}' | 
+               grep -Eo "^[[:digit:]]+{1}")
         count=$((count + 1))
         if (( count % 2 == 0 )); then
             color="\033[0m"

@@ -2,7 +2,9 @@
 
 
 commander(){
-    mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | tr -d " \t\r" | grep -E ",true($|,)" | sort)
+    mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | 
+                        tr -d " \t\r" | 
+                        grep -E ",true($|,)" | sort)
     echo -e "🅄 🄿 🄳 🄰 🅃 🄴 🅂"
 
     if [[ -z ${array[*]} ]]; then
@@ -32,7 +34,11 @@ commander(){
         echo "Image Updates: Enabled"
     fi
 
-    pool=$(cli -c 'app kubernetes config' | grep -E "dataset\s\|" | awk -F '|' '{print $3}' | awk -F '/' '{print $1}' | tr -d " \t\n\r")
+    pool=$(cli -c 'app kubernetes config' | 
+           grep -E "dataset\s\|" | 
+           awk -F '|' '{print $3}' | 
+           awk -F '/' '{print $1}' | 
+           tr -d " \t\n\r")
 
     index=0
     for app in "${array[@]}"

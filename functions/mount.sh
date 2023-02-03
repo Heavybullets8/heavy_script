@@ -2,7 +2,10 @@
 
 
 mount(){
-    ix_apps_pool=$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")
+    ix_apps_pool=$(cli -c 'app kubernetes config' | 
+                   grep -E "pool\s\|" | 
+                   awk -F '|' '{print $3}' | 
+                   tr -d " \t\n\r")
 
     # Use mapfile command to read the output of cli command into an array
     mapfile -t pool_query < <(cli -m csv -c "storage pool query name,path" | sed -e '1d' -e '/^$/d')
@@ -26,7 +29,10 @@ mount(){
                 exit
                 ;;
             1)
-                call=$(k3s kubectl get pvc -A | sort -u | awk '{print $1 "\t" $2 "\t" $4}' | sed "s/^0/ /")
+                call=$(k3s kubectl get pvc -A | 
+                       sort -u | 
+                       awk '{print $1 "\t" $2 "\t" $4}' | 
+                       sed "s/^0/ /")
                 mount_list=$(echo "$call" | sed 1d | nl -s ") ")
                 mount_title=$(echo "$call" | head -n 1)
                 list=$(echo -e "# $mount_title\n$mount_list" | column -t)
@@ -45,7 +51,10 @@ mount(){
                         echo "Exiting.."
                         exit
                     fi
-                    app=$(echo -e "$list" | grep ^"$selection)" | awk '{print $2}' | cut -c 4- )
+                    app=$(echo -e "$list" | 
+                          grep ^"$selection)" | 
+                          awk '{print $2}' | 
+                          cut -c 4- )
                     if [[ -z "$app" ]]; then
                         echo -e "${red}Invalid Selection: ${blue}$selection${red}, was not an option${reset}"
                         sleep 3
@@ -55,7 +64,10 @@ mount(){
                     pvc=$(echo -e "$list" | grep ^"$selection)")
 
                     #Stop applicaiton if not stopped
-                    status=$(cli -m csv -c 'app chart_release query name,status' | grep "^$app," | awk -F ',' '{print $2}'| tr -d " \t\n\r")
+                    status=$(cli -m csv -c 'app chart_release query name,status' | 
+                             grep "^$app," | 
+                             awk -F ',' '{print $2}'| 
+                             tr -d " \t\n\r")
                     if [[ "$status" != "STOPPED" ]]; then
                         echo -e "\nStopping ${blue}$app${reset} prior to mount"
                         if ! cli -c 'app chart_release scale release_name='\""$app"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then

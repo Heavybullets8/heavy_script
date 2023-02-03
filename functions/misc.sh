@@ -63,8 +63,9 @@ export -f title
 
 
 help(){
-    [[ $help == "true" ]] && clear -x
-
+    if [[ $help == "true" ]]; then
+        clear -x
+    fi
     echo "Access the HeavyScript Menu"
     echo "---------------------------"
     echo "heavy_script"

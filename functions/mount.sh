@@ -41,9 +41,17 @@ mount(){
 
                     
                     #Check for valid selection. If no issues, continue
-                    [[ $selection == 0 ]] && echo "Exiting.." && exit
+                    if [[ $selection == 0 ]]; then
+                        echo "Exiting.."
+                        exit
+                    fi
                     app=$(echo -e "$list" | grep ^"$selection)" | awk '{print $2}' | cut -c 4- )
-                    [[ -z "$app" ]] && echo -e "${red}Invalid Selection: ${blue}$selection${red}, was not an option${reset}" && sleep 3 && continue 
+                    if [[ -z "$app" ]]; then
+                        echo -e "${red}Invalid Selection: ${blue}$selection${red}, was not an option${reset}"
+                        sleep 3
+                        continue 
+                    fi
+
                     pvc=$(echo -e "$list" | grep ^"$selection)")
 
                     #Stop applicaiton if not stopped
@@ -92,7 +100,7 @@ mount(){
 
 
                         # Check if the input is valid
-                        if [[ $pool_num -ge 1 ]] && [[ $pool_num -le ${#pool_query[@]} ]]; then
+                        if [[ $pool_num -ge 1 && $pool_num -le ${#pool_query[@]} ]]; then
                             selected_pool="${pool_query[pool_num-1]}"
                             # Exit the loop
                             break

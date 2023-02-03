@@ -154,22 +154,44 @@ done
 
 
 #exit if incompatable functions are called 
-[[ "$update_all_apps" == "true" && "$update_apps" == "true" ]] && echo -e "-U and -u cannot BOTH be called" && exit
+if [[ "$update_all_apps" == "true" && "$update_apps" == "true" ]]; then
+    echo -e "-U and -u cannot BOTH be called"
+    exit 1
+fi
 
-#Continue to call functions in specific order
-if [[ "$self_update" == "true" ]]; then self_update; fi
+### Continue to call functions in specific order ###
+if [[ "$self_update" == "true" ]]; then 
+    self_update
+fi
 
-[[ "$help" == "true" ]] && help
+if [[ "$help" == "true" ]]; then
+    help
+fi
 
-[[ "$cmd" == "true" || "$logs" == "true" ]] && container_shell_or_logs && exit
+if [[ "$cmd" == "true" || "$logs" == "true" ]]; then
+    container_shell_or_logs
+    exit
+fi
 
-[[ "$deleteBackup" == "true" ]] && deleteBackup && exit
+if [[ "$deleteBackup" == "true" ]]; then 
+    deleteBackup
+    exit
+fi
 
-[[ "$dns" == "true" ]] && dns && exit
+if [[ "$dns" == "true" ]]; then
+    dns
+    exit
+fi
 
-[[ "$restore" == "true" ]] && restore && exit
+if [[ "$restore" == "true" ]]; then
+    restore
+    exit
+fi
 
-[[ "$mount" == "true" ]] && mount && exit
+if [[ "$mount" == "true" ]]; then 
+    mount
+    exit
+fi
 
 if [[ "$number_of_backups" -gt 1 && "$sync" == "true" ]]; then # Run backup and sync at the same time
     echo "🅃 🄰 🅂 🄺 🅂 :"

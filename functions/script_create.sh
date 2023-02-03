@@ -33,14 +33,14 @@ script_create(){
 
                     case $up_async in
                         "" | *[!0-9]*)
-                            echo -e "\033[31mError: \"$up_async\" is invalid, it needs to be an integer${reset}"
-                            echo -e "\033[31mNOT adding it to the list${reset}"
+                            echo -e "${red}Error: \"$up_async\" is invalid, it needs to be an integer${reset}"
+                            echo -e "${red}NOT adding it to the list${reset}"
                             sleep 3
                             continue
                             ;;
                         0)
-                            echo -e "\033[31mError: \"$up_async\" is less than 1${reset}"
-                            echo -e "\033[31mNOT adding it to the list${reset}"
+                            echo -e "${red}Error: \"$up_async\" is less than 1${reset}"
+                            echo -e "${red}NOT adding it to the list${reset}"
                             sleep 3
                             continue
                             ;;
@@ -53,7 +53,8 @@ script_create(){
                 break
                 ;;
             *)
-                echo -e "\033[31m$current_selection was not an option, try again${reset}" && sleep 3
+                echo -e "${red}$current_selection was not an option, try again${reset}"
+                sleep 3
                 continue
                 ;;
         esac
@@ -106,7 +107,11 @@ script_create(){
                 ;;
             2 | -i)
                 read -rt 120 -p "What is the name of the application we should ignore?: " up_ignore || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
-                ! [[ $up_ignore =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]] && echo -e "${red}Error: \"$up_timeout\" is not a possible option for an application name${reset}" && sleep 3 && continue
+                if ! [[ $up_ignore =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]]; then
+                    echo -e "${red}Error: \"$up_timeout\" is not a possible option for an application name${reset}"
+                    sleep 3
+                    continue
+                fi
                 update_selection+=("-i" "$up_ignore")
                 continue
                 ;;
@@ -119,15 +124,27 @@ script_create(){
             5 | -t)
                 echo "What do you want your timeout to be?"
                 read -rt 120 -p "Please type an integer: " up_timeout || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
-                ! [[ $up_timeout =~ ^[0-9]+$ ]] && echo -e "\033[31mError: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list${reset}" && sleep 3 && continue
+                if ! [[ $up_timeout =~ ^[0-9]+$ ]]; then
+                    echo -e "${red}Error: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list${reset}"
+                    sleep 3
+                    continue
+                fi
                 option="-t"
                 value="$up_timeout"
                 ;;
             6 | -b)
                 echo "Up to how many backups should we keep?"
                 read -rt 120 -p "Please type an integer: " up_backups || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
-                ! [[ $up_backups =~ ^[0-9]+$ ]] && echo -e "\033[31mError: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list${reset}" && sleep 3 && continue
-                [[ $up_backups == 0 ]] && echo -e "\033[31mError: Number of backups cannot be 0\nNOT adding it to the list${reset}" && sleep 3 && continue
+                if ! [[ $up_backups =~ ^[0-9]+$ ]]; then
+                    echo -e "${red}Error: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list${reset}"
+                    sleep 3
+                    continue
+                fi
+                if [[ $up_backups == 0 ]]; then
+                    echo -e "${red}Error: Number of backups cannot be 0\nNOT adding it to the list${reset}"
+                    sleep 3
+                    continue
+                fi
                 option="-b"
                 value="$up_backups"
                 ;;
@@ -146,7 +163,7 @@ script_create(){
             88)
                 # Check if the array has less than or equal to 2 elements
                 if [[ ${#update_selection[@]} -eq 2 ]]; then
-                    echo -e "\033[31mError: You cannot remove the update option and the number of updates${reset}"
+                    echo -e "${red}Error: You cannot remove the update option and the number of updates${reset}"
                     sleep 3 
                     continue
                 fi
@@ -184,7 +201,9 @@ script_create(){
                 continue
                 ;;
             *)
-                echo -e "\033[31m\"$current_selection\" was not an option, try again${reset}" && sleep 3 && continue 
+                echo -e "${red}\"$current_selection\" was not an option, try again${reset}"
+                sleep 3
+                continue 
                 ;;
         esac
         if [[ -n "$option" ]]; then
@@ -202,7 +221,7 @@ export -f script_create
 add_option_to_array() {
     # Check if the option is already in the array
     if printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "$option"; then
-        echo -e "\033[31m$option is already in the array, skipping${reset}"
+        echo -e "${red}$option is already in the array, skipping${reset}"
         sleep 3
         return
     fi

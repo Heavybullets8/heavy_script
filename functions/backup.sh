@@ -23,7 +23,7 @@ backup(){
     mapfile -t current_backups < <(cli -c 'app kubernetes list_backups' | grep -E "HeavyScript_|TrueTool_" | sort -t '_' -Vr -k2,7 | awk -F '|'  '{print $2}'| tr -d " \t\r")
 
     # If there are more backups than the allowed number, delete the oldest ones
-    if [[  ${#current_backups[@]}  -gt  "$number_of_backups" ]]; then
+    if [[ ${#current_backups[@]} -gt "$number_of_backups" ]]; then
         echo_backup+=("\nDeleted the oldest backup(s) for exceeding limit:")
         overflow=$(( ${#current_backups[@]} - "$number_of_backups" ))
         mapfile -t list_overflow < <(cli -c 'app kubernetes list_backups' | grep -E "HeavyScript_|TrueTool_"  | sort -t '_' -V -k2,7 | awk -F '|'  '{print $2}'| tr -d " \t\r" | head -n "$overflow")

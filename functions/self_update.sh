@@ -118,8 +118,9 @@ self_update() {
     chmod +x "$script_name" ; chmod +x "$script_path"/bin/heavyscript 2>/dev/null
 
     # Check if there are any arguments left
-    [[ -z ${args[*]} ]] && echo -e "No more arguments, exiting..\n\n" && exit
-
+    if [[ -z ${args[*]} ]]; then
+        echo -e "No more arguments, exiting..\n\n" && exit
+    fi
     # Check if the script was updated, and if so, run the new version
     if [[ "$updated" == true ]]; then
         echo -e "Running the new version...\n\n"

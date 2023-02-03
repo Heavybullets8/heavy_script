@@ -163,7 +163,7 @@ do
 done
 
 
-#exit if incompatable functions are called 
+### exit if incompatable functions are called ### 
 if [[ "$update_all_apps" == "true" && "$update_apps" == "true" ]]; then
     echo -e "-U and -u cannot BOTH be called"
     exit 1
@@ -205,18 +205,18 @@ fi
 
 if [[ "$number_of_backups" -gt 1 && "$sync" == "true" ]]; then # Run backup and sync at the same time
     echo "🅃 🄰 🅂 🄺 🅂 :"
-    echo -e "-Backing up ix-applications Dataset\n-Syncing catalog(s)"
-    echo -e "Please wait for the output of both tasks..\n\n"
+    echo -e "-Backing up ix-applications dataset\n-Syncing catalog(s)"
+    echo -e "Please wait for output from both tasks..\n\n"
     backup &
     sync &
     wait
 elif [[ "$number_of_backups" -gt 1 ]]; then # If only backup is true, run it
     echo "🅃 🄰 🅂 🄺 :"
-    echo -e "-Backing up \"ix-applications\" Dataset\nPlease wait..\n\n"
+    echo -e "-Backing up ix-applications dataset\nPlease wait..\n\n"
     backup
 elif [[ "$sync" == "true" ]]; then # If only sync is true, run it
     echo "🅃 🄰 🅂 🄺 :"
-    echo -e "Syncing Catalog(s)\nThis Takes a LONG Time, Please wait..\n\n"
+    echo -e "Syncing Catalog(s)\nThis can take a few minutes, please wait..\n\n"
     sync
 fi
 

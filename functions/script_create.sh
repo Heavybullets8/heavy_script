@@ -87,7 +87,7 @@ script_create(){
         echo 
         echo -e "${bold}Current Choices${reset}"
         echo -e "${bold}---------------${reset}"
-        echo -e "\033[34m bash heavy_script.sh ${update_selection[*]} ${reset}"
+        echo -e "${blue}bash heavy_script.sh ${update_selection[*]} ${reset}"
         echo
         read -rt 600 -p "Type the Number or Flag: " current_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
         case $current_selection in
@@ -97,7 +97,7 @@ script_create(){
                 ;;
             00)
                 clear -x
-                echo -e "\033[32m Running \"bash heavy_script.sh ${update_selection[*]}\" ${reset}"
+                echo -e "${blue}Running \"bash heavy_script.sh ${update_selection[*]}\" ${reset}"
                 echo
                 exec bash "$script_name" "${update_selection[@]}"
                 exit

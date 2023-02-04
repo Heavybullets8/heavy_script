@@ -101,15 +101,13 @@ From here, you can just run HeavyScript with `heavyscript -ARGUMENTS`
  
 ## How to Update 
 
-### --self-update
-
 ```
 heavyscript --self-update -b 10 -supr
 ```
 
 --self-update will:
 - Update HeavyScript to the latest release, no matter if you're on a branch or tag
-- Lets you use any other arugments you want
+- Lets you use any other arguments you want
 
 <br >
 <br >

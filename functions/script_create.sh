@@ -108,7 +108,7 @@ script_create(){
             2 | -i)
                 read -rt 120 -p "What is the name of the application we should ignore?: " up_ignore || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
                 if ! [[ $up_ignore =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]]; then
-                    echo -e "${red}Error: \"$up_timeout\" is not a possible option for an application name${reset}"
+                    echo -e "${red}Error: \"$up_ignore\" is not a possible option for an application name${reset}"
                     sleep 3
                     continue
                 fi

@@ -73,7 +73,7 @@ update_func(){
             # Perform a git pull operation to update the branch to the latest commit
             if git pull --force --quiet; then
                 echo "Merged new commits from: $hs_version."
-                updated=true
+                return 111
             else
                 # The git pull operation failed, print an error message and exit
                 echo "Failed to merge commits from: $hs_version."
@@ -95,15 +95,11 @@ update_func(){
             echo "Changelog:"
             curl --silent "https://api.github.com/repos/HeavyBullets8/heavy_script/releases/latest" | jq -r .body
             echo 
-            updated=true
+            return 111
         else 
             echo "HeavyScript is already the latest version:"
             echo -e "$hs_version\n\n"
         fi
-    fi
-
-    if [[ $updated == true ]]; then
-        return 111
     fi
 }
 export -f update_func

@@ -10,7 +10,7 @@
    * [Update Specific](#update-specific)
    * [General](#general)
    * [Utilities](#utilities)
-   * [Miscilaneous](#miscilaneous)
+   * [Miscellaneous](#Miscellaneous)
 * [How to Install](#how-to-install)
 * [How to Update](#how-to-update)
 * [Cron Jobs](#cron-jobs)
@@ -69,11 +69,11 @@
 
 <br>
 
-### Miscilaneous
-| Flag | Example | Parameter | Description             |
-|------|---------|-----------|-------------------------|
-| -h   | -h      |           | Displays help message   |
-| -v   | -v      |           | Display detailed output |
+### Miscellaneous
+| Flag | Example | Description             |
+|------|---------|-------------------------|
+| -h   | -h      | Displays help message   |
+| -v   | -v      | Display detailed output |
 
 
 <br>

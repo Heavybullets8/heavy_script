@@ -44,7 +44,7 @@
 ### General
 > These options can be used in conjunction with the update options above
 
-> Alternatively, use these options individually or combined with other commands
+> Alternatively, use these options individually or combined with other arguments
 
 | Flag          | Example | Parameter | Description                                                                       |
 |---------------|---------|-----------|-----------------------------------------------------------------------------------|

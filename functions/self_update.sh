@@ -107,6 +107,7 @@ update_func(){
     else
         return 100
     fi
+    
 }
 export -f update_func
 

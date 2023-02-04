@@ -21,7 +21,7 @@ container_shell_or_logs(){
         clear -x
         title 
 
-        if [[ $logs == "true" || $1 == "logs" ]];then
+        if [[ $logs == true || $1 == "logs" ]];then
             echo -e "${bold}Logs to Container Menu${reset}"
             echo -e "${bold}----------------------${reset}"
         else
@@ -107,7 +107,7 @@ container_shell_or_logs(){
 
     rm cont_file 2> /dev/null
 
-    if [[ $logs == "true" || $1 == "logs" ]];
+    if [[ $logs == true || $1 == "logs" ]];
     then
         # ask for number of lines to display
         while true

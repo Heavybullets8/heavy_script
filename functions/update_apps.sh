@@ -29,7 +29,7 @@ commander(){
         echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
     fi
 
-    if [[ $ignore_image_update == "true" ]]; then
+    if [[ $ignore_image_update == true ]]; then
         echo "Image Updates: Disabled"
     else
         echo "Image Updates: Enabled"
@@ -59,7 +59,7 @@ commander(){
             echo -e "\n$app_name\nIgnored, skipping"
             unset "array[$index]"
         #Skip appliaction if major update and not ignoreing major versions
-        elif [[ "$diff_app" != "$diff_chart" && $update_apps == "true" ]] ; then
+        elif [[ "$diff_app" != "$diff_chart" && $update_apps == true ]] ; then
             echo -e "\n$app_name\nMajor Release, update manually"
             unset "array[$index]"
         # Skip update if application previously failed on this exact update version
@@ -72,7 +72,7 @@ commander(){
                 sed -i /"$app_name",/d failed
             fi
         #Skip Image updates if ignore image updates is set to true
-        elif [[ $old_full_ver == "$new_full_ver" && $ignore_image_update == "true" ]]; then
+        elif [[ $old_full_ver == "$new_full_ver" && $ignore_image_update == true ]]; then
             echo -e "\n$app_name\nImage update, skipping.."
             unset "array[$index]"
         fi
@@ -173,8 +173,8 @@ pre_process(){
 
     # If user is using -S, stop app prior to updating
     echo_array+=("\n$app_name")
-    if [[ $stop_before_update == "true" && "$startstatus" !=  "STOPPED" ]]; then # Check to see if user is using -S or not
-        if [[ "$verbose" == "true" ]]; then
+    if [[ $stop_before_update == true && "$startstatus" !=  "STOPPED" ]]; then # Check to see if user is using -S or not
+        if [[ "$verbose" == true ]]; then
             echo_array+=("Stopping prior to update..")
         fi
         if stop_app ; then
@@ -187,7 +187,7 @@ pre_process(){
     fi
 
     # Send app through update function
-    [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
+    [[ "$verbose" == true ]] && echo_array+=("Updating..")
     if update_app; then
         if [[ $old_full_ver == "$new_full_ver" ]]; then
             echo_array+=("Updated Container Image")
@@ -202,14 +202,14 @@ pre_process(){
 
 
     # If rollbacks are enabled, or startstatus is stopped
-    if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
+    if [[ $rollback == true || "$startstatus"  ==  "STOPPED" ]]; then
         # If app is external services, skip post processing
         if grep -qs "^$app_name,true" external_services; then 
             echo_array
             return
         elif [[ "$old_full_ver" == "$new_full_ver" ]]; then 
             # restart the app if it was a container image update.
-            if [[ "$verbose" == "true" ]]; then
+            if [[ "$verbose" == true ]]; then
                 echo_array+=("Restarting $app_name..")
             fi
             if ! restart_app; then
@@ -251,7 +251,7 @@ post_process(){
         status=$(grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
         # If status shows up as Active or Stopped on the first check, verify that. Otherwise it may be a false report..
         if [[ $count -lt 1 && $status == "ACTIVE" && "$(grep "^$app_name," deploying 2>/dev/null | awk -F ',' '{print $2}')" != "DEPLOYING" ]]; then  
-            if [[ "$verbose" == "true" ]]; then
+            if [[ "$verbose" == true ]]; then
                 echo_array+=("Verifying $status..")
             fi
             before_loop=$(head -n 1 all_app_status)
@@ -271,7 +271,7 @@ post_process(){
 
         if [[ "$status"  ==  "ACTIVE" ]]; then
             if [[ "$startstatus"  ==  "STOPPED" ]]; then
-                if [[ "$verbose" == "true" ]]; then
+                if [[ "$verbose" == true ]]; then
                     echo_array+=("Returing to STOPPED state..")
                 fi
                 if stop_app ; then
@@ -287,8 +287,8 @@ post_process(){
                 break 
             fi
         elif [[ "$SECONDS" -ge "$timeout" ]]; then
-            if [[ $rollback == "true" ]]; then
-                if [[ "$failed" != "true" ]]; then
+            if [[ $rollback == true ]]; then
+                if [[ "$failed" != true ]]; then
                     echo "$app_name,$new_full_ver" >> failed
                     echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
                     echo_array+=("If this is a slow starting application, set a higher timeout with -t")
@@ -301,7 +301,7 @@ post_process(){
                         echo_array
                         return 1
                     fi                    
-                    failed="true"
+                    failed=true
                     SECONDS=0
                     count=0
                     continue #run back post_process function if the app was stopped prior to update
@@ -334,7 +334,7 @@ post_process(){
                 break
             fi
         else
-            if [[ "$verbose" == "true" ]]; then
+            if [[ "$verbose" == true ]]; then
                 echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be ACTIVE")
             fi
             sleep 5

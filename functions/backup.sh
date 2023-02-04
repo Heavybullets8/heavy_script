@@ -13,7 +13,7 @@ backup(){
         echo -e "Error: Failed to create new backup" >&2
         return 1
     fi
-    if [[ "$verbose" == "true" ]]; then
+    if [[ "$verbose" == true ]]; then
         echo_backup+=("$output")
     else
         echo_backup+=("\nNew Backup Name:" "$(echo -e "$output" | tail -n 1)")

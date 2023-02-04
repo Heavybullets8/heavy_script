@@ -115,7 +115,7 @@ self_update() {
         branch=$(git symbolic-ref --short HEAD)
 
         # Check if the current local branch exists
-        if ! git rev-parse --verify "$branch" >/dev/null 2>&1; then
+        if ! git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
             echo "The current branch does not exist, switching to the latest tag.."
             # If the current local branch does not exist, switch to the latest tag
             latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")

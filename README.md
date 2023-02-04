@@ -22,21 +22,37 @@
 <br >
 <br >
 
-## Update Arguments
-| Flag          | Example                | Parameter        | Description                                                                                                                                                                |
-|---------------|------------------------|------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| -U            | -U <br>-U 5            | Optional Integer | Update applications, ignoring major version changes<br>_Optionally, you can supply a number after the argument to update multiple applications at once_                    |
-| -u            | -u<br>-u 5             | Optional Integer | Update applications, do NOT update if there was a major version change<br>_Optionally, you can supply a number after the argument to update multiple applications at once_ |
-| -b            | -b 14                  | Integer          | Snapshot ix-applications dataset<br>_Creates backups UP TO the number you've chosen_                                                                                       |
-| -i            | -i nextcloud -i sonarr | String           | Applications listed will be ignored during updating<br>_List one application after another as shown in the example_                                                        |
-| -r            | -r                     |                  | Monitors applications after they update<br>If the app does not become "ACTIVE" after the timeout, rollback the application.                                                |
-| -v            | -v                     |                  | Verbose Output<br>_Look at the bottom of this page for an example_                                                                                                         |
-| -S            | -S                     |                  | Shutdown the application prior to updating it                                                                                                                              |
-| -t            | -t 400                 | Integer          | Time in seconds that HeavyScript will wait for an application to no longer be deploying before declaring failure<br>Default: 500                                           |
-| -s            | -s                     |                  | Sync Catalogs prior to updating                                                                                                                                            |
-| -p            | -p                     |                  | Prune unused docker images                                                                                                                                                 |
-| --ignore-img  | --ignore-img           |                  | Ignore container image updates                                                                                                                                             |
-| --self-update | --self-update          |                  | Updates HeavyScript prior to running any other commands                                                                                                                    |
+## Update Specific Arguments
+| Flag         | Example                | Parameter        | Description                                                                                                                                                                |
+|--------------|------------------------|------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -U           | -U <br>-U 5            | Optional Integer | Update applications, ignoring major version changes<br>_Optionally, you can supply a number after the argument to update multiple applications at once_                    |
+| -u           | -u<br>-u 5             | Optional Integer | Update applications, do NOT update if there was a major version change<br>_Optionally, you can supply a number after the argument to update multiple applications at once_ |
+| -S           | -S                     |                  | Shutdown the application prior to updating it                                                                                                                              |
+| -i           | -i nextcloud -i sonarr | String           | Exclude an application from updates<br>_List one application after another as shown in the example_                                                                        |
+| -r           | -r                     |                  | Monitors applications after they update<br>If the app does not become "ACTIVE" after the timeout, rollback the application.                                                |
+| -t           | -t 400                 | Integer          | Time in seconds that HeavyScript will wait for an application to no longer be deploying before declaring failure<br>Default: 500                                           |
+| --ignore-img | --ignore-img           |                  | Ignore container image updates                                                                                                                                             |
+
+<br >
+
+## General Options
+> These options can be used in conjunction with the update options above
+> Alternatively, use these options individually or combined with other commands
+
+| Flag          | Example | Parameter | Description                                                                       |
+|---------------|---------|-----------|-----------------------------------------------------------------------------------|
+| -b            | -b 14   | Integer   | Backup your ix-applications dataset prior to updating, up to the number specified |
+| -s            | -s      |           | Synchronize catalog information                                                   |
+| -p            | -p      |           | Remove unused or old Docker images                                                |
+| --self-update | --self-update      |           | Update HeavyScript prior to executing other commands                              |
+
+<br >
+
+## Miscilaneous Options
+| Flag | Example | Parameter | Description             |
+|------|---------|-----------|-------------------------|
+| -h   | -h      |           | Displays help message   |
+| -v   | -v      |           | Display detailed output |
 
 
 <br >

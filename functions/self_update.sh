@@ -104,6 +104,8 @@ update_func(){
 
     if [[ $updated == true ]]; then
         return 111
+    else
+        return 100
     fi
 
 }

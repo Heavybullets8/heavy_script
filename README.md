@@ -37,6 +37,7 @@
 
 ## General Options
 > These options can be used in conjunction with the update options above
+
 > Alternatively, use these options individually or combined with other commands
 
 | Flag          | Example | Parameter | Description                                                                       |

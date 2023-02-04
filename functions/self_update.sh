@@ -104,10 +104,7 @@ update_func(){
 
     if [[ $updated == true ]]; then
         return 111
-    else
-        return 100
     fi
-    
 }
 export -f update_func
 
@@ -133,11 +130,9 @@ self_update() {
 
     if [[ $switched != true ]]; then
         update_func
-        exit_code=$?
-        if [[ $exit_code == 111 ]]; then
+        if [[ $? == 111 ]]; then
             updated=true
         fi
-        echo "$exit_code"
     fi
 
     # Unset the self-update argument

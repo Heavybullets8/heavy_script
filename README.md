@@ -7,10 +7,10 @@
 ## Table of contents:
 * [The Menu](#the-menu)
 * [Arguments](#arguments)
-   * [Update Specific Arguments](#update-specific-arguments)
-   * [General Arguments](#general-arguments)
-   * [Miscilaneous Arguments](#miscilaneous-arguments)
-   * [Utility Arguments](#utility-arguments)
+   * [Update Specific](#update-specific)
+   * [General](#general)
+   * [Utilities](#utilities)
+   * [Miscilaneous](#miscilaneous)
 * [How to Install](#how-to-install)
 * [How to Update](#how-to-update)
 * [Cron Jobs](#cron-jobs)
@@ -28,7 +28,7 @@
 
 ## Arguments
 
-### Update Specific Arguments
+### Update Specific
 | Flag         | Example                | Parameter        | Description                                                                                                                                                                |
 |--------------|------------------------|------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | -U           | -U <br>-U 5            | Optional Integer | Update applications, ignoring major version changes<br>_Optionally, you can supply a number after the argument to update multiple applications at once_                    |
@@ -41,7 +41,7 @@
 
 <br >
 
-### General Arguments
+### General
 > These options can be used in conjunction with the update options above
 
 > Alternatively, use these options individually or combined with other commands
@@ -55,7 +55,7 @@
 
 <br >
 
-### Utility Arguments
+### Utilities
 > All of these can ALSO be accessed with the HeavyScript menu, that you can access simply by not providing an argument `heavyscript`
 
 | Flag            | Description                                                                                  |
@@ -69,7 +69,7 @@
 
 <br>
 
-### Miscilaneous Arguments
+### Miscilaneous
 | Flag | Example | Parameter | Description             |
 |------|---------|-----------|-------------------------|
 | -h   | -h      |           | Displays help message   |

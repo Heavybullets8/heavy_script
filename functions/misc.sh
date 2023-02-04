@@ -70,7 +70,7 @@ help(){
 
     echo -e "${bold}Access the HeavyScript Menu${reset}"
     echo -e "${bold}---------------------------${reset}"
-    echo -e "${blue}heavy_script${reset}"
+    echo -e "${blue}heavyscript${reset}"
     echo
     echo -e "${bold}Utilities${reset}"
     echo -e "${bold}---------${reset}"
@@ -83,15 +83,15 @@ help(){
     echo 
     echo -e "${bold}Update Specific Options${reset}"
     echo -e "${bold}-----------------------${reset}"
-    echo -e "${blue}-U${reset}    | Update all applications, disregarding version numbers"
-    echo -e "${blue}-U 5${reset}  | Same as above, but in batches of 5 applications"
-    echo -e "${blue}-u${reset}    | Update all applications, excluding major release updates"
-    echo -e "${blue}-u 5${reset}  | Same as above, but in batches of 5 applications"
-    echo -e "${blue}-r${reset}    | Revert applications if their update fails"
-    echo -e "${blue}-i${reset}    | Exclude an application from updates, see example below."
-    echo -e "${blue}-S${reset}    | Stop applications before updating"
-    echo -e "${blue}-t 500${reset}| Wait time for an application to become ACTIVE, default is 500 seconds"
-    echo -e "${blue}--ignore-img${reset}  | Skip container image updates"
+    echo -e "${blue}-U${reset}     | Update all applications, disregarding version numbers"
+    echo -e "${blue}-U 5${reset}   | Same as above, but in batches of 5 applications"
+    echo -e "${blue}-u${reset}     | Update all applications, excluding major release updates"
+    echo -e "${blue}-u 5${reset}   | Same as above, but in batches of 5 applications"
+    echo -e "${blue}-r${reset}     | Revert applications if their update fails"
+    echo -e "${blue}-i${reset}     | Exclude an application from updates, see example below."
+    echo -e "${blue}-S${reset}     | Stop applications before updating"
+    echo -e "${blue}-t 500${reset} | Wait time for an application to become ACTIVE, default is 500 seconds"
+    echo -e "${blue}--ignore-img${reset} | Skip container image updates"
     echo
     echo -e "${bold}General Options${reset}"
     echo -e "${bold}---------------${reset}"
@@ -104,8 +104,8 @@ help(){
     echo
     echo -e "${bold}Miscellaneous${reset}"
     echo -e "${bold}-------------${reset}"
-    echo -e "${blue}-h${reset}    | Display this help menu"
-    echo -e "${blue}-v${reset}    | Display detailed output"
+    echo -e "${blue}-h${reset} | Display this help menu"
+    echo -e "${blue}-v${reset} | Display detailed output"
     echo
     echo -e "${bold}Examples${reset}"
     echo -e "${bold}--------${reset}"
@@ -115,6 +115,7 @@ help(){
     echo -e "${blue}heavyscript --restore${reset}"
     echo
     echo -e "${bold}Cron Job${reset}"
+    echo -e "${bold}--------${reset}"
     echo -e "${blue}bash /root/heavy_script/heavy_script.sh -b 14 -rsp --self-update -u 10${reset}"
     echo
     exit

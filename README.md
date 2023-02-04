@@ -8,8 +8,9 @@
 * [The Menu](#the-menu)
 * [Arguments](#arguments)
    * [Update Specific Arguments](#update-specific-arguments)
-   * [General Options](#general-options)
-   * [Miscilaneous Options](#miscilaneous-options)
+   * [General Arguments](#general-arguments)
+   * [Miscilaneous Arguments](#miscilaneous-arguments)
+   * [Utility Arguments](#utility-arguments)
 * [How to Install](#how-to-install)
 * [How to Update](#how-to-update)
 * [Cron Jobs](#cron-jobs)
@@ -40,7 +41,7 @@
 
 <br >
 
-### General Options
+### General Arguments
 > These options can be used in conjunction with the update options above
 
 > Alternatively, use these options individually or combined with other commands
@@ -54,7 +55,7 @@
 
 <br >
 
-### Miscilaneous Options
+### Miscilaneous Arguments
 | Flag | Example | Parameter | Description             |
 |------|---------|-----------|-------------------------|
 | -h   | -h      |           | Displays help message   |
@@ -64,7 +65,7 @@
 <br >
 <br>
 
-### Other Utilities
+### Utility Arguments
 > All of these can ALSO be accessed with the HeavyScript menu, that you can access simply by not providing an argument `heavyscript`
 
 | Flag            | Description                                                                                  |

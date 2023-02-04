@@ -68,8 +68,8 @@ export -f title
 help(){
     clear -x
 
-    echo -e "${bold}Access the HeavyScript Menu${reset}"
-    echo -e "${bold}---------------------------${reset}"
+    echo -e "${bold}HeavyScript Menu${reset}"
+    echo -e "${bold}----------------${reset}"
     echo -e "${blue}heavyscript${reset}"
     echo
     echo -e "${bold}Utilities${reset}"
@@ -89,7 +89,7 @@ help(){
     echo -e "${blue}-u 5${reset}   | Same as above, but in batches of 5 applications"
     echo -e "${blue}-r${reset}     | Revert applications if their update fails"
     echo -e "${blue}-i${reset}     | Exclude an application from updates, see example below."
-    echo -e "${blue}-S${reset}     | Stop applications before updating"
+    echo -e "${blue}-S${reset}     | Stop applications prior to updating"
     echo -e "${blue}-t 500${reset} | Wait time for an application to become ACTIVE, default is 500 seconds"
     echo -e "${blue}--ignore-img${reset} | Skip container image updates"
     echo
@@ -97,10 +97,10 @@ help(){
     echo -e "${bold}---------------${reset}"
     echo -e "${gray}These options can be used in conjunction with the update options above${reset}"
     echo -e "${gray}Alternatively, use these options individually or combined with other commands${reset}"
-    echo -e "${blue}-b 14${reset} | Backup your ix-applications dataset before updating, up to the number specified"
+    echo -e "${blue}-b 14${reset} | Backup your ix-applications dataset prior to updating, up to the number specified"
     echo -e "${blue}-s${reset}    | Synchronize catalog information"
     echo -e "${blue}-p${reset}    | Remove unused or old Docker images"
-    echo -e "${blue}--self-update${reset} | Update HeavyScript before executing other commands"
+    echo -e "${blue}--self-update${reset} | Update HeavyScript prior to executing other commands"
     echo
     echo -e "${bold}Miscellaneous${reset}"
     echo -e "${bold}-------------${reset}"
@@ -109,7 +109,8 @@ help(){
     echo
     echo -e "${bold}Examples${reset}"
     echo -e "${bold}--------${reset}"
-    echo -e "${blue}heavyscript -b 14 -i portainer -i arch -i sonarr -t 600 -vrsUp --self-update${reset}"
+    echo -e "${blue}heavyscript -b 14 -i nextcloud -i sonarr -t 600 -vrsUp --self-update${reset}"
+    echo -e "${blue}heavyscript -b 10 -i nextcloud -i sonarr -vrsp -u 10 --self-update${reset}"
     echo -e "${blue}heavyscript --mount${reset}"
     echo -e "${blue}heavyscript --dns${reset}"
     echo -e "${blue}heavyscript --restore${reset}"

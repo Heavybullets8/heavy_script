@@ -55,27 +55,25 @@
 
 <br >
 
-### Miscilaneous Arguments
-| Flag | Example | Parameter | Description             |
-|------|---------|-----------|-------------------------|
-| -h   | -h      |           | Displays help message   |
-| -v   | -v      |           | Display detailed output |
-
-
-<br >
-<br>
-
 ### Utility Arguments
 > All of these can ALSO be accessed with the HeavyScript menu, that you can access simply by not providing an argument `heavyscript`
 
 | Flag            | Description                                                                                  |
 |-----------------|----------------------------------------------------------------------------------------------|
 | --mount         | Initiates mounting feature, choose between unmounting and mounting PVC data                  |
-| --restore       | Opens a menu to restore a HeavyScript backup that was taken on your ix-applications dataset |
+| --restore       | Opens a menu to restore a HeavyScript backup that was taken on your ix-applications dataset  |
 | --delete-backup | Opens a menu to delete backups on your system                                                |
-| --dns           | list all of your applications DNS names and their web ports                                  |
+| --dns           | List all of your applications DNS names and their web ports                                  |
 | --cmd           | Open a shell for one of your applications                                                    |
 | --logs          | Open logs for one of your applications                                                       |
+
+<br>
+
+### Miscilaneous Arguments
+| Flag | Example | Parameter | Description             |
+|------|---------|-----------|-------------------------|
+| -h   | -h      |           | Displays help message   |
+| -v   | -v      |           | Display detailed output |
 
 
 <br>

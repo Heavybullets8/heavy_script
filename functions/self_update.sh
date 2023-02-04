@@ -116,9 +116,9 @@ self_update() {
 
         # Check if the current local branch exists
         if ! git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
-            echo "The current branch does not exist, switching to the latest tag.."
             # If the current local branch does not exist, switch to the latest tag
             latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
+            echo "$branch does not exist, switching to the latest tag: $latest_tag"
             git checkout --force "$latest_tag" &>/dev/null
             switched=true
         fi

@@ -132,10 +132,11 @@ self_update() {
 
     if [[ $switched != true ]]; then
         update_func
-        if [[ $? == 111 ]]; then
+        exit_code=$?
+        if [[ $exit_code == 111 ]]; then
             updated=true
         fi
-        echo "$?"
+        echo "$exit_code"
     fi
 
     # Unset the self-update argument

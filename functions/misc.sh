@@ -66,53 +66,55 @@ export -f title
 
 
 help(){
-    if [[ $help == true ]]; then
-        clear -x
-    fi
+    clear -x
+
     echo -e "${bold}Access the HeavyScript Menu${reset}"
     echo -e "${bold}---------------------------${reset}"
     echo -e "heavy_script"
     echo
     echo -e "${bold}Utilities${reset}"
     echo -e "${bold}---------${reset}"
-    echo -e "--mount         | Initiates mounting feature, choose between unmounting and mounting PVC data"
-    echo -e "--restore       | Opens a menu to restore a \"heavy_script\" backup that was taken on your \"ix-applications\" dataset"
-    echo -e "--delete-backup | Opens a menu to delete backups on your system"
-    echo -e "--dns           | list all of your applications DNS names and their web ports"
-    echo -e "--cmd           | Open a shell for one of your applications"
-    echo -e "--logs          | Open the log file for one of your applications"
+    echo -e "--mount         | Access the mounting feature to mount or unmount PVC data"
+    echo -e "--restore       | Open a menu to restore a backup from the \"ix-applications\" dataset"
+    echo -e "--delete-backup | Open a menu to delete backups from your system"
+    echo -e "--dns           | View all application DNS names and web ports"
+    echo -e "--cmd           | Open a shell for a selected application"
+    echo -e "--logs          | View log file for a selected application"
     echo 
-    echo -e "${bold}Update Types${reset}"
-    echo -e "${bold}------------${reset}"
-    echo -e "-U    | Update all applications, ignores versions"
-    echo -e "-U 5  | Same as above, but updates 5 applications at one time"
-    echo -e "-u    | Update all applications, does not update Major releases"
-    echo -e "-u 5  | Same as above, but updates 5 applications at one time"
+    echo -e "${bold}Update Specific Options${reset}"
+    echo -e "${bold}-----------------------${reset}"
+    echo -e "-U    | Update all applications, disregarding version numbers"
+    echo -e "-U 5  | Same as above, but in batches of 5 applications"
+    echo -e "-u    | Update all applications, excluding major release updates"
+    echo -e "-u 5  | Same as above, but in batches of 5 applications"
+    echo -e "-r    | Revert applications if their update fails"
+    echo -e "-i    | Exclude an application from updates, see example below."
+    echo -e "-S    | Stop applications before updating"
+    echo -e "-t 500| Wait time for an application to become ACTIVE, default is 500 seconds"
+    echo -e "--ignore-img  | Skip container image updates"
     echo
-    echo -e "${bold}Update Options${reset}"
-    echo -e "${bold}--------------${reset}"
-    echo -e "-r    | Roll-back applications if they fail to update"
-    echo -e "-i    | Add application to ignore list, one by one, see example below."
-    echo -e "-S    | Shutdown applications prior to updating"
-    echo -e "-v    | verbose output"
-    echo -e "-t 500| The amount of time HS will wait for an application to be ACTIVE. Defaults to 500 seconds"
+    echo -e "${bold}General Options${reset}"
+    echo -e "${bold}---------------${reset}"
+    echo -e "${gray}These options can be used in conjunction with the update options above${reset}"
+    echo -e "-v    | Display detailed output"
+    echo -e "-b 14 | Backup your ix-applications dataset before updating, up to the number specified"
+    echo -e "-s    | Synchronize catalog information"
+    echo -e "-p    | Remove unused or old Docker images"
+    echo -e "--self-update | Update HeavyScript before executing other commands"
     echo
-    echo -e "${bold}Additional Options${reset}"
-    echo -e "${bold}------------------${reset}"
-    echo -e "-b 14 | Back-up your ix-applications dataset, specify a number after -b"
-    echo -e "-s    | sync catalog"
-    echo -e "-p    | Prune unused/old docker images"
-    echo -e "--ignore-img  | Ignore container image updates"
-    echo -e "--self-update | Updates HeavyScript prior to running any other commands"
+    echo -e "${bold}Miscellaneous${reset}"
+    echo -e "${bold}-------------${reset}"
+    echo -e "-h    | Display this help menu"
     echo
     echo -e "${bold}Examples${reset}"
     echo -e "${bold}--------${reset}"
     echo -e "heavyscript -b 14 -i portainer -i arch -i sonarr -t 600 -vrsUp --self-update"
-    echo -e "heavyscript -b 14 -i portainer -i arch -i sonarr -t 600 -vrsp -U 10 --self-update"
-    echo -e "heavyscript-t 150 --mount"
+    echo -e "heavyscript --mount"
     echo -e "heavyscript --dns"
     echo -e "heavyscript --restore"
-    echo -e "heavyscript --delete-backup"
+    echo
+    echo -e "${bold}Cron Job${reset}"
+    echo -e "bash /root/heavy_script/heavy_script.sh -b 14 -rsp --self-update -u 10"
     echo
     exit
 }

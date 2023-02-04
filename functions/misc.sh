@@ -66,7 +66,7 @@ export -f title
 
 
 help(){
-    if [[ $help == "true" ]]; then
+    if [[ $help == true ]]; then
         clear -x
     fi
     echo -e "${bold}Access the HeavyScript Menu${reset}"

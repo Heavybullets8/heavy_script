@@ -13,7 +13,7 @@ backup(){
         echo -e "Error: Failed to create new backup" >&2
         return 1
     fi
-    if [[ "$verbose" == "true" ]]; then
+    if [[ "$verbose" == true ]]; then
         echo_backup+=("$output")
     else
         echo_backup+=("\nNew Backup Name:" "$(echo -e "$output" | tail -n 1)")
@@ -328,9 +328,9 @@ restore(){
     while true
     do
         clear -x
-        echo -e "${yellow}WARNING:\nThis is NOT guranteed to work\n 
-                This is ONLY supposed to be used as a LAST RESORT\n 
-                Consider rolling back your applications instead if possible${reset}"
+        echo -e "${yellow}WARNING:\nThis is NOT guranteed to work${reset}"
+        echo -e "${yellow}This is ONLY supposed to be used as a LAST RESORT${reset}"
+        echo -e "${yellow}Consider rolling back your applications instead if possible${reset}"
         echo -e "\n\nYou have chosen:\n${blue}$restore_point${reset}\n\n"
         read -rt 120 -p "Would you like to proceed with restore? (y/N): " yesno || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case $yesno in

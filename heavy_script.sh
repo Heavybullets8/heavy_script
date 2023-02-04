@@ -54,31 +54,31 @@ do
       -)
           case "${OPTARG}" in
              help)
-                  help="true"
+                  help=true
                   ;;
       self-update)
-                  self_update="true"
+                  self_update=true
                   ;;
               dns)
-                  dns="true"
+                  dns=true
                   ;;
               cmd)
-                  cmd="true"
+                  cmd=true
                   ;;
           restore)
-                  restore="true"
+                  restore=true
                   ;;
             mount)
-                  mount="true"
+                  mount=true
                   ;;
     delete-backup)
-                  deleteBackup="true"
+                  deleteBackup=true
                   ;;
        ignore-img)
-                  ignore_image_update="true"
+                  ignore_image_update=true
                   ;;
               logs)
-                  logs="true"
+                  logs=true
                   ;;
                 *)
                   echo -e "Invalid Option \"--$OPTARG\"\n"
@@ -102,7 +102,7 @@ do
         fi
         ;;
       r)
-        rollback="true"
+        rollback=true
         ;;
       i)
         if ! [[ $OPTARG =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]]; then # Using case insensitive version of the regex used by Truenas Scale
@@ -120,10 +120,10 @@ do
         fi
         ;;
       s)
-        sync="true"
+        sync=true
         ;;
       U)
-        update_all_apps="true"
+        update_all_apps=true
         # Check next positional parameter
         eval nextopt=${!OPTIND}
         # existing or starting with dash?
@@ -135,7 +135,7 @@ do
         fi        
         ;;
       u)
-        update_apps="true"
+        update_apps=true
         # Check next positional parameter
         eval nextopt=${!OPTIND}
         # existing or starting with dash?
@@ -147,13 +147,13 @@ do
         fi
         ;;
       S)
-        stop_before_update="true"
+        stop_before_update=true
         ;;
       p)
-        prune="true"
+        prune=true
         ;;
       v)
-        verbose="true"
+        verbose=true
         ;;
       *)
         echo -e "Invalid Option \"-$OPTARG\"\n"
@@ -164,46 +164,46 @@ done
 
 
 ### exit if incompatable functions are called ### 
-if [[ "$update_all_apps" == "true" && "$update_apps" == "true" ]]; then
+if [[ "$update_all_apps" == true && "$update_apps" == true ]]; then
     echo -e "-U and -u cannot BOTH be called"
     exit 1
 fi
 
 ### Continue to call functions in specific order ###
-if [[ "$self_update" == "true" ]]; then 
+if [[ "$self_update" == true ]]; then 
     self_update
 fi
 
-if [[ "$help" == "true" ]]; then
+if [[ "$help" == true ]]; then
     help
 fi
 
-if [[ "$cmd" == "true" || "$logs" == "true" ]]; then
+if [[ "$cmd" == true || "$logs" == true ]]; then
     container_shell_or_logs
     exit
 fi
 
-if [[ "$deleteBackup" == "true" ]]; then 
+if [[ "$deleteBackup" == true ]]; then 
     deleteBackup
     exit
 fi
 
-if [[ "$dns" == "true" ]]; then
+if [[ "$dns" == true ]]; then
     dns
     exit
 fi
 
-if [[ "$restore" == "true" ]]; then
+if [[ "$restore" == true ]]; then
     restore
     exit
 fi
 
-if [[ "$mount" == "true" ]]; then 
+if [[ "$mount" == true ]]; then 
     mount
     exit
 fi
 
-if [[ "$number_of_backups" -gt 1 && "$sync" == "true" ]]; then # Run backup and sync at the same time
+if [[ "$number_of_backups" -gt 1 && "$sync" == true ]]; then # Run backup and sync at the same time
     echo "🅃 🄰 🅂 🄺 🅂 :"
     echo -e "-Backing up ix-applications dataset\n-Syncing catalog(s)"
     echo -e "Please wait for output from both tasks..\n\n"
@@ -214,16 +214,16 @@ elif [[ "$number_of_backups" -gt 1 ]]; then # If only backup is true, run it
     echo "🅃 🄰 🅂 🄺 :"
     echo -e "-Backing up ix-applications dataset\nPlease wait..\n\n"
     backup
-elif [[ "$sync" == "true" ]]; then # If only sync is true, run it
+elif [[ "$sync" == true ]]; then # If only sync is true, run it
     echo "🅃 🄰 🅂 🄺 :"
     echo -e "Syncing Catalog(s)\nThis can take a few minutes, please wait..\n\n"
     sync
 fi
 
-if [[ "$update_all_apps" == "true" || "$update_apps" == "true" ]]; then 
+if [[ "$update_all_apps" == true || "$update_apps" == true ]]; then 
     commander
 fi
 
-if [[ "$prune" == "true" ]]; then
+if [[ "$prune" == true ]]; then
     prune 
 fi

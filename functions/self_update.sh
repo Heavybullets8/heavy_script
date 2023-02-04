@@ -62,12 +62,7 @@ choose_branch() {
 }
 
 
-
-self_update() {
-    echo "🅂 🄴 🄻 🄵"
-    echo "🅄 🄿 🄳 🄰 🅃 🄴"
-    git reset --hard &>/dev/null
-
+update_func(){
     # Check if using a tag or branch
     if ! [[ "$hs_version" =~ v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+ ]]; then
         git fetch &>/dev/null
@@ -94,7 +89,7 @@ self_update() {
         latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
         if  [[ "$hs_version" != "$latest_tag" ]] ; then
             echo "Found a new version of HeavyScript, updating myself..."
-            git checkout "$latest_tag" &>/dev/null 
+            git checkout --force "$latest_tag" &>/dev/null 
             echo "Updating from: $hs_version"
             echo "Updating To: $latest_tag"
             echo "Changelog:"
@@ -105,6 +100,41 @@ self_update() {
             echo "HeavyScript is already the latest version:"
             echo -e "$hs_version\n\n"
         fi
+    fi
+
+    if [[ $updated == true ]]; then
+        return 111
+    fi
+
+}
+export -f update_func
+
+
+self_update() {
+    echo "🅂 🄴 🄻 🄵"
+    echo "🅄 🄿 🄳 🄰 🅃 🄴"
+    git reset --hard &>/dev/null
+
+    if ! [[ "$hs_version" =~ v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+ ]]; then
+        # Get the name of the current local branch
+        branch=$(git symbolic-ref --short HEAD)
+
+        # Check if the current local branch exists
+        if ! git rev-parse --verify "$branch" >/dev/null 2>&1; then
+            echo "The current branch does not exist, switching to the latest tag.."
+            # If the current local branch does not exist, switch to the latest tag
+            latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
+            git checkout --force "$latest_tag" &>/dev/null
+            switched=true
+        fi
+    fi
+
+    if [[ $switched != true ]]; then
+        update_func
+        if [[ $? == 111 ]]; then
+            updated=true
+        fi
+        echo "$?"
     fi
 
     # Unset the self-update argument

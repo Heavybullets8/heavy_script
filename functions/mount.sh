@@ -219,7 +219,7 @@ mount(){
                         main=$(k3s kubectl get pvc -A | grep -E "\s$pvc_name\s" | awk '{print $1, $2, $4}')
                         app=$(echo -e "$main" | awk '{print $1}' | cut -c 4-)
                         pvc=$(echo -e "$main" | awk '{print $3}')
-                        full_path=$(find /mnt/"$ix_apps_pool"/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
+                        full_path=$(find "/mnt/$ix_apps_pool/ix-applications/releases/$app/volumes/" -maxdepth 0 | cut -c 6-)
 
                         # Set the mountpoint to "legacy" and unmount
                         if zfs set mountpoint=legacy "$full_path""$pvc"; then

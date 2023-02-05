@@ -19,12 +19,15 @@ update_repo() {
     cd "$script_dir" || return 1
     git reset --hard &>/dev/null
     git fetch --tags &>/dev/null
+    echo
+    echo -e "${blue}Checking out the latest release...${reset}"
     if ! git checkout --force "$(git describe --tags "$(git rev-list --tags --max-count=1)")" &>/dev/null; then
         echo "${red}Failed to check out the latest release.${reset}"
         return 1
+    else
+        echo -e "${green}Successfully checked out the latest release.${reset}"
+        return 0
     fi
-    echo -e "${green}Successfully updated the repository${reset}"
-    return 0
 }
 
 
@@ -62,6 +65,8 @@ else
     if ! git clone "https://github.com/Heavybullets8/heavy_script.git" &>/dev/null; then
         echo -e "${red}Failed to clone the repository${reset}"
         exit 1
+    else
+        echo -e "${green}Successfully cloned the repository${reset}"
     fi
 
     cd "$script_dir" || exit 1

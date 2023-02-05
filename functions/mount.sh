@@ -5,7 +5,7 @@ mount(){
     ix_apps_pool=$(cli -c 'app kubernetes config' | 
                    grep -E "pool\s\|" | 
                    awk -F '|' '{print $3}' | 
-                   sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+                   sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
     # Use mapfile command to read the output of cli command into an array
     mapfile -t pool_query < <(cli -m csv -c "storage pool query name,path" | sed -e '1d' -e '/^$/d')
@@ -124,8 +124,8 @@ mount(){
 
 
                     # Assign the selected pool and path to variables
-                    path=$(echo "$selected_pool" | awk -F ',' '{print $2}' | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
-                    pool_name=$(echo "$selected_pool" | awk -F ',' '{print $1}' | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+                    path=$(echo "$selected_pool" | awk -F ',' '{print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+                    pool_name=$(echo "$selected_pool" | awk -F ',' '{print $1}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
 
                     # Check if the folder "mounted_pvc" exists on the selected pool
@@ -200,7 +200,7 @@ mount(){
 
                 # Iterate through all available pools
                 for line in "${pool_query[@]}"; do
-                    pool_path=$(echo "$line" | awk -F ',' '{print $2}' | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+                    pool_path=$(echo "$line" | awk -F ',' '{print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
                     # Check if the folder "mounted_pvc" exists in the current pool
                     if [ -d "$pool_path/mounted_pvc" ]; then
                         # If it exists, add the contents of the folder to the unmount_array

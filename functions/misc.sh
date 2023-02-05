@@ -122,11 +122,12 @@ help(){
     exit
 }
 
+
 add_script_to_global_path(){
     clear -x
     title
     # shellcheck source=/dev/null
-    if curl -s https://raw.githubusercontent.com/Heavybullets8/heavy_script/main/functions/deploy.sh | bash && source "$HOME/.bashrc" && source "$HOME/.zshrc"  ;then
+    if curl -s https://raw.githubusercontent.com/Heavybullets8/heavy_script/main/functions/deploy.sh | bash && (source "$HOME/.bashrc" 2>/dev/null || true) && (source "$HOME/.zshrc" 2>/dev/null || true) ;then
         echo
         echo -e "${green}HeavyScript has been added to your global path${reset}"
         echo 

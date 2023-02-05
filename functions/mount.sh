@@ -5,7 +5,7 @@ mount(){
     ix_apps_pool=$(cli -c 'app kubernetes config' | 
                    grep -E "pool\s\|" | 
                    awk -F '|' '{print $3}' | 
-                   tr -d " \t\n\r")
+                   sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
     # Use mapfile command to read the output of cli command into an array
     mapfile -t pool_query < <(cli -m csv -c "storage pool query name,path" | sed -e '1d' -e '/^$/d')
@@ -67,7 +67,7 @@ mount(){
                     status=$(cli -m csv -c 'app chart_release query name,status' | 
                              grep "^$app," | 
                              awk -F ',' '{print $2}'| 
-                             tr -d " \t\n\r")
+                             sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
                     if [[ "$status" != "STOPPED" ]]; then
                         echo -e "\nStopping ${blue}$app${reset} prior to mount"
                         if ! cli -c 'app chart_release scale release_name='\""$app"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then
@@ -84,7 +84,7 @@ mount(){
                     #Grab data then output and mount
                     data_name=$(echo -e "$pvc" | awk '{print $3}')
                     volume_name=$(echo -e "$pvc" | awk '{print $4}')
-                    full_path=$(zfs list -t filesystem -r "$ix_apps_pool"/ix-applications/releases/"$app"/volumes -o name -H | grep "$volume_name")
+                    full_path=$(zfs list -t filesystem -r "$ix_apps_pool/ix-applications/releases/$app/volumes" -o name -H | grep "$volume_name")
 
 
                     # Loop until a valid selection is made
@@ -123,8 +123,9 @@ mount(){
                     done
 
 
-                    # Get the path of the selected pool
-                    path=$(echo -e "$selected_pool" | cut -d',' -f2 | tr -d '[:space:]')
+                    # Assign the selected pool and path to variables
+                    path=$(echo "$selected_pool" | awk -F ',' '{print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+                    pool_name=$(echo "$selected_pool" | awk -F ',' '{print $1}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
 
                     # Check if the folder "mounted_pvc" exists on the selected pool
@@ -133,7 +134,6 @@ mount(){
                         mkdir "$path/mounted_pvc"
                     fi
 
-                    pool_name=$(echo -e "$selected_pool" | cut -d',' -f1)
 
                     clear -x
                     title
@@ -162,9 +162,9 @@ mount(){
                     fi
                     echo
                     if [[ $root_mount == true ]]; then
-                        echo -e "${bold}Unmount Manually with:${reset}\n${blue}zfs set mountpoint=legacy $full_path && rmdir /mnt/mounted_pvc/$data_name${reset}"
+                        echo -e "${bold}Unmount Manually with:${reset}\n${blue}zfs set mountpoint=legacy \"$full_path\" && rmdir /mnt/mounted_pvc/$data_name${reset}"
                     else
-                        echo -e "${bold}Unmount Manually with:${reset}\n${blue}zfs set mountpoint=legacy $full_path && rmdir /mnt/*/mounted_pvc/$data_name${reset}"
+                        echo -e "${bold}Unmount Manually with:${reset}\n${blue}zfs set mountpoint=legacy \"$full_path\" && rmdir /mnt/*/mounted_pvc/$data_name${reset}"
                     fi
                     echo
                     echo -e "Or use the Unmount All option"
@@ -200,7 +200,7 @@ mount(){
 
                 # Iterate through all available pools
                 for line in "${pool_query[@]}"; do
-                    pool_path=$(echo -e "$line" | cut -d',' -f2 | tr -d '[:space:]')
+                    pool_path=$(echo "$line" | awk -F ',' '{print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
                     # Check if the folder "mounted_pvc" exists in the current pool
                     if [ -d "$pool_path/mounted_pvc" ]; then
                         # If it exists, add the contents of the folder to the unmount_array
@@ -219,7 +219,7 @@ mount(){
                         main=$(k3s kubectl get pvc -A | grep -E "\s$pvc_name\s" | awk '{print $1, $2, $4}')
                         app=$(echo -e "$main" | awk '{print $1}' | cut -c 4-)
                         pvc=$(echo -e "$main" | awk '{print $3}')
-                        full_path=$(find /mnt/"$ix_apps_pool"/ix-applications/releases/"$app"/volumes/ -maxdepth 0 | cut -c 6-)
+                        full_path=$(find "/mnt/$ix_apps_pool/ix-applications/releases/$app/volumes/" -maxdepth 0 | cut -c 6-)
 
                         # Set the mountpoint to "legacy" and unmount
                         if zfs set mountpoint=legacy "$full_path""$pvc"; then

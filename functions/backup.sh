@@ -268,8 +268,8 @@ restore(){
     pool=$(cli -c 'app kubernetes config' | 
            grep -E "pool\s\|" | 
            awk -F '|' '{print $3}' | 
-           tr -d " \t\n\r")
-    files=$(find "$(find /mnt/"$pool"/ix-applications/backups -maxdepth 0 )" -name pv_info.json | grep "$restore_point")
+           tr -d sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+    files=$(find "$(find "/mnt/$pool/ix-applications/backups" -maxdepth 0 )" -name pv_info.json | grep "$restore_point")
 
     # Iterate over the list of files
     for file in $files; do
@@ -338,11 +338,11 @@ restore(){
                 pool=$(cli -c 'app kubernetes config' | 
                        grep -E "pool\s\|" | 
                        awk -F '|' '{print $3}' | 
-                       tr -d " \t\n\r")
+                       sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
                 # Set mountpoints to legacy prior to restore, ensures correct properties for the are set
                 echo -e "\nSetting correct ZFS properties for application volumes.."
-                for pvc in $(zfs list -t filesystem -r "$pool"/ix-applications/releases -o name -H | grep "volumes/pvc")
+                for pvc in $(zfs list -t filesystem -r "$pool/ix-applications/releases" -o name -H | grep "volumes/pvc")
                 do
                     if zfs set mountpoint=legacy "$pvc"; then
                         echo -e "${green}Success for - ${blue}\"$pvc\"${reset}"
@@ -352,10 +352,10 @@ restore(){
                 done
 
                 # Ensure readonly is turned off
-                if ! zfs set readonly=off "$pool"/ix-applications;then
+                if ! zfs set readonly=off "$pool/ix-applications";then
                     echo -e "${red}Error: Failed to set ZFS ReadOnly to \"off\""
                     echo -e "After the restore, attempt to run the following command manually:"
-                    echo -e "${blue}zfs set readonly=off $pool/ix-applications${reset}"
+                    echo -e "${blue}zfs set readonly=off \"$pool/ix-applications\"${reset}"
                 fi
 
                 echo -e "${green}Finished setting properties..${reset}"

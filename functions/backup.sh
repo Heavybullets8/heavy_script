@@ -266,21 +266,24 @@ restore(){
 
     # Find all pv_info.json files two subfolders deep with the restore point name
     pool=$(cli -c 'app kubernetes config' | 
-           grep -E "pool\s\|" | 
-           awk -F '|' '{print $3}' | 
-           sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+        grep -E "pool\s\|" | 
+        awk -F '|' '{print $3}' | 
+        sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
     files=$(find "$(find "/mnt/$pool/ix-applications/backups" -maxdepth 0 )" -name pv_info.json | grep "$restore_point")
 
-    # Iterate over the list of files
-    for file in $files; do
-        # Check if the file only contains {} subfolders
-        contents=$(cat "$file")
-        if [[ "$contents" == '{}' ]]; then
-            # Print the file if it meets the criterion
-            file=$(echo -e "$file" | awk -F '/' '{print $7}')
-            borked_array+=("${file}")
-        fi
-    done
+    borked_array=()
+
+    # Iterate over the list of files separated by newlines only
+    while IFS= read -r file; do
+    # Check if the file only contains {} subfolders
+    contents=$(cat "$file")
+    if [[ "$contents" == '{}' ]]; then
+        # Print the file if it meets the criterion
+        file=$(echo -e "$file" | awk -F '/' '{print $7}')
+        borked_array+=("${file}")
+    fi
+    done < <(echo "$files")
+
 
     # Grab applications that are supposed to have PVC data
     mapfile -t apps_with_pvc < <(k3s kubectl get pvc -A | 

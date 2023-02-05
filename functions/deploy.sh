@@ -86,7 +86,7 @@ for rc_file in .bashrc .zshrc; do
     if ! grep -q "$bin_dir" "$HOME/$rc_file"; then
         echo "Adding $bin_dir to $rc_file..."
         echo "export PATH=$bin_dir:\$PATH" >> "$HOME/$rc_file"
-        # shellcheck source=/dev/null
-        source "$HOME/$rc_file"
     fi
+    # shellcheck source=/dev/null
+    source "$HOME/$rc_file"
 done

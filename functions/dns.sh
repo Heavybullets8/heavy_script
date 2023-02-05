@@ -7,13 +7,20 @@ dns(){
 
     # Pulling pod names
     if ! k3s crictl pods --namespace ix -s Ready | 
-        sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//' |
-        grep -v 'svclb-' |
-        sed '1d' > dns_file; then
+                    sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//' |
+                    grep -v 'svclb-' |
+                    sed '1d' > dns_file; then
         echo -e "${red}Error: failed to retrieve pod names${reset}" >&2
         return 1
     fi
     mapfile -t ix_name_array < <(< dns_file awk '{print $4}' | sort -u )
+
+    # Exit if there are no applications ready
+    if [ ${#ix_name_array[@]} -eq 0 ]; then
+        echo -e "${red}There are no applications ready${reset}"
+        exit
+    fi
+
     
     # Pulling all ports
     if ! all_ports=$(k3s kubectl get service -A); then

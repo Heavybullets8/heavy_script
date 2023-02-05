@@ -268,7 +268,7 @@ restore(){
     pool=$(cli -c 'app kubernetes config' | 
            grep -E "pool\s\|" | 
            awk -F '|' '{print $3}' | 
-           tr -d sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+           sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
     files=$(find "$(find "/mnt/$pool/ix-applications/backups" -maxdepth 0 )" -name pv_info.json | grep "$restore_point")
 
     # Iterate over the list of files

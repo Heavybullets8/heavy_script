@@ -79,10 +79,10 @@ else
     fi
 fi
 
+echo
 
 # Create the bin directory if it does not exist
 if [[ ! -d "$bin_dir" ]]; then
-    echo
     echo -e "${blue}Creating $bin_dir directory...${reset}"
     mkdir "$bin_dir"
 fi

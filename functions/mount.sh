@@ -5,7 +5,7 @@ mount(){
     ix_apps_pool=$(cli -c 'app kubernetes config' | 
                    grep -E "pool\s\|" | 
                    awk -F '|' '{print $3}' | 
-                   tr -d " \t\n\r")
+                   sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
 
     # Use mapfile command to read the output of cli command into an array
     mapfile -t pool_query < <(cli -m csv -c "storage pool query name,path" | sed -e '1d' -e '/^$/d')
@@ -84,7 +84,7 @@ mount(){
                     #Grab data then output and mount
                     data_name=$(echo -e "$pvc" | awk '{print $3}')
                     volume_name=$(echo -e "$pvc" | awk '{print $4}')
-                    full_path=$(zfs list -t filesystem -r "$ix_apps_pool"/ix-applications/releases/"$app"/volumes -o name -H | grep "$volume_name")
+                    full_path=$(zfs list -t filesystem -r "$ix_apps_pool/ix-applications/releases/$app/volumes" -o name -H | grep "$volume_name")
 
 
                     # Loop until a valid selection is made

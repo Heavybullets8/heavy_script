@@ -84,7 +84,7 @@
 
 ### One Line Install
 ```
-curl -s https://raw.githubusercontent.com/Heavybullets8/heavy_script/main/functions/deploy.sh | bash 
+curl -s https://raw.githubusercontent.com/Heavybullets8/heavy_script/main/functions/deploy.sh | bash && source "$HOME/.bashrc" && source "$HOME/.zshrc" 
 ```
 
 This will:

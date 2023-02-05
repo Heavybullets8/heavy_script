@@ -123,8 +123,9 @@ mount(){
                     done
 
 
-                    # Get the path of the selected pool
-                    path=$(echo -e "$selected_pool" | cut -d',' -f2 | tr -d '[:space:]')
+                    # Assign the selected pool and path to variables
+                    path=$(echo "$selected_pool" | awk -F ',' '{print $2}' | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+                    pool_name=$(echo "$selected_pool" | awk -F ',' '{print $1}' | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
 
 
                     # Check if the folder "mounted_pvc" exists on the selected pool
@@ -133,7 +134,6 @@ mount(){
                         mkdir "$path/mounted_pvc"
                     fi
 
-                    pool_name=$(echo -e "$selected_pool" | cut -d',' -f1)
 
                     clear -x
                     title

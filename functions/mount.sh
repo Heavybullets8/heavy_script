@@ -200,7 +200,7 @@ mount(){
 
                 # Iterate through all available pools
                 for line in "${pool_query[@]}"; do
-                    pool_path=$(echo -e "$line" | cut -d',' -f2 | tr -d '[:space:]')
+                    pool_path=$(echo "$line" | awk -F ',' '{print $2}' | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
                     # Check if the folder "mounted_pvc" exists in the current pool
                     if [ -d "$pool_path/mounted_pvc" ]; then
                         # If it exists, add the contents of the folder to the unmount_array

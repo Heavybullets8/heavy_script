@@ -59,7 +59,7 @@ else
     # Clone the script repository
     echo -e "${blue}Cloning $script_name repository...${reset}"
     cd "$HOME" || exit 1
-    if ! git clone "https://github.com/Heavybullets8/heavy_script.git"; then
+    if ! git clone "https://github.com/Heavybullets8/heavy_script.git" &>/dev/null; then
         echo -e "${red}Failed to clone the repository${reset}"
         exit 1
     fi
@@ -70,6 +70,7 @@ else
     fi
 fi
 
+echo
 
 # Create the bin directory if it does not exist
 if [[ ! -d "$bin_dir" ]]; then
@@ -82,6 +83,7 @@ echo -e "${blue}Creating $script_wrapper wrapper...${reset}"
 ln -sf "$script_dir/bin/$script_name" "$script_wrapper"
 chmod +x "$script_dir/bin/$script_name"
 
+echo
 
 # Add $HOME/bin to PATH in .bashrc and .zshrc
 for rc_file in .bashrc .zshrc; do
@@ -96,6 +98,6 @@ for rc_file in .bashrc .zshrc; do
     fi
 done
 
-echo -e "${green}Successfully installed ${blue}$script_name${reset}"
 echo
+echo -e "${green}Successfully installed ${blue}$script_name${reset}"
 echo

@@ -67,7 +67,7 @@ mount(){
                     status=$(cli -m csv -c 'app chart_release query name,status' | 
                              grep "^$app," | 
                              awk -F ',' '{print $2}'| 
-                             tr -d " \t\n\r")
+                             sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
                     if [[ "$status" != "STOPPED" ]]; then
                         echo -e "\nStopping ${blue}$app${reset} prior to mount"
                         if ! cli -c 'app chart_release scale release_name='\""$app"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then

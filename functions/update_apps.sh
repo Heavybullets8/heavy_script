@@ -39,7 +39,7 @@ commander(){
            grep -E "dataset\s\|" | 
            awk -F '|' '{print $3}' | 
            awk -F '/' '{print $1}' | 
-           tr -d " \t\n\r")
+           sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
     index=0
     for app in "${array[@]}"
@@ -148,7 +148,7 @@ pre_process(){
         touch external_services
     fi
     if ! grep -qs "^$app_name," external_services ; then 
-        if ! grep -qs "/external-service" /mnt/"$pool"/ix-applications/releases/"$app_name"/charts/"$(find /mnt/"$pool"/ix-applications/releases/"$app_name"/charts/ -maxdepth 1 -type d -printf '%P\n' | sort -r | head -n 1)"/Chart.yaml; then
+        if ! grep -qs "/external-service" "/mnt/${pool}/ix-applications/releases/${app_name}/charts/$(find "/mnt/${pool}/ix-applications/releases/${app_name}/charts/" -maxdepth 1 -type d -printf '%P\n' | sort -r | head -n 1)/Chart.yaml"; then
             echo "$app_name,false" >> external_services
         else
             echo "$app_name,true" >> external_services

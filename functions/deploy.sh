@@ -46,6 +46,8 @@ if [[ -d "$script_dir" ]]; then
         if ! update_repo "$script_dir"; then
             echo -e "${red}Failed to reinstall the repository${reset}"
             exit 1
+        else
+            echo -e "${green}Successfully reinstalled the repository${reset}"
         fi
     else
         # Convert the directory into a git repository
@@ -56,6 +58,8 @@ if [[ -d "$script_dir" ]]; then
         if ! update_repo "$script_dir"; then
             echo "${red}Failed to convert to git repository${reset}"
             exit 1
+        else
+            echo -e "${green}Successfully converted to git repository${reset}"
         fi
     fi
 else
@@ -75,10 +79,10 @@ else
     fi
 fi
 
-echo
 
 # Create the bin directory if it does not exist
 if [[ ! -d "$bin_dir" ]]; then
+    echo
     echo -e "${blue}Creating $bin_dir directory...${reset}"
     mkdir "$bin_dir"
 fi

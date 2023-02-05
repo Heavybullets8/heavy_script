@@ -88,5 +88,3 @@ for rc_file in .bashrc .zshrc; do
         echo "export PATH=$bin_dir:\$PATH" >> "$HOME/$rc_file"
     fi
 done
-
-exec "$SHELL"

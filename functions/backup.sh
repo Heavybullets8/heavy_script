@@ -345,14 +345,13 @@ restore(){
 
                 # Set mountpoints to legacy prior to restore, ensures correct properties for the are set
                 echo -e "\nSetting correct ZFS properties for application volumes.."
-                for pvc in $(zfs list -t filesystem -r "$pool/ix-applications/releases" -o name -H | grep "volumes/pvc")
-                do
+                while IFS= read -r pvc; do
                     if zfs set mountpoint=legacy "$pvc"; then
                         echo -e "${green}Success for - ${blue}\"$pvc\"${reset}"
                     else
                         echo -e "${red}Error: Setting properties for ${blue}\"$pvc\"${red}, failed..${reset}"
                     fi
-                done
+                done < <(zfs list -t filesystem -r "$pool/ix-applications/releases" -o name -H | grep "volumes/pvc")
 
                 # Ensure readonly is turned off
                 if ! zfs set readonly=off "$pool/ix-applications";then

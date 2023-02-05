@@ -87,6 +87,6 @@ for rc_file in .bashrc .zshrc; do
         echo "Adding $bin_dir to $rc_file..."
         echo "export PATH=$bin_dir:\$PATH" >> "$HOME/$rc_file"
     fi
-    # shellcheck source=/dev/null
-    source "$HOME/$rc_file" &>/dev/null
 done
+
+exec "$SHELL"

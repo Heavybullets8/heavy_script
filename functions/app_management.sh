@@ -150,7 +150,7 @@ stop_app_prompt(){
                         awk -F ',' '{print $2}'| 
                         sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
             if [[ "$status" != "STOPPED" ]]; then
-                    echo -e "\nStopping ${blue}$app${reset}..."
+                    echo -e "${blue}Stopping ${blue}$app_name${reset}..."
                 if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then
                     echo -e "${red}Failed to stop ${blue}$app_name${reset}"
                     exit 1

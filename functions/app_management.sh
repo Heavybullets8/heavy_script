@@ -19,6 +19,8 @@ delete_app_prompt(){
     while true; do
         clear -x
         title
+        echo -e "${bold}Choose an application to delete${reset}"
+        echo
         # print out list of app names with numbered options
         for i in "${!apps[@]}"; do
             echo "$((i+1))) ${apps[i]}"
@@ -38,7 +40,7 @@ delete_app_prompt(){
             echo -e "${bold}Chosen Application: ${blue}$app_name${reset}"
             echo -e "${yellow}WARNING: This will delete the application and all associated data, including snapshots${reset}"
             echo
-            read -rp "Are you sure you want to delete this application?(y/N): " confirmation
+            read -rp "Continue with deletion?(y/N): " confirmation
             while true; do
                 case "$confirmation" in
                     y|Y)
@@ -72,11 +74,13 @@ delete_app_prompt(){
 
 
 restart_app_prompt(){
-    mapfile -t list_apps < <(list_applications)
+    mapfile -t apps < <(list_applications)
 
     while true; do
         clear -x
         title
+        echo -e "${bold}Choose an application to restart${reset}"
+        echo
         # print out list of app names with numbered options
         for i in "${!apps[@]}"; do
             echo "$((i+1))) ${apps[i]}"

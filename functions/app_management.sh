@@ -30,11 +30,10 @@ delete_app_prompt(){
             # delete app
             if cli -c "app chart_release delete release_name=\"$app_name\""; then
                 echo -e "${green}App $app_name deleted${reset}"
-                break
             else
                 echo -e "${red}Failed to delete app $app_name${reset}"
-                break
             fi
+            break
         else
             echo -e "${red}Invalid selection. Please choose a number from the list.${reset}"
         fi
@@ -61,6 +60,7 @@ restart_app_prompt(){
             else
                 echo -e "${green}Restarted ${blue}$app_name${reset}"
             fi
+            break
         else
             echo -e "${red}Invalid selection. Please choose a number from the list.${reset}"
         fi

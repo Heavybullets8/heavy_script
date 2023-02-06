@@ -27,12 +27,15 @@ delete_app_prompt(){
         for i in "${!apps[@]}"; do
             echo "$((i+1))) ${apps[i]}"
         done
-
+        echo
+        echo "0) Exit"
         # prompt user to select app
         read -rp "Choose an application by number: " app_index
 
         # validate user selection
-        if [ "$app_index" -gt 0 ] && [ "$app_index" -le "${#apps[@]}" ]; then
+        if [ "$app_index" -eq 0 ]; then
+            exit 0
+        elif [ "$app_index" -gt 0 ] && [ "$app_index" -le "${#apps[@]}" ]; then
             # retrieve selected app name
             app_name=${apps[app_index-1]}
 
@@ -89,11 +92,15 @@ restart_app_prompt(){
         for i in "${!apps[@]}"; do
             echo "$((i+1))) ${apps[i]}"
         done
+        echo
+        echo "0) Exit"
         # prompt user to select app
         read -rp "Choose an application by number: " app_index
 
         # validate user selection
-        if [ "$app_index" -gt 0 ] && [ "$app_index" -le "${#apps[@]}" ]; then
+        if [ "$app_index" -eq 0 ]; then
+            exit 0
+        elif [ "$app_index" -gt 0 ] && [ "$app_index" -le "${#apps[@]}" ]; then
             # retrieve selected app name
             app_name=${apps[app_index-1]}
 
@@ -109,3 +116,4 @@ restart_app_prompt(){
         fi
     done
 }
+

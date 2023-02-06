@@ -31,7 +31,7 @@ source functions/self_update.sh
 source functions/update_apps.sh
 source functions/cmd_to_container.sh
 source functions/script_create.sh
-source app_management.sh
+source functions/app_management.sh
 
 # colors
 reset='\033[0m'

@@ -13,6 +13,8 @@ list_applications(){
 
 
 delete_app_prompt(){
+    clear -x
+    echo -e "${blue}Fetching applications..${reset}"
     # retrieve list of app names
     mapfile -t apps < <(list_applications)
 
@@ -74,6 +76,8 @@ delete_app_prompt(){
 
 
 restart_app_prompt(){
+    clear -x
+    echo -e "${blue}Fetching applications..${reset}"
     mapfile -t apps < <(list_applications)
 
     while true; do

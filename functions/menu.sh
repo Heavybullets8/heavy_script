@@ -7,13 +7,10 @@ menu(){
     echo -e "${bold}Available Utilities${reset}"
     echo -e "${bold}-------------------${reset}"
     echo -e "1)  Help"
-    echo -e "2)  List DNS Names"
-    echo -e "3)  Mount and Unmount PVC storage"
-    echo -e "4)  Backup Options"
-    echo -e "5)  HeavyScript Options"
-    echo -e "6)  Update Applications"
-    echo -e "7)  Command to Container / Container Logs"
-    echo -e "8)  Patches"
+    echo -e "2)  Applciation Options"
+    echo -e "3)  Backup Options"
+    echo -e "4)  HeavyScript Options"
+    echo -e "5)  Patches"
     echo
     echo -e "0)  Exit"
     read -rt 120 -p "Please select an option by number: " selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
@@ -28,18 +25,67 @@ menu(){
             help
             ;;
         
-        # List DNS Names
+        # Applicaiton Options
         2)
-            dns 
+            while [[ $misc_selection != true ]]
+            do
+                clear -x
+                title
+                echo -e "${bold}Applicaiton Options${reset}"
+                echo -e "${bold}-------------------${reset}"
+                echo -e "1)  List DNS Names"
+                echo -e "2)  Mount/Unmount PVC Storage"
+                echo -e "3)  Update Applications"
+                echo -e "4)  Open Conainer Shell"
+                echo -e "5)  Open Container Logs"
+                echo -e "6)  Restart Application"
+                echo -e "7)  Delete Application"
+                echo
+                echo -e "0)  Exit"
+                read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
+                case $misc_selection in
+                    0)
+                        echo -e "Exiting.."
+                        exit
+                        ;;
+                    1)
+                        dns
+                        misc_selection=true
+                        ;;
+                    2)
+                        mount
+                        misc_selection=true
+                        ;;
+                    3)
+                        script_create
+                        misc_selection=true
+                        ;;
+                    4)
+                        container_shell_or_logs
+                        misc_selection=true
+                        ;;
+                    5)
+                        container_shell_or_logs "logs"
+                        misc_selection=true
+                        ;;
+                    6)
+                        restart_app_prompt
+                        misc_selection=true
+                        ;;
+                    7)
+                        delete_app_prompt
+                        misc_selection=true
+                        ;;
+                    *)
+                        echo -e "${red}\"$selection\" was not an option, please try agian${reset}"
+                        sleep 3
+                        continue
+                        ;;
+                esac
+            done
             ;;
-        
-        # Mount and Unmount PVC storage
-        3)
-            mount
-            ;;
-        
         # Backup Options
-        4)
+        3)
             while [[ $backup_selection != true ]]
             do
                 clear -x
@@ -87,7 +133,7 @@ menu(){
             ;;
             
         # HeavyScript Options
-        5)
+        4)
             while [[ $misc_selection != true ]]
             do
                 clear -x
@@ -126,49 +172,8 @@ menu(){
                 esac
             done
             ;;
-
-        # Update Applications
-        6)
-            script_create
-            ;;
-        
-        # Command to Container / Container Logs
-        7)
-            while [[ $misc_selection != true ]]
-            do
-                clear -x
-                title
-                echo -e "${bold}Command to Container / Container Logs Menu${reset}"
-                echo -e "${bold}------------------------------------------${reset}"
-                echo -e "1)  Command to Container"
-                echo -e "2)  Container Logs"
-                echo
-                echo -e "0)  Exit"
-                read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
-                case $misc_selection in
-                    0)
-                        echo -e "Exiting.."
-                        exit
-                        ;;
-                    1)
-                        misc_selection=true
-                        container_shell_or_logs
-                        ;;
-                    2)
-                        misc_selection=true
-                        container_shell_or_logs "logs"
-                        ;;
-                    *)
-                        echo -e "${blue}\"$selection\"${red} was not an option, please try agian${reset}"
-                        sleep 3
-                        continue
-                        ;;
-                esac
-            done
-            ;;
-        
         # Patches
-        8) 
+        5) 
             # Give users the option to run patch_2212_backups or choose_branch
             while [[ $misc_selection != true ]]
             do

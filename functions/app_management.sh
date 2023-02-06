@@ -37,6 +37,7 @@ delete_app_prompt(){
             title
             echo -e "${bold}Chosen Application: ${blue}$app_name${reset}"
             echo -e "${yellow}WARNING: This will delete the application and all associated data, including snapshots${reset}"
+            echo
             read -rp "Are you sure you want to delete this application?(y/N): " confirmation
             while true; do
                 case "$confirmation" in
@@ -44,17 +45,19 @@ delete_app_prompt(){
                         # delete app
                         if cli -c "app chart_release delete release_name=\"$app_name\""; then
                             echo -e "${green}App $app_name deleted${reset}"
+                            exit
                         else
                             echo -e "${red}Failed to delete app $app_name${reset}"
                         fi
-                        break
+                        exit
                         ;;
                     n|N)
-                        echo -e "${blue}Cancelled delete for app $app_name${reset}"
-                        break
+                        echo -e "Exiting.."
+                        exit
                         ;;
                     *)
                         echo -e "${red}Invalid option. Please enter 'y' or 'n'.${reset}"
+                        sleep 3
                         ;;
                 esac
             done

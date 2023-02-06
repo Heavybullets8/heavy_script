@@ -101,14 +101,14 @@ help(){
     echo -e "${blue}-s${reset}    | Synchronize catalog information"
     echo -e "${blue}-p${reset}    | Remove unused or old Docker images"
     echo -e "${blue}--self-update${reset} | Update HeavyScript prior to executing other commands"
-    echo -e "${blue}--stop-app${reset}    | Opens menu to stop an application"
-    echo -e "${blue}--restart-app${reset} | Opens menu to restart an application"
-    echo -e "${blue}--delete-app${reset}  | Opens menu to delete an application"
     echo 
     echo -e "${bold}Miscellaneous${reset}"
     echo -e "${bold}-------------${reset}"
     echo -e "${blue}-h${reset} | Display this help menu"
     echo -e "${blue}-v${reset} | Display detailed output"
+    echo -e "${blue}--stop-app${reset}    | Opens menu to stop an application"
+    echo -e "${blue}--restart-app${reset} | Opens menu to restart an application"
+    echo -e "${blue}--delete-app${reset}  | Opens menu to delete an application"
     echo
     echo -e "${bold}Examples${reset}"
     echo -e "${bold}--------${reset}"

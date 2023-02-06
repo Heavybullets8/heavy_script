@@ -26,8 +26,7 @@ delete_app_prompt(){
         # validate user selection
         if [ "$app_index" -gt 0 ] && [ "$app_index" -le "${#apps[@]}" ]; then
             # retrieve selected app name
-            selected_app=${apps[app_index-1]}
-
+            sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' <<< "selected_app=${apps[app_index-1]}"
             # delete app
             if cli -c "app chart_release delete release_name=\"$selected_app\""; then
                 echo -e "${green}App $selected_app deleted{reset}"
@@ -55,7 +54,7 @@ restart_app_prompt(){
         # validate user selection
         if [ "$app_index" -gt 0 ] && [ "$app_index" -le "${#apps[@]}" ]; then
             # retrieve selected app name
-            selected_app=${apps[app_index-1]}
+            sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' <<< "selected_app=${apps[app_index-1]}"
 
             # delete app
             if cli -c "app chart_release delete release_name=\"$selected_app\""; then

@@ -76,8 +76,6 @@ delete_app_prompt(){
 }
 
 
-
-
 restart_app_prompt(){
     clear -x
     echo -e "${blue}Fetching applications..${reset}"

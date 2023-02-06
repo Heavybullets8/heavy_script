@@ -81,6 +81,15 @@ do
               logs)
                   logs=true
                   ;;
+        delete-app)
+                  delete_app=true
+                  ;;
+          stop-app)
+                  stop_app=true
+                  ;;
+       restart-app)
+                  restart_app=true
+                  ;;
                 *)
                   echo -e "Invalid Option \"--$OPTARG\"\n"
                   help
@@ -177,6 +186,21 @@ fi
 
 if [[ "$help" == true ]]; then
     help
+fi
+
+if [[ "$delete_app" == true ]]; then
+    delete_app_prompt
+    exit
+fi
+
+if [[ "$stop_app" == true ]]; then
+    stop_app_prompt
+    exit
+fi
+
+if [[ "$restart_app" == true ]]; then
+    restart_app_prompt
+    exit
 fi
 
 if [[ "$cmd" == true || "$logs" == true ]]; then

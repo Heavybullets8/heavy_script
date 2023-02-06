@@ -40,6 +40,7 @@ menu(){
                 echo -e "5)  Open Container Logs"
                 echo -e "6)  Restart Application"
                 echo -e "7)  Delete Application"
+                echo -e "8)  Stop Application"
                 echo
                 echo -e "0)  Exit"
                 read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
@@ -74,6 +75,10 @@ menu(){
                         ;;
                     7)
                         delete_app_prompt
+                        misc_selection=true
+                        ;;
+                    8)
+                        stop_app_prompt
                         misc_selection=true
                         ;;
                     *)

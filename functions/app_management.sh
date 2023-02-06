@@ -117,3 +117,46 @@ restart_app_prompt(){
     done
 }
 
+
+stop_app_prompt(){
+    clear -x
+    echo -e "${blue}Fetching applications..${reset}"
+    mapfile -t apps < <(list_applications)
+
+    while true; do
+        clear -x
+        title
+        echo -e "${bold}Choose an application to stop${reset}"
+        echo
+        # print out list of app names with numbered options
+        for i in "${!apps[@]}"; do
+            echo "$((i+1))) ${apps[i]}"
+        done
+        echo
+        echo "0) Exit"
+        # prompt user to select app
+        read -rp "Choose an application by number: " app_index
+
+        # validate user selection
+        if [ "$app_index" -eq 0 ]; then
+            exit 0
+        elif [ "$app_index" -gt 0 ] && [ "$app_index" -le "${#apps[@]}" ]; then
+            # retrieve selected app name
+            app_name=${apps[app_index-1]}
+
+            if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then
+                echo -e "${red}Failed to stop ${blue}$app_name${reset}"
+                exit 1
+            else
+                echo -e "${blue}$app_name${green}Stopped${reset}"
+            fi
+            break
+        else
+            echo -e "${red}Invalid selection. Please choose a number from the list.${reset}"
+            sleep 3
+        fi
+    done
+
+
+
+}

@@ -5,7 +5,7 @@ apps=()
 list_applications(){
 
     # retrieve list of app names
-    mapfile -t apps < <(cli -m csv -c 'app chart_release query name' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | tail -n +2 | sort )
+    mapfile -t apps < <(cli -m csv -c 'app chart_release query name' | tr -d " \t\r" | tail -n +2 | sort )
 
     # print out list of app names with numbered options
     for i in "${!apps[@]}"; do

@@ -144,13 +144,24 @@ stop_app_prompt(){
             # retrieve selected app name
             app_name=${apps[app_index-1]}
 
-            if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then
-                echo -e "${red}Failed to stop ${blue}$app_name${reset}"
-                exit 1
+            #Stop application if not stopped
+            status=$(cli -m csv -c 'app chart_release query name,status' | 
+                        grep "^$app_name," | 
+                        awk -F ',' '{print $2}'| 
+                        sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+            if [[ "$status" != "STOPPED" ]]; then
+                    echo -e "\nStopping ${blue}$app${reset}..."
+                if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then
+                    echo -e "${red}Failed to stop ${blue}$app_name${reset}"
+                    exit 1
+                else
+                    echo -e "${blue}$app_name ${green}Stopped${reset}"
+                fi
+                break
             else
-                echo -e "${blue}$app_name${green}Stopped${reset}"
+                echo -e "${blue}$app_name ${yellow}Already Stopped${reset}"
+                break
             fi
-            break
         else
             echo -e "${red}Invalid selection. Please choose a number from the list.${reset}"
             sleep 3

@@ -80,6 +80,9 @@ help(){
     echo -e "${blue}--dns${reset}           | View all application DNS names and web ports"
     echo -e "${blue}--cmd${reset}           | Open a shell for a selected application"
     echo -e "${blue}--logs${reset}          | View log file for a selected application"
+    echo -e "${blue}--stop-app${reset}      | Opens menu to stop an application"
+    echo -e "${blue}--restart-app${reset}   | Opens menu to restart an application"
+    echo -e "${blue}--delete-app${reset}    | Opens menu to delete an application"
     echo 
     echo -e "${bold}Update Specific Options${reset}"
     echo -e "${bold}-----------------------${reset}"
@@ -106,9 +109,6 @@ help(){
     echo -e "${bold}-------------${reset}"
     echo -e "${blue}-h${reset} | Display this help menu"
     echo -e "${blue}-v${reset} | Display detailed output"
-    echo -e "${blue}--stop-app${reset}    | Opens menu to stop an application"
-    echo -e "${blue}--restart-app${reset} | Opens menu to restart an application"
-    echo -e "${blue}--delete-app${reset}  | Opens menu to delete an application"
     echo
     echo -e "${bold}Examples${reset}"
     echo -e "${bold}--------${reset}"

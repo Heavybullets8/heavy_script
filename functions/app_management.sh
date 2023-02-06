@@ -14,7 +14,6 @@ list_applications(){
 }
 
 
-
 delete_app_prompt(){
     clear -x
     title
@@ -42,7 +41,6 @@ delete_app_prompt(){
         fi
     done
 }
-
 
 
 restart_app_prompt(){

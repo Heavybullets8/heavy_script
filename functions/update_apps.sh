@@ -233,7 +233,7 @@ export -f pre_process
 
 restart_app(){
     dep_name=$(k3s kubectl -n ix-"$app_name" get deploy | sed -e '1d' -e 's/ .*//')
-    if k3s kubectl -n ix-"$app_name" rollout restart deploy "$dep_name"; then
+    if k3s kubectl -n ix-"$app_name" rollout restart deploy "$dep_name" &>/dev/null; then
         return 0
     else
         return 1

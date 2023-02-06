@@ -8,7 +8,7 @@ list_applications(){
     mapfile -t apps < <(cli -m csv -c 'app chart_release query name' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF')
 
     # return the list of app names
-    printf "%q " "${apps[@]}"
+    printf '%s\n' "${apps[@]}"
 }
 
 

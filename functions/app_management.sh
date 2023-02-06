@@ -7,20 +7,22 @@ list_applications(){
     # retrieve list of app names
     mapfile -t apps < <(cli -m csv -c 'app chart_release query name' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF')
 
-    # print out list of app names with numbered options
-    for i in "${!apps[@]}"; do
-        echo "$((i+1))) ${apps[i]}"
-    done
+    # return the list of app names
+    echo "${apps[@]}"
 }
 
 
 delete_app_prompt(){
-    list_apps=$(list_applications)
+    # retrieve list of app names
+    mapfile -t apps < <(list_applications)
 
     while true; do
         clear -x
         title
-        echo "$list_apps"
+        # print out list of app names with numbered options
+        for i in "${!apps[@]}"; do
+            echo "$((i+1))) ${apps[i]}"
+        done
 
         # prompt user to select app
         read -rp "Choose an application by number: " app_index
@@ -65,13 +67,17 @@ delete_app_prompt(){
 
 
 
+
 restart_app_prompt(){
-    list_apps=$(list_applications)
+    mapfile -t list_apps < <(list_applications)
 
     while true; do
         clear -x
         title
-        echo "$list_apps"
+        # print out list of app names with numbered options
+        for i in "${!apps[@]}"; do
+            echo "$((i+1))) ${apps[i]}"
+        done
         # prompt user to select app
         read -rp "Choose an application by number: " app_index
 

@@ -15,11 +15,13 @@ list_applications(){
 
 
 delete_app_prompt(){
-    clear -x
-    title
-    list_applications
+    list_apps=$(list_applications)
 
     while true; do
+        clear -x
+        title
+        echo "$list_apps"
+
         # prompt user to select app
         read -rp "Choose an application by number: " app_index
 
@@ -27,26 +29,49 @@ delete_app_prompt(){
         if [ "$app_index" -gt 0 ] && [ "$app_index" -le "${#apps[@]}" ]; then
             # retrieve selected app name
             app_name=${apps[app_index-1]}
-            # delete app
-            if cli -c "app chart_release delete release_name=\"$app_name\""; then
-                echo -e "${green}App $app_name deleted${reset}"
-            else
-                echo -e "${red}Failed to delete app $app_name${reset}"
-            fi
-            break
+
+            # prompt user for confirmation
+            clear -x
+            title
+            echo -e "${bold}Chosen Application: ${blue}$app_name${reset}"
+            echo -e "${yellow}WARNING: This will delete the application and all associated data, including snapshots${reset}"
+            read -rp "Are you sure you want to delete this application?(y/N): " confirmation
+            while true; do
+                case "$confirmation" in
+                    y|Y)
+                        # delete app
+                        if cli -c "app chart_release delete release_name=\"$app_name\""; then
+                            echo -e "${green}App $app_name deleted${reset}"
+                        else
+                            echo -e "${red}Failed to delete app $app_name${reset}"
+                        fi
+                        break
+                        ;;
+                    n|N)
+                        echo -e "${blue}Cancelled delete for app $app_name${reset}"
+                        break
+                        ;;
+                    *)
+                        echo -e "${red}Invalid option. Please enter 'y' or 'n'.${reset}"
+                        ;;
+                esac
+            done
         else
             echo -e "${red}Invalid selection. Please choose a number from the list.${reset}"
+            sleep 3
         fi
     done
 }
 
 
+
 restart_app_prompt(){
-    clear -x
-    title
-    list_applications
+    list_apps=$(list_applications)
 
     while true; do
+        clear -x
+        title
+        echo "$list_apps"
         # prompt user to select app
         read -rp "Choose an application by number: " app_index
 
@@ -63,6 +88,7 @@ restart_app_prompt(){
             break
         else
             echo -e "${red}Invalid selection. Please choose a number from the list.${reset}"
+            sleep 3
         fi
     done
 }

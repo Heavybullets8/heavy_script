@@ -16,6 +16,12 @@ container_shell_or_logs(){
         num=$((num+1))
     done
 
+    # Check if there are any apps
+    if [ -z "$app_names" ]; then
+        echo -e "${yellow}There are no applications active.."
+        exit 0
+    fi
+
     # Display menu and get selection from user
     while true; do
         clear -x

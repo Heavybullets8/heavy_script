@@ -42,7 +42,7 @@ menu(){
                 echo -e "7)  Delete Application"
                 echo
                 echo -e "0)  Exit"
-                read -rt 120 -p "Please select an option by number: " backup_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
+                read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
                 case $misc_selection in
                     0)
                         echo -e "Exiting.."

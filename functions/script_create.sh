@@ -8,15 +8,15 @@ script_create(){
         title
         echo -e "${bold}Choose Your Update Type${reset}"
         echo -e "${bold}-----------------------${reset}"
-        echo "1) -U | Update all applications, ignores versions"
-        echo "2) -u | Update all applications, does not update Major releases"
+        echo -e "1) -U | Update all applications, ignores versions"
+        echo -e "2) -u | Update all applications, does not update Major releases"
         echo
-        echo "0) Exit"
+        echo -e "0) Exit"
         echo
         read -rt 120 -p "Type the Number or Flag: " current_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
         case $current_selection in
             0 | [Ee][Xx][Ii][Tt])
-                echo "Exiting.."
+                echo -e "Exiting.."
                 exit
                 ;;
             1 | 2 | -U | -u)
@@ -33,14 +33,14 @@ script_create(){
 
                     case $up_async in
                         "" | *[!0-9]*)
-                            echo -e "\033[31mError: \"$up_async\" is invalid, it needs to be an integer${reset}"
-                            echo -e "\033[31mNOT adding it to the list${reset}"
+                            echo -e "${red}Error: \"$up_async\" is invalid, it needs to be an integer${reset}"
+                            echo -e "${red}NOT adding it to the list${reset}"
                             sleep 3
                             continue
                             ;;
                         0)
-                            echo -e "\033[31mError: \"$up_async\" is less than 1${reset}"
-                            echo -e "\033[31mNOT adding it to the list${reset}"
+                            echo -e "${red}Error: \"$up_async\" is less than 1${reset}"
+                            echo -e "${red}NOT adding it to the list${reset}"
                             sleep 3
                             continue
                             ;;
@@ -53,7 +53,8 @@ script_create(){
                 break
                 ;;
             *)
-                echo -e "\033[31m$current_selection was not an option, try again${reset}" && sleep 3
+                echo -e "${red}$current_selection was not an option, try again${reset}"
+                sleep 3
                 continue
                 ;;
         esac
@@ -64,39 +65,39 @@ script_create(){
         title
         echo -e "${bold}Update Options${reset}"
         echo -e "${bold}--------------${reset}"
-        echo "1) -r | Roll-back applications if they fail to update"
-        echo "2) -i | Add application to ignore list"
-        echo "3) -S | Shutdown applications prior to updating"
-        echo "4) -v | verbose output"
-        echo "5) -t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
+        echo -e "1) -r | Roll-back applications if they fail to update"
+        echo -e "2) -i | Add application to ignore list"
+        echo -e "3) -S | Shutdown applications prior to updating"
+        echo -e "4) -v | verbose output"
+        echo -e "5) -t | Set a custom timeout in seconds when checking if either an App or Mountpoint correctly Started, Stopped or (un)Mounted. Defaults to 500 seconds"
         echo
         echo -e "${bold}Additional Options${reset}"
         echo -e "${bold}------------------${reset}"
-        echo "6) -b | Back-up your ix-applications dataset"
-        echo "7) -s | sync catalog"
-        echo "8) -p | Prune unused/old docker images"
-        echo "9) --ignore-img   | Ignore container image updates"
-        echo "10) --self-update | Updates HeavyScript prior to running any other commands"
+        echo -e "6) -b | Back-up your ix-applications dataset"
+        echo -e "7) -s | sync catalog"
+        echo -e "8) -p | Prune unused/old docker images"
+        echo -e "9) --ignore-img   | Ignore container image updates"
+        echo -e "10) --self-update | Updates HeavyScript prior to running any other commands"
         echo
-        echo "88) Undo"
-        echo "99) Remove ALL Options"
-        echo "00) Proceed with update"
+        echo -e "88) Undo"
+        echo -e "99) Remove ALL Options"
+        echo -e "00) Proceed with update"
         echo 
-        echo "0) Exit"
+        echo -e "0) Exit"
         echo 
         echo -e "${bold}Current Choices${reset}"
         echo -e "${bold}---------------${reset}"
-        echo -e "\033[34m bash heavy_script.sh ${update_selection[*]} ${reset}"
+        echo -e "${blue}bash heavy_script.sh ${update_selection[*]} ${reset}"
         echo
         read -rt 600 -p "Type the Number or Flag: " current_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
         case $current_selection in
             0 | [Ee][Xx][Ii][Tt])
-                echo "Exiting.."
+                echo -e "Exiting.."
                 exit
                 ;;
             00)
                 clear -x
-                echo -e "\033[32m Running \"bash heavy_script.sh ${update_selection[*]}\" ${reset}"
+                echo -e "${blue}Running \"bash heavy_script.sh ${update_selection[*]}\" ${reset}"
                 echo
                 exec bash "$script_name" "${update_selection[@]}"
                 exit
@@ -106,7 +107,11 @@ script_create(){
                 ;;
             2 | -i)
                 read -rt 120 -p "What is the name of the application we should ignore?: " up_ignore || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
-                ! [[ $up_ignore =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]] && echo -e "${red}Error: \"$up_timeout\" is not a possible option for an application name${reset}" && sleep 3 && continue
+                if ! [[ $up_ignore =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]]; then
+                    echo -e "${red}Error: \"$up_ignore\" is not a possible option for an application name${reset}"
+                    sleep 3
+                    continue
+                fi
                 update_selection+=("-i" "$up_ignore")
                 continue
                 ;;
@@ -117,17 +122,29 @@ script_create(){
                 option="-v"
                 ;;
             5 | -t)
-                echo "What do you want your timeout to be?"
+                echo -e "What do you want your timeout to be?"
                 read -rt 120 -p "Please type an integer: " up_timeout || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
-                ! [[ $up_timeout =~ ^[0-9]+$ ]] && echo -e "\033[31mError: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list${reset}" && sleep 3 && continue
+                if ! [[ $up_timeout =~ ^[0-9]+$ ]]; then
+                    echo -e "${red}Error: \"$up_timeout\" is invalid, it needs to be an integer\nNOT adding it to the list${reset}"
+                    sleep 3
+                    continue
+                fi
                 option="-t"
                 value="$up_timeout"
                 ;;
             6 | -b)
-                echo "Up to how many backups should we keep?"
+                echo -e "Up to how many backups should we keep?"
                 read -rt 120 -p "Please type an integer: " up_backups || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
-                ! [[ $up_backups =~ ^[0-9]+$ ]] && echo -e "\033[31mError: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list${reset}" && sleep 3 && continue
-                [[ $up_backups == 0 ]] && echo -e "\033[31mError: Number of backups cannot be 0\nNOT adding it to the list${reset}" && sleep 3 && continue
+                if ! [[ $up_backups =~ ^[0-9]+$ ]]; then
+                    echo -e "${red}Error: \"$up_backups\" is invalid, it needs to be an integer\nNOT adding it to the list${reset}"
+                    sleep 3
+                    continue
+                fi
+                if [[ $up_backups == 0 ]]; then
+                    echo -e "${red}Error: Number of backups cannot be 0\nNOT adding it to the list${reset}"
+                    sleep 3
+                    continue
+                fi
                 option="-b"
                 value="$up_backups"
                 ;;
@@ -146,7 +163,7 @@ script_create(){
             88)
                 # Check if the array has less than or equal to 2 elements
                 if [[ ${#update_selection[@]} -eq 2 ]]; then
-                    echo -e "\033[31mError: You cannot remove the update option and the number of updates${reset}"
+                    echo -e "${red}Error: You cannot remove the update option and the number of updates${reset}"
                     sleep 3 
                     continue
                 fi
@@ -161,12 +178,13 @@ script_create(){
                         # Set the flag to indicate that we have found a hyphenated element
                         found_hyphenated=1
                     fi
+                    # Unset the current element
+                    unset "update_selection[$i]"
+
                     # If we have found a hyphenated element, unset the current element
                     if [[ $found_hyphenated -eq 1 ]]; then
                         # Break out of the loop
                         break
-                    else
-                        unset "update_selection[$i]"
                     fi
                 done
 
@@ -184,7 +202,9 @@ script_create(){
                 continue
                 ;;
             *)
-                echo -e "\033[31m\"$current_selection\" was not an option, try again${reset}" && sleep 3 && continue 
+                echo -e "${red}\"$current_selection\" was not an option, try again${reset}"
+                sleep 3
+                continue 
                 ;;
         esac
         if [[ -n "$option" ]]; then
@@ -202,7 +222,7 @@ export -f script_create
 add_option_to_array() {
     # Check if the option is already in the array
     if printf '%s\0' "${update_selection[@]}" | grep -Fxqz -- "$option"; then
-        echo -e "\033[31m$option is already in the array, skipping${reset}"
+        echo -e "${red}$option is already in the array, skipping${reset}"
         sleep 3
         return
     fi

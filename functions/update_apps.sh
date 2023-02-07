@@ -2,14 +2,44 @@
 
 
 commander(){
-    mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | tr -d " \t\r" | grep -E ",true($|,)" | sort)
+    mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | 
+                        tr -d " \t\r" | 
+                        grep -E ",true($|,)" | 
+                        sort)
     echo -e "🅄 🄿 🄳 🄰 🅃 🄴 🅂"
-    [[ -z ${array[*]} ]] && echo "There are no updates available" && echo -e "\n" && return 0 || echo "Update(s) Available: ${#array[@]}"
+
+    if [[ -z ${array[*]} ]]; then
+        echo "There are no updates available"
+        echo -e "\n"
+        return 0
+    else
+        echo "Update(s) Available: ${#array[@]}"
+    fi
+
     echo "Asynchronous Updates: $update_limit"
-    [[ -z $timeout ]] && echo "Default Timeout: 500" && timeout=500 || echo "Custom Timeout: $timeout"
-    [[ "$timeout" -le 120 ]] && echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
-    [[ $ignore_image_update == "true" ]] && echo "Image Updates: Disabled" || echo "Image Updates: Enabled"
-    pool=$(cli -c 'app kubernetes config' | grep -E "dataset\s\|" | awk -F '|' '{print $3}' | awk -F '/' '{print $1}' | tr -d " \t\n\r")
+    
+    
+    if [[ -z $timeout ]]; then
+        echo "Default Timeout: 500" && timeout=500
+    else
+        echo "Custom Timeout: $timeout"
+    fi
+
+    if [[ "$timeout" -le 120 ]];then 
+        echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
+    fi
+
+    if [[ $ignore_image_update == true ]]; then
+        echo "Image Updates: Disabled"
+    else
+        echo "Image Updates: Enabled"
+    fi
+
+    pool=$(cli -c 'app kubernetes config' | 
+           grep -E "dataset\s\|" | 
+           awk -F '|' '{print $3}' | 
+           awk -F '/' '{print $1}' | 
+           sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
     index=0
     for app in "${array[@]}"
@@ -29,7 +59,7 @@ commander(){
             echo -e "\n$app_name\nIgnored, skipping"
             unset "array[$index]"
         #Skip appliaction if major update and not ignoreing major versions
-        elif [[ "$diff_app" != "$diff_chart" && $update_apps == "true" ]] ; then
+        elif [[ "$diff_app" != "$diff_chart" && $update_apps == true ]] ; then
             echo -e "\n$app_name\nMajor Release, update manually"
             unset "array[$index]"
         # Skip update if application previously failed on this exact update version
@@ -42,14 +72,19 @@ commander(){
                 sed -i /"$app_name",/d failed
             fi
         #Skip Image updates if ignore image updates is set to true
-        elif [[ $old_full_ver == "$new_full_ver" && $ignore_image_update == "true" ]]; then
+        elif [[ $old_full_ver == "$new_full_ver" && $ignore_image_update == true ]]; then
             echo -e "\n$app_name\nImage update, skipping.."
             unset "array[$index]"
         fi
         ((index++))
     done
     array=("${array[@]}")
-    [[ ${#array[@]} == 0 ]] && echo && echo && return
+
+    if [[ ${#array[@]} == 0 ]]; then
+        echo
+        echo
+        return
+    fi
 
 
     index=0
@@ -60,12 +95,18 @@ commander(){
     do
         if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' 2>/dev/null) ; then
             ((while_count++)) 
-            [[ -z $while_status ]] && continue || echo -e "$while_count\n$while_status" > all_app_status
+            if [[ -z $while_status ]]; then
+                continue
+            else
+                echo -e "$while_count\n$while_status" > all_app_status
+            fi
             mapfile -t deploying_check < <(grep ",DEPLOYING," all_app_status)
             for i in "${deploying_check[@]}"
             do
+                if [[ ! -e deploying ]]; then
+                    touch deploying
+                fi
                 app_name=$(echo "$i" | awk -F ',' '{print $1}')
-                [[ ! -e deploying ]] && touch deploying
                 if ! grep -qs "$app_name,DEPLOYING" deploying; then
                     echo "$app_name,DEPLOYING" >> deploying
                 fi
@@ -103,9 +144,11 @@ pre_process(){
 
 
     # Check if app is external services, append outcome to external_services file
-    [[ ! -e external_services ]] && touch external_services
+    if [[ ! -e external_services ]]; then
+        touch external_services
+    fi
     if ! grep -qs "^$app_name," external_services ; then 
-        if ! grep -qs "/external-service" /mnt/"$pool"/ix-applications/releases/"$app_name"/charts/"$(find /mnt/"$pool"/ix-applications/releases/"$app_name"/charts/ -maxdepth 1 -type d -printf '%P\n' | sort -r | head -n 1)"/Chart.yaml; then
+        if ! grep -qs "/external-service" "/mnt/${pool}/ix-applications/releases/${app_name}/charts/$(find "/mnt/${pool}/ix-applications/releases/${app_name}/charts/" -maxdepth 1 -type d -printf '%P\n' | sort -r | head -n 1)/Chart.yaml"; then
             echo "$app_name,false" >> external_services
         else
             echo "$app_name,true" >> external_services
@@ -130,8 +173,10 @@ pre_process(){
 
     # If user is using -S, stop app prior to updating
     echo_array+=("\n$app_name")
-    if [[ $stop_before_update == "true" && "$startstatus" !=  "STOPPED" ]]; then # Check to see if user is using -S or not
-        [[ "$verbose" == "true" ]] && echo_array+=("Stopping prior to update..")
+    if [[ $stop_before_update == true && "$startstatus" !=  "STOPPED" ]]; then # Check to see if user is using -S or not
+        if [[ "$verbose" == true ]]; then
+            echo_array+=("Stopping prior to update..")
+        fi
         if stop_app ; then
             echo_array+=("Stopped")
         else
@@ -142,8 +187,8 @@ pre_process(){
     fi
 
     # Send app through update function
-    [[ "$verbose" == "true" ]] && echo_array+=("Updating..")
-    if update_app ;then
+    [[ "$verbose" == true ]] && echo_array+=("Updating..")
+    if update_app; then
         if [[ $old_full_ver == "$new_full_ver" ]]; then
             echo_array+=("Updated Container Image")
         else
@@ -157,9 +202,21 @@ pre_process(){
 
 
     # If rollbacks are enabled, or startstatus is stopped
-    if [[ $rollback == "true" || "$startstatus"  ==  "STOPPED" ]]; then
-        # If app is external services, OR version is the same (container image update), skip post processing
-        if grep -qs "^$app_name,true" external_services || [[ "$old_full_ver" == "$new_full_ver" ]]; then 
+    if [[ $rollback == true || "$startstatus"  ==  "STOPPED" ]]; then
+        # If app is external services, skip post processing
+        if grep -qs "^$app_name,true" external_services; then 
+            echo_array
+            return
+        elif [[ "$old_full_ver" == "$new_full_ver" ]]; then 
+            # restart the app if it was a container image update.
+            if [[ "$verbose" == true ]]; then
+                echo_array+=("Restarting $app_name..")
+            fi
+            if ! restart_app; then
+                echo_array+=("Failed to restart $app_name")
+            else
+                echo_array+=("Restarted $app_name")
+            fi
             echo_array
             return
         else
@@ -174,20 +231,33 @@ pre_process(){
 export -f pre_process
 
 
+restart_app(){
+    dep_name=$(k3s kubectl -n ix-"$app_name" get deploy | sed -e '1d' -e 's/ .*//')
+    if k3s kubectl -n ix-"$app_name" rollout restart deploy "$dep_name" &>/dev/null; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+
 post_process(){
     SECONDS=0
     count=0
 
     while true
     do
-        
         # If app reports ACTIVE right away, assume its a false positive and wait for it to change, or trust it after 5 updates to all_app_status
         status=$(grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
-        if [[ $count -lt 1 && $status == "ACTIVE" && "$(grep "^$app_name," deploying 2>/dev/null | awk -F ',' '{print $2}')" != "DEPLOYING" ]]; then  # If status shows up as Active or Stopped on the first check, verify that. Otherwise it may be a false report..
-            [[ "$verbose" == "true" ]] && echo_array+=("Verifying $status..")
+        # If status shows up as Active or Stopped on the first check, verify that. Otherwise it may be a false report..
+        if [[ $count -lt 1 && $status == "ACTIVE" && "$(grep "^$app_name," deploying 2>/dev/null | awk -F ',' '{print $2}')" != "DEPLOYING" ]]; then  
+            if [[ "$verbose" == true ]]; then
+                echo_array+=("Verifying $status..")
+            fi
             before_loop=$(head -n 1 all_app_status)
             current_loop=0
-            until [[ "$status" != "ACTIVE" || $current_loop -gt 4 ]] # Wait for a specific change to app status, or 3 refreshes of the file to go by.
+            # Wait for a specific change to app status, or 3 refreshes of the file to go by.
+            until [[ "$status" != "ACTIVE" || $current_loop -gt 4 ]] 
             do
                 status=$(grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
                 sleep 1
@@ -201,7 +271,9 @@ post_process(){
 
         if [[ "$status"  ==  "ACTIVE" ]]; then
             if [[ "$startstatus"  ==  "STOPPED" ]]; then
-                [[ "$verbose" == "true" ]] && echo_array+=("Returing to STOPPED state..")
+                if [[ "$verbose" == true ]]; then
+                    echo_array+=("Returing to STOPPED state..")
+                fi
                 if stop_app ; then
                     echo_array+=("Stopped")
                 else
@@ -215,8 +287,8 @@ post_process(){
                 break 
             fi
         elif [[ "$SECONDS" -ge "$timeout" ]]; then
-            if [[ $rollback == "true" ]]; then
-                if [[ "$failed" != "true" ]]; then
+            if [[ $rollback == true ]]; then
+                if [[ "$failed" != true ]]; then
                     echo "$app_name,$new_full_ver" >> failed
                     echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
                     echo_array+=("If this is a slow starting application, set a higher timeout with -t")
@@ -229,7 +301,7 @@ post_process(){
                         echo_array
                         return 1
                     fi                    
-                    failed="true"
+                    failed=true
                     SECONDS=0
                     count=0
                     continue #run back post_process function if the app was stopped prior to update
@@ -262,7 +334,9 @@ post_process(){
                 break
             fi
         else
-            [[ "$verbose" == "true" ]] && echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be ACTIVE")
+            if [[ "$verbose" == true ]]; then
+                echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be ACTIVE")
+            fi
             sleep 5
             continue
         fi
@@ -313,7 +387,7 @@ update_app() {
             for (( count=0; count<3; count++ )); do
                 if cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null; then
                     # If the update was successful, break out of the loop
-                    break
+                    return 0
                 else
                     # Upon failure, wait for status update before continuing
                     before_loop=$(head -n 1 all_app_status)
@@ -380,6 +454,8 @@ export -f echo_array
 
 
 final_check(){
-    [[ ! -e finished ]] && touch finished
+    if [[ ! -e finished ]]; then
+        touch finished
+    fi
     echo "$app_name,finished" >> finished
 }

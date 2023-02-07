@@ -18,14 +18,17 @@ export -f sync
 
 prune(){
     echo -e "🄿 🅁 🅄 🄽 🄴"  
-    version="$(cli -c 'system version' | awk -F '-' '{print $3}' | awk -F '.' '{print $1 $2}' |  tr -d " \t\r\.")"
+    version="$(cli -c 'system version' | 
+               awk -F '-' '{print $3}' | 
+               awk -F '.' '{print $1 $2}' |  
+               tr -d " \t\r\.")"
     if (( "$version" >= 2212 )); then
         if ! cli -c 'app container config prune prune_options={"remove_unused_images": true, "remove_stopped_containers": true}' | head -n -4; then
-            echo "Failed to Prune Docker Images"
+            echo -e "Failed to Prune Docker Images"
         fi
     else
         if ! docker image prune -af | grep "^Total"; then
-            echo "Failed to Prune Docker Images"
+            echo -e "Failed to Prune Docker Images"
         fi
     fi
 }
@@ -63,60 +66,71 @@ export -f title
 
 
 help(){
-    [[ $help == "true" ]] && clear -x
+    clear -x
 
-    echo "Access the HeavyScript Menu"
-    echo "---------------------------"
-    echo "heavy_script"
+    echo -e "${bold}HeavyScript Menu${reset}"
+    echo -e "${bold}----------------${reset}"
+    echo -e "${blue}heavyscript${reset}"
     echo
-    echo "Utilities"
-    echo "---------"
-    echo "--mount         | Initiates mounting feature, choose between unmounting and mounting PVC data"
-    echo "--restore       | Opens a menu to restore a \"heavy_script\" backup that was taken on your \"ix-applications\" dataset"
-    echo "--delete-backup | Opens a menu to delete backups on your system"
-    echo "--dns           | list all of your applications DNS names and their web ports"
-    echo "--cmd           | Open a shell for one of your applications"
-    echo "--logs          | Open the log file for one of your applications"
+    echo -e "${bold}Utilities${reset}"
+    echo -e "${bold}---------${reset}"
+    echo -e "${blue}--mount${reset}         | Access the mounting feature to mount or unmount PVC data"
+    echo -e "${blue}--restore${reset}       | Open a menu to restore a backup from the \"ix-applications\" dataset"
+    echo -e "${blue}--delete-backup${reset} | Open a menu to delete backups from your system"
+    echo -e "${blue}--dns${reset}           | View all application DNS names and web ports"
+    echo -e "${blue}--cmd${reset}           | Open a shell for a selected application"
+    echo -e "${blue}--logs${reset}          | View log file for a selected application"
+    echo -e "${blue}--stop-app${reset}      | Opens menu to stop an application"
+    echo -e "${blue}--restart-app${reset}   | Opens menu to restart an application"
+    echo -e "${blue}--delete-app${reset}    | Opens menu to delete an application"
     echo 
-    echo "Update Types"
-    echo "------------"
-    echo "-U    | Update all applications, ignores versions"
-    echo "-U 5  | Same as above, but updates 5 applications at one time"
-    echo "-u    | Update all applications, does not update Major releases"
-    echo "-u 5  | Same as above, but updates 5 applications at one time"
+    echo -e "${bold}Update Specific Options${reset}"
+    echo -e "${bold}-----------------------${reset}"
+    echo -e "${blue}-U${reset}     | Update all applications, disregarding version numbers"
+    echo -e "${blue}-U 5${reset}   | Same as above, but in batches of 5 applications"
+    echo -e "${blue}-u${reset}     | Update all applications, excluding major release updates"
+    echo -e "${blue}-u 5${reset}   | Same as above, but in batches of 5 applications"
+    echo -e "${blue}-r${reset}     | Revert applications if their update fails"
+    echo -e "${blue}-i${reset}     | Exclude an application from updates, see example below."
+    echo -e "${blue}-S${reset}     | Stop applications prior to updating"
+    echo -e "${blue}-t 500${reset} | Wait time for an application to become ACTIVE, default is 500 seconds"
+    echo -e "${blue}--ignore-img${reset} | Skip container image updates"
     echo
-    echo "Update Options"
-    echo "--------------"
-    echo "-r    | Roll-back applications if they fail to update"
-    echo "-i    | Add application to ignore list, one by one, see example below."
-    echo "-S    | Shutdown applications prior to updating"
-    echo "-v    | verbose output"
-    echo "-t 500| The amount of time HS will wait for an application to be ACTIVE. Defaults to 500 seconds"
+    echo -e "${bold}General Options${reset}"
+    echo -e "${bold}---------------${reset}"
+    echo -e "${gray}These options can be used in conjunction with the update options above${reset}"
+    echo -e "${gray}Alternatively, use these options individually or combined with other commands${reset}"
+    echo -e "${blue}-b 14${reset} | Backup your ix-applications dataset prior to updating, up to the number specified"
+    echo -e "${blue}-s${reset}    | Synchronize catalog information"
+    echo -e "${blue}-p${reset}    | Remove unused or old Docker images"
+    echo -e "${blue}--self-update${reset} | Update HeavyScript prior to executing other commands"
+    echo 
+    echo -e "${bold}Miscellaneous${reset}"
+    echo -e "${bold}-------------${reset}"
+    echo -e "${blue}-h${reset} | Display this help menu"
+    echo -e "${blue}-v${reset} | Display detailed output"
     echo
-    echo "Additional Options"
-    echo "------------------"
-    echo "-b 14 | Back-up your ix-applications dataset, specify a number after -b"
-    echo "-s    | sync catalog"
-    echo "-p    | Prune unused/old docker images"
-    echo "--ignore-img  | Ignore container image updates"
-    echo "--self-update | Updates HeavyScript prior to running any other commands"
+    echo -e "${bold}Examples${reset}"
+    echo -e "${bold}--------${reset}"
+    echo -e "${blue}heavyscript -b 14 -i nextcloud -i sonarr -t 600 -vrsUp --self-update${reset}"
+    echo -e "${blue}heavyscript -b 10 -i nextcloud -i sonarr -vrsp -u 10 --self-update${reset}"
+    echo -e "${blue}heavyscript --mount${reset}"
+    echo -e "${blue}heavyscript --dns${reset}"
+    echo -e "${blue}heavyscript --restore${reset}"
     echo
-    echo "Examples"
-    echo "--------"
-    echo "heavyscript -b 14 -i portainer -i arch -i sonarr -t 600 -vrsUp --self-update"
-    echo "heavyscript -b 14 -i portainer -i arch -i sonarr -t 600 -vrsp -U 10 --self-update"
-    echo "heavyscript-t 150 --mount"
-    echo "heavyscript --dns"
-    echo "heavyscript --restore"
-    echo "heavyscript --delete-backup"
+    echo -e "${bold}Cron Job${reset}"
+    echo -e "${bold}--------${reset}"
+    echo -e "${blue}bash /root/heavy_script/heavy_script.sh -b 14 -rsp --self-update -u 10${reset}"
     echo
     exit
 }
 
+
 add_script_to_global_path(){
     clear -x
     title
-    if curl -s https://raw.githubusercontent.com/Heavybullets8/heavy_script/main/functions/deploy.sh | bash ;then
+    # shellcheck source=/dev/null
+    if curl -s https://raw.githubusercontent.com/Heavybullets8/heavy_script/main/functions/deploy.sh | bash && (source "$HOME/.bashrc" 2>/dev/null || true) && (source "$HOME/.zshrc" 2>/dev/null || true) ;then
         echo
         echo -e "${green}HeavyScript has been added to your global path${reset}"
         echo 
@@ -130,13 +144,13 @@ add_script_to_global_path(){
         echo -e "${bold}--------${reset}"
         echo -e "CronJobs still require the entire path, and prefaced with ${blue}bash ${reset}"
         echo -e "Example of my personal cron: ${blue}bash /root/heavy_script/heavy_script.sh -b 14 -rsp --self-update -u 10${reset}"
-        echo "It is highly recommended that you update your cron to use the new path"
+        echo -e "It is highly recommended that you update your cron to use the new path"
         echo
         echo -e "${bold}Note${reset}"
         echo -e "${bold}----${reset}"
         echo -e "HeavyScript has been redownloaded to: ${blue}/root/heavy_script${reset}"
-        echo "It is recommended that you remove your old copy of HeavyScript"
-        echo "If you keep your old copy, you'll have to update both, manage both etc."
+        echo -e "It is recommended that you remove your old copy of HeavyScript"
+        echo -e "If you keep your old copy, you'll have to update both, manage both etc."
     else
         echo -e "${red}Failed to add HeavyScript to your global path${reset}"
     fi

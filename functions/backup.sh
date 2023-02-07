@@ -10,23 +10,34 @@ backup(){
 
     # Create a new backup with the current date and time as the name
     if ! output=$(cli -c "app kubernetes backup_chart_releases backup_name=\"HeavyScript_$current_date_time\""); then
-        echo "Error: Failed to create new backup" >&2
+        echo -e "Error: Failed to create new backup" >&2
         return 1
     fi
-    if [[ "$verbose" == "true" ]]; then
+    if [[ "$verbose" == true ]]; then
         echo_backup+=("$output")
     else
-        echo_backup+=("\nNew Backup Name:" "$(echo "$output" | tail -n 1)")
+        echo_backup+=("\nNew Backup Name:" "$(echo -e "$output" | tail -n 1)")
     fi
 
     # Get a list of backups sorted by name in descending order
-    mapfile -t current_backups < <(cli -c 'app kubernetes list_backups' | grep -E "HeavyScript_|TrueTool_" | sort -t '_' -Vr -k2,7 | awk -F '|'  '{print $2}'| tr -d " \t\r")
+    mapfile -t current_backups < <(cli -c 'app kubernetes list_backups' | 
+                                   grep -E "HeavyScript_|TrueTool_" | 
+                                   sort -t '_' -Vr -k2,7 | 
+                                   awk -F '|'  '{print $2}'| 
+                                   tr -d " \t\r")
 
     # If there are more backups than the allowed number, delete the oldest ones
-    if [[  ${#current_backups[@]}  -gt  "$number_of_backups" ]]; then
+    if [[ ${#current_backups[@]} -gt "$number_of_backups" ]]; then
         echo_backup+=("\nDeleted the oldest backup(s) for exceeding limit:")
         overflow=$(( ${#current_backups[@]} - "$number_of_backups" ))
-        mapfile -t list_overflow < <(cli -c 'app kubernetes list_backups' | grep -E "HeavyScript_|TrueTool_"  | sort -t '_' -V -k2,7 | awk -F '|'  '{print $2}'| tr -d " \t\r" | head -n "$overflow")
+        # Place excess backups into an array for deletion
+        mapfile -t list_overflow < <(cli -c 'app kubernetes list_backups' | 
+                                     grep -E "HeavyScript_|TrueTool_"  | 
+                                     sort -t '_' -V -k2,7 | 
+                                     awk -F '|'  '{print $2}'| 
+                                     tr -d " \t\r" | 
+                                     head -n "$overflow")
+
         for i in "${list_overflow[@]}"; do
             cli -c "app kubernetes delete_backup backup_name=\"$i\"" &> /dev/null || echo_backup+=("Failed to delete $i")
             echo_backup+=("$i")
@@ -60,10 +71,10 @@ choose_restore(){
 
         {
         if [[ ${#hs_tt_backups[@]} -gt 0 ]]; then
-            echo "${bold}# HeavyScript/Truetool_Backups${reset}"
+            echo -e "${bold}# HeavyScript/Truetool_Backups${reset}"
             # Print the HeavyScript and Truetool backups with numbers
             for ((i=0; i<${#hs_tt_backups[@]}; i++)); do
-                echo "$count) ${hs_tt_backups[i]}"
+                echo -e "$count) ${hs_tt_backups[i]}"
                 ((count++))
             done
         fi
@@ -74,7 +85,7 @@ choose_restore(){
             echo -e "\n${bold}# System_Backups${reset}"
             # Print the system backups with numbers
             for ((i=0; i<${#system_backups[@]}; i++)); do
-                echo "$count) ${system_backups[i]}"
+                echo -e "$count) ${system_backups[i]}"
                 ((count++))
             done
         fi
@@ -85,20 +96,20 @@ choose_restore(){
             echo -e "\n${bold}# Other_Backups${reset}"
             # Print the other backups with numbers
             for ((i=0; i<${#other_backups[@]}; i++)); do
-                echo "$count) ${other_backups[i]}"
+                echo -e "$count) ${other_backups[i]}"
                 ((count++))
             done 
         fi
         } | column -t -L
 
         echo
-        echo "0)  Exit"
+        echo -e "0)  Exit"
         # Prompt the user to select a restore point
         read -rt 240 -p "Please type a number: " selection || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
 
         # Check if the user wants to exit
         if [[ $selection == 0 ]]; then
-            echo "Exiting.." 
+            echo -e "Exiting.." 
             exit
         # Check if the user's input is empty
         elif [[ -z "$selection" ]]; then 
@@ -137,11 +148,22 @@ list_backups_func(){
     list_backups=$(cli -c 'app kubernetes list_backups' | tr -d " \t\r" | sed '1d;$d')
 
     # heavyscript backups
-    mapfile -t hs_tt_backups < <(echo "$list_backups" | grep -E "HeavyScript_|Truetool_" | sort -t '_' -Vr -k2,7 | awk -F '|'  '{print $2}')
+    mapfile -t hs_tt_backups < <(echo -e "$list_backups" | 
+                                 grep -E "HeavyScript_|Truetool_" | 
+                                 sort -t '_' -Vr -k2,7 | 
+                                 awk -F '|'  '{print $2}')
+
     # system backups
-    mapfile -t system_backups < <(echo "$list_backups" | grep "system-update--" | sort -t '-' -Vr -k3,5 |  awk -F '|'  '{print $2}')
+    mapfile -t system_backups < <(echo -e "$list_backups" | 
+                                  grep "system-update--" | 
+                                  sort -t '-' -Vr -k3,5 | 
+                                  awk -F '|'  '{print $2}')
+
     # other backups
-    mapfile -t other_backups < <(echo "$list_backups" | grep -v -E "HeavyScript_|Truetool_|system-update--" | sort -t '-' -Vr -k3,5 | awk -F '|'  '{print $2}')
+    mapfile -t other_backups < <(echo -e "$list_backups" | 
+                                 grep -v -E "HeavyScript_|Truetool_|system-update--" | 
+                                 sort -t '-' -Vr -k3,5 | 
+                                 awk -F '|'  '{print $2}')
 
 
     #Check if there are any restore points
@@ -194,12 +216,12 @@ deleteBackup(){
             case $yesno in
                 [Yy] | [Yy][Ee][Ss])
                     echo -e "\nDeleting $restore_point"
-                    cli -c 'app kubernetes delete_backup backup_name=''"'"$restore_point"'"' &>/dev/null || { echo "${red}Failed to delete backup..${reset}"; exit; }
+                    cli -c 'app kubernetes delete_backup backup_name=''"'"$restore_point"'"' &>/dev/null || { echo -e "${red}Failed to delete backup..${reset}"; exit; }
                     echo -e "${green}Sucessfully deleted${reset}"
                     break
                     ;;
                 [Nn] | [Nn][Oo])
-                    echo "Exiting"
+                    echo -e "Exiting"
                     exit
                     ;;
                 *)
@@ -243,22 +265,33 @@ restore(){
     ## Check to see if empty PVC data is present in any of the applications ##
 
     # Find all pv_info.json files two subfolders deep with the restore point name
-    pool=$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")
-    files=$(find "$(find /mnt/"$pool"/ix-applications/backups -maxdepth 0 )" -name pv_info.json | grep "$restore_point")
+    pool=$(cli -c 'app kubernetes config' | 
+        grep -E "pool\s\|" | 
+        awk -F '|' '{print $3}' | 
+        sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+    files=$(find "$(find "/mnt/$pool/ix-applications/backups" -maxdepth 0 )" -name pv_info.json | grep "$restore_point")
 
-    # Iterate over the list of files
-    for file in $files; do
-        # Check if the file only contains {} subfolders
-        contents=$(cat "$file")
-        if [[ "$contents" == '{}' ]]; then
-            # Print the file if it meets the criterion
-            file=$(echo "$file" | awk -F '/' '{print $7}')
-            borked_array+=("${file}")
-        fi
-    done
+    borked_array=()
+
+    # Iterate over the list of files separated by newlines only
+    while IFS= read -r file; do
+    # Check if the file only contains {} subfolders
+    contents=$(cat "$file")
+    if [[ "$contents" == '{}' ]]; then
+        # Print the file if it meets the criterion
+        file=$(echo -e "$file" | awk -F '/' '{print $7}')
+        borked_array+=("${file}")
+    fi
+    done < <(echo "$files")
+
 
     # Grab applications that are supposed to have PVC data
-    mapfile -t apps_with_pvc < <(k3s kubectl get pvc -A | sort -u | awk '{print $1 "\t" $2 "\t" $4}' | sed "s/^0/ /" | awk '{print $1}' | cut -c 4-)
+    mapfile -t apps_with_pvc < <(k3s kubectl get pvc -A | 
+                                 sort -u | 
+                                 awk '{print $1 "\t" $2 "\t" $4}' | 
+                                 sed "s/^0/ /" | 
+                                 awk '{print $1}' | 
+                                 cut -c 4-)
 
 
     # Iterate over the list of applications with empty PVC data
@@ -298,32 +331,36 @@ restore(){
     while true
     do
         clear -x
-        echo -e "${yellow}WARNING:\nThis is NOT guranteed to work\nThis is ONLY supposed to be used as a LAST RESORT\nConsider rolling back your applications instead if possible${reset}"
+        echo -e "${yellow}WARNING:\nThis is NOT guranteed to work${reset}"
+        echo -e "${yellow}This is ONLY supposed to be used as a LAST RESORT${reset}"
+        echo -e "${yellow}Consider rolling back your applications instead if possible${reset}"
         echo -e "\n\nYou have chosen:\n${blue}$restore_point${reset}\n\n"
         read -rt 120 -p "Would you like to proceed with restore? (y/N): " yesno || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case $yesno in
             [Yy] | [Yy][Ee][Ss])
-                pool=$(cli -c 'app kubernetes config' | grep -E "pool\s\|" | awk -F '|' '{print $3}' | tr -d " \t\n\r")
+                pool=$(cli -c 'app kubernetes config' | 
+                       grep -E "pool\s\|" | 
+                       awk -F '|' '{print $3}' | 
+                       sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
                 # Set mountpoints to legacy prior to restore, ensures correct properties for the are set
                 echo -e "\nSetting correct ZFS properties for application volumes.."
-                for pvc in $(zfs list -t filesystem -r "$pool"/ix-applications/releases -o name -H | grep "volumes/pvc")
-                do
+                while IFS= read -r pvc; do
                     if zfs set mountpoint=legacy "$pvc"; then
                         echo -e "${green}Success for - ${blue}\"$pvc\"${reset}"
                     else
                         echo -e "${red}Error: Setting properties for ${blue}\"$pvc\"${red}, failed..${reset}"
                     fi
-                done
+                done < <(zfs list -t filesystem -r "$pool/ix-applications/releases" -o name -H | grep "volumes/pvc")
 
                 # Ensure readonly is turned off
-                if ! zfs set readonly=off "$pool"/ix-applications;then
+                if ! zfs set readonly=off "$pool/ix-applications";then
                     echo -e "${red}Error: Failed to set ZFS ReadOnly to \"off\""
                     echo -e "After the restore, attempt to run the following command manually:"
-                    echo -e "${blue}zfs set readonly=off $pool/ix-applications${reset}"
+                    echo -e "${blue}zfs set readonly=off \"$pool/ix-applications\"${reset}"
                 fi
 
-                echo "${green}Finished setting properties..${reset}"
+                echo -e "${green}Finished setting properties..${reset}"
 
                 # Beginning snapshot restore
                 echo -e "\nStarting restore, this will take a LONG time."
@@ -334,7 +371,7 @@ restore(){
                 exit
                 ;;
             [Nn] | [Nn][Oo])
-                echo "Exiting"
+                echo -e "Exiting"
                 exit
                 ;;
             *)
@@ -357,30 +394,34 @@ check_restore_point_version() {
 
     # Get the date of system version and when it was updated
     current_version=$(cli -m csv -c 'system version' | awk -F '-' '{print $3}')
-    when_updated=$(echo "$boot_query" | grep "$current_version",\
-    | awk -F ',' '{print $2}' | sed 's/[T|-]/_/g' | sed 's/:/_/g' | awk -F '_' '{print $1 $2 $3 $4 $5}')
+    when_updated=$(echo -e "$boot_query" | 
+                   grep "$current_version", | 
+                   sed -n 's/.*\([0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}\)T\([0-9]\{2\}:[0-9]\{2\}\).*/\1\2/p' | 
+                   tr -d -- "-:")
 
     # Get the date of the chosen restore point
-    restore_point_date=$(echo "$restore_point" | awk -F '_' '{print $2 $3 $4 $5 $6}' | tr -d "_")
+    # Extract the date information from the restore point string, which is formatted as "restore_point_<date>_<time>"
+    restore_point_date=$(echo -e "$restore_point" | awk -F '_' '{print $2 $3 $4 $5 $6}' | tr -d "_")
+
 
     # Grab previous version
-    previous_version=$(echo "$boot_query" | sort -nr | grep -A 1 "$current_version," | tail -n 1)
+    previous_version=$(echo -e "$boot_query" | sort -nr | grep -A 1 "$current_version," | tail -n 1)
 
     # Compare the dates
     while (("$restore_point_date" < "$when_updated" ))
     do
         clear -x
-        echo "The restore point you have chosen is from an older version of Truenas Scale"
-        echo "This is not recommended, as it may cause issues with the system"
-        echo "Either that, or your systems date is incorrect.."
+        echo -e "The restore point you have chosen is from an older version of Truenas Scale"
+        echo -e "This is not recommended, as it may cause issues with the system"
+        echo -e "Either that, or your systems date is incorrect.."
         echo
         echo -e "${bold}Current SCALE Information:"
         echo -e "${bold}Version:${reset}       ${blue}$current_version${reset}"
-        echo -e "${bold}When Updated:${reset}  ${blue}$(echo "$restore_point" | awk -F '_' '{print $2 "-" $3 "-" $4}')${reset}"
+        echo -e "${bold}When Updated:${reset}  ${blue}$(echo -e "$restore_point" | awk -F '_' '{print $2 "-" $3 "-" $4}')${reset}"
         echo
         echo -e "${bold}Restore Point SCALE Information:${reset}"
-        echo -e "${bold}Version:${reset}       ${blue}$(echo "$previous_version" | awk -F ',' '{print $1}')${reset}"
-        echo -e "${bold}When Updated:${reset}  ${blue}$(echo "$previous_version" | awk -F ',' '{print $2}' | awk -F 'T' '{print $1}')${reset}"
+        echo -e "${bold}Version:${reset}       ${blue}$(echo -e "$previous_version" | awk -F ',' '{print $1}')${reset}"
+        echo -e "${bold}When Updated:${reset}  ${blue}$(echo -e "$previous_version" | awk -F ',' '{print $2}' | awk -F 'T' '{print $1}')${reset}"
         echo
         read -rt 120 -p "Would you like to proceed? (y/N): " yesno || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
             case $yesno in
@@ -390,7 +431,7 @@ check_restore_point_version() {
                     break
                     ;;
                 [Nn] | [Nn][Oo])
-                    echo "Exiting"
+                    echo -e "Exiting"
                     exit
                     ;;
                 *)

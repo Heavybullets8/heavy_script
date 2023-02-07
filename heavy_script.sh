@@ -31,6 +31,7 @@ source functions/self_update.sh
 source functions/update_apps.sh
 source functions/cmd_to_container.sh
 source functions/script_create.sh
+source functions/app_management.sh
 
 # colors
 reset='\033[0m'
@@ -43,8 +44,9 @@ gray='\033[1;30m'
 
 
 #If no argument is passed, open menu function.
-[[ -z "$*" || "-" == "$*" || "--" == "$*"  ]] && menu
-
+if [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]]; then
+    menu
+fi
 
 # Parse script options
 while getopts ":si:rb:t:uUpSRv-:" opt
@@ -53,31 +55,40 @@ do
       -)
           case "${OPTARG}" in
              help)
-                  help="true"
+                  help=true
                   ;;
       self-update)
-                  self_update="true"
+                  self_update=true
                   ;;
               dns)
-                  dns="true"
+                  dns=true
                   ;;
               cmd)
-                  cmd="true"
+                  cmd=true
                   ;;
           restore)
-                  restore="true"
+                  restore=true
                   ;;
             mount)
-                  mount="true"
+                  mount=true
                   ;;
     delete-backup)
-                  deleteBackup="true"
+                  deleteBackup=true
                   ;;
        ignore-img)
-                  ignore_image_update="true"
+                  ignore_image_update=true
                   ;;
               logs)
-                  logs="true"
+                  logs=true
+                  ;;
+        delete-app)
+                  delete_app=true
+                  ;;
+          stop-app)
+                  stop_app=true
+                  ;;
+       restart-app)
+                  restart_app=true
                   ;;
                 *)
                   echo -e "Invalid Option \"--$OPTARG\"\n"
@@ -91,11 +102,17 @@ do
          ;;
       b)
         number_of_backups=$OPTARG
-        ! [[ $OPTARG =~ ^[0-9]+$  ]] && echo -e "Error: -b needs to be assigned an interger\n\"""$number_of_backups""\" is not an interger" >&2 && exit
-        [[ "$number_of_backups" -le 0 ]] && echo "Error: Number of backups is required to be at least 1" && exit
+        if ! [[ $OPTARG =~ ^[0-9]+$  ]]; then
+            echo -e "Error: -b needs to be assigned an interger\n\"""$number_of_backups""\" is not an interger" >&2
+            exit
+        fi
+        if [[ "$number_of_backups" -le 0 ]]; then
+            echo "Error: Number of backups is required to be at least 1"
+            exit
+        fi
         ;;
       r)
-        rollback="true"
+        rollback=true
         ;;
       i)
         if ! [[ $OPTARG =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]]; then # Using case insensitive version of the regex used by Truenas Scale
@@ -107,13 +124,16 @@ do
         ;;
       t)
         timeout=$OPTARG
-        ! [[ $timeout =~ ^[0-9]+$ ]] && echo -e "Error: -t needs to be assigned an interger\n\"""$timeout""\" is not an interger" >&2 && exit
+        if ! [[ $timeout =~ ^[0-9]+$ ]]; then
+            echo -e "Error: -t needs to be assigned an interger\n\"""$timeout""\" is not an interger" >&2
+            exit
+        fi
         ;;
       s)
-        sync="true"
+        sync=true
         ;;
       U)
-        update_all_apps="true"
+        update_all_apps=true
         # Check next positional parameter
         eval nextopt=${!OPTIND}
         # existing or starting with dash?
@@ -125,7 +145,7 @@ do
         fi        
         ;;
       u)
-        update_apps="true"
+        update_apps=true
         # Check next positional parameter
         eval nextopt=${!OPTIND}
         # existing or starting with dash?
@@ -137,13 +157,13 @@ do
         fi
         ;;
       S)
-        stop_before_update="true"
+        stop_before_update=true
         ;;
       p)
-        prune="true"
+        prune=true
         ;;
       v)
-        verbose="true"
+        verbose=true
         ;;
       *)
         echo -e "Invalid Option \"-$OPTARG\"\n"
@@ -153,33 +173,82 @@ do
 done
 
 
-#exit if incompatable functions are called 
-[[ "$update_all_apps" == "true" && "$update_apps" == "true" ]] && echo -e "-U and -u cannot BOTH be called" && exit
+### exit if incompatable functions are called ### 
+if [[ "$update_all_apps" == true && "$update_apps" == true ]]; then
+    echo -e "-U and -u cannot BOTH be called"
+    exit 1
+fi
 
-#Continue to call functions in specific order
-[[ "$self_update" == "true" ]] && self_update
-[[ "$help" == "true" ]] && help
-[[ "$cmd" == "true" || "$logs" == "true" ]] && container_shell_or_logs && exit
-[[ "$deleteBackup" == "true" ]] && deleteBackup && exit
-[[ "$dns" == "true" ]] && dns && exit
-[[ "$restore" == "true" ]] && restore && exit
-[[ "$mount" == "true" ]] && mount && exit
-if [[ "$number_of_backups" -gt 1 && "$sync" == "true" ]]; then # Run backup and sync at the same time
+### Continue to call functions in specific order ###
+if [[ "$self_update" == true ]]; then 
+    self_update
+fi
+
+if [[ "$help" == true ]]; then
+    help
+fi
+
+if [[ "$delete_app" == true ]]; then
+    delete_app_prompt
+    exit
+fi
+
+if [[ "$stop_app" == true ]]; then
+    stop_app_prompt
+    exit
+fi
+
+if [[ "$restart_app" == true ]]; then
+    restart_app_prompt
+    exit
+fi
+
+if [[ "$cmd" == true || "$logs" == true ]]; then
+    container_shell_or_logs
+    exit
+fi
+
+if [[ "$deleteBackup" == true ]]; then 
+    deleteBackup
+    exit
+fi
+
+if [[ "$dns" == true ]]; then
+    dns
+    exit
+fi
+
+if [[ "$restore" == true ]]; then
+    restore
+    exit
+fi
+
+if [[ "$mount" == true ]]; then 
+    mount
+    exit
+fi
+
+if [[ "$number_of_backups" -gt 1 && "$sync" == true ]]; then # Run backup and sync at the same time
     echo "🅃 🄰 🅂 🄺 🅂 :"
-    echo -e "-Backing up ix-applications Dataset\n-Syncing catalog(s)"
-    echo -e "This can take a LONG time, Please Wait For Both Output..\n\n"
+    echo -e "-Backing up ix-applications dataset\n-Syncing catalog(s)"
+    echo -e "Please wait for output from both tasks..\n\n"
     backup &
     sync &
     wait
 elif [[ "$number_of_backups" -gt 1 ]]; then # If only backup is true, run it
     echo "🅃 🄰 🅂 🄺 :"
-    echo -e "-Backing up \"ix-applications\" Dataset\nPlease Wait..\n\n"
+    echo -e "-Backing up ix-applications dataset\nPlease wait..\n\n"
     backup
-elif [[ "$sync" == "true" ]]; then # If only sync is true, run it
+elif [[ "$sync" == true ]]; then # If only sync is true, run it
     echo "🅃 🄰 🅂 🄺 :"
-    echo -e "Syncing Catalog(s)\nThis Takes a LONG Time, Please Wait..\n\n"
+    echo -e "Syncing Catalog(s)\nThis can take a few minutes, please wait..\n\n"
     sync
 fi
-[[ "$update_all_apps" == "true" || "$update_apps" == "true" ]] && commander
-[[ "$prune" == "true" ]] && prune 
-exit 0
+
+if [[ "$update_all_apps" == true || "$update_apps" == true ]]; then 
+    commander
+fi
+
+if [[ "$prune" == true ]]; then
+    prune 
+fi

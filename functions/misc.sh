@@ -80,6 +80,7 @@ help(){
     echo -e "${blue}--dns${reset}           | View all application DNS names and web ports"
     echo -e "${blue}--cmd${reset}           | Open a shell for a selected application"
     echo -e "${blue}--logs${reset}          | View log file for a selected application"
+    echo -e "${blue}--start-app${reset}     | Opens menu to start an application"
     echo -e "${blue}--stop-app${reset}      | Opens menu to stop an application"
     echo -e "${blue}--restart-app${reset}   | Opens menu to restart an application"
     echo -e "${blue}--delete-app${reset}    | Opens menu to delete an application"

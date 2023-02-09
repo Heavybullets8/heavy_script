@@ -45,7 +45,7 @@ dns(){
         if (( count % 2 == 0 )); then
             color="\033[0m"
         else
-            color="\033[1;30m"
+            color="\033[38;5;7m"
         fi
         echo -e "${color}$app_name $full_app_name.$i.svc.cluster.local $port\033[0m"
     done | column -t -N "App Name,DNS Name,Port"

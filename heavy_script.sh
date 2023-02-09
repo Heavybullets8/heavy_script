@@ -40,7 +40,7 @@ yellow='\033[1;33m'
 green='\033[0;32m'
 blue='\033[0;34m'
 bold='\033[1m'
-gray='\033[1;30m'
+gray='\033[38;5;7m'
 
 
 #If no argument is passed, open menu function.

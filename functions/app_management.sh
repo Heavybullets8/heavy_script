@@ -62,7 +62,7 @@ export -f restart_app_prompt
 
 
 delete_app_prompt(){
-    app_index=$(prompt_app_selection "ALL")
+    prompt_app_selection "ALL"
     app_name=$(get_app_name "$app_index")
     
     clear -x

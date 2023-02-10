@@ -7,7 +7,7 @@ get_app_name() {
     local app_index="$1"
     echo "${apps[app_index-1]}" | awk -F ',' '{print $1}'
 }
-
+export -f get_app_name
 
 prompt_app_selection() {
     echo -e "${blue}Fetching applications..${reset}"
@@ -44,6 +44,7 @@ prompt_app_selection() {
         fi
     done
 }
+export -f prompt_app_selection
 
 
 restart_app_prompt(){
@@ -57,7 +58,7 @@ restart_app_prompt(){
         echo -e "${green}Restarted ${blue}$app_name${reset}"
     fi
 }
-
+export -f restart_app_prompt
 
 
 delete_app_prompt(){

@@ -16,14 +16,23 @@ prompt_app_selection() {
     case "$1" in
         "ALL")
             mapfile -t apps < <(cli -m csv -c 'app chart_release query name,status' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF')
+            search="Any"
             ;;
         "STOPPED")
             mapfile -t apps < <(cli -m csv -c 'app chart_release query name,status' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF' | grep "STOPPED")
+            search="STOPPED"
             ;;
         "ACTIVE")
             mapfile -t apps < <(cli -m csv -c 'app chart_release query name,status' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF' | grep "ACTIVE")
+            search="ACTIVE"
             ;;
     esac
+
+    if [ "${#apps[@]}" -eq 0 ]; then
+        echo -e "${yellow}Application type: ${blue}${search}${reset}"
+        echo -e "${yellow}Not found..${reset}"
+        exit 1
+    fi
 
     clear -x
     title
@@ -117,7 +126,7 @@ stop_app_prompt(){
 
 
 start_app_prompt(){
-    prompt_app_selection "ACTIVE"
+    prompt_app_selection "STOPPED"
     app_name=$(get_app_name "$app_index")
     
     clear -x

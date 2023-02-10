@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 dns(){
     clear -x
     echo -e "${blue}Generating DNS Names..${reset}"
@@ -21,7 +20,6 @@ dns(){
         exit
     fi
 
-    
     # Pulling all ports
     if ! all_ports=$(k3s kubectl get service -A); then
         echo -e "${red}Error: failed to retrieve port information${reset}" >&2
@@ -29,6 +27,9 @@ dns(){
     fi
 
     clear -x
+    output=""
+    headers="${blue}App Name\tDNS Name\tPort${reset}"
+    output+="$headers\n"
     for i in "${ix_name_array[@]}"
     do
         full_app_name=$(grep -E "\s$i\s" "dns_file" | 
@@ -47,8 +48,10 @@ dns(){
         else
             color="\033[38;5;7m"
         fi
-        echo -e "${color}$app_name $full_app_name.$i.svc.cluster.local $port\033[0m"
-    done | column -t -N "App Name,DNS Name,Port"
+        line="${color}$app_name\t$full_app_name.$i.svc.cluster.local\t$port${reset}"
+        output+="$line\n"
+    done
+    echo -e "$output" | column -t -s $'\t'
     rm dns_file
 }
 export -f dns

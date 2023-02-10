@@ -3,12 +3,6 @@
 apps=()
 
 
-get_app_name() {
-    local app_index="$1"
-    echo "${apps[app_index-1]}" | awk -F ',' '{print $1}'
-}
-
-
 prompt_app_selection() {
     clear -x
     echo -e "${blue}Fetching applications..${reset}"
@@ -49,7 +43,7 @@ prompt_app_selection() {
         if [ "$app_index" -eq 0 ]; then
             exit 0
         elif [ "$app_index" -gt 0 ] && [ "$app_index" -le "${#apps[@]}" ]; then
-            app_name=$(get_app_name "$app_index")
+            app_name=$(echo "${apps[app_index-1]}" | awk -F ',' '{print $1}')
             return "$app_index"
         else
             echo -e "${red}Invalid selection. Please choose a number from the list.${reset}"
@@ -61,7 +55,7 @@ prompt_app_selection() {
 
 restart_app_prompt(){
     prompt_app_selection "ALL"
-    app_name=$(get_app_name "$app_index")
+    app_name=$(echo "${apps[app_index-1]}" | awk -F ',' '{print $1}')
     
     clear -x
     title
@@ -78,7 +72,7 @@ restart_app_prompt(){
 
 delete_app_prompt(){
     prompt_app_selection "ALL"
-    app_name=$(get_app_name "$app_index")
+    app_name=$(echo "${apps[app_index-1]}" | awk -F ',' '{print $1}')
     
     clear -x
     title
@@ -115,7 +109,7 @@ delete_app_prompt(){
 
 stop_app_prompt(){
     prompt_app_selection "ACTIVE"
-    app_name=$(get_app_name "$app_index")
+    app_name=$(echo "${apps[app_index-1]}" | awk -F ',' '{print $1}')
     
     clear -x
     title
@@ -133,12 +127,10 @@ stop_app_prompt(){
 
 start_app_prompt(){
     prompt_app_selection "STOPPED"
-    app_name=$(get_app_name "$app_index")
+    app_name=$(echo "${apps[app_index-1]}" | awk -F ',' '{print $1}')
     
     clear -x
     title
-
-    echo -e "Starting ${blue}$app_name${reset}..."
 
     # Pull chart info
     initial_call=$(midclt call chart.release.get_instance "$app_name")
@@ -163,6 +155,8 @@ start_app_prompt(){
     # query chosen replica count for application
     replica_count=$(echo "$initial_call" | jq .config.controller.replicas | 
                 sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
+    echo -e "Starting ${blue}$app_name${reset}..."
 
     # Start application with chosen replica count
     if cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replica_count}" &> /dev/null; then

@@ -23,7 +23,7 @@ prompt_app_selection() {
     esac
 
     if [ "${#apps[@]}" -eq 0 ]; then
-        echo -e "${yellow}Application type: ${blue}${search}${reset}"
+        echo -e "${yellow}Application type: ${blue}$search${reset}"
         echo -e "${yellow}Not found..${reset}"
         exit 1
     fi

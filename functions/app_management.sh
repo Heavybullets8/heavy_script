@@ -66,6 +66,8 @@ restart_app_prompt(){
     clear -x
     title
 
+    echo -e "Restarting ${blue}$app_name${reset}..."
+
     if ! restart_app; then
         echo -e "${red}Failed to restart ${blue}$app_name${reset}"
     else
@@ -80,7 +82,9 @@ delete_app_prompt(){
     
     clear -x
     title
-    
+
+    echo -e "Stopping ${blue}$app_name${reset}..."
+
     echo -e "${bold}Chosen Application: ${blue}$app_name${reset}"
     echo -e "${yellow}WARNING: This will delete the application and all associated data, including snapshots${reset}"
     echo
@@ -116,6 +120,8 @@ stop_app_prompt(){
     clear -x
     title
     
+    echo -e "Stopping ${blue}$app_name${reset}..."
+
     if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then
         echo -e "${red}Failed to stop ${blue}$app_name${reset}"
         exit 1
@@ -131,7 +137,9 @@ start_app_prompt(){
     
     clear -x
     title
-    
+
+    echo -e "Starting ${blue}$app_name${reset}..."
+
     # Pull chart info
     initial_call=$(midclt call chart.release.get_instance "$app_name")
 
@@ -157,7 +165,7 @@ start_app_prompt(){
                 sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
     # Start application with chosen replica count
-    if cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replica_count}"; then
+    if cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replica_count}" &> /dev/null; then
         echo -e "${blue}$app_name ${green}Started${reset}"
         echo -e "${green}Replica count set to ${blue}$replica_count${reset}"
         exit 0

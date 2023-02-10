@@ -66,6 +66,7 @@
 | --dns           | List all of your applications DNS names and their web ports                                  |
 | --cmd           | Open a shell for one of your applications                                                    |
 | --logs          | Open logs for one of your applications                                                       |
+| --start-app     | Opens menu to Start one of your applications                                                 |
 | --stop-app      | Opens menu to Stop one of your applications                                                  |
 | --restart-app   | Opens menu to Restart one of your applications                                               |
 | --delete-app    | Opens menu to Delete one of your applications                                                |

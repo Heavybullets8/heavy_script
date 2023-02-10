@@ -166,3 +166,86 @@ stop_app_prompt(){
         fi
     done
 }
+
+
+#TODO: Silence output on command, do not show apps in list that are already started
+start_app_prompt(){
+    clear -x
+    echo -e "${blue}Fetching applications..${reset}"
+    mapfile -t apps < <(list_applications)
+
+    while true; do
+        clear -x
+        title
+        echo -e "${bold}Choose an application to start${reset}"
+        echo
+        # print out list of app names with numbered options
+        for i in "${!apps[@]}"; do
+            echo "$((i+1))) ${apps[i]}"
+        done
+        echo
+        echo "0) Exit"
+        # prompt user to select app
+        read -rp "Choose an application by number: " app_index
+
+        # validate user selection
+        if [ "$app_index" -eq 0 ]; then
+            exit 0
+        elif [ "$app_index" -gt 0 ] && [ "$app_index" -le "${#apps[@]}" ]; then
+            # retrieve selected app name
+            app_name=${apps[app_index-1]}
+
+            #Start application if not started
+            status=$(cli -m csv -c 'app chart_release query name,status' | 
+                        grep "^$app_name," | 
+                        awk -F ',' '{print $2}'| 
+                        sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
+
+            if [[ "$status" == "ACTIVE" ]]; then
+                echo -e "${blue}$app_name ${yellow} is already started${reset}"
+                exit 0
+            fi
+
+            # Pull chart info
+            initial_call=$(midclt call chart.release.get_instance "$app_name")
+
+            # query chart name
+            query_name=$(echo "$initial_call" | jq .chart_metadata.name | 
+                        sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
+            # check if chart is an external service
+            if [[ $query_name == "external-service" ]]; then
+                echo -e "${blue}$app_name${red} is an external service.${reset}"
+                echo -e "${red}These application types cannot be started.${reset}"
+                exit 1
+            # check if chart is an ix-chart
+            elif [[ $query_name == "ix-chart" ]]; then
+                echo -e "${blue}$app_name${red} is an ix-chart.${reset}"
+                echo -e "${red}These application types do not have a replica assigned to them.${reset}"
+                echo -e "${red}As of now these appliaction types are unsupported.${reset}"
+                exit 1
+            fi
+
+            # query chosen replica count for application
+            replica_count=$(echo "$initial_call" | jq .config.controller.replicas | 
+                        sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
+
+            # Start application with chosen replica count
+            if cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replica_count}"; then
+                echo -e "${blue}$app_name ${green}Started${reset}"
+                echo -e "${green}Replica count set to ${blue}$replica_count${reset}"
+                exit 0
+            else
+                echo -e "${red}Failed to start ${blue}$app_name${reset}"
+                exit 1
+            fi
+
+        else
+            echo -e "${red}Invalid selection. Please choose a number from the list.${reset}"
+            sleep 3
+        fi
+
+    done
+}

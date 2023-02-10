@@ -38,9 +38,10 @@ menu(){
                 echo -e "3)  Update Applications"
                 echo -e "4)  Open Conainer Shell"
                 echo -e "5)  Open Container Logs"
-                echo -e "6)  Restart Application"
-                echo -e "7)  Delete Application"
-                echo -e "8)  Stop Application"
+                echo -e "6)  Start Application"
+                echo -e "7)  Restart Application"
+                echo -e "8)  Delete Application"
+                echo -e "9)  Stop Application"
                 echo
                 echo -e "0)  Exit"
                 read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
@@ -70,14 +71,18 @@ menu(){
                         misc_selection=true
                         ;;
                     6)
-                        restart_app_prompt
+                        start_app_prompt
                         misc_selection=true
                         ;;
                     7)
-                        delete_app_prompt
+                        restart_app_prompt
                         misc_selection=true
                         ;;
                     8)
+                        delete_app_prompt
+                        misc_selection=true
+                        ;;
+                    9)
                         stop_app_prompt
                         misc_selection=true
                         ;;

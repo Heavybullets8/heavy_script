@@ -81,6 +81,9 @@ do
               logs)
                   logs=true
                   ;;
+         start-app)
+                  start_app=true
+                  ;;
         delete-app)
                   delete_app=true
                   ;;
@@ -195,6 +198,11 @@ fi
 
 if [[ "$stop_app" == true ]]; then
     stop_app_prompt
+    exit
+fi
+
+if [[ "$start_app" == true ]]; then
+    start_app_prompt
     exit
 fi
 

@@ -42,12 +42,14 @@ dns(){
                grep -E "\s$full_app_name\s" | 
                awk '{print $6}' | 
                grep -Eo "^[[:digit:]]+{1}")
+
         count=$((count + 1))
         if (( count % 2 == 0 )); then
             color="\033[0m"
         else
             color="\033[38;5;7m"
         fi
+        
         line="${color}$app_name\t$full_app_name.$i.svc.cluster.local\t$port${reset}"
         output+="$line\n"
     done

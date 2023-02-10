@@ -13,9 +13,6 @@ prompt_app_selection() {
     clear -x
     echo -e "${blue}Fetching applications..${reset}"
 
-    clear -x
-    title
-
     case "$1" in
         "ALL")
             mapfile -t apps < <(cli -m csv -c 'app chart_release query name,status' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF')
@@ -27,6 +24,9 @@ prompt_app_selection() {
             mapfile -t apps < <(cli -m csv -c 'app chart_release query name,status' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF' | grep "ACTIVE")
             ;;
     esac
+
+    clear -x
+    title
 
     while true; do
         echo -e "${bold}Choose an application${reset}"

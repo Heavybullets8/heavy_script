@@ -39,7 +39,7 @@ prompt_app_selection() {
         done
         echo
         echo "0) Exit"
-        read -rp "Choose an application by number: " app_index
+        read -rt 120 -p "Choose an application by number: " app_index || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         if [ "$app_index" -eq 0 ]; then
             exit 0
         elif [ "$app_index" -gt 0 ] && [ "$app_index" -le "${#apps[@]}" ]; then
@@ -70,7 +70,7 @@ restart_app_prompt(){
             echo -e "${green}Restarted ${blue}$app_name${reset}"
         fi
 
-        read -rp "Would you like to restart another application? (y/N): " choice
+        read -rt 120 -p "Would you like to restart another application? (y/N): " choice || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case "$(echo "$choice" | tr '[:upper:]' '[:lower:]')" in
             "yes"|"y")
                 continue
@@ -100,7 +100,7 @@ delete_app_prompt(){
         echo -e "${yellow}WARNING: This will delete the application and all associated data, including snapshots${reset}"
         echo
         while true; do
-            read -rp "Continue with deletion?(y/n): " confirmation
+            read -rt 120 -p "Continue with deletion?(y/n): " confirmation || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
             case "$(echo "$confirmation" | tr '[:upper:]' '[:lower:]')" in
                 "y")
                     if cli -c "app chart_release delete release_name=\"$app_name\""; then
@@ -120,7 +120,7 @@ delete_app_prompt(){
                     ;;
             esac
         done
-        read -rp "Would you like to delete another application? (y/n): " choice
+        read -rt 120 -p "Would you like to delete another application? (y/n): " choice || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case "$(echo "$choice" | tr '[:upper:]' '[:lower:]')" in
             "y")
                 continue
@@ -151,7 +151,7 @@ stop_app_prompt(){
             echo -e "${blue}$app_name ${green}Stopped${reset}"
         fi
 
-        read -rp "Would you like to stop another application? (y/n): " choice
+        read -rt 120 -p "Would you like to stop another application? (y/n): " choice || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case "$(echo "$choice" | tr '[:upper:]' '[:lower:]')" in
             "y")
                 continue
@@ -209,7 +209,7 @@ start_app_prompt(){
             echo -e "${red}Failed to start ${blue}$app_name${reset}"
         fi
 
-        read -rp "Would you like to start another application? (y/n): " choice
+        read -rt 120 -p "Would you like to start another application? (y/n): " choice || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case "$(echo "$choice" | tr '[:upper:]' '[:lower:]')" in
             "y")
                 continue

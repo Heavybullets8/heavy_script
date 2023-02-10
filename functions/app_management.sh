@@ -10,7 +10,11 @@ get_app_name() {
 
 
 prompt_app_selection() {
+    clear -x
     echo -e "${blue}Fetching applications..${reset}"
+
+    clear -x
+    title
 
     case "$1" in
         "ALL")
@@ -50,6 +54,8 @@ restart_app_prompt(){
     prompt_app_selection "ALL"
     app_name=$(get_app_name "$app_index")
     
+    clear -x
+    title
 
     if ! restart_app; then
         echo -e "${red}Failed to restart ${blue}$app_name${reset}"

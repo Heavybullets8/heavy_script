@@ -41,7 +41,7 @@ prompt_app_selection() {
         echo -e "${bold}Choose an application${reset}"
         echo
         for i in "${!apps[@]}"; do
-            echo "$((i+1))) ${apps[i]}"
+            echo "$((i+1))) ${apps[i]}" | awk -F ',' '{print $1}'
         done
         echo
         echo "0) Exit"

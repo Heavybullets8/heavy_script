@@ -10,7 +10,6 @@ get_app_name() {
 
 
 prompt_app_selection() {
-    clear -x
     echo -e "${blue}Fetching applications..${reset}"
 
     case "$1" in
@@ -26,8 +25,6 @@ prompt_app_selection() {
     esac
 
     while true; do
-        clear -x
-        title
         echo -e "${bold}Choose an application${reset}"
         echo
         for i in "${!apps[@]}"; do
@@ -53,8 +50,6 @@ restart_app_prompt(){
     app_index=$(prompt_app_selection "ALL")
     app_name=$(get_app_name "$app_index")
     
-    clear -x
-    title
 
     if ! restart_app; then
         echo -e "${red}Failed to restart ${blue}$app_name${reset}"

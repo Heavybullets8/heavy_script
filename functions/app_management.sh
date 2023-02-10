@@ -16,15 +16,12 @@ prompt_app_selection() {
     case "$1" in
         "ALL")
             mapfile -t apps < <(cli -m csv -c 'app chart_release query name,status' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF')
-            printf '%s\n' "${apps[@]}"
             ;;
         "STOPPED")
             mapfile -t apps < <(cli -m csv -c 'app chart_release query name,status' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF' | grep "STOPPED")
-            printf '%s\n' "${apps[@]}"
             ;;
         "ACTIVE")
             mapfile -t apps < <(cli -m csv -c 'app chart_release query name,status' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF' | grep "ACTIVE")
-            printf '%s\n' "${apps[@]}"
             ;;
     esac
 
@@ -50,6 +47,22 @@ prompt_app_selection() {
         fi
     done
 }
+
+
+restart_app_prompt(){
+    app_index=$(prompt_app_selection "ALL")
+    app_name=$(get_app_name "$app_index")
+    
+    clear -x
+    title
+
+    if ! restart_app; then
+        echo -e "${red}Failed to restart ${blue}$app_name${reset}"
+    else
+        echo -e "${green}Restarted ${blue}$app_name${reset}"
+    fi
+}
+
 
 
 delete_app_prompt(){
@@ -84,21 +97,6 @@ delete_app_prompt(){
                 ;;
         esac
     done
-}
-
-
-restart_app_prompt(){
-    app_index=$(prompt_app_selection "ALL")
-    app_name=$(get_app_name "$app_index")
-    
-    clear -x
-    title
-
-    if ! restart_app; then
-        echo -e "${red}Failed to restart ${blue}$app_name${reset}"
-    else
-        echo -e "${green}Restarted ${blue}$app_name${reset}"
-    fi
 }
 
 

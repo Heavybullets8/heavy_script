@@ -65,7 +65,6 @@ choose_branch() {
 update_func(){
     # Check if using a tag or branch
     if ! [[ "$hs_version" =~ v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+ ]]; then
-        git fetch &>/dev/null
         # Check for updates on the main branch
         updates=$(git log HEAD..origin/"$hs_version" --oneline)
         # Check if there are any updates available
@@ -85,7 +84,6 @@ update_func(){
         fi
     # The current version is a tag, check if there is a newer tag available
     else
-        git fetch --tags &>/dev/null
         latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
         if  [[ "$hs_version" != "$latest_tag" ]] ; then
             echo "Found a new version of HeavyScript, updating myself..."
@@ -109,6 +107,9 @@ self_update() {
     echo "🅂 🄴 🄻 🄵"
     echo "🅄 🄿 🄳 🄰 🅃 🄴"
     git reset --hard &>/dev/null
+    
+    # Fetch all branches and tags from the remote
+    git fetch --all &>/dev/null
 
     if ! [[ "$hs_version" =~ v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+ ]]; then
         # Get the name of the current local branch
@@ -121,6 +122,7 @@ self_update() {
             echo "$branch does not exist, switching to the latest tag: $latest_tag"
             git checkout --force "$latest_tag" &>/dev/null
             switched=true
+            echo
         fi
     fi
 

@@ -62,6 +62,7 @@ mount_app_func(){
         else
             output+="$line\n"
         fi
+        nocolor+="$line"
     done <<< "$mount_list"
     list=$(echo -e "$output" | column -t)
 
@@ -82,7 +83,7 @@ mount_app_func(){
             echo -e "Exiting.."
             exit
         fi
-        app=$(echo -e "$list" | grep -E "^$selection)|7m$selection)" | awk '{print $2}' | cut -c 4- )
+        app=$(echo -e "$nocolor" | grep "^$selection)" | awk '{print $2}' | cut -c 4- )
 
 
 
@@ -92,7 +93,7 @@ mount_app_func(){
             continue 
         fi
 
-        pvc=$(echo -e "$list" | grep -E "^$selection)|7m$selection)")
+        pvc=$(echo -e "$nocolor" | grep "^$selection)")
 
         #Stop applicaiton if not stopped
         status=$(cli -m csv -c 'app chart_release query name,status' | 

@@ -54,7 +54,7 @@ mount_app_func(){
             sed "s/^0/ /")
     mount_list=$(echo -e "$call" | sed 1d | nl -s ") ")
     mount_title=$(echo -e "$call" | head -n 1)
-    list=$(echo -e "${blue}# $mount_title${reset}\n$mount_list" | column -t)
+    list=$(echo -e "${blue}# $mount_title${reset}\n$(echo "$mount_list" | awk '{if (NR % 2 == 0) {print $0 ${gray}} else {print $0}}')" | column -t)
     while true
     do
         clear -x

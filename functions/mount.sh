@@ -58,11 +58,7 @@ mount_app_func(){
     declare -A mount_map
     counter=1
     for line in $mount_list; do
-        if [ $((counter % 2)) -eq 0 ]; then
-            mount_map[$((counter/2))]="${gray}$line${reset}"
-        else
-            mount_map[$((counter/2))]="$line"
-        fi
+        mount_map[$counter]="$line"
         counter=$((counter+1))
     done
 

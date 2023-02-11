@@ -49,29 +49,21 @@ export -f mount
 
 mount_app_func(){
     call=$(k3s kubectl get pvc -A | 
-                sort -u | 
-                awk '{print $1 "\t" $2 "\t" $4}' | 
-                sed "s/^0/ /")
+            sort -u | 
+            awk '{print $1 "\t" $2 "\t" $4}' | 
+            sed "s/^0/ /")
     mount_list=$(echo -e "$call" | sed 1d | nl -s ") ")
     mount_title=$(echo -e "$call" | head -n 1)
     output="${blue}# $mount_title${reset}\n"
     counter=0
     while read -r line; do
         if [ $((++counter % 2)) -eq 0 ]; then
-            output+="${gray}$line${reset}"
+            output+="${gray}$line${reset}\n"
         else
-            output+="$line"
+            output+="$line\n"
         fi
-        output+="\n"
     done <<< "$mount_list"
     list=$(echo -e "$output" | column -t)
-
-    declare -A mount_map
-    counter=1
-    for line in $list; do
-        mount_map[$counter]="$line"
-        counter=$((counter+1))
-    done
 
 
 
@@ -84,19 +76,23 @@ mount_app_func(){
         echo -e "0)  Exit"
         read -rt 120 -p "Please type a number: " selection || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
 
+        
         #Check for valid selection. If no issues, continue
         if [[ $selection == 0 ]]; then
             echo -e "Exiting.."
             exit
         fi
-        line="${mount_map[$selection]}"
-        if [[ -z "$line" ]]; then
+        app=$(echo -e "$list" | grep -E "^${selection})|^${gray}${selection}" | 
+                               awk '{print $2}' | 
+                               cut -c 4- )
+
+        if [[ -z "$app" ]]; then
             echo -e "${red}Invalid Selection: ${blue}$selection${red}, was not an option${reset}"
             sleep 3
             continue 
         fi
-        app=$(echo -e "$line" | awk '{print $2}' | cut -c 4- )
-        pvc=$(echo -e "$line")
+
+        pvc=$(echo -e "$list" | grep -E "^${selection})|^${gray}${selection}")
 
         #Stop applicaiton if not stopped
         status=$(cli -m csv -c 'app chart_release query name,status' | 

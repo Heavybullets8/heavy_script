@@ -58,10 +58,11 @@ mount_app_func(){
     counter=0
     while read -r line; do
         if [ $((++counter % 2)) -eq 0 ]; then
-            output+="${gray}$line${reset}\n"
+            output+="${gray}$line${reset}"
         else
-            output+="$line\n"
+            output+="$line"
         fi
+        output+="\n"
     done <<< "$mount_list"
     list=$(echo -e "$output" | column -t)
 

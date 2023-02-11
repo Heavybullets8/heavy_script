@@ -49,50 +49,51 @@ export -f mount
 
 mount_app_func(){
     call=$(k3s kubectl get pvc -A | 
-            sort -u | 
-            awk '{print $1 "\t" $2 "\t" $4}' | 
-            sed "s/^0/ /")
-    mount_list=$(echo -e "$call" | sed 1d | nl -s ") ")
+                sort -u | 
+                awk '{print $1 "\t" $2 "\t" $4}' | 
+                sed "s/^0/ /")
+    mount_list=$(echo -e "$call" | sed 1d)
     mount_title=$(echo -e "$call" | head -n 1)
-    output="${blue}# $mount_title${reset}\n"
-    counter=0
-    while read -r line; do
-        if [ $((++counter % 2)) -eq 0 ]; then
-            output+="${gray}$line${reset}\n"
+
+    declare -A mount_map
+    counter=1
+    for line in $mount_list; do
+        if [ $((counter % 2)) -eq 0 ]; then
+            mount_map[$((counter/2))]="${gray}$line${reset}"
         else
-            output+="$line\n"
+            mount_map[$((counter/2))]="$line"
         fi
-    done <<< "$mount_list"
+        counter=$((counter+1))
+    done
+
+    output="${blue}# $mount_title${reset}\n"
+    for key in "${!mount_map[@]}"; do
+        output+="$key) ${mount_map[$key]}\n"
+    done
     list=$(echo -e "$output" | column -t)
-
-
 
     while true
     do
         clear -x
         title
-        echo -e "$output" 
+        echo -e "$list" 
         echo 
         echo -e "0)  Exit"
         read -rt 120 -p "Please type a number: " selection || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
 
-        
         #Check for valid selection. If no issues, continue
         if [[ $selection == 0 ]]; then
             echo -e "Exiting.."
             exit
         fi
-        app=$(echo -e "$output" | 
-                grep ^"$selection)" | 
-                awk '{print $2}' | 
-                cut -c 4- )
-        if [[ -z "$app" ]]; then
+        line="${mount_map[$selection]}"
+        if [[ -z "$line" ]]; then
             echo -e "${red}Invalid Selection: ${blue}$selection${red}, was not an option${reset}"
             sleep 3
             continue 
         fi
-
-        pvc=$(echo -e "$output" | grep ^"$selection)")
+        app=$(echo -e "$line" | awk '{print $2}' | cut -c 4- )
+        pvc=$(echo -e "$line")
 
         #Stop applicaiton if not stopped
         status=$(cli -m csv -c 'app chart_release query name,status' | 

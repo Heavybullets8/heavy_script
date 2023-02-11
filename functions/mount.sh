@@ -63,7 +63,7 @@ mount_app_func(){
             output+="$line\n"
         fi
     done <<< "$mount_list"
-    list=$(echo -e "$output")
+    list=$(echo -e "$output" | column -t)
 
     declare -A mount_map
     counter=1
@@ -78,7 +78,7 @@ mount_app_func(){
     do
         clear -x
         title
-        echo -e "$output" 
+        echo -e "$list" 
         echo 
         echo -e "0)  Exit"
         read -rt 120 -p "Please type a number: " selection || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }

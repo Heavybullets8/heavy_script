@@ -233,7 +233,6 @@ unmount_app_func(){
     # Check if the unmount_array is empty
     if [[ -z ${unmount_array[*]} ]]; then
         echo -e "${yellow}There are no PVCS to unmount.${reset}"
-        sleep 3
         return
     fi
 
@@ -256,5 +255,4 @@ unmount_app_func(){
 
     # Remove the mounted_pvc directory if it's empty
     rmdir /mnt/*/mounted_pvc 2>/dev/null ; rmdir /mnt/mounted_pvc 2>/dev/null
-    sleep 3
 }

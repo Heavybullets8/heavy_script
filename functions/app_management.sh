@@ -183,12 +183,12 @@ start_app_prompt(){
                     sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
         # check if chart is an external service
-        if [[ $query_name == "external-service" ]]; then
+        if [[ $query_name == \"external-service\" ]]; then
             echo -e "${blue}$app_name${red} is an external service.${reset}"
             echo -e "${red}These application types cannot be started.${reset}"
             break
         # check if chart is an ix-chart
-        elif [[ $query_name == "ix-chart" ]]; then
+        elif [[ $query_name == \"ix-chart\" ]]; then
             echo -e "${blue}$app_name${red} is an ix-chart.${reset}"
             echo -e "${red}These application types do not have a replica assigned to them.${reset}"
             echo -e "${red}As of now these application types are unsupported.${reset}"

@@ -54,14 +54,18 @@ mount_app_func(){
             sed "s/^0/ /")
     mount_list=$(echo -e "$call" | sed 1d | nl -s ") ")
     mount_title=$(echo -e "$call" | head -n 1)
-    list=$(echo -e "${blue}# $mount_title${reset}"
+    output="${blue}# $mount_title${reset}\n"
+    counter=0
     while read -r line; do
         if [ $((++counter % 2)) -eq 0 ]; then
-            echo -e "${gray}$line${reset}"
+            output+="${gray}$line${reset}\n"
         else
-            echo -e "$line"
+            output+="$line\n"
         fi
-    done <<< "$mount_list" | column -t)
+    done <<< "$mount_list"
+    list=$(echo -e "$output" | column -t)
+
+
 
     while true
     do

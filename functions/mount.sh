@@ -62,7 +62,7 @@ mount_app_func(){
         else
             output+="$line\n"
         fi
-        nocolor+="$line"
+        nocolor+="$line\n"
     done <<< "$mount_list"
     list=$(echo -e "$output" | column -t)
 

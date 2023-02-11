@@ -88,6 +88,7 @@ mount_app_func(){
             continue 
         fi
 
+        unset list
         pvc=$(echo -e "$nocolor" | grep "^$selection)")
 
         #Stop applicaiton if not stopped

@@ -66,8 +66,6 @@ mount_app_func(){
     done <<< "$mount_list"
     list=$(echo -e "$output" | column -t)
 
-
-
     while true
     do
         clear -x
@@ -77,15 +75,12 @@ mount_app_func(){
         echo -e "0)  Exit"
         read -rt 120 -p "Please type a number: " selection || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
 
-        
         #Check for valid selection. If no issues, continue
         if [[ $selection == 0 ]]; then
             echo -e "Exiting.."
             exit
         fi
         app=$(echo -e "$nocolor" | grep "^$selection)" | awk '{print $2}' | cut -c 4- )
-
-
 
         if [[ -z "$app" ]]; then
             echo -e "${red}Invalid Selection: ${blue}$selection${red}, was not an option${reset}"
@@ -118,7 +113,6 @@ mount_app_func(){
         volume_name=$(echo -e "$pvc" | awk '{print $4}')
         full_path=$(zfs list -t filesystem -r "$ix_apps_pool/ix-applications/releases/$app/volumes" -o name -H | grep "$volume_name")
 
-
         # Loop until a valid selection is made
         while true
         do
@@ -142,7 +136,6 @@ mount_app_func(){
             echo
             read -r -t 120 -p "Please select a pool by number: " pool_num || { echo -e "${red}Failed to make a selection in time${reset}" ; exit; }
 
-
             # Check if the input is valid
             if [[ $pool_num -ge 1 && $pool_num -le ${#pool_query[@]} ]]; then
                 selected_pool="${pool_query[pool_num-1]}"
@@ -154,18 +147,15 @@ mount_app_func(){
             fi
         done
 
-
         # Assign the selected pool and path to variables
         path=$(echo "$selected_pool" | awk -F ',' '{print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
         pool_name=$(echo "$selected_pool" | awk -F ',' '{print $1}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-
 
         # Check if the folder "mounted_pvc" exists on the selected pool
         if [ ! -d "$path/mounted_pvc" ]; then
             # If it doesn't exist, create it
             mkdir "$path/mounted_pvc"
         fi
-
 
         clear -x
         title
@@ -181,7 +171,6 @@ mount_app_func(){
                 mount_failure=true
             fi
         fi
-
 
         echo -e "${bold}Selected App:${reset} ${blue}$app${reset}"
         echo -e "${bold}Selected PVC:${reset} ${blue}$data_name${reset}"
@@ -201,8 +190,6 @@ mount_app_func(){
         echo
         echo -e "Or use the Unmount All option"
 
-
-        
         #Ask if user would like to mount something else
         while true
         do

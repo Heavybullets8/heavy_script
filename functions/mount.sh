@@ -52,27 +52,33 @@ mount_app_func(){
                 sort -u | 
                 awk '{print $1 "\t" $2 "\t" $4}' | 
                 sed "s/^0/ /")
-    mount_list=$(echo -e "$call" | sed 1d)
+    mount_list=$(echo -e "$call" | sed 1d | nl -s ") ")
     mount_title=$(echo -e "$call" | head -n 1)
+    output="${blue}# $mount_title${reset}\n"
+    counter=0
+    while read -r line; do
+        if [ $((++counter % 2)) -eq 0 ]; then
+            output+="${gray}$line${reset}\n"
+        else
+            output+="$line\n"
+        fi
+    done <<< "$mount_list"
+    list=$(echo -e "$output")
 
     declare -A mount_map
     counter=1
-    for line in $mount_list; do
+    for line in $list; do
         mount_map[$counter]="$line"
         counter=$((counter+1))
     done
 
-    output="${blue}# $mount_title${reset}\n"
-    for key in "${!mount_map[@]}"; do
-        output+="$key) ${mount_map[$key]}\n"
-    done
-    list=$(echo -e "$output" | column -t)
+
 
     while true
     do
         clear -x
         title
-        echo -e "$list" 
+        echo -e "$output" 
         echo 
         echo -e "0)  Exit"
         read -rt 120 -p "Please type a number: " selection || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }

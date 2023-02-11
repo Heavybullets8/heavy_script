@@ -82,7 +82,7 @@ mount_app_func(){
             echo -e "Exiting.."
             exit
         fi
-        app=$(echo -e "$list" | grep -E "^$selection)|^${gray}$selection)" | awk '{print $2}' | cut -c 4- )
+        app=$(echo -e "$list" | grep -E ^"$selection)|${gray}$selection)" | awk '{print $2}' | cut -c 4- )
 
 
         if [[ -z "$app" ]]; then

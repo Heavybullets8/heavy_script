@@ -71,7 +71,7 @@ mount_app_func(){
     do
         clear -x
         title
-        echo -e "$list" 
+        echo -e "$output" 
         echo 
         echo -e "0)  Exit"
         read -rt 120 -p "Please type a number: " selection || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
@@ -82,7 +82,7 @@ mount_app_func(){
             echo -e "Exiting.."
             exit
         fi
-        app=$(echo -e "$list" | 
+        app=$(echo -e "$output" | 
                 grep ^"$selection)" | 
                 awk '{print $2}' | 
                 cut -c 4- )
@@ -92,7 +92,7 @@ mount_app_func(){
             continue 
         fi
 
-        pvc=$(echo -e "$list" | grep ^"$selection)")
+        pvc=$(echo -e "$output" | grep ^"$selection)")
 
         #Stop applicaiton if not stopped
         status=$(cli -m csv -c 'app chart_release query name,status' | 

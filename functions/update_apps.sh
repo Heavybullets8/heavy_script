@@ -210,12 +210,12 @@ pre_process(){
         elif [[ "$old_full_ver" == "$new_full_ver" ]]; then 
             # restart the app if it was a container image update.
             if [[ "$verbose" == true ]]; then
-                echo_array+=("Restarting $app_name..")
+                echo_array+=("Restarting..")
             fi
             if ! restart_app; then
-                echo_array+=("Failed to restart $app_name")
+                echo_array+=("Error: Failed to restart $app_name")
             else
-                echo_array+=("Restarted $app_name")
+                echo_array+=("Restarted")
             fi
             echo_array
             return

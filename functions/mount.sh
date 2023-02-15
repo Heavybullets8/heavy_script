@@ -136,7 +136,9 @@ mount_app_func(){
             done
 
             # Add an option for the root directory
-            rows+=("$((i+1)))\troot\t/mnt\t$(zfs list -p -o name,avail boot-pool | awk 'NR==2 {if ($2/1024/1024/1024/1024 >= 1) printf "%.2fTB", $2/1024/1024/1024/1024; else printf "%.2fGB", $2/1024/1024/1024}')")
+            root_num=$((i+1))
+            root_avail=$(zfs list -p -o name,avail boot-pool | awk 'NR==2 {if ($2/1024/1024/1024/1024 >= 1) printf "%.2fTB", $2/1024/1024/1024/1024; else printf "%.2fGB", $2/1024/1024/1024}')
+            rows+=("$root_num)\troot\t/mnt\t$root_avail")
 
             # Print output with header and rows formatted in columns
             printf "%b\n" "$header" "${rows[@]}" | column -t -s $'\t'

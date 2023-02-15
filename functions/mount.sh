@@ -157,8 +157,8 @@ mount_app_func(){
         done
 
         # Assign the selected pool and path to variables
-        path=$(echo "$selected_pool" | awk -F '\t' '{print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-        pool_name=$(echo "$selected_pool" | awk -F '\t' '{print $1}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+        path=$(echo "$selected_pool" | awk -F '\t' '{print $3}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+        pool_name=$(echo "$selected_pool" | awk -F '\t' '{print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
         # Check if the folder "mounted_pvc" exists on the selected pool
         if [ ! -d "$path/mounted_pvc" ]; then

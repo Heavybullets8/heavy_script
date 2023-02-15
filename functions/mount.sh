@@ -123,16 +123,22 @@ mount_app_func(){
             echo
             echo -e "Available Pools:"
 
-        # Loop over the pool query and append the available capacity to each line
-        i=0
-        for line in "${pool_query[@]}"; do
-            (( i++ ))
-            pool=$(echo -e "$line" | awk -F ',' '{print $1}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-            path=$(echo -e "$line" | awk -F ',' '{print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-            avail=$(zfs list -p -o name,avail "$pool" | awk 'NR==2 {if ($2/1024/1024/1024/1024 >= 1) printf "%.2fTB", $2/1024/1024/1024/1024; else printf "%.2fGB", $2/1024/1024/1024}')
-            echo -e "$i)\t$pool\t$path\t$avail"
-        done | column -t -s $'\t' <(echo -e "{blue}Number\tPool\tPath\tAvailable Capacity{reset}")
+            # Generate header
+            header="{blue}Number\tPool\tPath\tAvailable Capacity{reset}"
 
+            # Generate rows
+            rows=()
+            i=0
+            for line in "${pool_query[@]}"; do
+                (( i++ ))
+                pool=$(echo -e "$line" | awk -F ',' '{print $1}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+                path=$(echo -e "$line" | awk -F ',' '{print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+                avail=$(zfs list -p -o name,avail "$pool" | awk 'NR==2 {if ($2/1024/1024/1024/1024 >= 1) printf "%.2fTB", $2/1024/1024/1024/1024; else printf "%.2fGB", $2/1024/1024/1024}')
+                rows+=("$i)\t$pool\t$path\t$avail")
+            done
+
+            # Print output with header and rows formatted in columns
+            printf "%s\n" "$header" "${rows[@]}" | column -t -s $'\t'
 
             # Ask user for input
             echo

@@ -122,7 +122,7 @@ mount_app_func(){
             echo -e "Available Pools:"
 
             # Generate header
-            header="{blue}Number\tPool\tPath\tAvailable Capacity{reset}"
+            header="${blue}Number\tPool\tPath\tAvailable Capacity${reset}"
 
             # Generate rows
             rows=()
@@ -140,7 +140,7 @@ mount_app_func(){
 
             # Print output with header and rows formatted in columns
             printf "%b\n" "$header" "${rows[@]}" | column -t -s $'\t'
-            
+
             # Ask user for input
             echo
             read -r -t 120 -p "Please select a pool by number: " pool_num || { echo -e "${red}Failed to make a selection in time${reset}" ; exit; }

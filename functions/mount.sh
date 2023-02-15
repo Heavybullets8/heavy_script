@@ -147,7 +147,7 @@ mount_app_func(){
 
             # Check if the input is valid
             if [[ $pool_num -ge 1 && $pool_num -le ${#rows[@]} ]]; then
-                selected_pool=$(echo "${rows[pool_num-1]}" | awk '{print $2}')
+                selected_pool=$(echo -e "${rows[pool_num-1]}" | awk '{print $2}')
                 # Exit the loop
                 break
             else

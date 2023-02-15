@@ -10,8 +10,6 @@ mount(){
     # Use mapfile command to read the output of cli command into an array
     mapfile -t pool_query < <(cli -m csv -c "storage pool query name,path" | sed -e '1d' -e '/^$/d')
 
-    # Add an option for the root directory
-    pool_query+=("root,/mnt")
     while true
     do
         clear -x
@@ -137,9 +135,12 @@ mount_app_func(){
                 rows+=("$i)\t$pool\t$path\t$avail")
             done
 
-            # Print output with header and rows formatted in columns
-            printf "%s\n" "$header" "${rows[@]}" | column -t -s $'\t'
+            # Add an option for the root directory
+            pool_query+=("root,/mnt")
 
+            # Print output with header and rows formatted in columns
+            printf "%b\n" "$header" "${rows[@]}" | column -t -s $'\t'
+            
             # Ask user for input
             echo
             read -r -t 120 -p "Please select a pool by number: " pool_num || { echo -e "${red}Failed to make a selection in time${reset}" ; exit; }
@@ -224,6 +225,9 @@ mount_app_func(){
 
 
 unmount_app_func(){
+    # Add an option for the root directory
+    pool_query+=("root,/mnt")
+
     # Create an empty array to store the results
     unmount_array=()
 

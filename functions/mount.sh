@@ -146,8 +146,8 @@ mount_app_func(){
             read -r -t 120 -p "Please select a pool by number: " pool_num || { echo -e "${red}Failed to make a selection in time${reset}" ; exit; }
 
             # Check if the input is valid
-            if [[ $pool_num -ge 1 && $pool_num -le ${#pool_query[@]} ]]; then
-                selected_pool="${pool_query[pool_num-1]}"
+            if [[ $pool_num -ge 1 && $pool_num -le ${#rows[@]} ]]; then
+                selected_pool="${rows[pool_num-1]}"
                 # Exit the loop
                 break
             else

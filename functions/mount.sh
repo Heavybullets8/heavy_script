@@ -122,7 +122,7 @@ mount_app_func(){
             echo -e "Available Pools:"
 
             # Generate header
-            header="${blue}Number\tPool\tPath\tAvailable Capacity${reset}"
+            header="${blue}#\tPool\tPath\tAvailable Capacity${reset}"
 
             # Generate rows
             rows=()
@@ -136,7 +136,7 @@ mount_app_func(){
             done
 
             # Add an option for the root directory
-            pool_query+=("root,/mnt")
+            rows+=("root,/mnt")
 
             # Print output with header and rows formatted in columns
             printf "%b\n" "$header" "${rows[@]}" | column -t -s $'\t'

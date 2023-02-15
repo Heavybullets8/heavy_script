@@ -136,7 +136,7 @@ mount_app_func(){
             done
 
             # Add an option for the root directory
-            rows+=("root,/mnt")
+            rows+=("$((i+1)))\troot\t/mnt\t")
 
             # Print output with header and rows formatted in columns
             printf "%b\n" "$header" "${rows[@]}" | column -t -s $'\t'

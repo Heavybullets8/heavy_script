@@ -89,7 +89,7 @@ mount_app_func(){
             continue 
         fi
 
-        pvc=$(echo -e "${output[selection]}" | awk '{print $3}')
+        entire_line=$(echo -e "${output[selection]}")
 
         #Stop applicaiton if not stopped
         status=$(cli -m csv -c 'app chart_release query name,status' | 
@@ -110,8 +110,8 @@ mount_app_func(){
         sleep 2
 
         #Grab data then output and mount
-        data_name=$(echo -e "$pvc" | awk '{print $3}')
-        volume_name=$(echo -e "$pvc" | awk '{print $4}')
+        data_name=$(echo -e "$entire_line" | awk '{print $3}')
+        volume_name=$(echo -e "$entire_line" | awk '{print $4}')
         full_path=$(zfs list -t filesystem -r "$ix_apps_pool/ix-applications/releases/$app/volumes" -o name -H | grep "$volume_name")
 
         # Loop until a valid selection is made

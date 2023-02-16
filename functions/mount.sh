@@ -46,29 +46,32 @@ export -f mount
 
 
 mount_app_func(){
-    call=$(k3s kubectl get pvc -A | 
-            sort -u | 
-            awk '{print $1 "\t" $2 "\t" $4}' | 
-            sed "s/^0/ /")
-    mount_list=$(echo -e "$call" | sed 1d | nl -s ") ")
-    mount_title=$(echo -e "$call" | head -n 1)
-    output="${blue}# $mount_title${reset}\n"
-    counter=0
-    while read -r line; do
-        if [ $((++counter % 2)) -eq 0 ]; then
-            output+="${gray}$line${reset}\n"
-        else
-            output+="$line\n"
-        fi
-        nocolor+="$line\n"
-    done <<< "$mount_list"
-    list=$(echo -e "$output" | column -t)
+    # Run the command and store the output in an array
+    readarray -t output < <(k3s kubectl get pvc -A | sort -u | awk '{print $1 "\t" $2 "\t" $4}' | sed "s/^0/ /")
+
+    # Assign a number to each element of the array, except for the first one
+    count=0
+    for ((i=1; i<${#output[@]}; i++)); do
+        output[i]="$((i))) ${output[i]}"
+        count=$((count+1))
+    done
 
     while true
     do
         clear -x
         title
-        echo -e "$list" 
+        # Format the output for display
+        for ((i=0; i<${#output[@]}; i++)); do
+            if [[ $i -eq 0 ]]; then
+                echo -e "${blue}# ${output[i]}${reset}"
+            else
+                if [[ $((i % 2)) -eq 0 ]]; then
+                    echo -e "${gray}${output[i]}${reset}"
+                else
+                    echo -e "${output[i]}"
+                fi
+            fi
+        done | column -t 
         echo 
         echo -e "0)  Exit"
         read -rt 120 -p "Please type a number: " selection || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
@@ -78,7 +81,7 @@ mount_app_func(){
             echo -e "Exiting.."
             exit
         fi
-        app=$(echo -e "$nocolor" | grep "^$selection)" | awk '{print $2}' | cut -c 4- )
+        app=$(echo -e "${output[selection]}" | awk '{print $2}' | cut -c 4- )
 
         if [[ -z "$app" ]]; then
             echo -e "${red}Invalid Selection: ${blue}$selection${red}, was not an option${reset}"
@@ -86,7 +89,7 @@ mount_app_func(){
             continue 
         fi
 
-        pvc=$(echo -e "$nocolor" | grep "^$selection)")
+        pvc=$(echo -e "${output[selection]}" | awk '{print $3}')
 
         #Stop applicaiton if not stopped
         status=$(cli -m csv -c 'app chart_release query name,status' | 

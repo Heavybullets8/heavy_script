@@ -136,9 +136,9 @@ mount_app_func(){
                 | grep -o '[0-9]*$' \
                 | awk '{
                     if ($1/1024/1024/1024/1024 >= 1)
-                    printf "%.2fTB", $1/1024/1024/1024/1024
+                        printf "%.2fTB", $1/1024/1024/1024/1024
                     else
-                    printf "%.2fGB", $1/1024/1024/1024
+                        printf "%.2fGB", $1/1024/1024/1024
                 }'
                 )
                 rows+=("$i)\t$pool\t$path\t$avail")
@@ -151,9 +151,9 @@ mount_app_func(){
             | grep -o '[0-9]*$' \
             | awk '{
                 if ($1/1024/1024/1024/1024 >= 1)
-                printf "%.2fTB", $1/1024/1024/1024/1024
+                    printf "%.2fTB", $1/1024/1024/1024/1024
                 else
-                printf "%.2fGB", $1/1024/1024/1024
+                    printf "%.2fGB", $1/1024/1024/1024
             }'
             )
             rows+=("$root_num)\troot\t/mnt\t$root_avail")

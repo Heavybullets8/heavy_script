@@ -10,8 +10,6 @@ mount(){
     # Use mapfile command to read the output of cli command into an array
     mapfile -t pool_query < <(cli -m csv -c "storage pool query name,path" | sed -e '1d' -e '/^$/d')
 
-    # Add an option for the root directory
-    pool_query+=("root,/mnt")
     while true
     do
         clear -x
@@ -123,22 +121,53 @@ mount_app_func(){
             echo
             echo -e "Available Pools:"
 
+            # Generate header
+            header="${blue}#\tPool\tPath\tAvailable Capacity${reset}"
+
+            # Generate rows
+            rows=()
             i=0
-            # Print options with numbers
             for line in "${pool_query[@]}"; do
                 (( i++ ))
-                pool=$(echo -e "$line" | awk -F ',' '{print $1}')
-                path=$(echo -e "$line" | awk -F ',' '{print $2}')
-                echo -e "$i) $pool $path"
+                pool=$(echo -e "$line" | awk -F ',' '{print $1}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+                path=$(echo -e "$line" | awk -F ',' '{print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+                avail=$(
+                zfs list -p -o name,avail "$pool" \
+                | grep -o '[0-9]*$' \
+                | awk '{
+                    if ($1/1024/1024/1024/1024 >= 1)
+                        printf "%.2fTB", $1/1024/1024/1024/1024
+                    else
+                        printf "%.2fGB", $1/1024/1024/1024
+                }'
+                )
+                rows+=("$i)\t$pool\t$path\t$avail")
             done
+
+            # Add an option for the root directory
+            root_num=$((i+1))
+            root_avail=$(
+            zfs list -p -o name,avail boot-pool \
+            | grep -o '[0-9]*$' \
+            | awk '{
+                if ($1/1024/1024/1024/1024 >= 1)
+                    printf "%.2fTB", $1/1024/1024/1024/1024
+                else
+                    printf "%.2fGB", $1/1024/1024/1024
+            }'
+            )
+            rows+=("$root_num)\troot\t/mnt\t$root_avail")
+
+            # Print output with header and rows formatted in columns
+            printf "%b\n" "$header" "${rows[@]}" | column -t -s $'\t'
 
             # Ask user for input
             echo
             read -r -t 120 -p "Please select a pool by number: " pool_num || { echo -e "${red}Failed to make a selection in time${reset}" ; exit; }
 
             # Check if the input is valid
-            if [[ $pool_num -ge 1 && $pool_num -le ${#pool_query[@]} ]]; then
-                selected_pool="${pool_query[pool_num-1]}"
+            if [[ $pool_num -ge 1 && $pool_num -le ${#rows[@]} ]]; then
+                selected_pool=$(echo -e "${rows[pool_num-1]}")
                 # Exit the loop
                 break
             else
@@ -148,8 +177,8 @@ mount_app_func(){
         done
 
         # Assign the selected pool and path to variables
-        path=$(echo "$selected_pool" | awk -F ',' '{print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-        pool_name=$(echo "$selected_pool" | awk -F ',' '{print $1}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+        path=$(echo "$selected_pool" | awk -F '\t' '{print $3}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+        pool_name=$(echo "$selected_pool" | awk -F '\t' '{print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
         # Check if the folder "mounted_pvc" exists on the selected pool
         if [ ! -d "$path/mounted_pvc" ]; then
@@ -216,6 +245,9 @@ mount_app_func(){
 
 
 unmount_app_func(){
+    # Add an option for the root directory
+    pool_query+=("root,/mnt")
+
     # Create an empty array to store the results
     unmount_array=()
 

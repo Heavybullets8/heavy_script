@@ -131,13 +131,31 @@ mount_app_func(){
                 (( i++ ))
                 pool=$(echo -e "$line" | awk -F ',' '{print $1}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
                 path=$(echo -e "$line" | awk -F ',' '{print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-                avail=$(zfs list -p -o name,avail "$pool" | awk 'NR==2 {if ($2/1024/1024/1024/1024 >= 1) printf "%.2fTB", $2/1024/1024/1024/1024; else printf "%.2fGB", $2/1024/1024/1024}')
+                avail=$(
+                zfs list -p -o name,avail "$pool" \
+                | grep -o '[0-9]*$' \
+                | awk '{
+                    if ($1/1024/1024/1024/1024 >= 1)
+                    printf "%.2fTB", $1/1024/1024/1024/1024
+                    else
+                    printf "%.2fGB", $1/1024/1024/1024
+                }'
+                )
                 rows+=("$i)\t$pool\t$path\t$avail")
             done
 
             # Add an option for the root directory
             root_num=$((i+1))
-            root_avail=$(zfs list -p -o name,avail boot-pool | awk 'NR==2 {if ($2/1024/1024/1024/1024 >= 1) printf "%.2fTB", $2/1024/1024/1024/1024; else printf "%.2fGB", $2/1024/1024/1024}')
+            root_avail=$(
+            zfs list -p -o name,avail boot-pool \
+            | grep -o '[0-9]*$' \
+            | awk '{
+                if ($1/1024/1024/1024/1024 >= 1)
+                printf "%.2fTB", $1/1024/1024/1024/1024
+                else
+                printf "%.2fGB", $1/1024/1024/1024
+            }'
+            )
             rows+=("$root_num)\troot\t/mnt\t$root_avail")
 
             # Print output with header and rows formatted in columns

@@ -14,6 +14,13 @@ if [[ $(id -u) != 0 ]]; then
     exit 1
 fi
 
+# Check if user has a home
+if [[ -z "$HOME" || $HOME == "/nonexistent" ]]; then
+    echo -e "${red}This script requires a home directory.${reset}" >&2
+    exit 1
+fi
+
+
 update_repo() {
     local script_dir="$1"
     cd "$script_dir" || return 1

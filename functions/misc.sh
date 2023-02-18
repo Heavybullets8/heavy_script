@@ -150,12 +150,12 @@ add_script_to_global_path(){
         echo -e "${bold}CronJobs${reset}"
         echo -e "${bold}--------${reset}"
         echo -e "CronJobs still require the entire path, and prefaced with ${blue}bash ${reset}"
-        echo -e "Example of my personal cron: ${blue}bash /root/heavy_script/heavy_script.sh -b 14 -rsp --self-update -u 10${reset}"
+        echo -e "Example of my personal cron: ${blue}bash $HOME/heavy_script/heavy_script.sh -b 14 -rsp --self-update -u 10${reset}"
         echo -e "It is highly recommended that you update your cron to use the new path"
         echo
         echo -e "${bold}Note${reset}"
         echo -e "${bold}----${reset}"
-        echo -e "HeavyScript has been redownloaded to: ${blue}/root/heavy_script${reset}"
+        echo -e "HeavyScript has been redownloaded to: ${blue}$HOME/heavy_script${reset}"
         echo -e "It is recommended that you remove your old copy of HeavyScript"
         echo -e "If you keep your old copy, you'll have to update both, manage both etc."
     else

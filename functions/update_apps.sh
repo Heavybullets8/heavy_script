@@ -142,6 +142,7 @@ pre_process(){
     new_full_ver=$(echo "${array[$index]}" | awk -F ',' '{print $5}') #Upraded To
     rollback_version=$(echo "${array[$index]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
 
+    echo_array+=("\n$app_name")
 
     # Check if app is external services, append outcome to external_services file
     if [[ ! -e external_services ]]; then
@@ -172,7 +173,6 @@ pre_process(){
     fi
 
     # If user is using -S, stop app prior to updating
-    echo_array+=("\n$app_name")
     if [[ $stop_before_update == true && "$startstatus" !=  "STOPPED" ]]; then # Check to see if user is using -S or not
         if [[ "$verbose" == true ]]; then
             echo_array+=("Stopping prior to update..")

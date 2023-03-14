@@ -7,7 +7,7 @@ menu(){
     echo -e "${bold}Available Utilities${reset}"
     echo -e "${bold}-------------------${reset}"
     echo -e "1)  Help"
-    echo -e "2)  Applciation Options"
+    echo -e "2)  Application Options"
     echo -e "3)  Backup Options"
     echo -e "4)  HeavyScript Options"
     echo -e "5)  Patches"
@@ -31,12 +31,12 @@ menu(){
             do
                 clear -x
                 title
-                echo -e "${bold}Applicaiton Options${reset}"
+                echo -e "${bold}Application Options${reset}"
                 echo -e "${bold}-------------------${reset}"
                 echo -e "1)  List DNS Names"
                 echo -e "2)  Mount/Unmount PVC Storage"
                 echo -e "3)  Update Applications"
-                echo -e "4)  Open Conainer Shell"
+                echo -e "4)  Open Container Shell"
                 echo -e "5)  Open Container Logs"
                 echo -e "6)  Start Application"
                 echo -e "7)  Restart Application"
@@ -87,7 +87,7 @@ menu(){
                         misc_selection=true
                         ;;
                     *)
-                        echo -e "${red}\"$selection\" was not an option, please try agian${reset}"
+                        echo -e "${red}\"$selection\" was not an option, please try again${reset}"
                         sleep 3
                         continue
                         ;;
@@ -134,7 +134,7 @@ menu(){
                         restore
                         ;;
                     *)
-                        echo -e "${red}\"$selection\" was not an option, please try agian${reset}"
+                        echo -e "${red}\"$selection\" was not an option, please try again${reset}"
                         sleep 3
                         continue
                         ;;
@@ -175,7 +175,7 @@ menu(){
                         add_script_to_global_path
                         ;;
                     *)
-                        echo -e "${blue}\"$selection\"${red} was not an option, please try agian${reset}"
+                        echo -e "${blue}\"$selection\"${red} was not an option, please try again${reset}"
                         sleep 3
                         continue
                         ;;
@@ -213,7 +213,7 @@ menu(){
                         patch_2212_backups2
                         ;;
                     *)
-                        echo -e "${blue}\"$selection\"${red} was not an option, please try agian${reset}"
+                        echo -e "${blue}\"$selection\"${red} was not an option, please try again${reset}"
                         sleep 3
                         continue
                         ;;
@@ -221,7 +221,7 @@ menu(){
             done
             ;;
         *)
-            echo -e "${blue}\"$selection\"${red} was not an option, please try agian${reset}"
+            echo -e "${blue}\"$selection\"${red} was not an option, please try again${reset}"
             sleep 3
             menu
             ;;

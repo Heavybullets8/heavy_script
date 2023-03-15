@@ -195,19 +195,33 @@ start_app_prompt(){
             break
         fi
 
-        # query chosen replica count for application
-        replica_count=$(echo "$initial_call" | jq .config.controller.replicas | 
-                    sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+        # Query chosen replica count for the application
+        replica_count=$(echo "$initial_call" | jq '.config.controller.replicas // .config.workload.main.replicas // 1')
+
+        if [[ $replica_count == 1 && "$(echo "$initial_call" | jq '.config.controller.replicas, .config.workload.main.replicas')" == "NULL, NULL" ]]; then
+            echo -e "${red}Failed to get replica count for ${blue}$app_name${reset}"
+            echo -e "${yellow}Defaulting to ${blue}1${reset}"
+        fi
 
         echo -e "Starting ${blue}$app_name${reset}..."
 
-        # Start application with chosen replica count
-        if cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replica_count}" &> /dev/null; then
+
+        # Check for cnpg pods and scale the application
+        cnpg=$(k3s kubectl get pods -n ix-"$app_name" -o=name | grep -q -- '-cnpg-' && echo "true" || echo "false")
+
+        if [[ $cnpg == "true" ]]; then
+            k3s kubectl get deployments,statefulsets -n ix-"$app_name" | grep -vE -- "(NAME|^$|-cnpg-)" | awk '{print $1}' | xargs -I{} k3s kubectl scale --replicas="$replica_count" -n ix-"$app_name" {} &>/dev/null
+            #TODO: Add a check to ensure the pods are running
+            echo -e "${yellow}Sent the command to start all pods in: $app_name${reset}"
+            echo -e "${yellow}However, HeavyScript cannot monitor the new applications${reset}"
+            echo -e "${yellow}with the new postgres backend to ensure it worked..${reset}"
+        elif cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replica_count}" &> /dev/null; then
             echo -e "${blue}$app_name ${green}Started${reset}"
             echo -e "${green}Replica count set to ${blue}$replica_count${reset}"
         else
             echo -e "${red}Failed to start ${blue}$app_name${reset}"
         fi
+
 
         read -rt 120 -p "Would you like to start another application? (y/n): " choice || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case "$(echo "$choice" | tr '[:upper:]' '[:lower:]')" in

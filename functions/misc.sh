@@ -196,7 +196,7 @@ stop_app() {
     local stop_type app_name timeout status count
     stop_type="$1"
     app_name="$2"
-    timeout="${3:-300}"
+    timeout="${3:-100}"
 
     if k3s kubectl get pods -n ix-"$app_name" -o=name | grep -q -- '-cnpg-'; then
         if ! k3s kubectl get deployments,statefulsets -n ix-"$app_name" | grep -vE -- "(NAME|^$|-cnpg-)" | awk '{print $1}' | xargs -I{} k3s kubectl scale --replicas=0 -n ix-"$app_name" {} &>/dev/null; then

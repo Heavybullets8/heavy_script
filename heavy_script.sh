@@ -21,13 +21,13 @@ else
 fi
 
 # Source all the functions and utilities
-for shell_file in functions/{,utils/}*.sh; do
-    if [[ "$shell_file" == "functions/deploy.sh" ]]; then
+for script_file in {functions,utils}/*.sh; do
+    if [[ "$script_file" == "functions/deploy.sh" ]]; then
         # Ignore the deploy.sh file, it is meant to install the script
         continue
     fi
     # shellcheck source=/dev/null
-    source "$shell_file"
+    source "$script_file"
 done
 
 

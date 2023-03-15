@@ -193,7 +193,7 @@ get_app_status() {
 }
 
 stop_app() {
-    local stop_type app_name timeout status count cnpg
+    local stop_type app_name timeout status count
     stop_type="$1"
     app_name="$2"
     timeout="${3:-300}"

@@ -98,7 +98,7 @@ mount_app_func(){
                     sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
         if [[ "$status" != "STOPPED" ]]; then
             echo -e "\nStopping ${blue}$app${reset} prior to mount"
-            if ! cli -c 'app chart_release scale release_name='\""$app"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then
+            if ! stop_app "normal" "$app" "${timeout:-100}"; then
                 echo -e "${red}Failed to stop ${blue}$app${reset}"
                 exit 1
             else
@@ -233,7 +233,7 @@ mount_app_func(){
                 title
                 break
                 ;;
-            [Nn] | [Nn][Oo])
+            [Nn] | [Nn][Oo]|"")
                 exit
                 ;;
             *)

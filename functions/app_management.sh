@@ -75,7 +75,7 @@ restart_app_prompt(){
             "yes"|"y")
                 continue
                 ;;
-            "no"|"n")
+            "no"|"n"|"")
                 break
                 ;;
             *)
@@ -102,7 +102,7 @@ delete_app_prompt(){
         while true; do
             read -rt 120 -p "Continue with deletion?(y/n): " confirmation || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
             case "$(echo "$confirmation" | tr '[:upper:]' '[:lower:]')" in
-                "y")
+                "yes"|"y")
                     if cli -c "app chart_release delete release_name=\"$app_name\""; then
                         echo -e "${green}App $app_name deleted${reset}"
                     else
@@ -110,7 +110,7 @@ delete_app_prompt(){
                     fi
                     break
                     ;;
-                "n")
+                "no"|"n"|"")
                     echo -e "Exiting.."
                     break
                     ;;
@@ -122,10 +122,10 @@ delete_app_prompt(){
         done
         read -rt 120 -p "Would you like to delete another application? (y/n): " choice || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case "$(echo "$choice" | tr '[:upper:]' '[:lower:]')" in
-            "y")
+            "yes"|"y")
                 continue
                 ;;
-            "n")
+            "no"|"n"|"")
                 break
                 ;;
             *)
@@ -145,7 +145,7 @@ stop_app_prompt(){
         
         echo -e "Stopping ${blue}$app_name${reset}..."
 
-        if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then
+        if ! stop_app "normal" "$app_name" "${timeout:-100}"; then
             echo -e "${red}Failed to stop ${blue}$app_name${reset}"
         else
             echo -e "${blue}$app_name ${green}Stopped${reset}"
@@ -153,10 +153,10 @@ stop_app_prompt(){
 
         read -rt 120 -p "Would you like to stop another application? (y/n): " choice || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case "$(echo "$choice" | tr '[:upper:]' '[:lower:]')" in
-            "y")
+            "yes"|"y")
                 continue
                 ;;
-            "n")
+            "no"|"n"|"")
                 break
                 ;;
             *)
@@ -211,10 +211,10 @@ start_app_prompt(){
 
         read -rt 120 -p "Would you like to start another application? (y/n): " choice || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case "$(echo "$choice" | tr '[:upper:]' '[:lower:]')" in
-            "y")
+            "yes"|"y")
                 continue
                 ;;
-            "n")
+            "no"|"n"|"")
                 break
                 ;;
             *)

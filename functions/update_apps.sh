@@ -177,7 +177,7 @@ pre_process(){
         if [[ "$verbose" == true ]]; then
             echo_array+=("Stopping prior to update..")
         fi
-        if stop_app ; then
+        if stop_app "update" "$app_name" "${timeout:-100}" ; then
             echo_array+=("Stopped")
         else
             echo_array+=("Error: Failed to stop $app_name")
@@ -274,7 +274,7 @@ post_process(){
                 if [[ "$verbose" == true ]]; then
                     echo_array+=("Returing to STOPPED state..")
                 fi
-                if stop_app ; then
+                if stop_app "update" "$app_name" "${timeout:-100}" ; then
                     echo_array+=("Stopped")
                 else
                     echo_array+=("Error: Failed to stop $app_name")
@@ -309,7 +309,7 @@ post_process(){
                     echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
                     echo_array+=("The application failed to be ACTIVE even after a rollback")
                     echo_array+=("Manual intervention is required\nStopping, then Abandoning")
-                    if stop_app ; then
+                    if stop_app "update" "$app_name" "${timeout:-100}" ; then
                         echo_array+=("Stopped")
                     else
                         echo_array+=("Error: Failed to stop $app_name")
@@ -324,7 +324,7 @@ post_process(){
                 echo_array+=("If this is a slow starting application, set a higher timeout with -t")
                 echo_array+=("If this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration")
                 echo_array+=("Manual intervention is required\nStopping, then Abandoning")
-                if stop_app ; then
+                if stop_app "update" "$app_name" "${timeout:-100}" ; then
                     echo_array+=("Stopped")
                 else
                     echo_array+=("Error: Failed to stop $app_name")
@@ -414,32 +414,6 @@ update_app() {
     done
 }
 export -f update_app
-
-
-
-stop_app() {
-    # Continuously try to stop the app until it is stopped or the maximum number of tries is reached
-    for (( count=0; count<3; count++ )); do
-        status=$(grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
-        if [[ "$status" == "STOPPED" ]]; then
-            return 0
-        elif cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then
-            return 0
-        else
-            # Upon failure, wait for status update before continuing
-            before_loop=$(head -n 1 all_app_status)
-            until [[ $(head -n 1 all_app_status) != "$before_loop" ]]; do
-                sleep 1
-            done
-        fi
-    done
-
-    # If the app is still not stopped, return an error code
-    if [[ "$status" != "STOPPED" ]]; then
-        return 1
-    fi
-}
-export -f stop_app
 
 
 echo_array(){

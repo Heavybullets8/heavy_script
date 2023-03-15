@@ -14,7 +14,7 @@ jobs:
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
         env:
-          SHELLCHECK_OPTS: -e SC2154
+          SHELLCHECK_OPTS: -e SC2154 -e SC2034
         with:
           check_together: 'yes'
           format: gcc

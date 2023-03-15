@@ -210,7 +210,7 @@ start_app_prompt(){
         cnpg=$(k3s kubectl get pods -n ix-"$app_name" -o=name | grep -q -- '-cnpg-' && echo "true" || echo "false")
 
         if [[ $cnpg == "true" ]]; then
-            k3s kubectl get deployments,statefulsets -n ix-"$app_name" | grep -vE -- "(NAME|^$|-cnpg-)" | awk '{print $1}' | xargs -I{} k3s kubectl scale --replicas="$replica_count" -n ix-"$app_name" {} &>/dev/null
+            k3s kubectl get deployments,statefulsets -n ix-"$app_name" | grep -vE -- "(NAME|^$|-cnpg-)" | awk '{print $1}' | sort -r | xargs -I{} k3s kubectl scale --replicas="$replica_count" -n ix-"$app_name" {} &>/dev/null
             #TODO: Add a check to ensure the pods are running
             echo -e "${yellow}Sent the command to start all pods in: $app_name${reset}"
             echo -e "${yellow}However, HeavyScript cannot monitor the new applications${reset}"

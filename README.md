@@ -22,7 +22,7 @@
 
 ## The Menu
 
-![image](https://user-images.githubusercontent.com/20793231/217160027-8112a76f-13f3-4aaa-8a64-4a84f1a68ed6.png)
+![image](https://user-images.githubusercontent.com/20793231/226242159-f4248e0c-649a-47f1-9ee3-293165f4af3b.png)
 > Access this with `heavyscript`
 
 <br >

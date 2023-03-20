@@ -144,16 +144,9 @@ pre_process(){
 
     echo_array+=("\n$app_name")
 
-    # Check if app is external services, append outcome to external_services file
-    if [[ ! -e external_services ]]; then
-        touch external_services
-    fi
-    if ! grep -qs "^$app_name," external_services ; then 
-        if ! grep -qs "/external-service" "/mnt/${pool}/ix-applications/releases/${app_name}/charts/$(find "/mnt/${pool}/ix-applications/releases/${app_name}/charts/" -maxdepth 1 -type d -printf '%P\n' | sort -r | head -n 1)/Chart.yaml"; then
-            echo "$app_name,false" >> external_services
-        else
-            echo "$app_name,true" >> external_services
-        fi
+    # TODO: remove this after a while
+    if [[ -e external_services ]]; then
+        rm external_services
     fi
 
     # If application is deploying prior to updating, attempt to wait for it to finish
@@ -200,11 +193,21 @@ pre_process(){
         return
     fi
 
+    # Pull the number of replicas for the app
+    replicas=$(pull_replicas "$app_name")
 
     # If rollbacks are enabled, or startstatus is stopped
     if [[ $rollback == true || "$startstatus"  ==  "STOPPED" ]]; then
         # If app is external services, skip post processing
-        if grep -qs "^$app_name,true" external_services; then 
+        if [[ $replicas == "0" ]]; then
+            if [[ "$verbose" == true ]]; then
+                echo_array+=("Application has 0 replicas, skipping post processing")
+            fi
+            echo_array
+            return
+        elif [[ $replicas == "null" ]]; then
+            echo_array+=("HeavyScript does not know how many replicas this app has, skipping post processing")
+            echo_array+=("Please submit a bug report on github so this can be fixed")
             echo_array
             return
         elif [[ "$old_full_ver" == "$new_full_ver" ]]; then 

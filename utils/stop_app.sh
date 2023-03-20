@@ -15,6 +15,7 @@ wait_for_pods_to_stop() {
     done
 }
 
+
 get_app_status() {
     local app_name stop_type
     app_name="$1"
@@ -28,6 +29,7 @@ get_app_status() {
             awk -F ',' '{print $2}'
     fi
 }
+
 
 stop_app() {
     local stop_type app_name timeout status count

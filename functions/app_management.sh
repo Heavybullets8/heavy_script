@@ -185,7 +185,15 @@ start_app_prompt(){
             echo -e "${yellow}1. The application does not accept a replica count (external services, cert-manager etc)${reset}"
             echo -e "${yellow}2. The application is set to 0 replicas in its configuration${reset}"
             echo -e "${yellow}If you beleive this to be a mistake, please submit a bug report on the github.${reset}"
-            break
+            exit
+        fi
+
+        if [[ $replica_count == "null" ]]; then
+            echo -e "${blue}$app_name${red} cannot be started${reset}"
+            echo -e "${yellow}Replica count is null${reset}"
+            echo -e "${yellow}Looks like you found an application HS cannot handle${reset}"
+            echo -e "${yellow}Please submit a bug report on the github.${reset}"
+            exit
         fi
 
         echo -e "Starting ${blue}$app_name${reset}..."

@@ -20,18 +20,16 @@ else
     hs_version=${current_version}
 fi
 
+# Source all the functions and utilities
+for script_file in {functions,utils}/*.sh; do
+    if [[ "$script_file" == "functions/deploy.sh" ]]; then
+        # Ignore the deploy.sh file, it is meant to install the script
+        continue
+    fi
+    # shellcheck source=/dev/null
+    source "$script_file"
+done
 
-source functions/patch.sh
-source functions/backup.sh
-source functions/dns.sh
-source functions/menu.sh
-source functions/misc.sh
-source functions/mount.sh
-source functions/self_update.sh
-source functions/update_apps.sh
-source functions/cmd_to_container.sh
-source functions/script_create.sh
-source functions/app_management.sh
 
 # colors
 reset='\033[0m'

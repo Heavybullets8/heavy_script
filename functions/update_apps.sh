@@ -142,17 +142,11 @@ pre_process(){
     new_full_ver=$(echo "${array[$index]}" | awk -F ',' '{print $5}') #Upraded To
     rollback_version=$(echo "${array[$index]}" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
 
+    echo_array+=("\n$app_name")
 
-    # Check if app is external services, append outcome to external_services file
-    if [[ ! -e external_services ]]; then
-        touch external_services
-    fi
-    if ! grep -qs "^$app_name," external_services ; then 
-        if ! grep -qs "/external-service" "/mnt/${pool}/ix-applications/releases/${app_name}/charts/$(find "/mnt/${pool}/ix-applications/releases/${app_name}/charts/" -maxdepth 1 -type d -printf '%P\n' | sort -r | head -n 1)/Chart.yaml"; then
-            echo "$app_name,false" >> external_services
-        else
-            echo "$app_name,true" >> external_services
-        fi
+    # TODO: remove this after a while
+    if [[ -e external_services ]]; then
+        rm external_services
     fi
 
     # If application is deploying prior to updating, attempt to wait for it to finish
@@ -172,12 +166,11 @@ pre_process(){
     fi
 
     # If user is using -S, stop app prior to updating
-    echo_array+=("\n$app_name")
     if [[ $stop_before_update == true && "$startstatus" !=  "STOPPED" ]]; then # Check to see if user is using -S or not
         if [[ "$verbose" == true ]]; then
             echo_array+=("Stopping prior to update..")
         fi
-        if stop_app ; then
+        if stop_app "update" "$app_name" "${timeout:-100}" ; then
             echo_array+=("Stopped")
         else
             echo_array+=("Error: Failed to stop $app_name")
@@ -200,11 +193,21 @@ pre_process(){
         return
     fi
 
+    # Pull the number of replicas for the app
+    replicas=$(pull_replicas "$app_name")
 
     # If rollbacks are enabled, or startstatus is stopped
     if [[ $rollback == true || "$startstatus"  ==  "STOPPED" ]]; then
         # If app is external services, skip post processing
-        if grep -qs "^$app_name,true" external_services; then 
+        if [[ $replicas == "0" ]]; then
+            if [[ "$verbose" == true ]]; then
+                echo_array+=("Application has 0 replicas, skipping post processing")
+            fi
+            echo_array
+            return
+        elif [[ $replicas == "null" ]]; then
+            echo_array+=("HeavyScript does not know how many replicas this app has, skipping post processing")
+            echo_array+=("Please submit a bug report on github so this can be fixed")
             echo_array
             return
         elif [[ "$old_full_ver" == "$new_full_ver" ]]; then 
@@ -274,7 +277,7 @@ post_process(){
                 if [[ "$verbose" == true ]]; then
                     echo_array+=("Returing to STOPPED state..")
                 fi
-                if stop_app ; then
+                if stop_app "update" "$app_name" "${timeout:-100}" ; then
                     echo_array+=("Stopped")
                 else
                     echo_array+=("Error: Failed to stop $app_name")
@@ -309,7 +312,7 @@ post_process(){
                     echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
                     echo_array+=("The application failed to be ACTIVE even after a rollback")
                     echo_array+=("Manual intervention is required\nStopping, then Abandoning")
-                    if stop_app ; then
+                    if stop_app "update" "$app_name" "${timeout:-100}" ; then
                         echo_array+=("Stopped")
                     else
                         echo_array+=("Error: Failed to stop $app_name")
@@ -324,7 +327,7 @@ post_process(){
                 echo_array+=("If this is a slow starting application, set a higher timeout with -t")
                 echo_array+=("If this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration")
                 echo_array+=("Manual intervention is required\nStopping, then Abandoning")
-                if stop_app ; then
+                if stop_app "update" "$app_name" "${timeout:-100}" ; then
                     echo_array+=("Stopped")
                 else
                     echo_array+=("Error: Failed to stop $app_name")
@@ -414,32 +417,6 @@ update_app() {
     done
 }
 export -f update_app
-
-
-
-stop_app() {
-    # Continuously try to stop the app until it is stopped or the maximum number of tries is reached
-    for (( count=0; count<3; count++ )); do
-        status=$(grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
-        if [[ "$status" == "STOPPED" ]]; then
-            return 0
-        elif cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then
-            return 0
-        else
-            # Upon failure, wait for status update before continuing
-            before_loop=$(head -n 1 all_app_status)
-            until [[ $(head -n 1 all_app_status) != "$before_loop" ]]; do
-                sleep 1
-            done
-        fi
-    done
-
-    # If the app is still not stopped, return an error code
-    if [[ "$status" != "STOPPED" ]]; then
-        return 1
-    fi
-}
-export -f stop_app
 
 
 echo_array(){

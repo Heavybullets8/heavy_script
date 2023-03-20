@@ -22,7 +22,13 @@ prune(){
                awk -F '-' '{print $3}' | 
                awk -F '.' '{print $1 $2}' |  
                tr -d " \t\r\.")"
-    if (( "$version" >= 2212 )); then
+    if (( "$version" >= 2310 )); then
+        if ! cli -c 'app container config prune prune_options={"remove_unused_images": true}' &>/dev/null ; then
+            echo -e "Failed to Prune Docker Images"
+        else
+            echo -e "Pruned Docker Images"
+        fi
+    elif (( "$version" >= 2212 )); then
         if ! cli -c 'app container config prune prune_options={"remove_unused_images": true, "remove_stopped_containers": true}' | head -n -4; then
             echo -e "Failed to Prune Docker Images"
         fi
@@ -144,12 +150,12 @@ add_script_to_global_path(){
         echo -e "${bold}CronJobs${reset}"
         echo -e "${bold}--------${reset}"
         echo -e "CronJobs still require the entire path, and prefaced with ${blue}bash ${reset}"
-        echo -e "Example of my personal cron: ${blue}bash /root/heavy_script/heavy_script.sh -b 14 -rsp --self-update -u 10${reset}"
+        echo -e "Example of my personal cron: ${blue}bash $HOME/heavy_script/heavy_script.sh -b 14 -rsp --self-update -u 10${reset}"
         echo -e "It is highly recommended that you update your cron to use the new path"
         echo
         echo -e "${bold}Note${reset}"
         echo -e "${bold}----${reset}"
-        echo -e "HeavyScript has been redownloaded to: ${blue}/root/heavy_script${reset}"
+        echo -e "HeavyScript has been redownloaded to: ${blue}$HOME/heavy_script${reset}"
         echo -e "It is recommended that you remove your old copy of HeavyScript"
         echo -e "If you keep your old copy, you'll have to update both, manage both etc."
     else

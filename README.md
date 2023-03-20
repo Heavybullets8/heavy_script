@@ -14,7 +14,9 @@
 * [How to Install](#how-to-install)
 * [How to Update](#how-to-update)
 * [Cron Jobs](#cron-jobs)
+* [To-Do List](#to-do-list)
 * [Additional Information](#additional-information)
+
 
 <br>
 
@@ -148,6 +150,22 @@ heavyscript --self-update -b 10 -supr
 bash /root/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u 10
 ```
 
+
+<br >
+<br >
+
+## To-Do List
+
+### Current Issues
+
+- [ ] Issue 1: "Command to container" and "Logs" functions do not currently support applications with multiple replicas
+
+### Improvements
+
+- [ ] Improvement 1: Refactor the code to split up large functions into smaller, more manageable functions
+- [ ] Improvement 2: Move frequently used smaller functions to the "utils" folder and ensure all relevant sections of the script utilize them
+
+> If you would like to suggest additional items for these lists, please open an issue.
 
 <br >
 <br >

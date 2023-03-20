@@ -175,32 +175,17 @@ start_app_prompt(){
         clear -x
         title
 
-        # Pull chart info
-        initial_call=$(midclt call chart.release.get_instance "$app_name")
-
-        # query chart name
-        query_name=$(echo "$initial_call" | jq .chart_metadata.name | 
-                    sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-
-        # check if chart is an external service
-        if [[ $query_name == \"external-service\" ]]; then
-            echo -e "${blue}$app_name${red} is an external service.${reset}"
-            echo -e "${red}These application types cannot be started.${reset}"
-            break
-        # check if chart is an ix-chart
-        elif [[ $query_name == \"ix-chart\" ]]; then
-            echo -e "${blue}$app_name${red} is an ix-chart.${reset}"
-            echo -e "${red}These application types do not have a replica assigned to them.${reset}"
-            echo -e "${red}As of now these application types are unsupported.${reset}"
-            break
-        fi
-
         # Query chosen replica count for the application
-        replica_count=$(echo "$initial_call" | jq '.config.controller.replicas // .config.workload.main.replicas // 1')
+        replica_count=$(replica_count "$app_name")
 
-        if [[ $replica_count == 1 && "$(echo "$initial_call" | jq '.config.controller.replicas, .config.workload.main.replicas')" == "NULL, NULL" ]]; then
-            echo -e "${red}Failed to get replica count for ${blue}$app_name${reset}"
-            echo -e "${yellow}Defaulting to ${blue}1${reset}"
+        if [[ $replica_count == "0" ]]; then
+            echo -e "${blue}$app_name${red} cannot be started${reset}"
+            echo -e "${yellow}Replica count is 0${reset}"
+            echo -e "${yellow}This could be due to:${reset}"
+            echo -e "${yellow}1. The application does not accept a replica count (external services, cert-manager etc)${reset}"
+            echo -e "${yellow}2. The application is set to 0 replicas in its configuration${reset}"
+            echo -e "${yellow}If you beleive this to be a mistake, please submit a bug report on the github.${reset}"
+            break
         fi
 
         echo -e "Starting ${blue}$app_name${reset}..."

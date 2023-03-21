@@ -31,17 +31,31 @@ get_app_status() {
 }
 
 
+scale_down_resources() {
+    local app_name timeout
+    app_name="$1"
+    timeout="$2"
+
+    if ! k3s kubectl get deployments,statefulsets -n ix-"$app_name" | grep -vE -- "(NAME|^$|-cnpg-)" | awk '{print $1}' | xargs -I{} k3s kubectl scale --replicas=0 -n ix-"$app_name" {} &>/dev/null; then
+        return 1
+    fi
+    wait_for_pods_to_stop "$app_name" "$timeout" && return 0 || return 1
+}
+
+
 stop_app() {
     local stop_type app_name timeout status count
     stop_type="$1"
     app_name="$2"
     timeout="${3:-100}"
 
-    if k3s kubectl get pods -n ix-"$app_name" -o=name | grep -q -- '-cnpg-'; then
-        if ! k3s kubectl get deployments,statefulsets -n ix-"$app_name" | grep -vE -- "(NAME|^$|-cnpg-)" | awk '{print $1}' | xargs -I{} k3s kubectl scale --replicas=0 -n ix-"$app_name" {} &>/dev/null; then
-            return 1
-        fi
-        wait_for_pods_to_stop "$app_name" "$timeout" && return 0 || return 1
+    # Grab chart info
+    chart_info=$(midclt call chart.release.get_instance "$app_name")
+
+    if printf "%s" "$chart_info" | grep -q -- \"cnpg\":; then
+        scale_down_resources "$app_name" "$timeout" && return 0 || return 1
+    elif printf "%s" "$chart_info" | jq '.config.service | to_entries[] | .value.selectorLabels."app.kubernetes.io/name"' | grep -q "prometheus"; then
+        scale_down_resources "$app_name" "$timeout" && return 0 || return 1
     else
         for (( count=0; count<3; count++ )); do
             status=$(get_app_status "$app_name" "$stop_type")
@@ -67,3 +81,4 @@ stop_app() {
         return 1
     fi
 }
+

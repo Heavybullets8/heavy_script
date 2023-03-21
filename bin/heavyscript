@@ -1,21 +1,26 @@
 #!/bin/bash
 
+set -Eeuo pipefail
+
 script_dir="$HOME/heavy_script"
+
+err_exit() {
+    >&2 echo "$1"
+
+    exit "${2:-1}"
+}
 
 # Exit if the script directory doesn't exist
 if [[ ! -d "$script_dir" ]]; then
-    echo "Error: $script_dir does not exist."
-    exit 1
+    err_exit "Error: $script_dir does not exist."
 fi
 
-# Save the current working directory
-orig_cwd="$(pwd)"
+(
+    # Change to the script directory
+    if ! cd "$script_dir" ; then
+        err_exit "Error: Failed to change to $script_dir"
+    fi
 
-# Change to the script directory
-cd "$script_dir" || { echo "Error: Failed to change to $script_dir"; exit 1; }
-
-# Pass all arguments '$@' to heavy_script.sh
-bash ./heavy_script.sh "$@"
-
-# Change back to the original working directory
-cd "$orig_cwd" || { echo "Error: Failed to change to $orig_cwd"; exit 1; }
+    # Pass all arguments '$@' to heavy_script.sh
+    bash ./heavy_script.sh "$@"
+)

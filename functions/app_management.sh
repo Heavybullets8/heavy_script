@@ -145,10 +145,13 @@ stop_app_prompt(){
         
         echo -e "Stopping ${blue}$app_name${reset}..."
 
-        if ! stop_app "normal" "$app_name" "${timeout:-100}"; then
-            echo -e "${red}Failed to stop ${blue}$app_name${reset}"
+        stop_app "normal" "$app_name" "${timeout:-50}"
+        result=$(handle_stop_code "$?")
+        if [[ $? -eq 1 ]]; then
+            echo -e "${red}${result}${reset}"
+            exit 1
         else
-            echo -e "${blue}$app_name ${green}Stopped${reset}"
+            echo -e "${green}${result}${reset}"
         fi
 
         read -rt 120 -p "Would you like to stop another application? (y/n): " choice || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }

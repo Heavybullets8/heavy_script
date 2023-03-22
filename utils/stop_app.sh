@@ -52,9 +52,9 @@ stop_app() {
     # Grab chart info
     chart_info=$(midclt call chart.release.get_instance "$app_name")
 
-    if printf "%s" "$chart_info" | grep -q -- \"cnpg\":; then
+    if printf "%s" "$chart_info" | grep -sq -- \"cnpg\":;then
         scale_down_resources "$app_name" "$timeout" && return 0 || return 1
-    elif printf "%s" "$chart_info" | jq '.config.service | to_entries[] | .value.selectorLabels."app.kubernetes.io/name"' | grep -q "prometheus"; then
+    elif printf "%s" "$chart_info" | grep -sq -- \"prometheus\":;then
         scale_down_resources "$app_name" "$timeout" && return 0 || return 1
     else
         for (( count=0; count<3; count++ )); do

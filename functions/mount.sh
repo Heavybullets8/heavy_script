@@ -98,8 +98,8 @@ mount_app_func(){
                     sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
         if [[ "$status" != "STOPPED" ]]; then
             echo -e "\nStopping ${blue}$app${reset} prior to mount"
-            result=$(stop_app "normal" "$app" "${timeout:-50}")
-            handle=$(handle_stop_code "$result")
+            stop_app "normal" "$app" "${timeout:-50}"
+            handle=$(handle_stop_code "$?")
             exit_status=$?
 
             if [[ $exit_status -eq 1 ]]; then

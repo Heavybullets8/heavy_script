@@ -35,12 +35,6 @@ commander(){
         echo "Image Updates: Enabled"
     fi
 
-    pool=$(cli -c 'app kubernetes config' | 
-           grep -E "dataset\s\|" | 
-           awk -F '|' '{print $3}' | 
-           awk -F '/' '{print $1}' | 
-           sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-
     index=0
     for app in "${array[@]}"
     do
@@ -366,7 +360,7 @@ rollback_app() {
     for (( count=0; count<3; count++ )); do
         if [[ "$app_update_avail" == "true" ]]; then
             return 0
-        elif cli -c "app chart_release rollback release_name=\"$app_name\" rollback_options={\"item_version\": \"$rollback_version\"}" &> /dev/null; then
+        elif timeout 150s cli -c "app chart_release rollback release_name=\"$app_name\" rollback_options={\"item_version\": \"$rollback_version\"}" &> /dev/null; then
             return 0
         else
             # Upon failure, wait for status update before continuing
@@ -396,7 +390,7 @@ update_app() {
         if [[ $update_avail =~ "true" ]]; then
             # Try updating the app up to 3 times
             for (( count=0; count<3; count++ )); do
-                if cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null; then
+                if timeout 250s cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null; then
                     # If the update was successful, break out of the loop
                     return 0
                 else

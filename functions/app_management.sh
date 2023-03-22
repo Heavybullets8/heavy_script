@@ -179,7 +179,7 @@ start_app_prompt(){
         title
 
         # Query chosen replica count for the application
-        replica_count=$(replica_count "$app_name")
+        replica_count=$(pull_replicas "$app_name")
 
         if [[ $replica_count == "0" ]]; then
             echo -e "${blue}$app_name${red} cannot be started${reset}"

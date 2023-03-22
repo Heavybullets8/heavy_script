@@ -50,6 +50,7 @@ handle_stop_code() {
     case "$stop_code" in
         0)
             echo "Stopped"
+            return 0
             ;;
         1)
             echo -e "Failed to stop\nManual intervention may be required"
@@ -65,6 +66,7 @@ handle_stop_code() {
             ;;
     esac
 }
+
 
 
 

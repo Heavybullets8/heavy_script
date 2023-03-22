@@ -99,14 +99,14 @@ mount_app_func(){
         if [[ "$status" != "STOPPED" ]]; then
             echo -e "\nStopping ${blue}$app${reset} prior to mount"
             result=$(stop_app "normal" "$app" "${timeout:-50}")
-            output=$(handle_stop_code "$result")
+            handle=$(handle_stop_code "$result")
             exit_status=$?
 
             if [[ $exit_status -eq 1 ]]; then
-                echo -e "${red}${output}${reset}"
+                echo -e "${red}${handle}${reset}"
                 exit 1
             else
-                echo -e "${green}${output}${reset}"
+                echo -e "${green}${handle}${reset}"
             fi
         fi
         sleep 2

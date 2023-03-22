@@ -68,8 +68,6 @@ handle_stop_code() {
 }
 
 
-
-
 stop_app() {
     # Return 1 if cli command outright fails
     # Return 2 if timeout is reached
@@ -107,8 +105,3 @@ stop_app() {
 
     return 1
 }
-
-
-
-
-

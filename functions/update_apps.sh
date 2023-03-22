@@ -171,7 +171,7 @@ pre_process(){
             echo_array+=("Stopping prior to update..")
         fi
         stop_code=$(stop_app "update" "$app_name" "${timeout:-100}")
-        result=$(handle_stop_code "update" "$stop_code")
+        result=$(handle_stop_code "$stop_code")
         if [[ $? -eq 1 ]]; then
             echo_array+=("$result")
             echo_array
@@ -280,7 +280,7 @@ post_process(){
                     echo_array+=("Returing to STOPPED state..")
                 fi
                 stop_code=$(stop_app "update" "$app_name" "${timeout:-100}")
-                result=$(handle_stop_code "update" "$stop_code")
+                result=$(handle_stop_code "$stop_code")
                 if [[ $? -eq 1 ]]; then
                     echo_array+=("$result")
                     echo_array
@@ -317,7 +317,7 @@ post_process(){
                     echo_array+=("The application failed to be ACTIVE even after a rollback")
                     echo_array+=("Manual intervention is required\nStopping, then Abandoning")
                     stop_code=$(stop_app "update" "$app_name" "${timeout:-100}")
-                    result=$(handle_stop_code "update" "$stop_code")
+                    result=$(handle_stop_code "$stop_code")
                     if [[ $? -eq 1 ]]; then
                         echo_array+=("$result")
                         echo_array
@@ -334,7 +334,7 @@ post_process(){
                 echo_array+=("If this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration")
                 echo_array+=("Manual intervention is required\nStopping, then Abandoning")
                 stop_code=$(stop_app "update" "$app_name" "${timeout:-100}")
-                result=$(handle_stop_code "update" "$stop_code")
+                result=$(handle_stop_code "$stop_code")
                 if [[ $? -eq 1 ]]; then
                     echo_array+=("$result")
                     echo_array

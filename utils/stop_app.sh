@@ -44,9 +44,8 @@ scale_down_resources() {
 
 
 handle_stop_code() {
-    local stop_type stop_code
-    stop_type="$1"
-    stop_code="$2"
+    local stop_code
+    stop_code="$1"
 
     case "$stop_code" in
         0)

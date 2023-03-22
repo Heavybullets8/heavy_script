@@ -43,42 +43,71 @@ scale_down_resources() {
 }
 
 
+handle_stop_code() {
+    local stop_type stop_code
+    stop_type="$1"
+    stop_code="$2"
+
+    case "$stop_code" in
+        0)
+            echo "Stopped"
+            ;;
+        1)
+            echo -e "Failed to stop\nManual intervention may be required"
+            return 1
+            ;;
+        2)
+            echo -e "Timeout reached\nManual intervention may be required"
+            return 1
+            ;;
+        3)
+            echo "HeavyScript doesn't have the ability to stop Prometheus"
+            return 1
+            ;;
+    esac
+}
+
+
+
 stop_app() {
-    local stop_type app_name timeout status count
+    # Return 1 if cli command outright fails
+    # Return 2 if timeout is reached
+    # Return 3 if app is a prometheus instance
+
+    local stop_type app_name timeout status
     stop_type="$1"
     app_name="$2"
-    timeout="${3:-100}"
+    timeout="50"
 
     # Grab chart info
     chart_info=$(midclt call chart.release.get_instance "$app_name")
 
+    # Check if app has a cnpg pods
     if printf "%s" "$chart_info" | grep -sq -- \"cnpg\":;then
         scale_down_resources "$app_name" "$timeout" && return 0 || return 1
+    # Check if app is a prometheus instance
     elif printf "%s" "$chart_info" | grep -sq -- \"prometheus\":;then
-        scale_down_resources "$app_name" "$timeout" && return 0 || return 1
-    else
-        for (( count=0; count<3; count++ )); do
-            status=$(get_app_status "$app_name" "$stop_type")
-
-            if [[ "$status" == "STOPPED" ]]; then
-                return 0
-            elif cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' &> /dev/null; then
-                return 0
-            else
-                if [[ "$stop_type" == "update" ]]; then
-                    before_loop=$(head -n 1 all_app_status)
-                    until [[ $(head -n 1 all_app_status) != "$before_loop" ]]; do
-                        sleep 1
-                    done
-                else
-                    sleep 5
-                fi
-            fi
-        done
+        return 3
     fi
 
-    if [[ "$status" != "STOPPED" ]]; then
-        return 1
+    status=$(get_app_status "$app_name" "$stop_type")
+    if [[ "$status" == "STOPPED" ]]; then
+        return 0
     fi
+
+    timeout "${timeout}s" cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' &> /dev/null
+    timeout_result=$?
+
+    if [[ $timeout_result -eq 0 ]]; then
+        return 0
+    elif [[ $timeout_result -eq 124 ]]; then
+        return 2
+    fi
+
+    return 1
 }
+
+
+
+
 

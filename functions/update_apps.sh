@@ -170,12 +170,14 @@ pre_process(){
         if [[ "$verbose" == true ]]; then
             echo_array+=("Stopping prior to update..")
         fi
-        if stop_app "update" "$app_name" "${timeout:-100}" ; then
-            echo_array+=("Stopped")
-        else
-            echo_array+=("Error: Failed to stop $app_name")
+        stop_code=$(stop_app "update" "$app_name" "${timeout:-100}")
+        result=$(handle_stop_code "update" "$stop_code")
+        if [[ $? -eq 1 ]]; then
+            echo_array+=("$result")
             echo_array
-            return 1
+            return
+        else
+            echo_array+=("$result")
         fi
     fi
 
@@ -277,12 +279,14 @@ post_process(){
                 if [[ "$verbose" == true ]]; then
                     echo_array+=("Returing to STOPPED state..")
                 fi
-                if stop_app "update" "$app_name" "${timeout:-100}" ; then
-                    echo_array+=("Stopped")
-                else
-                    echo_array+=("Error: Failed to stop $app_name")
+                stop_code=$(stop_app "update" "$app_name" "${timeout:-100}")
+                result=$(handle_stop_code "update" "$stop_code")
+                if [[ $? -eq 1 ]]; then
+                    echo_array+=("$result")
                     echo_array
-                    return 1
+                    return
+                else
+                    echo_array+=("$result")
                 fi
                 break
             else
@@ -312,12 +316,14 @@ post_process(){
                     echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
                     echo_array+=("The application failed to be ACTIVE even after a rollback")
                     echo_array+=("Manual intervention is required\nStopping, then Abandoning")
-                    if stop_app "update" "$app_name" "${timeout:-100}" ; then
-                        echo_array+=("Stopped")
-                    else
-                        echo_array+=("Error: Failed to stop $app_name")
+                    stop_code=$(stop_app "update" "$app_name" "${timeout:-100}")
+                    result=$(handle_stop_code "update" "$stop_code")
+                    if [[ $? -eq 1 ]]; then
+                        echo_array+=("$result")
                         echo_array
-                        return 1
+                        return
+                    else
+                        echo_array+=("$result")
                     fi
                     break
                 fi
@@ -327,12 +333,14 @@ post_process(){
                 echo_array+=("If this is a slow starting application, set a higher timeout with -t")
                 echo_array+=("If this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration")
                 echo_array+=("Manual intervention is required\nStopping, then Abandoning")
-                if stop_app "update" "$app_name" "${timeout:-100}" ; then
-                    echo_array+=("Stopped")
-                else
-                    echo_array+=("Error: Failed to stop $app_name")
+                stop_code=$(stop_app "update" "$app_name" "${timeout:-100}")
+                result=$(handle_stop_code "update" "$stop_code")
+                if [[ $? -eq 1 ]]; then
+                    echo_array+=("$result")
                     echo_array
-                    return 1
+                    return
+                else
+                    echo_array+=("$result")
                 fi
                 break
             fi

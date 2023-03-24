@@ -1,5 +1,11 @@
 # HeavyScript
 
+## Contact
+
+If you have questions or would like to contribute, I have a sub discord category hosted on the Truecharts Discord.
+
+[https://discord.gg/tVsPTHWTtr](https://discord.gg/tVsPTHWTtr)
+
 ## Website 
 
 [HeavySetup - Further Explanation](https://heavysetup.info/scripts/heavyscript/about/)

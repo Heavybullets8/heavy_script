@@ -30,6 +30,11 @@ find functions utils -name "*.sh" ! -name "handler.sh" | while read -r script_fi
     source "$script_file"
 done
 
+source functions/dns/handler.sh
+source functions/dns/dns_standard.sh
+source functions/dns/dns_verbose.sh
+source functions/dns/help.sh
+
 # Source all handler functions
 find functions utils -name "handler.sh" | while read -r script_file; do
     # shellcheck source=/dev/null

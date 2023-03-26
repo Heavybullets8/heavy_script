@@ -31,6 +31,8 @@ self_update() {
         fi
     fi
 
+    echo "${args[@]}"
+
     # Unset the self-update argument
     for i in "${!args[@]}"; do
         if [[ "${args[$i]}" == "self-update" ]]; then

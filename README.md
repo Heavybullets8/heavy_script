@@ -66,18 +66,18 @@ If you have questions or would like to contribute, I have a sub discord category
 ### Utilities
 > All of these can ALSO be accessed with the HeavyScript menu, that you can access simply by not providing an argument `heavyscript`
 
-| Flag            | Description                                                                                  |
-|-----------------|----------------------------------------------------------------------------------------------|
-| --mount         | Initiates mounting feature, choose between unmounting and mounting PVC data                  |
-| --restore       | Opens a menu to restore a HeavyScript backup that was taken on your ix-applications dataset  |
-| --delete-backup | Opens a menu to delete backups on your system                                                |
-| --dns           | List all of your applications DNS names and their web ports                                  |
-| --cmd           | Open a shell for one of your applications                                                    |
-| --logs          | Open logs for one of your applications                                                       |
-| --start-app     | Opens menu to Start one of your applications                                                 |
-| --stop-app      | Opens menu to Stop one of your applications                                                  |
-| --restart-app   | Opens menu to Restart one of your applications                                               |
-| --delete-app    | Opens menu to Delete one of your applications                                                |
+| Flag            | Options | Description                                                                                  |
+|-----------------|---------|----------------------------------------------------------------------------------------------|
+| --mount         |         | Initiates mounting feature, choose between unmounting and mounting PVC data                  |
+| --restore       |         | Opens a menu to restore a HeavyScript backup that was taken on your ix-applications dataset  |
+| --delete-backup |         | Opens a menu to delete backups on your system                                                |
+| --dns           | -v      | List all of your applications DNS names and their web ports (-v for verbose output)          |
+| --cmd           |         | Open a shell for one of your applications                                                    |
+| --logs          |         | Open logs for one of your applications                                                       |
+| --start-app     |         | Opens menu to Start one of your applications                                                 |
+| --stop-app      |         | Opens menu to Stop one of your applications                                                  |
+| --restart-app   |         | Opens menu to Restart one of your applications                                               |
+| --delete-app    |         | Opens menu to Delete one of your applications                                                |
 
 
 <br>

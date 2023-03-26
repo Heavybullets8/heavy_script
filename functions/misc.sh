@@ -83,7 +83,7 @@ help(){
     echo -e "${blue}--mount${reset}         | Access the mounting feature to mount or unmount PVC data"
     echo -e "${blue}--restore${reset}       | Open a menu to restore a backup from the \"ix-applications\" dataset"
     echo -e "${blue}--delete-backup${reset} | Open a menu to delete backups from your system"
-    echo -e "${blue}--dns${reset}           | View all application DNS names and web ports"
+    echo -e "${blue}--dns${reset}           | View all application DNS names and web ports (-v for verbose output)"
     echo -e "${blue}--cmd${reset}           | Open a shell for a selected application"
     echo -e "${blue}--logs${reset}          | View log file for a selected application"
     echo -e "${blue}--start-app${reset}     | Opens menu to start an application"

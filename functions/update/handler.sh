@@ -16,7 +16,7 @@ update_handler() {
   # Separate bundled short options
   args=()
   for arg in "$@"; do
-    if [[ $arg =~ ^-[srSpvtu]+$ ]]; then
+    if [[ $arg =~ ^-([srSpvtu])+$ ]]; then
       for opt in $(echo "$arg" | grep -o .); do
         args+=("-$opt")
       done

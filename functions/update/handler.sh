@@ -11,7 +11,7 @@ update_handler() {
                     all=true
                     ;;
                 help)
-                    help=true
+                    update_help
                     ;;
                 *)
                     echo -e "Invalid Option \"--$OPTARG\"\n"

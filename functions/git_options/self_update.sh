@@ -41,6 +41,9 @@ self_update() {
         fi
     done
 
+    # reinitialize the array
+    args=("${args[@]}")
+
     echo "${args[@]}"
 
     chmod +x "$script_name" ; chmod +x "$script_path"/bin/heavyscript 2>/dev/null

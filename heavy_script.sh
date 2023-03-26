@@ -65,6 +65,11 @@ while [[ "$#" -gt 0 ]]; do
         mount_handler "$@" # Pass remaining arguments to mount_handler
         exit
         ;;
+    self-update)
+        shift # Remove 'self-update' from the arguments
+        self_update_handler "$@" # Pass remaining arguments to self_update_handler
+        exit
+        ;;
     *)
       echo "Unknown command: $1"
       exit 1

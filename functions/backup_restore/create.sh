@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-backup(){
+create_backup(){
     echo_backup+=("🄱 🄰 🄲 🄺 🅄 🄿 🅂")
     echo_backup+=("Number of backups was set to $number_of_backups")
 

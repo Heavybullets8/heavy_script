@@ -2,94 +2,123 @@
 
 
 update_handler() {
-  local opt
-  while getopts ":b:ri:t:sSc:pv-:" opt; do
-    case "$opt" in
-        -)
-            case "${OPTARG}" in
-                all)
-                    all=true
-                    ;;
-                help)
-                    update_help
-                    ;;
-                *)
-                    echo -e "Invalid Option \"--$OPTARG\"\n"
-                    help
-                    ;;
-            esac
-            ;;
-      c)
-        concurrent_updates="$OPTARG"
-        if ! [[ "$concurrent_updates" =~ ^[0-9]+$ ]]; then
-          echo "Error: -c needs to be assigned an integer" >&2
-          echo "\"$concurrent_updates\" is not an integer" >&2
-          exit 1
-        fi
+  local backup=14
+  local concurrent=1
+  local timeout=500
+  local ignore=()
+  local prune=false
+  local rollback=false
+  local sync=false
+  local stop_before_update=false
+  local update_all_apps=false
+  local verbose=false
+
+
+  while [[ "$#" -gt 0 ]]; do
+    case $1 in
+      -A|--all)
+        update_all_apps=true
+        shift
         ;;
-      b)
-        number_of_backups=$OPTARG
-        if ! [[ $OPTARG =~ ^[0-9]+$  ]]; then
-            echo -e "Error: -b needs to be assigned an interger\n\"""$number_of_backups""\" is not an interger" >&2
+      -b|--backup)
+        shift
+        if ! [[ $1 =~ ^[0-9]+$  ]]; then
+            echo -e "Error: -b needs to be assigned an interger\n\"""$1""\" is not an interger" >&2
             exit
         fi
-        if [[ "$number_of_backups" -le 0 ]]; then
+        if [[ "$1" -le 0 ]]; then
             echo "Error: Number of backups is required to be at least 1"
             exit
         fi
+        backup="$1"
+        shift
         ;;
-      r)
-        rollback=true
+      -c|--concurrent)
+        shift
+        concurrent="$1"
+        shift
         ;;
-      i)
-        if ! [[ $OPTARG =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]]; then # Using case insensitive version of the regex used by Truenas Scale
-            echo -e "Error: \"$OPTARG\" is not a possible option for an application name"
+      -h|--help)
+        # Handle --help option here
+        update_help
+        exit
+        ;;
+      -i|--ignore)
+        shift
+        if ! [[ $1 =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]]; then # Using case insensitive version of the regex used by Truenas Scale
+            echo -e "Error: \"$1\" is not a possible option for an application name"
             exit
         else
-            ignore+=("$OPTARG")
+            ignore+=("$1")
         fi
+        
+        shift
         ;;
-      t)
-        timeout=$OPTARG
+      -I|--ignore-img)
+        # Handle --ignore-img option here
+        shift
+        ;;
+      -p|--prune)
+        prune=true
+        shift
+        ;;
+      -r|--rollback)
+        rollback=true
+        shift
+        ;;
+      -s|--sync)
+        sync=true
+        shift
+        ;;
+      -S|--stop)
+        stop_before_update=true
+        shift
+        ;;
+      -t|--timeout)
+        shift
+        timeout=$1
         if ! [[ $timeout =~ ^[0-9]+$ ]]; then
             echo -e "Error: -t needs to be assigned an interger\n\"""$timeout""\" is not an interger" >&2
             exit
         fi
+        shift
         ;;
-      s)
-        sync=true
+      -u|--self-update)
+        self_update_handler
+        shift
         ;;
-      S)
-        stop_before_update=true
-        ;;
-      p)
-        prune=true
-        ;;
-      v)
+      -v|--verbose)
         verbose=true
+        shift
         ;;
       *)
-        echo "Invalid option: -$OPTARG" >&2
+        echo "Unknown update option: $1"
         exit 1
         ;;
     esac
   done
 
-  # Remove the processed options
-  shift $((OPTIND-1))
-
-  # Check for --all option
-  if [[ "$1" == "--all" ]]; then
-    # Your logic for --all option
-    shift # Remove '--all' from the arguments
+  if [[ "$number_of_backups" -gt 1 && "$sync" == true ]]; then # Run backup and sync at the same time
+      echo "🅃 🄰 🅂 🄺 🅂 :"
+      echo -e "-Backing up ix-applications dataset\n-Syncing catalog(s)"
+      echo -e "Please wait for output from both tasks..\n\n"
+      backup &
+      sync &
+      wait
+  elif [[ "$number_of_backups" -gt 1 ]]; then # If only backup is true, run it
+      echo "🅃 🄰 🅂 🄺 :"
+      echo -e "-Backing up ix-applications dataset\nPlease wait..\n\n"
+      backup
+  elif [[ "$sync" == true ]]; then # If only sync is true, run it
+      echo "🅃 🄰 🅂 🄺 :"
+      echo -e "Syncing Catalog(s)\nThis can take a few minutes, please wait..\n\n"
+      sync
   fi
 
-  # If there are remaining arguments, show an error
-  if [[ "$#" -gt 0 ]]; then
-    echo "Unknown arguments: $*" >&2
-    exit 1
+  commander
+
+  if [[ "$prune" == true ]]; then
+      prune 
   fi
+
 }
-
-# In the main script, you can call the handler like this:
-# update_handler "${args[@]}"

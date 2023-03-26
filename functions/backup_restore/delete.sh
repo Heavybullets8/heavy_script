@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-deleteBackup(){
+delete_backup(){
     while true; do
         list_backups_func
 

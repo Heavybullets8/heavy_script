@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-restore(){
+restore_backup(){
     list_backups_func
 
     choose_restore "restore"

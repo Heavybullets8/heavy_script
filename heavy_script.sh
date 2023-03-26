@@ -89,12 +89,6 @@ do
              help)
                   help=true
                   ;;
-      self-update)
-                  self_update=true
-                  ;;
-              dns)
-                  dns=true
-                  ;;
               cmd)
                   cmd=true
                   ;;
@@ -135,71 +129,7 @@ do
          echo -e "Option: \"-$OPTARG\" requires an argument\n"
          help
          ;;
-      b)
-        number_of_backups=$OPTARG
-        if ! [[ $OPTARG =~ ^[0-9]+$  ]]; then
-            echo -e "Error: -b needs to be assigned an interger\n\"""$number_of_backups""\" is not an interger" >&2
-            exit
-        fi
-        if [[ "$number_of_backups" -le 0 ]]; then
-            echo "Error: Number of backups is required to be at least 1"
-            exit
-        fi
-        ;;
-      r)
-        rollback=true
-        ;;
-      i)
-        if ! [[ $OPTARG =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]]; then # Using case insensitive version of the regex used by Truenas Scale
-            echo -e "Error: \"$OPTARG\" is not a possible option for an application name"
-            exit
-        else
-            ignore+=("$OPTARG")
-        fi
-        ;;
-      t)
-        timeout=$OPTARG
-        if ! [[ $timeout =~ ^[0-9]+$ ]]; then
-            echo -e "Error: -t needs to be assigned an interger\n\"""$timeout""\" is not an interger" >&2
-            exit
-        fi
-        ;;
-      s)
-        sync=true
-        ;;
-      U)
-        update_all_apps=true
-        # Check next positional parameter
-        eval nextopt=${!OPTIND}
-        # existing or starting with dash?
-        if [[ -n $nextopt && $nextopt != -* ]] ; then
-            OPTIND=$((OPTIND + 1))
-            update_limit="$nextopt"
-        else
-            update_limit=1
-        fi        
-        ;;
-      u)
-        update_apps=true
-        # Check next positional parameter
-        eval nextopt=${!OPTIND}
-        # existing or starting with dash?
-        if [[ -n $nextopt && $nextopt != -* ]] ; then
-            OPTIND=$((OPTIND + 1))
-            update_limit="$nextopt"
-        else
-            update_limit=1
-        fi
-        ;;
-      S)
-        stop_before_update=true
-        ;;
-      p)
-        prune=true
-        ;;
-      v)
-        verbose=true
-        ;;
+
       *)
         echo -e "Invalid Option \"-$OPTARG\"\n"
         help

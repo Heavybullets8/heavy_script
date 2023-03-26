@@ -27,7 +27,7 @@ container_shell_or_logs(){
         clear -x
         title 
 
-        if [[ $logs == true || $1 == "logs" ]];then
+        if [[ $1 == "logs" ]];then
             echo -e "${bold}Logs to Container Menu${reset}"
             echo -e "${bold}----------------------${reset}"
         else
@@ -148,39 +148,16 @@ container_shell_or_logs(){
         title
         echo -e "${bold}App Name:${reset} ${blue}$app_name${reset}"
         echo -e "${bold}Container:${reset} ${blue}$container${reset}"
-        echo
-        echo -e "1)  Run a single command"
-        echo -e "2)  Open Shell"
-        echo
-        echo -e "0)  Exit"
-        read -rt 120 -p "Please choose an option: " selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
-        case $selection in
-            0)
-                echo -e "Exiting.."
-                exit
-                ;;
-            1)
-                clear -x 
-                title
-                read -rt 500 -p "What command do you want to run?: " command || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
-                # shellcheck disable=SC2086
-                # Quoting $command as suggested, causes the k3s command to fail
-                k3s crictl exec -it "$container_id" $command
-                break
-                ;;
-            2)
-                clear -x
-                title
-                if ! k3s crictl exec -it "$container_id" sh -c '[ -e /bin/bash ] && exec /bin/bash || exec /bin/sh'; then
-                    echo -e "${red}This container does not accept shell access, try a different one.${reset}"
-                fi
-                break
-                ;;
-            *)
-                echo -e "${red}That was not an option.. Try again${reset}"
-                sleep 3
-                ;;
-        esac
+        echo 
+        echo -e "If everything looks correct press enter/spacebar, or press ctrl+c to exit"
+        read -rsn1 -d ' ' ; echo
+        clear -x
+        title
+        if ! k3s crictl exec -it "$container_id" sh -c '[ -e /bin/bash ] && exec /bin/bash || exec /bin/sh'; then
+            echo -e "${red}This container does not accept shell access, try a different one.${reset}"
+        fi
+        break
     done
+
 }
 export -f container_shell_or_logs

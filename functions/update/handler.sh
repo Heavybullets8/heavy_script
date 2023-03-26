@@ -12,24 +12,6 @@ update_handler() {
   local update_all_apps=false
   local verbose=false
 
-  # Separate bundled short options
-  args=()
-  for arg in "$@"; do
-    if [[ $arg =~ ^-[srSpvtu]+$ ]]; then
-      for opt in $(echo "$arg" | grep -o .); do
-        if [[ $opt == "-" ]]; then
-          # Ignore the leading dash
-          continue
-        fi
-        args+=("-$opt")
-      done
-    else
-      args+=("$arg")
-    fi
-  done
-
-  # Replace "$@" with the new "args" array
-  set -- "${args[@]}"
 
   while [[ "$#" -gt 0 ]]; do
     case $1 in

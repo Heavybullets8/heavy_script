@@ -31,8 +31,15 @@ self_update() {
         fi
     fi
 
-    # Remove 'self-update' from the arguments array
-    args=("${args[@]//self-update/}")
+    # Unset the self-update argument
+    for i in "${!args[@]}"; do
+        if [[ "${args[$i]}" == "self-update" ]]; then
+            unset "args[$i]"
+            break
+        fi
+    done
+
+    echo "${args[@]}"
 
     chmod +x "$script_name" ; chmod +x "$script_path"/bin/heavyscript 2>/dev/null
 

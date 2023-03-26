@@ -32,29 +32,6 @@ while IFS= read -r script_file; do
 done < <(find functions utils -name "*.sh" -exec printf '%s\n' {} \;)
 
 
-while [[ "$#" -gt 0 ]]; do
-  case $1 in
-    dns)
-      shift # Remove 'dns' from the arguments
-      dns_handler "$@" # Pass remaining arguments to dns_handler
-      exit
-      ;;
-    update)
-        shift # Remove 'update' from the arguments
-        update_handler "$@" # Pass remaining arguments to update_handler
-        exit
-        ;;
-    *)
-      echo "Unknown command: $1"
-      exit 1
-      ;;
-  esac
-done
-
-
-
-
-
 # colors
 reset='\033[0m'
 red='\033[0;31m'
@@ -69,6 +46,32 @@ gray='\033[38;5;7m'
 if [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]]; then
     menu
 fi
+
+
+while [[ "$#" -gt 0 ]]; do
+  case $1 in
+    dns)
+      shift # Remove 'dns' from the arguments
+      dns_handler "$@" # Pass remaining arguments to dns_handler
+      exit
+      ;;
+    update)
+        shift # Remove 'update' from the arguments
+        update_handler "$@" # Pass remaining arguments to update_handler
+        exit
+        ;;
+    pvc)
+        shift # Remove 'mount' from the arguments
+        mount_handler "$@" # Pass remaining arguments to mount_handler
+        exit
+        ;;
+    *)
+      echo "Unknown command: $1"
+      exit 1
+      ;;
+  esac
+done
+
 
 # Parse script options
 while getopts ":si:rb:t:uUpSRv-:" opt

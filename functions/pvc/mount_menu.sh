@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-mount(){
+mount_promt(){
     ix_apps_pool=$(cli -c 'app kubernetes config' | 
                    grep -E "pool\s\|" | 
                    awk -F '|' '{print $3}' | 

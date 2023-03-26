@@ -46,14 +46,18 @@ while [[ "$#" -gt 0 ]]; do
     dns)
       shift # Remove 'dns' from the arguments
       dns_handler "$@" # Pass remaining arguments to dns_handler
-      break # Exit the loop
+      exit
       ;;
+    update)
+        shift # Remove 'update' from the arguments
+        update_handler "$@" # Pass remaining arguments to update_handler
+        exit
+        ;;
     *)
       echo "Unknown command: $1"
       exit 1
       ;;
   esac
-  shift # Remove the processed argument
 done
 
 

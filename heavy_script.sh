@@ -20,27 +20,16 @@ else
     hs_version=${current_version}
 fi
 
-# Source all handler functions
-find functions utils -name "handler.sh" | while read -r script_file; do
-    # shellcheck source=/dev/null
-    source "$script_file"
-done
 
-# Source all non-handler functions and utilities
-find functions utils -name "*.sh" ! -name "handler.sh" | while read -r script_file; do
+# Source all functions and utilities
+while IFS= read -r script_file; do
     if [[ "$script_file" == "functions/deploy.sh" ]]; then
         # Ignore the deploy.sh file, it is meant to install the script
         continue
     fi
     # shellcheck source=/dev/null
     source "$script_file"
-done
-
-# source functions/dns/handler.sh
-# source functions/dns/dns_standard.sh
-# source functions/dns/dns_verbose.sh
-# source functions/dns/help.sh
-
+done < <(find functions utils -name "*.sh" -exec printf '%s\n' {} \;)
 
 
 while [[ "$#" -gt 0 ]]; do

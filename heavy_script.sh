@@ -31,9 +31,6 @@ find functions utils -name "*.sh" | while read -r script_file; do
 done
 
 
-# Source necessary function files
-source functions/dns/handler.sh
-
 # Main script
 while [[ "$#" -gt 0 ]]; do
   case $1 in

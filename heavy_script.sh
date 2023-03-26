@@ -47,34 +47,44 @@ if [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]]; then
     menu
 fi
 
+args=("$@")
+
 # Check for self-update and update the script if required
 self_update_handler "$@"
+
+#remove self-update from args
+for i in "${!args[@]}"; do
+    if [[ "${args[$i]}" == "self-update" ]]; then
+        unset "args[$i]"
+        break
+    fi
+done
 
 while [[ "$#" -gt 0 ]]; do
   case $1 in
     dns)
       shift # Remove 'dns' from the arguments
-      dns_handler "$@" # Pass remaining arguments to dns_handler
+      dns_handler "${args[@]}" # Pass remaining arguments to dns_handler
       exit
       ;;
     update)
         shift # Remove 'update' from the arguments
-        update_handler "$@" # Pass remaining arguments to update_handler
+        update_handler "${args[@]}" # Pass remaining arguments to update_handler
         exit
         ;;
     pvc)
         shift # Remove 'mount' from the arguments
-        mount_handler "$@" # Pass remaining arguments to mount_handler
+        mount_handler "${args[@]}" # Pass remaining arguments to mount_handler
         exit
         ;;
     git)
         shift # Remove 'git' from the arguments
-        git_handler "$@" # Pass remaining arguments to git_handler
+        git_handler "${args[@]}" # Pass remaining arguments to git_handler
         exit
         ;;
     pod)
         shift # Remove 'pod' from the arguments
-        pod_handler "$@" # Pass remaining arguments to pod_handler
+        pod_handler "${args[@]}" # Pass remaining arguments to pod_handler
         exit
         ;;
     *)

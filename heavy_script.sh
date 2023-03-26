@@ -21,6 +21,16 @@ else
 fi
 
 
+# colors
+reset='\033[0m'
+red='\033[0;31m'
+yellow='\033[1;33m'
+green='\033[0;32m'
+blue='\033[0;34m'
+bold='\033[1m'
+gray='\033[38;5;7m'
+
+
 # Source all functions and utilities
 while IFS= read -r script_file; do
     if [[ "$script_file" == "functions/deploy.sh" ]]; then
@@ -30,16 +40,6 @@ while IFS= read -r script_file; do
     # shellcheck source=/dev/null
     source "$script_file"
 done < <(find functions utils -name "*.sh" -exec printf '%s\n' {} \;)
-
-
-# colors
-reset='\033[0m'
-red='\033[0;31m'
-yellow='\033[1;33m'
-green='\033[0;32m'
-blue='\033[0;34m'
-bold='\033[1m'
-gray='\033[38;5;7m'
 
 
 #If no argument is passed, open menu function.

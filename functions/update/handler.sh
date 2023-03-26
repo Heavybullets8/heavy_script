@@ -2,7 +2,6 @@
 
 
 update_handler() {
-  local backup=14
   local concurrent=1
   local timeout=500
   local ignore=()
@@ -16,8 +15,9 @@ update_handler() {
   # Separate bundled short options
   args=()
   for arg in "$@"; do
-    if [[ $arg =~ ^-([srSpvtu])+$ ]]; then
-      for opt in $(echo "$arg" | grep -o .); do
+    if [[ $arg =~ ^-[srSpvtu]+$ ]]; then
+      # Remove the leading '-' and loop through the remaining characters
+      for opt in ${arg:1}; do
         args+=("-$opt")
       done
     else

@@ -22,7 +22,14 @@ OPTIONS:
 Example:
   heavyscript update -c 10 -b 20 -i radarr -i sonarr -t 60 -sSpv --all
 
-This command will update all applications, updating 2 applications concurrently, keeping 3 backups, ignoring the 'myapp' application, setting a timeout of 60 seconds, syncing images before updating, stopping the application before updating, pruning unused images after the update, and displaying verbose output.
+This command will update all applications, 
+updating 2 applications concurrently, 
+keeping 3 backups, ignoring the 'myapp' application, 
+setting a timeout of 60 seconds, 
+syncing images before updating, 
+stopping the application before updating, 
+pruning unused images after the update, 
+and displaying verbose output.
 
 EOF
 }

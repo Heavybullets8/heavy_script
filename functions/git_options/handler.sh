@@ -13,13 +13,7 @@ self_update_handler() {
   done
 
   if $self_update; then
-    perform_self_update
-
-    # Remove 'self-update' from the arguments array
-    args=("${args[@]/self-update/}")
-
-    # Re-run the script with the remaining arguments after the update
-    exec "$(basename "$0")" "${args[@]}"
+    self_update
   fi
 }
 

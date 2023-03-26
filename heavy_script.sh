@@ -48,30 +48,30 @@ if [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]]; then
 fi
 
 
-  # Separate bundled short options
-  args=()
-  for arg in "$@"; do
-    if [[ $arg =~ ^-[srSpvtu]+$ ]]; then
-      for opt in $(echo "$arg" | grep -o .); do
-        if [[ $opt == "-" ]]; then
-          # Ignore the leading dash
-          continue
-        fi
-        args+=("-$opt")
-      done
-    else
-      args+=("$arg")
+# Separate bundled short options
+args=()
+for arg in "$@"; do
+if [[ $arg =~ ^-[srSpvtu]+$ ]]; then
+    for opt in $(echo "$arg" | grep -o .); do
+    if [[ $opt == "-" ]]; then
+        # Ignore the leading dash
+        continue
     fi
-  done
+    args+=("-$opt")
+    done
+else
+    args+=("$arg")
+fi
+done
 
-  # Replace "$@" with the new "args" array
-  set -- "${args[@]}"
+# Replace "$@" with the new "args" array
+set -- "${args[@]}"
 
 
 # Check for self-update and update the script if required
 self_update_handler "${args[@]}"
 
-while [[ "${args[#]}" -gt 0 ]]; do
+while [[ "${#args[@]}" -gt 0 ]]; do
   case $1 in
     app)
       shift # Remove 'app' from the arguments

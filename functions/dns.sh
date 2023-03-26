@@ -83,7 +83,6 @@ dns_non_verbose() {
     get_all_ports
     generate_output
 }
-export -f dns
 
 
 dns_verbose(){

@@ -75,37 +75,37 @@ while [[ "${#args[@]}" -gt 0 ]]; do
   case $1 in
     app)
       shift # Remove 'app' from the arguments
-      app_handler "${args[@]}" # Pass remaining arguments to app_handler
+      app_handler "${args[@]:1}" # Pass remaining arguments to app_handler
       exit
       ;;
     backup)
       shift # Remove 'backup' from the arguments
-      backup_handler "${args[@]}" # Pass remaining arguments to backup_handler
+      backup_handler "${args[@]:1}" # Pass remaining arguments to backup_handler
       exit
       ;;
     dns)
       shift # Remove 'dns' from the arguments
-      dns_handler "${args[@]}" # Pass remaining arguments to dns_handler
+      dns_handler "${args[@]:1}" # Pass remaining arguments to dns_handler
       exit
       ;;
     git)
       shift # Remove 'git' from the arguments
-      git_handler "${args[@]}" # Pass remaining arguments to git_handler
+      git_handler "${args[@]:1}" # Pass remaining arguments to git_handler
       exit
       ;;
     pod)
       shift # Remove 'pod' from the arguments
-      pod_handler "${args[@]}" # Pass remaining arguments to pod_handler
+      pod_handler "${args[@]:1}" # Pass remaining arguments to pod_handler
       exit
       ;;
     pvc)
       shift # Remove 'mount' from the arguments
-      mount_handler "${args[@]}" # Pass remaining arguments to mount_handler
+      mount_handler "${args[@]:1}" # Pass remaining arguments to mount_handler
       exit
       ;;
     update)
       shift # Remove 'update' from the arguments
-      update_handler "${args[@]}" # Pass remaining arguments to update_handler
+      update_handler "${args[@]:1}" # Pass remaining arguments to update_handler
       exit
       ;;
     *)

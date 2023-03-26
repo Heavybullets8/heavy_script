@@ -31,6 +31,28 @@ for script_file in {functions,utils}/*.sh; do
 done
 
 
+# Source necessary function files
+source functions/dns/handler.sh
+
+# Main script
+while [[ "$#" -gt 0 ]]; do
+  case $1 in
+    dns)
+      shift # Remove 'dns' from the arguments
+      dns_handler "$@" # Pass remaining arguments to dns_handler
+      break # Exit the loop
+      ;;
+    *)
+      echo "Unknown command: $1"
+      exit 1
+      ;;
+  esac
+  shift # Remove the processed argument
+done
+
+
+
+
 # colors
 reset='\033[0m'
 red='\033[0;31m'

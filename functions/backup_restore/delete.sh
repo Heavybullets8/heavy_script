@@ -55,4 +55,3 @@ delete_backup(){
         done
     done
 }
-export -f deleteBackup

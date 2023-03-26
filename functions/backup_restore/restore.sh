@@ -126,4 +126,3 @@ restore_backup(){
         esac
     done
 }
-export -f restore

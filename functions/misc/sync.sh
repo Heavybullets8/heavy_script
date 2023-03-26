@@ -13,4 +13,3 @@ sync_catalog(){
     echo
     echo
 }
-export -f sync

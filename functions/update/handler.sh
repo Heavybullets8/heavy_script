@@ -102,17 +102,17 @@ update_handler() {
       echo "🅃 🄰 🅂 🄺 🅂 :"
       echo -e "-Backing up ix-applications dataset\n-Syncing catalog(s)"
       echo -e "Please wait for output from both tasks..\n\n"
-      backup &
-      sync &
+      create_backup &
+      sync_catalog &
       wait
   elif [[ "$number_of_backups" -gt 1 ]]; then # If only backup is true, run it
       echo "🅃 🄰 🅂 🄺 :"
       echo -e "-Backing up ix-applications dataset\nPlease wait..\n\n"
-      backup
+      create_backup
   elif [[ "$sync" == true ]]; then # If only sync is true, run it
       echo "🅃 🄰 🅂 🄺 :"
       echo -e "Syncing Catalog(s)\nThis can take a few minutes, please wait..\n\n"
-      sync
+      sync_catalog
   fi
 
   commander

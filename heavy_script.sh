@@ -21,7 +21,7 @@ else
 fi
 
 # Source all the functions and utilities
-for script_file in {functions,utils}/*.sh; do
+find functions utils -name "*.sh" | while read -r script_file; do
     if [[ "$script_file" == "functions/deploy.sh" ]]; then
         # Ignore the deploy.sh file, it is meant to install the script
         continue

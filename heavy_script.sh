@@ -71,7 +71,7 @@ fi
 # Check for self-update and update the script if required
 self_update_handler "${args[@]}"
 
-while [[ "$#" -gt 0 ]]; do
+while [[ "${args[#]}" -gt 0 ]]; do
   case $1 in
     app)
       shift # Remove 'app' from the arguments

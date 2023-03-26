@@ -20,6 +20,12 @@ else
     hs_version=${current_version}
 fi
 
+# Source all handler functions
+find functions utils -name "handler.sh" | while read -r script_file; do
+    # shellcheck source=/dev/null
+    source "$script_file"
+done
+
 # Source all non-handler functions and utilities
 find functions utils -name "*.sh" ! -name "handler.sh" | while read -r script_file; do
     if [[ "$script_file" == "functions/deploy.sh" ]]; then
@@ -30,16 +36,12 @@ find functions utils -name "*.sh" ! -name "handler.sh" | while read -r script_fi
     source "$script_file"
 done
 
-source functions/dns/handler.sh
-source functions/dns/dns_standard.sh
-source functions/dns/dns_verbose.sh
-source functions/dns/help.sh
+# source functions/dns/handler.sh
+# source functions/dns/dns_standard.sh
+# source functions/dns/dns_verbose.sh
+# source functions/dns/help.sh
 
-# Source all handler functions
-find functions utils -name "handler.sh" | while read -r script_file; do
-    # shellcheck source=/dev/null
-    source "$script_file"
-done
+
 
 while [[ "$#" -gt 0 ]]; do
   case $1 in

@@ -16,8 +16,11 @@ update_handler() {
   args=()
   for arg in "$@"; do
     if [[ $arg =~ ^-[srSpvtu]+$ ]]; then
-      # Remove the leading '-' and loop through the remaining characters
-      for opt in ${arg:1}; do
+      for opt in $(echo "$arg" | grep -o .); do
+        if [[ $opt == "-" ]]; then
+          # Ignore the leading dash
+          continue
+        fi
         args+=("-$opt")
       done
     else

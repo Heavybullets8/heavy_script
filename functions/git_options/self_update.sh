@@ -31,8 +31,6 @@ self_update() {
         fi
     fi
 
-    echo "${args[@]}"
-
     # Unset the self-update argument
     for i in "${!args[@]}"; do
         if [[ "${args[$i]}" == "self-update" ]]; then
@@ -40,11 +38,6 @@ self_update() {
             break
         fi
     done
-
-    # reinitialize the array
-    args=("${args[@]}")
-
-    echo "${args[@]}"
 
     chmod +x "$script_name" ; chmod +x "$script_path"/bin/heavyscript 2>/dev/null
 
@@ -60,5 +53,6 @@ self_update() {
         # Now exit this old instance
         exit
     fi
-
+    # TODO: Fix
+    exec bash "$script_name" "${args[@]}"
 }

@@ -33,9 +33,8 @@ self_update() {
 
     # Unset the self-update argument
     for i in "${!args[@]}"; do
-        if [[ "${args[$i]}" == "self-update" ]]; then
+        if [[ "${args[$i]}" == "self-update" || "${args[$i]}" == "-u" ]]; then
             unset "args[$i]"
-            break
         fi
     done
 

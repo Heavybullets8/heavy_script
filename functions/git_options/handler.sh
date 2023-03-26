@@ -5,11 +5,6 @@ self_update_handler() {
   local args=("$@")
   local self_update=false
 
- if [[ $1 == true ]]; then
-    shift # Remove the first argument
-    self_update
-  fi
-
   for arg in "${args[@]}"; do
     if [[ "$arg" == "self-update" ]]; then
       self_update=true

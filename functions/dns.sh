@@ -27,6 +27,7 @@ get_pod_names() {
     mapfile -t ix_name_array < <(echo "$pod_output" | awk '{print $4}' | sort -u)
 }
 
+
 # Retrieves all port information and stores it in all_ports variable
 get_all_ports() {
     if ! all_ports=$(k3s kubectl get service -A); then
@@ -34,6 +35,7 @@ get_all_ports() {
         return 1
     fi
 }
+
 
 # Generates the output table with the retrieved pod names and ports
 generate_output() {
@@ -70,7 +72,8 @@ generate_output() {
     echo -e "$output" | column -t -s $'\t'
 }
 
-dns() {
+
+dns_non_verbose() {
     get_pod_names
     if [ ${#ix_name_array[@]} -eq 0 ]; then
         echo -e "${red}There are no applications ready${reset}"
@@ -81,3 +84,46 @@ dns() {
     generate_output
 }
 export -f dns
+
+
+dns_verbose(){
+    # Get all ix-namespaces and services
+    services=$(k3s kubectl get service -A | grep ^"ix" | sort -u)
+
+    output=""
+
+    # Iterate through each namespace and service
+    while IFS=$'\n' read -r service; do
+        namespace=$(echo "$service" | awk '{print $1}')
+        svc_name=$(echo "$service" | awk '{print $2}')
+        ports=$(echo "$service" | awk '{print $6}')
+
+        # Print namespace if it's different from the previous one
+        if [ "$namespace" != "$prev_namespace" ]; then
+            output+="\n"
+            output+="${blue}${namespace}${reset}\n"
+        fi
+        dns_name=""
+        dns_name+="$svc_name"
+        dns_name+=".$namespace"
+        dns_name+=".svc.cluster.local"
+
+        # Print pod and relevant ports
+        output+="${dns_name}\t${ports}\n"
+
+        # Set previous namespace for comparison
+        prev_namespace="$namespace"
+        # Add an extra newline after each namespace
+
+    done <<< "$services"
+
+    # Format the output using column
+    echo -e "$output" | sed '1d;$d' | column -L -t -s $'\t'
+}
+
+
+if [[ $verbose == true ]];then
+    dns_verbose
+else
+    dns_non_verbose
+fi

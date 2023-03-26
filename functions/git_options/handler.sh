@@ -6,7 +6,7 @@ self_update_handler() {
   local self_update=false
 
   for arg in "${args[@]}"; do
-    if [[ "$arg" == "self-update" ]]; then
+    if [[ "$arg" == "self-update" || "$arg" == "u" ]]; then
       self_update=true
       break
     fi

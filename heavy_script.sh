@@ -72,6 +72,11 @@ while [[ "$#" -gt 0 ]]; do
         git_handler "$@" # Pass remaining arguments to git_handler
         exit
         ;;
+    pod)
+        shift # Remove 'pod' from the arguments
+        pod_handler "$@" # Pass remaining arguments to pod_handler
+        exit
+        ;;
     *)
       echo "Unknown command: $1"
       exit 1

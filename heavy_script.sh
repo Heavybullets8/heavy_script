@@ -47,6 +47,8 @@ if [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]]; then
     menu
 fi
 
+# Check for self-update and update the script if required
+self_update_handler "$@"
 
 while [[ "$#" -gt 0 ]]; do
   case $1 in
@@ -65,9 +67,9 @@ while [[ "$#" -gt 0 ]]; do
         mount_handler "$@" # Pass remaining arguments to mount_handler
         exit
         ;;
-    self-update)
-        shift # Remove 'self-update' from the arguments
-        self_update_handler "$@" # Pass remaining arguments to self_update_handler
+    git)
+        shift # Remove 'git' from the arguments
+        git_handler "$@" # Pass remaining arguments to git_handler
         exit
         ;;
     *)

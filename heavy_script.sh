@@ -21,7 +21,7 @@ else
 fi
 
 # Source all non-handler functions and utilities
-find functions utils -name "*.sh" | grep -v "handler.sh" | while read -r script_file; do
+find functions utils -name "*.sh" ! -name "handler.sh" | while read -r script_file; do
     if [[ "$script_file" == "functions/deploy.sh" ]]; then
         # Ignore the deploy.sh file, it is meant to install the script
         continue
@@ -36,9 +36,6 @@ find functions utils -name "handler.sh" | while read -r script_file; do
     source "$script_file"
 done
 
-
-
-# Main script
 while [[ "$#" -gt 0 ]]; do
   case $1 in
     dns)
@@ -53,6 +50,7 @@ while [[ "$#" -gt 0 ]]; do
   esac
   shift # Remove the processed argument
 done
+
 
 
 

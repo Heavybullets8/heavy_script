@@ -101,7 +101,7 @@ update_handler() {
         shift
         ;;
       -u|--self-update)
-        self_update_handler
+        self_update_handler "$@"
         shift
         ;;
       -v|--verbose)

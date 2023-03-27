@@ -203,6 +203,7 @@ function read_ini()
 		fi
 
 		# Are we getting only a specific section? And are we currently in it?
+		# shellcheck disable=SC2236
 		if [ ! -z "$INI_SECTION" ]
 		then
 			if [ "$SECTION" != "$INI_SECTION" ]

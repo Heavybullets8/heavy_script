@@ -81,6 +81,7 @@ fi
 # Check for self-update and update the script if required
 self_update_handler "${args[@]}"
 
+
 # Unset the self-update argument
 mapfile -t args < <(remove_self_update_args "${args[@]}")
 

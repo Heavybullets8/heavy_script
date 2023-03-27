@@ -2,29 +2,41 @@
 
 
 update_handler() {
-  local concurrent=1
-  local timeout=500
-  local ignore=()
-  local prune=false
-  local rollback=false
-  local sync=false
-  local stop_before_update=false
-  local update_all_apps=false
-  local verbose=false
+  local concurrent
+  local timeout
+  local ignore
+  local prune
+  local rollback
+  local sync
+  local stop_before_update
+  local update_all_apps
+  local verbose
 
   # Read from config.ini
   read_ini "config.ini" --prefix UPDATE
 
   # Set variables from config.ini if they exist
-  concurrent="${UPDATE__UPDATE__concurrent:-$concurrent}"
-  timeout="${UPDATE__UPDATE__timeout:-$timeout}"
-  prune="${UPDATE__UPDATE__prune:-$prune}"
-  rollback="${UPDATE__UPDATE__rollback:-$rollback}"
-  sync="${UPDATE__UPDATE__sync:-$sync}"
-  stop_before_update="${UPDATE__UPDATE__stop_before_update:-$stop_before_update}"
-  update_all_apps="${UPDATE__UPDATE__update_all_apps:-$update_all_apps}"
-  verbose="${UPDATE__UPDATE__verbose:-$verbose}"
+  concurrent="${UPDATE__UPDATE__concurrent:-1}"
+  timeout="${UPDATE__UPDATE__timeout:-500}"
+  prune="${UPDATE__UPDATE__prune:-false}"
+  rollback="${UPDATE__UPDATE__rollback:-false}"
+  sync="${UPDATE__UPDATE__sync:-false}"
+  stop_before_update="${UPDATE__UPDATE__stop_before_update:-false}"
+  update_all_apps="${UPDATE__UPDATE__update_all_apps:-false}"
+  verbose="${UPDATE__UPDATE__verbose:-false}"
 
+  # Get the ignore value from config.ini
+  ignore_value="${UPDATE__UPDATE__ignore:-}"
+
+  # Split comma-separated values into an array
+  IFS=',' read -ra ignore <<< "$ignore_value"
+
+
+  # print out ignore array
+  echo "Ignore array:"
+  for i in "${ignore[@]}"; do
+   echo "$i"
+  done
 
   while [[ "$#" -gt 0 ]]; do
     case $1 in

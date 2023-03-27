@@ -82,8 +82,9 @@ fi
 self_update_handler "${args[@]}"
 
 
-# Unset the self-update argument
-mapfile -t args < <(remove_self_update_args "${args[@]}")
+# Unset the self-update and no-self-update argument
+mapfile -t args < <(remove_option_args "self-update" "${args[@]}")
+mapfile -t args < <(remove_option_args "--no-self-update" "${args[@]}")
 
 
 while [[ "${#args[@]}" -gt 0 ]]; do

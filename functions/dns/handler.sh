@@ -13,9 +13,13 @@ dns_handler() {
       # Call the function to display help for the dns command
       dns_help
       ;;
-    *)
-      # Call the function to display a default dns action or an error message
+    "")
       dns_non_verbose
+      ;;
+    *)
+      echo "Invalid option: $option"
+      echo "Usage: heavyscript dns [--all | --help]"
+      exit 1
       ;;
   esac
 }

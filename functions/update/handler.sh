@@ -34,6 +34,14 @@ update_handler() {
         ;;
       -c|--concurrent)
         shift
+        if ! [[ $1 =~ ^[0-9]+$  ]]; then
+            echo -e "Error: -c needs to be assigned an interger\n\"""$1""\" is not an interger" >&2
+            exit
+        fi
+        if [[ "$1" -le 0 ]]; then
+            echo "Error: Number of concurrent updates is required to be at least 1"
+            exit
+        fi
         concurrent="$1"
         shift
         ;;

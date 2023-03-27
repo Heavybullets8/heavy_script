@@ -94,7 +94,7 @@ while [[ "${#args[@]}" -gt 0 ]]; do
       exit
       ;;
     pvc)
-      mount_handler "${args[@]:1}" # Pass remaining arguments to mount_handler
+      pvc_handler "${args[@]:1}" # Pass remaining arguments to mount_handler
       exit
       ;;
     update)

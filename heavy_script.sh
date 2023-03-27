@@ -85,7 +85,7 @@ self_update_handler "${args[@]}"
 mapfile -t args < <(remove_option_args "self-update" "${args[@]}")
 mapfile -t args < <(remove_option_args "--no-self-update" "${args[@]}")
 
-
+ 
 while [[ "${#args[@]}" -gt 0 ]]; do
   case $1 in
     app)

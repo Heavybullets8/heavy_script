@@ -2,13 +2,16 @@
 
 
 dns_handler() {
-  local option="$1"
-
   # Load the config.ini file
   read_ini "config.ini" --prefix DNS
 
-  if [[ "$DNS__DNS__verbose" == "true" ]]; then
+  # Set the default option using the config file
+  local verbose="${DNS__DNS__verbose:-false}"
+
+  if [[ "$verbose" == "true" ]]; then
     option="-a"
+  else
+    option="$1"
   fi
 
   case "$option" in
@@ -30,4 +33,6 @@ dns_handler() {
       ;;
   esac
 }
+
+
 

@@ -31,13 +31,6 @@ update_handler() {
   # Split comma-separated values into an array
   IFS=',' read -ra ignore <<< "$ignore_value"
 
-
-  # print out ignore array
-  echo "Ignore array:"
-  for i in "${ignore[@]}"; do
-   echo "$i"
-  done
-
   while [[ "$#" -gt 0 ]]; do
     case $1 in
       -a|--all)
@@ -112,10 +105,6 @@ update_handler() {
             echo -e "Error: -t needs to be assigned an interger\n\"""$timeout""\" is not an interger" >&2
             exit
         fi
-        shift
-        ;;
-      -U|--self-update)
-        self_update_handler "$@"
         shift
         ;;
       -v|--verbose)

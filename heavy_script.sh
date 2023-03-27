@@ -69,6 +69,15 @@ done
 set -- "${args[@]}"
 
 
+# Read the config.ini file
+read_ini "config.ini" --prefix SELFUPDATE
+
+# Check if always or when_updating is set to true in the config file
+if { [[ "${SELFUPDATE__SELFUPDATE__always}" == "true" ]] || 
+   { [[ "${SELFUPDATE__SELFUPDATE__when_updating}" == "true" ]] && [[ "${args[0]}" == "update" ]]; }; }; then
+    args+=("self-update")
+fi
+
 # Check for self-update and update the script if required
 self_update_handler "${args[@]}"
 

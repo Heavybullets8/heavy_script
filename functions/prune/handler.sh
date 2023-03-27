@@ -6,7 +6,7 @@ prune_handler() {
 
 
   case "$option" in
-    --help)
+    -h | --help)
       # Call the function to display help for the pvc command
       prune_help
       ;;
@@ -16,7 +16,7 @@ prune_handler() {
         ;;
     *)
       echo "Invalid option: $option"
-      echo "Usage: heavyscript prune [--help]"
+      echo "Usage: heavyscript prune [-h | --help]"
       exit 1
       ;;
   esac

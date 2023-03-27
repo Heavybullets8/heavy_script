@@ -1,23 +1,27 @@
 #!/bin/bash
 
+
 app_help() {
-  cat << EOF
-Usage: heavyscript app [OPTIONS]
-
-Manage the application lifecycle. Each action opens a menu for selecting an application.
-
-Options:
-  --start        Start the application.
-  --stop         Stop the application.
-  --restart      Restart the application.
-  --delete       Delete the application.
-  --help         Show this help message and exit.
-
-Example usage:
-  heavyscript app --start     # Open a menu to select and start the application
-  heavyscript app --stop      # Open a menu to select and stop the application
-  heavyscript app --restart   # Open a menu to select and restart the application
-  heavyscript app --delete    # Open a menu to select and delete the application
-  heavyscript app --help      # Display this help message
-EOF
+    echo -e "${bold}App Handler${reset}"
+    echo -e "${bold}-----------${reset}"
+    echo -e "${blue}heavyscript app${reset} | [-s | --start | -x | --stop | -r | --restart | -d | --delete | -h | --help]"
+    echo
+    echo -e "${bold}Description${reset}"
+    echo -e "${bold}-----------${reset}"
+    echo -e "Start, stop, restart and delete applications"
+    echo
+    echo -e "${bold}Options${reset}"
+    echo -e "${bold}-------${reset}"
+    echo -e "${blue}-s${reset}, ${blue}--start${reset}"
+    echo -e "    Start an application."
+    echo -e "${blue}-x${reset}, ${blue}--stop${reset}"
+    echo -e "    Stop an application."
+    echo -e "${blue}-r${reset}, ${blue}--restart${reset}"
+    echo -e "    Restart an application."
+    echo -e "${blue}-d${reset}, ${blue}--delete${reset}"
+    echo -e "    Delete an application."
+    echo -e "${blue}-h${reset}, ${blue}--help${reset}"
+    echo -e "    Display this help message."
+    echo
 }
+

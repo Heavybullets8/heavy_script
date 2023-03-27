@@ -22,21 +22,21 @@ git_handler() {
   local option="$1"
 
   case "$option" in
-    --branch)
+    -b|--branch)
       # Call the function to choose a branch
       choose_branch
       ;;
-    --global-path)
+    -g|--global)
       # Call the function to add the script to the global path
       add_script_to_global_path
       ;;
-    --help)
+    -h|--help)
       # Call the function to display help for the git command
       git_help
       ;;
     *)
       echo "Invalid option: $option"
-      echo "Usage: heavyscript git [--choose-branch | --global-path]"
+      echo "Usage: heavyscript git [-c | --choose-branch | -g | --global | -h | --help]"
       exit 1
       ;;
   esac

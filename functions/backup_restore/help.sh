@@ -2,21 +2,23 @@
 
 
 backup_help() {
-  cat << EOF
-Usage: heavyscript backup [OPTIONS]
-
-Manage backup and restore operations on the ix-applications dataset.
-
-Options:
-  --create       Create a backup of the ix-applications dataset.
-  --restore      Restore the ix-applications dataset from a backup.
-  --delete       Delete a backup of the ix-applications dataset.
-  --help         Show this help message and exit.
-
-Example usage:
-  heavyscript backup --create    # Create a backup
-  heavyscript backup --restore   # Restore from a backup
-  heavyscript backup --delete    # Delete a backup
-  heavyscript backup --help      # Display this help message
-EOF
+    echo -e "${bold}Backup Handler${reset}"
+    echo -e "${bold}--------------${reset}"
+    echo -e "${blue}heavyscript backup${reset} | [-c | --create | -r | --restore | -d | --delete | -h | --help]"
+    echo
+    echo -e "${bold}Description${reset}"
+    echo -e "${bold}-----------${reset}"
+    echo -e "Manage ix-applications backups"
+    echo
+    echo -e "${bold}Options${reset}"
+    echo -e "${bold}-------${reset}"
+    echo -e "${blue}-c${reset}, ${blue}--create${reset}"
+    echo -e "    Create a backup."
+    echo -e "${blue}-r${reset}, ${blue}--restore${reset}"
+    echo -e "    Restore a backup."
+    echo -e "${blue}-d${reset}, ${blue}--delete${reset}"
+    echo -e "    Delete a backup."
+    echo -e "${blue}-h${reset}, ${blue}--help${reset}"
+    echo -e "    Display this help message."
+    echo
 }

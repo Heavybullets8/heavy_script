@@ -5,11 +5,11 @@ dns_handler() {
   local option="$1"
 
   case "$option" in
-    --all)
+    -a|--all)
       # Call the function to display all DNS information
       dns_verbose
       ;;
-    --help)
+    -h|--help)
       # Call the function to display help for the dns command
       dns_help
       ;;
@@ -18,7 +18,7 @@ dns_handler() {
       ;;
     *)
       echo "Invalid option: $option"
-      echo "Usage: heavyscript dns [--all | --help]"
+      echo "Usage: heavyscript dns [-a | --all | -h | --help]"
       exit 1
       ;;
   esac

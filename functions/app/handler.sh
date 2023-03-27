@@ -1,27 +1,29 @@
 #!/bin/bash
 
+
 app_handler() {
   local action=$1
   shift # Remove action from the arguments
 
   case $action in
-    --start)
+    -s|--start)
       start_app
       ;;
-    --stop)
+    -x|--stop)
       stop_app
       ;;
-    --restart)
+    -r|--restart)
       restart_app
       ;;
-    --delete)
+    -d|--delete)
       delete_app
       ;;
-    --help)
+    -h|--help)
       app_help
       ;;
     *)
       echo "Unknown app action: $action"
+      echo "Usage: heavyscript app [-s | --start | -x | --stop | -r | --restart | -d | --delete | -h | --help]"
       exit 1
       ;;
   esac

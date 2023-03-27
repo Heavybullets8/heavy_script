@@ -6,7 +6,7 @@ sync_handler() {
 
 
   case "$option" in
-    --help)
+    -h | --help)
       # Call the function to display help for the pvc command
       sync_help
       ;;
@@ -16,7 +16,7 @@ sync_handler() {
         ;;
     *)
       echo "Invalid option: $option"
-      echo "Usage: heavyscript sync [--help]"
+      echo "Usage: heavyscript sync [-h | --help]"
       exit 1
       ;;
   esac

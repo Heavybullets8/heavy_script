@@ -12,7 +12,7 @@ prune_help(){
     echo
     echo -e "${bold}Options${reset}"
     echo -e "${bold}-------${reset}"
-    echo -e "${blue}--help${reset} | ${blue}-h${reset} | ${blue}-?${reset}"
+    echo -e "${blue}--help${reset} | ${blue}-h${reset}"
     echo -e "    Display this help message."
     echo
 }

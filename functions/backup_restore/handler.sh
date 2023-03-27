@@ -1,25 +1,25 @@
 #!/bin/bash
 
+
 backup_handler() {
   local action=$1
-  shift # Remove action from the arguments
 
   case $action in
-    --create)
+    -c|--create)
       create_backup "$@"
       ;;
-    --restore)
+    -r|--restore)
       restore_backup
       ;;
-    --delete)
+    -d|--delete)
       delete_backup
       ;;
-    --help)
+    -h|--help)
       backup_help
       ;;
     *)
       echo "Unknown backup action: $action"
-      backup_help
+      echo "Usage: heavyscript backup [-c | --create | -r | --restore | -d | --delete | -h | --help]"
       exit 1
       ;;
   esac

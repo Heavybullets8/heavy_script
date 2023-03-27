@@ -15,7 +15,7 @@ update_handler() {
 
   while [[ "$#" -gt 0 ]]; do
     case $1 in
-      -A|--all)
+      -a|--all)
         update_all_apps=true
         shift
         ;;
@@ -77,7 +77,7 @@ update_handler() {
         sync=true
         shift
         ;;
-      -S|--stop)
+      -x|--stop)
         stop_before_update=true
         shift
         ;;

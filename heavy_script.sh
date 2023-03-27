@@ -43,11 +43,6 @@ done < <(find functions utils -name "*.sh" -exec printf '%s\n' {} \;)
 # generate the config.ini file if it does not exist
 generate_config_ini
 
-#If no argument is passed, open menu function.
-if [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]]; then
-    menu
-fi
-
 
 # Separate bundled short options
 args=()
@@ -85,6 +80,10 @@ self_update_handler "${args[@]}"
 mapfile -t args < <(remove_no_self_update_args "${args[@]}")
 mapfile -t args < <(remove_self_update_args "${args[@]}")
 
+# If no arguments are passed or the first argument is '-' or '--', open the menu function.
+if [[ "${#args[@]}" -eq 0 || "${args[0]}" == "-" || "${args[0]}" == "--" ]]; then
+    menu
+fi
 
 while [[ "${#args[@]}" -gt 0 ]]; do
   case $1 in

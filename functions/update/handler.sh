@@ -12,6 +12,19 @@ update_handler() {
   local update_all_apps=false
   local verbose=false
 
+  # Read from config.ini
+  read_ini "config.ini" --prefix UPDATE
+
+  # Set variables from config.ini if they exist
+  concurrent="${UPDATE__UPDATE__concurrent:-$concurrent}"
+  timeout="${UPDATE__UPDATE__timeout:-$timeout}"
+  prune="${UPDATE__UPDATE__prune:-$prune}"
+  rollback="${UPDATE__UPDATE__rollback:-$rollback}"
+  sync="${UPDATE__UPDATE__sync:-$sync}"
+  stop_before_update="${UPDATE__UPDATE__stop_before_update:-$stop_before_update}"
+  update_all_apps="${UPDATE__UPDATE__update_all_apps:-$update_all_apps}"
+  verbose="${UPDATE__UPDATE__verbose:-$verbose}"
+
 
   while [[ "$#" -gt 0 ]]; do
     case $1 in

@@ -32,11 +32,8 @@ self_update() {
     fi
 
     # Unset the self-update argument
-    for i in "${!args[@]}"; do
-        if [[ "${args[$i]}" =~ ^(--)?self-update$ || "${args[$i]}" == "-U" ]]; then
-            unset "args[$i]"
-        fi
-    done
+    args=( "$(remove_self_update_args "${args[@]}")" )
+
 
     chmod +x "$script_name" ; chmod +x "$script_path"/bin/heavyscript 2>/dev/null
 

@@ -71,6 +71,10 @@ set -- "${args[@]}"
 # Check for self-update and update the script if required
 self_update_handler "${args[@]}"
 
+# Unset the self-update argument
+args=( "$(remove_self_update_args "${args[@]}")" )
+
+
 while [[ "${#args[@]}" -gt 0 ]]; do
   case $1 in
     app)

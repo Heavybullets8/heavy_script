@@ -11,5 +11,5 @@ remove_self_update_args() {
     fi
   done
 
-  echo "${output_args[@]}"
+  printf "%s\n" "${output_args[@]}"
 }

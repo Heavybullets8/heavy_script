@@ -178,9 +178,8 @@ function read_ini()
 		((LINE_NUM++))
 
 		# Skip blank lines and comments
-		if [ -z "$line" -o "${line:0:1}" = ";" -o "${line:0:1}" = "#" ]
-		then
-			continue
+		if [[ -z "$line" || "${line:0:1}" == ";" || "${line:0:1}" == "#" ]]; then
+		continue
 		fi
 
 		# Section marker?

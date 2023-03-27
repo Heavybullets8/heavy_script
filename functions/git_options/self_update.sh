@@ -30,7 +30,7 @@ self_update() {
             updated=true
         fi
     fi
-
+ 
     # Unset the self-update argument
     mapfile -t args < <(remove_self_update_args "${args[@]}")
 

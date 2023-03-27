@@ -3,6 +3,6 @@
 
 generate_config_ini() {
   if [ ! -f config.ini ]; then
-    cp .config.default.ini config.ini
+    cp .default.config.ini config.ini
   fi
 }

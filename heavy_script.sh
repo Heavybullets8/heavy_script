@@ -46,10 +46,8 @@ if [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]]; then
     menu
 fi
 
-
 # generate the config.ini file if it does not exist
 generate_config_ini
-
 
 # Separate bundled short options
 args=()

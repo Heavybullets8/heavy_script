@@ -51,7 +51,7 @@ fi
 # Separate bundled short options
 args=()
 for arg in "$@"; do
-if [[ $arg =~ ^-[srSpvtu]+$ ]]; then
+if [[ $arg =~ ^-[srSpvu]+$ ]]; then
     for opt in $(echo "$arg" | grep -o .); do
     if [[ $opt == "-" ]]; then
         # Ignore the leading dash
@@ -101,6 +101,10 @@ while [[ "${#args[@]}" -gt 0 ]]; do
       update_handler "${args[@]:1}" # Pass remaining arguments to update_handler
       exit
       ;;
+    -h|--help|help)
+        main_help
+        exit
+        ;;
     *)
       echo "Unknown command: $1"
       exit 1

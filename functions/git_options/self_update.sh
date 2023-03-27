@@ -32,7 +32,7 @@ self_update() {
     fi
 
     # Unset the self-update argument
-    args=( "$(remove_option_args "self-update" "${args[@]}")" )
+    args=( remove_options_args "self-update" "${args[@]}" )
 
     # Make the script executable
     chmod +x "$script_name" ; chmod +x "$script_path"/bin/heavyscript 2>/dev/null

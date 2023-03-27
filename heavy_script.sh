@@ -20,6 +20,8 @@ else
     hs_version=${current_version}
 fi
 
+# generate the config.ini file if it does not exist
+generate_config_ini
 
 # colors
 reset='\033[0m'

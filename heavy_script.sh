@@ -85,7 +85,6 @@ self_update_handler "${args[@]}"
 mapfile -t args < <(remove_no_self_update_args "${args[@]}")
 mapfile -t args < <(remove_self_update_args "${args[@]}")
 
-
  
 while [[ "${#args[@]}" -gt 0 ]]; do
   case $1 in

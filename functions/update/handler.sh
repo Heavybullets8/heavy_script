@@ -90,7 +90,7 @@ update_handler() {
         fi
         shift
         ;;
-      -u|--self-update)
+      -U|--self-update)
         self_update_handler "$@"
         shift
         ;;

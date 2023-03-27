@@ -17,7 +17,7 @@ update_help() {
   echo -e "${blue}-s, --sync${reset}\t\tSync the application images before updating"
   echo -e "${blue}-x, --stop${reset}\t\tStop the application before updating"
   echo -e "${blue}-t, --timeout${reset}\t\tSet the timeout for the update process in seconds (default: 500)"
-  echo -e "${blue}-u, --self-update${reset}\tUpdate HeavyScript itself"
+  echo -e "${blue}-U, self-update${reset}\tUpdate HeavyScript itself"
   echo -e "${blue}-v, --verbose${reset}\t\tDisplay verbose output\n"
 
   echo -e "${bold}Example${reset}:"

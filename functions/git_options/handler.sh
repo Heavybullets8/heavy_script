@@ -20,6 +20,7 @@ self_update_handler() {
   fi
 }
 
+
 git_handler() {
   local option="$1"
 

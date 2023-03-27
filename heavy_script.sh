@@ -20,6 +20,9 @@ else
     hs_version=${current_version}
 fi
 
+# generate the config.ini file if it does not exist
+generate_config_ini
+
 # colors
 reset='\033[0m'
 red='\033[0;31m'
@@ -46,8 +49,6 @@ if [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]]; then
     menu
 fi
 
-# generate the config.ini file if it does not exist
-generate_config_ini
 
 # Separate bundled short options
 args=()

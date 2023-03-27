@@ -102,11 +102,11 @@ while [[ "${#args[@]}" -gt 0 ]]; do
       exit
         ;;
     sync)
-        sync_handler
+        sync_handler "${args[@]:1}" # Pass remaining arguments to sync_handler
         exit
       ;;
     prune)
-        prune_handler
+        prune_handler "${args[@]:1}" # Pass remaining arguments to prune_handler
         exit
         ;;
     -h|--help|help)

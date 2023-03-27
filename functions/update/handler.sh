@@ -46,7 +46,6 @@ update_handler() {
         shift
         ;;
       -h|--help)
-        # Handle --help option here
         update_help
         exit
         ;;

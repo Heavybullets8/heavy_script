@@ -45,14 +45,16 @@ function read_ini()
 		if ! shopt -q nocasematch ;then
 			SWITCH_SHOPT="${SWITCH_SHOPT} nocasematch"
 		fi
-		shopt -q -s "${SWITCH_SHOPT}"
+		# shellcheck disable=SC2086
+		shopt -q -s ${SWITCH_SHOPT}
 	}
 	
 	# unset all local functions and restore shopt settings before returning
 	# from read_ini()
 	function cleanup_bash()
 	{
-		shopt -q -u "${SWITCH_SHOPT}"
+		# shellcheck disable=SC2086
+		shopt -q -u ${SWITCH_SHOPT}
 		unset -f check_prefix check_ini_file pollute_bash cleanup_bash
 	}
 	
@@ -133,9 +135,12 @@ function read_ini()
 	if [ "${CLEAN_ENV}" = 1 ] ;then
 		eval unset "\$${INI_ALL_VARNAME}"
 	fi
-	unset "${INI_ALL_VARNAME}"
-	unset "${INI_ALL_SECTION}"
-	unset "${INI_NUMSECTIONS_VARNAME}"
+	# shellcheck disable=SC2086
+	unset ${INI_ALL_VARNAME}
+	# shellcheck disable=SC2086
+	unset ${INI_ALL_SECTION}
+	# shellcheck disable=SC2086
+	unset ${INI_NUMSECTIONS_VARNAME}
 
 	if [ -z "$INI_FILE" ] ;then
 		cleanup_bash
@@ -178,8 +183,10 @@ function read_ini()
 		((LINE_NUM++))
 
 		# Skip blank lines and comments
-		if [[ -z "$line" || "${line:0:1}" == ";" || "${line:0:1}" == "#" ]]; then
-		continue
+		# shellcheck disable=SC2166
+		if [ -z "$line" -o "${line:0:1}" = ";" -o "${line:0:1}" = "#" ]
+		then
+			continue
 		fi
 
 		# Section marker?
@@ -196,7 +203,7 @@ function read_ini()
 		fi
 
 		# Are we getting only a specific section? And are we currently in it?
-		if [ -n "$INI_SECTION" ]
+		if [ ! -z "$INI_SECTION" ]
 		then
 			if [ "$SECTION" != "$INI_SECTION" ]
 			then
@@ -222,7 +229,8 @@ function read_ini()
 		# delete spaces around the equal sign (using extglob)
 		VAR="${VAR%%+([[:space:]])}"
 		VAL="${VAL##+([[:space:]])}"
-		VAR=$($VAR)
+		# shellcheck disable=SC2116,SC2086
+		VAR=$(echo $VAR)
 
 
 		# Construct variable name:

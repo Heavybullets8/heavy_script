@@ -32,7 +32,7 @@ self_update() {
     fi
 
     # Unset the self-update argument
-    mapfile -t args < <(remove_options_args "self-update" "${args[@]}")
+    mapfile -t args < <(remove_self_update_args "${args[@]}")
 
     # Make the script executable
     chmod +x "$script_name" ; chmod +x "$script_path"/bin/heavyscript 2>/dev/null

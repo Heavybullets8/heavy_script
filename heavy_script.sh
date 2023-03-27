@@ -100,7 +100,15 @@ while [[ "${#args[@]}" -gt 0 ]]; do
     update)
       update_handler "${args[@]:1}" # Pass remaining arguments to update_handler
       exit
+        ;;
+    sync)
+        sync_handler
+        exit
       ;;
+    prune)
+        prune_handler
+        exit
+        ;;
     -h|--help|help)
         main_help
         exit

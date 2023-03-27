@@ -30,7 +30,7 @@ self_update() {
             updated=true
         fi
     fi
-
+ 
     # Unset the self-update argument
     args=( remove_options_args "self-update" "${args[@]}" )
 

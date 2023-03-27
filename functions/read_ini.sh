@@ -45,14 +45,14 @@ function read_ini()
 		if ! shopt -q nocasematch ;then
 			SWITCH_SHOPT="${SWITCH_SHOPT} nocasematch"
 		fi
-		shopt -q -s ${SWITCH_SHOPT}
+		shopt -q -s "${SWITCH_SHOPT}"
 	}
 	
 	# unset all local functions and restore shopt settings before returning
 	# from read_ini()
 	function cleanup_bash()
 	{
-		shopt -q -u ${SWITCH_SHOPT}
+		shopt -q -u "${SWITCH_SHOPT}"
 		unset -f check_prefix check_ini_file pollute_bash cleanup_bash
 	}
 	
@@ -62,7 +62,7 @@ function read_ini()
 	# {{{ START Deal with command line args
 
 	# Set defaults
-	local BOOLEANS=1
+	local BOOLEANS=0
 	local VARNAME_PREFIX=INI
 	local CLEAN_ENV=0
 
@@ -133,9 +133,9 @@ function read_ini()
 	if [ "${CLEAN_ENV}" = 1 ] ;then
 		eval unset "\$${INI_ALL_VARNAME}"
 	fi
-	unset ${INI_ALL_VARNAME}
-	unset ${INI_ALL_SECTION}
-	unset ${INI_NUMSECTIONS_VARNAME}
+	unset "${INI_ALL_VARNAME}"
+	unset "${INI_ALL_SECTION}"
+	unset "${INI_NUMSECTIONS_VARNAME}"
 
 	if [ -z "$INI_FILE" ] ;then
 		cleanup_bash
@@ -197,7 +197,7 @@ function read_ini()
 		fi
 
 		# Are we getting only a specific section? And are we currently in it?
-		if [ ! -z "$INI_SECTION" ]
+		if [ -n "$INI_SECTION" ]
 		then
 			if [ "$SECTION" != "$INI_SECTION" ]
 			then
@@ -223,7 +223,7 @@ function read_ini()
 		# delete spaces around the equal sign (using extglob)
 		VAR="${VAR%%+([[:space:]])}"
 		VAL="${VAL##+([[:space:]])}"
-		VAR=$(echo $VAR)
+		VAR=$($VAR)
 
 
 		# Construct variable name:

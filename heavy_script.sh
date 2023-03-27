@@ -72,9 +72,7 @@ set -- "${args[@]}"
 self_update_handler "${args[@]}"
 
 # Unset the self-update argument
-args=( "$(remove_self_update_args "${args[@]}")" )
-
-args=(printf '%s\n' "${args[@]}")
+mapfile -t args < <(remove_self_update_args "${args[@]}")
 
 
 while [[ "${#args[@]}" -gt 0 ]]; do

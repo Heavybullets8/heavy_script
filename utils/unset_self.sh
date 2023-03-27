@@ -3,7 +3,6 @@
 
 remove_option_args() {
   local option_to_remove="$1"
-  shift
   local input_args=("$@")
   local output_args=()
 

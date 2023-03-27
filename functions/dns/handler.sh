@@ -7,7 +7,7 @@ dns_handler() {
   # Load the config.ini file
   read_ini "config.ini" --prefix DNS
 
-  if [[ "$DNS__verbose" == "true" ]]; then
+  if [[ "$DNS__DNS__verbose" == "true" ]]; then
     option="-a"
   fi
 

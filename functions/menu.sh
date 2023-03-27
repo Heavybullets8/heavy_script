@@ -35,13 +35,12 @@ menu(){
                 echo -e "${bold}-------------------${reset}"
                 echo -e "1)  List DNS Names"
                 echo -e "2)  Mount/Unmount PVC Storage"
-                echo -e "3)  Update Applications"
-                echo -e "4)  Open Container Shell"
-                echo -e "5)  Open Container Logs"
-                echo -e "6)  Start Application"
-                echo -e "7)  Restart Application"
-                echo -e "8)  Delete Application"
-                echo -e "9)  Stop Application"
+                echo -e "3)  Open Container Shell"
+                echo -e "4)  Open Container Logs"
+                echo -e "5)  Start Application"
+                echo -e "6)  Restart Application"
+                echo -e "7)  Delete Application"
+                echo -e "8)  Stop Application"
                 echo
                 echo -e "0)  Exit"
                 read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
@@ -59,30 +58,26 @@ menu(){
                         misc_selection=true
                         ;;
                     3)
-                        script_create
-                        misc_selection=true
-                        ;;
-                    4)
                         container_shell_or_logs
                         misc_selection=true
                         ;;
-                    5)
+                    4)
                         container_shell_or_logs "logs"
                         misc_selection=true
                         ;;
-                    6)
+                    5)
                         start_app_prompt
                         misc_selection=true
                         ;;
-                    7)
+                    6)
                         restart_app_prompt
                         misc_selection=true
                         ;;
-                    8)
+                    7)
                         delete_app_prompt
                         misc_selection=true
                         ;;
-                    9)
+                    8)
                         stop_app_prompt
                         misc_selection=true
                         ;;

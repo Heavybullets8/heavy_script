@@ -4,6 +4,12 @@
 dns_handler() {
   local option="$1"
 
+  # Load the config.ini file
+  read_ini "config.ini" --prefix DNS
+
+  dns_verbbose="${DNS__verbose:-false}"
+
+
   case "$option" in
     -a|--all)
       # Call the function to display all DNS information

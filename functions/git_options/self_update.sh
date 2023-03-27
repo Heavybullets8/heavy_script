@@ -34,7 +34,7 @@ self_update() {
     # Unset the self-update argument
     args=( "$(remove_self_update_args "${args[@]}")" )
 
-
+    # Make the script executable
     chmod +x "$script_name" ; chmod +x "$script_path"/bin/heavyscript 2>/dev/null
 
     # Check if there are any arguments left
@@ -48,5 +48,4 @@ self_update() {
         # Now exit this old instance
         exit
     fi
-#    exec bash "$script_name" "${args[@]}"
 }

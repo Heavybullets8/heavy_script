@@ -51,7 +51,7 @@ fi
 # Separate bundled short options
 args=()
 for arg in "$@"; do
-if [[ $arg =~ ^-[srSpvu]+$ ]]; then
+if [[ $arg =~ ^-[srSpvU]+$ ]]; then
     for opt in $(echo "$arg" | grep -o .); do
     if [[ $opt == "-" ]]; then
         # Ignore the leading dash

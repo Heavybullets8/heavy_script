@@ -74,6 +74,8 @@ self_update_handler "${args[@]}"
 # Unset the self-update argument
 args=( "$(remove_self_update_args "${args[@]}")" )
 
+args=(printf '%s\n' "${args[@]}")
+
 
 while [[ "${#args[@]}" -gt 0 ]]; do
   case $1 in

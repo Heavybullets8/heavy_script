@@ -47,11 +47,9 @@ self_update() {
     # Check if the script was updated, and if so, run the new version
     if [[ "$updated" == true ]]; then
         echo -e "Running the new version...\n\n"
-        sleep 5
         exec bash "$script_name" "${args[@]}"
         # Now exit this old instance
         exit
     fi
-    # TODO: Fix
-    exec bash "$script_name" "${args[@]}"
+#    exec bash "$script_name" "${args[@]}"
 }

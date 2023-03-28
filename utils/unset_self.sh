@@ -1,24 +1,12 @@
 #!/bin/bash
 
 
-remove_options_args() {
-  local options_to_remove=("$@")
-  local input_args
-  input_args=("${options_to_remove[-1]}")
-  unset "options_to_remove[${#options_to_remove[@]}-1]"
-
+remove_self_update_args() {
+  local input_args=("$@")
   local output_args=()
-  
+
   for arg in "${input_args[@]}"; do
-    local should_remove=false
-    for option_to_remove in "${options_to_remove[@]}"; do
-      if [[ "$arg" == "$option_to_remove" ]] ||
-         { [[ "$option_to_remove" == "self-update" ]] && { [[ "$arg" =~ ^(--)?self-update$ ]] || [[ "$arg" == "-U" ]]; }; }; then
-        should_remove=true
-        break
-      fi
-    done
-    if ! $should_remove; then
+    if ! [[ "$arg" =~ ^(--)?self-update$ || "$arg" == "-U" ]]; then
       output_args+=("$arg")
     fi
   done
@@ -26,3 +14,30 @@ remove_options_args() {
   printf "%s\n" "${output_args[@]}"
 }
 
+
+remove_no_self_update_args() {
+  local input_args=("$@")
+  local output_args=()
+
+  for arg in "${input_args[@]}"; do
+    if ! [[ "$arg" == "--no-self-update" ]]; then
+      output_args+=("$arg")
+    fi
+  done
+
+  printf "%s\n" "${output_args[@]}"
+}
+
+
+remove_force_update_args() {
+  local input_args=("$@")
+  local output_args=()
+
+  for arg in "${input_args[@]}"; do
+    if ! [[ "$arg" == "--force" ]]; then
+      output_args+=("$arg")
+    fi
+  done
+
+  printf "%s\n" "${output_args[@]}"
+}

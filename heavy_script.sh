@@ -72,7 +72,9 @@ mapfile -t args < <(add_selfupdate_major_from_config "${args[@]}")
 self_update_handler "${args[@]}"
 
 # Unset the self-update and no-self-update argument
-mapfile -t args < <(remove_options_args "self-update" "--no-self-update" "--major" "${args[@]}")
+mapfile -t args < <(remove_no_self_update_args "${args[@]}")
+mapfile -t args < <(remove_self_update_args "${args[@]}")
+mapfile -t args < <(remove_force_update_args "${args[@]}")
 
 
 # If no arguments are passed or the first argument is '-' or '--', open the menu function.

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-git_help() {
+self_update_help() {
     echo -e "${bold}Self-Update${reset}"
     echo -e "${bold}-----------${reset}"
     echo -e "${blue}heavyscript self-update${reset} | [-U | --self-update | self-update | -h | --help]"

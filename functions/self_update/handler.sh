@@ -7,15 +7,18 @@ self_update_handler() {
   local no_self_update=false
   local include_major=false
 
+ # Check if second element is a --help/-h argument
+    if [[ "${args[1]}" == "--help" || "${args[1]}" == "-h" ]]; then
+        self_update_help
+        exit
+    fi
+
   for arg in "${args[@]}"; do
       if [[ "$arg" =~ ^(--)?self-update$ || "$arg" == "-U" ]]; then
           self_update=true
       elif [[ "$arg" == "--no-self-update" ]]; then
           no_self_update=true
           break
-      elif [[ "$arg" == "--help" || "$arg" == "-h" ]]; then
-          self_update_help
-          exit 0
       elif [[ "$arg" == "--major" ]]; then
           include_major=true
       fi
@@ -24,5 +27,11 @@ self_update_handler() {
   if $self_update && ! $no_self_update; then
       self_update 
   fi
+
+
+    # Clean args
+
+
+
 }
 export -f self_update_handler

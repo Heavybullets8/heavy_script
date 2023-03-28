@@ -6,7 +6,7 @@ update_help() {
   echo -e "Update your applications.\n"
 
   echo -e "${bold}OPTIONS${reset}:"
-  echo -e "${blue}-a, --all${reset}\t\tUpdate through major version changes"
+  echo -e "${blue}-a, --include-major${reset}\t\tUpdate the application even if it is a major version update"
   echo -e "${blue}-b, --backup${reset}\t\tSet the number of backups to keep (default: 14)"
   echo -e "${blue}-c, --concurrent${reset}\tUpdate COUNT applications concurrently (default: 1)"
   echo -e "${blue}-h, --help${reset}\t\tShow this help message and exit"

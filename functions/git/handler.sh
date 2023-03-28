@@ -1,26 +1,6 @@
 #!/bin/bash
 
 
-self_update_handler() {
-  local args=("$@")
-  local self_update=false
-  local no_self_update=false
-
-  for arg in "${args[@]}"; do
-      if [[ "$arg" =~ ^(--)?self-update$ || "$arg" == "-U" ]]; then
-          self_update=true
-      elif [[ "$arg" == "--no-self-update" ]]; then
-          no_self_update=true
-          break
-      fi
-  done
-
-  if $self_update && ! $no_self_update; then
-      self_update
-  fi
-}
-
-
 git_handler() {
   local option="$1"
 
@@ -44,3 +24,4 @@ git_handler() {
       ;;
   esac
 }
+export -f git_handler

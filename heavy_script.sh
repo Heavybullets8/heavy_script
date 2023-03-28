@@ -64,21 +64,16 @@ done
 set -- "${args[@]}"
 
 
-# Read the config.ini file
-read_ini "config.ini" --prefix SELFUPDATE
+# Check config for additional options
+mapfile -t args < <(add_selfupdate_major_from_config "${args[@]}")
 
-# Check if always or when_updating is set to true in the config file
-if { [[ "${SELFUPDATE__SELFUPDATE__always}" == "true" ]] || 
-   { [[ "${SELFUPDATE__SELFUPDATE__when_updating}" == "true" ]] && [[ "${args[0]}" == "update" ]]; }; }; then
-    args+=("self-update")
-fi
 
 # Check for self-update and update the script if required
 self_update_handler "${args[@]}"
 
 # Unset the self-update and no-self-update argument
-mapfile -t args < <(remove_no_self_update_args "${args[@]}")
-mapfile -t args < <(remove_self_update_args "${args[@]}")
+mapfile -t args < <(remove_options_args "self-update" "--no-self-update" "--major" "${args[@]}")
+
 
 # If no arguments are passed or the first argument is '-' or '--', open the menu function.
 if [[ "${#args[@]}" -eq 0 || "${args[0]}" == "-" || "${args[0]}" == "--" ]]; then

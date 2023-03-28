@@ -33,7 +33,7 @@ update_handler() {
 
   while [[ "$#" -gt 0 ]]; do
     case $1 in
-      -a|--all)
+      -a|--include-major)
         update_all_apps=true
         shift
         ;;

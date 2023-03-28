@@ -71,7 +71,7 @@ mapfile -t args < <(add_selfupdate_major_from_config "${args[@]}")
 # Check for self-update and update the script if required
 self_update_handler "${args[@]}"
 
-# Unset the self-update and no-self-update argument
+# Unset self-update arguments/--no-self-update/--major
 mapfile -t args < <(remove_no_self_update_args "${args[@]}")
 mapfile -t args < <(remove_self_update_args "${args[@]}")
 mapfile -t args < <(remove_force_update_args "${args[@]}")

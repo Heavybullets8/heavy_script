@@ -16,7 +16,7 @@ self_update_handler() {
       elif [[ "$arg" == "--help" || "$arg" == "-h" ]]; then
           self_update_help
           exit 0
-      elif [[ "$arg" == "--force" ]]; then
+      elif [[ "$arg" == "--major" ]]; then
           include_major=true
       fi
   done

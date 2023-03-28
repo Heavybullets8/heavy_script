@@ -34,7 +34,7 @@ remove_force_update_args() {
   local output_args=()
 
   for arg in "${input_args[@]}"; do
-    if ! [[ "$arg" == "--force" ]]; then
+    if ! [[ "$arg" == "--major" ]]; then
       output_args+=("$arg")
     fi
   done

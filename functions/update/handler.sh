@@ -105,25 +105,25 @@ update_handler() {
                 shift
                 ;;
             -t|--timeout)
-              shift
-              timeout=$1
-              if ! [[ $timeout =~ ^[0-9]+$ ]]; then
-                  echo -e "Error: -t needs to be assigned an interger\n\"""$timeout""\" is not an interger" >&2
-                  exit
-              fi
-              shift
-              ;;
+                shift
+                timeout=$1
+                if ! [[ $timeout =~ ^[0-9]+$ ]]; then
+                    echo -e "Error: -t needs to be assigned an interger\n\"""$timeout""\" is not an interger" >&2
+                    exit
+                fi
+                shift
+                ;;
             -v|--verbose)
-              verbose=true
-              shift
-              ;;
-            --no_config)
+                verbose=true
+                shift
+                ;;
+            --no-config)
                 shift
                 ;;
             *)
-              echo "Unknown update option: $1"
-              exit 1
-              ;;
+                echo "Unknown update option: $1"
+                exit 1
+                ;;
         esac
     done
 

@@ -2,17 +2,7 @@
 
 
 update_handler() {
-    local concurrent
-    local timeout
-    local ignore
-    local prune
-    local rollback
-    local sync
-    local stop_before_update
-    local update_all_apps
-    local verbose
-
-    # Check if --no-config is in the arguments
+   # Check if --no-config is in the arguments
     if check_no_config "$@"; then
         no_config=true
     fi
@@ -150,4 +140,3 @@ update_handler() {
         prune 
     fi
 }
-export -f update_handler

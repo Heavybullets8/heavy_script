@@ -2,30 +2,31 @@
 
 
 backup_handler() {
-  local args=("$@")
-  local action=$1
+    local args=("$@")
 
-  case $action in
-    -c|--create)
-      if ! [[ ${args[1]} =~ ^[0-9]+$  ]]; then
-        echo -e "Error: \"$action\" needs to be assigned an interger\n\"""${args[1]}""\" is not an interger" >&2
-        exit
-      fi
-      create_backup "${args[1]}" "direct"
-      ;;
-    -r|--restore)
-      restore_backup
-      ;;
-    -d|--delete)
-      delete_backup
-      ;;
-    -h|--help)
-      backup_help
-      ;;
-    *)
-      echo "Unknown backup action: $action"
-      echo "Usage: heavyscript backup [-c | --create | -r | --restore | -d | --delete | -h | --help]"
-      exit 1
-      ;;
-  esac
+    mapfile -t args < <(remove_no_config_args "${args[@]}")
+
+    case "${args[0]}" in
+        -c|--create)
+            if ! [[ ${args[1]} =~ ^[0-9]+$  ]]; then
+                echo -e "Error: \"${args[1]}\" needs to be assigned an interger\n\"""${args[1]}""\" is not an interger" >&2
+                exit
+            fi
+            create_backup "${args[1]}" "direct"
+            ;;
+        -r|--restore)
+            restore_backup
+            ;;
+        -d|--delete)
+            delete_backup
+            ;;
+        -h|--help)
+            backup_help
+            ;;
+        *)
+            echo "Unknown backup action: ${args[0]}"
+            echo "Usage: heavyscript backup [-c | --create | -r | --restore | -d | --delete | -h | --help]"
+            exit 1
+            ;;
+    esac
 }

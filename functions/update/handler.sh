@@ -131,14 +131,14 @@ update_handler() {
         esac
     done
 
-    if [[ "$number_of_backups" -gt 1 && "$sync" == true ]]; then # Run backup and sync at the same time
+    if [[ "$number_of_backups" -ge 1 && "$sync" == true ]]; then # Run backup and sync at the same time
         echo "🅃 🄰 🅂 🄺 🅂 :"
         echo -e "-Backing up ix-applications dataset\n-Syncing catalog(s)"
         echo -e "Please wait for output from both tasks..\n\n"
         create_backup "$number_of_backups" "update" &
         sync_catalog "update" &
         wait
-    elif [[ "$number_of_backups" -gt 1 ]]; then # If only backup is true, run it
+    elif [[ "$number_of_backups" -ge 1 ]]; then # If only backup is true, run it
         echo "🅃 🄰 🅂 🄺 :"
         echo -e "-Backing up ix-applications dataset\nPlease wait..\n\n"
         create_backup "$number_of_backups" "update"

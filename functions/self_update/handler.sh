@@ -6,16 +6,20 @@ self_update_handler() {
     local menu_toggle=false
 
     # Check if "self-update" is the first argument and the second argument is a help option
+    # heavyscript self-update --help/-h
     if [[ "${input_args[0]}" == "self-update" ]] && [[ "${input_args[1]}" =~ ^(--help|-h)$ ]]; then
         self_update_help
         exit
     fi
 
+    # Toggle the menu if no arguments are passed, the first argument is an empty string, '-', or '--'
+    # This is useful for when a user has self-update always set to true in the config file
     if [[ "${#input_args[@]}" -eq 0 || "${input_args[0]}" =~ ^(-{1,2})?$ ]]; then
         menu_toggle=true
     fi
 
     local args
+    # Read the config.ini file
     mapfile -t args < <(add_selfupdate_major_from_config "${input_args[@]}")
 
     local self_update=false
@@ -33,6 +37,8 @@ self_update_handler() {
         fi
     done
 
+    # Update the script if --self-update/self-update/-U is passed
+    # dont update if --no-self-update is passed
     if $self_update && ! $no_self_update; then
         self_update "$menu_toggle"
     fi

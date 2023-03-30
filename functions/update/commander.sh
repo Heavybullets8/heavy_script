@@ -16,7 +16,7 @@ commander(){
         echo "Update(s) Available: ${#array[@]}"
     fi
 
-    echo "Asynchronous Updates: $concurrent_updates"
+    echo "Asynchronous Updates: $concurrent"
     
     
     if [[ -z $timeout ]]; then
@@ -113,7 +113,7 @@ commander(){
             kill -0 "${processes[i]}" &> /dev/null || unset "processes[$i]"
         done
         processes=("${processes[@]}")
-        if [[ $index -lt ${#array[@]} && "${#processes[@]}" -lt "$concurrent_updates" ]]; then
+        if [[ $index -lt ${#array[@]} && "${#processes[@]}" -lt "$concurrent" ]]; then
             pre_process "${array[$index]}" &
             processes+=($!)
             ((index++))

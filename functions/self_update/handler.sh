@@ -3,6 +3,7 @@
 
 self_update_handler() {
     local input_args=("$@")
+    local menu_toggle=false
 
     # Check if "self-update" is the first argument and the second argument is a help option
     if [[ "${input_args[0]}" == "self-update" ]] && [[ "${input_args[1]}" =~ ^(--help|-h)$ ]]; then
@@ -10,9 +11,8 @@ self_update_handler() {
         exit
     fi
 
-    if [[ "${#input_args[@]}" ]]; then
+    if [[ "${#input_args[@]}" -eq 0 || "${input_args[0]}" =~ ^(-{1,2})?$ ]]; then
         menu_toggle=true
-        exit
     fi
 
     local args

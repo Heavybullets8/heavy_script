@@ -15,6 +15,8 @@ dns_handler() {
         no_config=true
     fi
 
+    mapfile -t args < <(remove_no_config_args "${args[@]}")
+
     # Load the config.ini file if --no-config is not passed
     if ! $no_config; then
         read_ini "config.ini" --prefix DNS
@@ -24,29 +26,21 @@ dns_handler() {
     local verbose="${DNS__DNS__verbose:-false}"
 
     if [[ "$verbose" == "true" ]]; then
-        option="-a"
-    else
-        option="$1"
+        args=("-a")
     fi
 
-
-    case "$option" in
+    case "${args[0]}" in
         -a|--all)
             # Call the function to display all DNS information
-            dns_verbose
+            dns_verbose "${args[@]:1}"
             ;;
         "")
-            dns_non_verbose
+            dns_non_verbose "${args[@]:1}"
             ;;
         *)
-            echo "Invalid option: $option"
+            echo "Invalid option: ${args[0]}"
             echo "Usage: heavyscript dns [-a | --all | -h | --help]"
             exit 1
             ;;
     esac
 }
-
-
-
-
-

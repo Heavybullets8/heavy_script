@@ -2,143 +2,150 @@
 
 
 update_handler() {
-  local concurrent
-  local timeout
-  local ignore
-  local prune
-  local rollback
-  local sync
-  local stop_before_update
-  local update_all_apps
-  local verbose
+    local concurrent
+    local timeout
+    local ignore
+    local prune
+    local rollback
+    local sync
+    local stop_before_update
+    local update_all_apps
+    local verbose
 
-  # Read from config.ini
-  read_ini "config.ini" --prefix UPDATE
+    # Check if --no-config is in the arguments
+    if check_no_config "${args[@]}"; then
+        no_config=true
+    fi
 
-  # Set variables from config.ini if they exist
-  concurrent="${UPDATE__UPDATE__concurrent:-1}"
-  timeout="${UPDATE__UPDATE__timeout:-500}"
-  prune="${UPDATE__UPDATE__prune:-false}"
-  rollback="${UPDATE__UPDATE__rollback:-false}"
-  sync="${UPDATE__UPDATE__sync:-false}"
-  stop_before_update="${UPDATE__UPDATE__stop_before_update:-false}"
-  update_all_apps="${UPDATE__UPDATE__update_all_apps:-false}"
-  verbose="${UPDATE__UPDATE__verbose:-false}"
+    mapfile -t args < <(remove_no_config_args "${args[@]}")
 
-  # Get the ignore value from config.ini
-  ignore_value="${UPDATE__UPDATE__ignore:-}"
+    # Read from config.ini
+    if ! $no_config; then
+        read_ini "config.ini" --prefix UPDATE
+    fi
 
-  # Split comma-separated values into an array
-  IFS=',' read -ra ignore <<< "$ignore_value"
+    # Set variables from config.ini if they exist
+    concurrent="${UPDATE__UPDATE__concurrent:-1}"
+    timeout="${UPDATE__UPDATE__timeout:-500}"
+    prune="${UPDATE__UPDATE__prune:-false}"
+    rollback="${UPDATE__UPDATE__rollback:-false}"
+    sync="${UPDATE__UPDATE__sync:-false}"
+    stop_before_update="${UPDATE__UPDATE__stop_before_update:-false}"
+    update_all_apps="${UPDATE__UPDATE__update_all_apps:-false}"
+    verbose="${UPDATE__UPDATE__verbose:-false}"
 
-  while [[ "$#" -gt 0 ]]; do
-    case $1 in
-      -a|--include-major)
-        update_all_apps=true
-        shift
-        ;;
-      -b|--backup)
-        shift
-        if ! [[ $1 =~ ^[0-9]+$  ]]; then
-            echo -e "Error: -b needs to be assigned an interger\n\"""$1""\" is not an interger" >&2
-            exit
-        fi
-        if [[ "$1" -le 0 ]]; then
-            echo "Error: Number of backups is required to be at least 1"
-            exit
-        fi
-        number_of_backups="$1"
-        shift
-        ;;
-      -c|--concurrent)
-        shift
-        if ! [[ $1 =~ ^[0-9]+$  ]]; then
-            echo -e "Error: -c needs to be assigned an interger\n\"""$1""\" is not an interger" >&2
-            exit
-        fi
-        if [[ "$1" -le 0 ]]; then
-            echo "Error: Number of concurrent updates is required to be at least 1"
-            exit
-        fi
-        concurrent="$1"
-        shift
-        ;;
-      -h|--help)
-        update_help
-        exit
-        ;;
-      -i|--ignore)
-        shift
-        if ! [[ $1 =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]]; then # Using case insensitive version of the regex used by Truenas Scale
-            echo -e "Error: \"$1\" is not a possible option for an application name"
-            exit
-        else
-            ignore+=("$1")
-        fi
-        
-        shift
-        ;;
-      -I|--ignore-img)
-        # Handle --ignore-img option here
-        shift
-        ;;
-      -p|--prune)
-        prune=true
-        shift
-        ;;
-      -r|--rollback)
-        rollback=true
-        shift
-        ;;
-      -s|--sync)
-        sync=true
-        shift
-        ;;
-      -x|--stop)
-        stop_before_update=true
-        shift
-        ;;
-      -t|--timeout)
-        shift
-        timeout=$1
-        if ! [[ $timeout =~ ^[0-9]+$ ]]; then
-            echo -e "Error: -t needs to be assigned an interger\n\"""$timeout""\" is not an interger" >&2
-            exit
-        fi
-        shift
-        ;;
-      -v|--verbose)
-        verbose=true
-        shift
-        ;;
-      *)
-        echo "Unknown update option: $1"
-        exit 1
-        ;;
-    esac
-  done
+    # Get the ignore value from config.ini
+    ignore_value="${UPDATE__UPDATE__ignore:-}"
 
-  if [[ "$number_of_backups" -gt 1 && "$sync" == true ]]; then # Run backup and sync at the same time
-      echo "🅃 🄰 🅂 🄺 🅂 :"
-      echo -e "-Backing up ix-applications dataset\n-Syncing catalog(s)"
-      echo -e "Please wait for output from both tasks..\n\n"
-      create_backup &
-      sync_catalog &
-      wait
-  elif [[ "$number_of_backups" -gt 1 ]]; then # If only backup is true, run it
-      echo "🅃 🄰 🅂 🄺 :"
-      echo -e "-Backing up ix-applications dataset\nPlease wait..\n\n"
-      create_backup
-  elif [[ "$sync" == true ]]; then # If only sync is true, run it
-      echo "🅃 🄰 🅂 🄺 :"
-      echo -e "Syncing Catalog(s)\nThis can take a few minutes, please wait..\n\n"
-      sync_catalog
-  fi
+    # Split comma-separated values into an array
+    IFS=',' read -ra ignore <<< "$ignore_value"
 
-  commander
+    while [[ "$#" -gt 0 ]]; do
+        case $1 in
+            -a|--include-major)
+                update_all_apps=true
+                shift
+                ;;
+            -b|--backup)
+                shift
+                if ! [[ $1 =~ ^[0-9]+$  ]]; then
+                    echo -e "Error: -b needs to be assigned an interger\n\"""$1""\" is not an interger" >&2
+                    exit
+                fi
+                if [[ "$1" -le 0 ]]; then
+                    echo "Error: Number of backups is required to be at least 1"
+                    exit
+                fi
+                number_of_backups="$1"
+                shift
+                ;;
+            -c|--concurrent)
+                shift
+                if ! [[ $1 =~ ^[0-9]+$  ]]; then
+                    echo -e "Error: -c needs to be assigned an interger\n\"""$1""\" is not an interger" >&2
+                    exit
+                fi
+                if [[ "$1" -le 0 ]]; then
+                    echo "Error: Number of concurrent updates is required to be at least 1"
+                    exit
+                fi
+                concurrent="$1"
+                shift
+                ;;
+            -h|--help)
+                update_help
+                exit
+                ;;
+            -i|--ignore)
+                shift
+                if ! [[ $1 =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]]; then # Using case insensitive version of the regex used by Truenas Scale
+                    echo -e "Error: \"$1\" is not a possible option for an application name"
+                    exit
+                else
+                    ignore+=("$1")
+                fi
+                shift
+                ;;
+            -I|--ignore-img)
+                # Handle --ignore-img option here
+                shift
+                ;;
+            -p|--prune)
+                prune=true
+                shift
+                ;;
+            -r|--rollback)
+                rollback=true
+                shift
+                ;;
+            -s|--sync)
+                sync=true
+                shift
+                ;;
+            -x|--stop)
+                stop_before_update=true
+                shift
+                ;;
+            -t|--timeout)
+              shift
+              timeout=$1
+              if ! [[ $timeout =~ ^[0-9]+$ ]]; then
+                  echo -e "Error: -t needs to be assigned an interger\n\"""$timeout""\" is not an interger" >&2
+                  exit
+              fi
+              shift
+              ;;
+            -v|--verbose)
+              verbose=true
+              shift
+              ;;
+            *)
+              echo "Unknown update option: $1"
+              exit 1
+              ;;
+        esac
+    done
 
-  if [[ "$prune" == true ]]; then
-      prune 
-  fi
+    if [[ "$number_of_backups" -gt 1 && "$sync" == true ]]; then # Run backup and sync at the same time
+        echo "🅃 🄰 🅂 🄺 🅂 :"
+        echo -e "-Backing up ix-applications dataset\n-Syncing catalog(s)"
+        echo -e "Please wait for output from both tasks..\n\n"
+        create_backup "$number_of_backups" "update" &
+        sync_catalog "update" &
+        wait
+    elif [[ "$number_of_backups" -gt 1 ]]; then # If only backup is true, run it
+        echo "🅃 🄰 🅂 🄺 :"
+        echo -e "-Backing up ix-applications dataset\nPlease wait..\n\n"
+        create_backup "$number_of_backups" "update"
+    elif [[ "$sync" == true ]]; then # If only sync is true, run it
+        echo "🅃 🄰 🅂 🄺 :"
+        echo -e "Syncing Catalog(s)\nThis can take a few minutes, please wait..\n\n"
+        sync_catalog "update"
+    fi
 
+    commander
+
+    if [[ "$prune" == true ]]; then
+        prune 
+    fi
 }

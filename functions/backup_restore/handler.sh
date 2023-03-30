@@ -11,7 +11,7 @@ backup_handler() {
         echo -e "Error: \"$action\" needs to be assigned an interger\n\"""${args[1]}""\" is not an interger" >&2
         exit
       fi
-      create_backup "${args[1]}"
+      create_backup "${args[1]}" "direct"
       ;;
     -r|--restore)
       restore_backup

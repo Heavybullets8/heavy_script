@@ -11,7 +11,7 @@ sync_handler() {
       sync_help
       ;;
     "")
-        sync_catalog
+        sync_catalog "direct"
         return
         ;;
     *)

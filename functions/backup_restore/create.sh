@@ -2,7 +2,17 @@
 
 
 create_backup(){
-    [[ -n "$1" ]] && local number_of_backups=$1
+    if [[ -z "$1" ]]; then
+        echo -e "Error: No number of backups specified" >&2
+        return 1
+    fi
+
+    local number_of_backups="$1"
+    local backup_type="$2"
+
+    if [[ "$backup_type" != "update" ]]; then
+        echo "${blue}Please wait while the backup is created..${reset}"
+    fi
 
     echo_backup+=("🄱 🄰 🄲 🄺 🅄 🄿 🅂")
     echo_backup+=("Number of backups was set to $number_of_backups")

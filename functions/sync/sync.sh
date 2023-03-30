@@ -2,6 +2,12 @@
 
 
 sync_catalog(){
+    local sync_type=$1
+
+    if [[ $sync_type != "update" ]]; then
+        echo "${blue}Please wait while we sync your catalog...${reset}"
+    fi
+
     echo_sync+=("🅂 🅈 🄽 🄲") 
     cli -c 'app catalog sync_all' &> /dev/null && echo_sync+=("Catalog sync complete")
 

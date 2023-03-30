@@ -19,7 +19,7 @@ git_handler() {
       ;;
     *)
       echo "Invalid option: $option"
-      echo "Usage: heavyscript git [-c | --choose-branch | -g | --global | -h | --help]"
+      echo "Usage: heavyscript git [-b | --branch | -g | --global | -h | --help]"
       exit 1
       ;;
   esac

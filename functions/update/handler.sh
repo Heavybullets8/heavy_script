@@ -33,6 +33,7 @@ update_handler() {
     stop_before_update="${UPDATE__UPDATE__stop_before_update:-false}"
     update_all_apps="${UPDATE__UPDATE__update_all_apps:-false}"
     verbose="${UPDATE__UPDATE__verbose:-false}"
+    number_of_backups="${UPDATE__UPDATE__backup:-}"
 
     # Get the ignore value from config.ini
     ignore_value="${UPDATE__UPDATE__ignore:-}"

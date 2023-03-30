@@ -47,7 +47,7 @@ generate_config_ini
 # Separate bundled short options
 args=()
 for arg in "$@"; do
-if [[ $arg =~ ^-[srSpvU]+$ ]]; then
+if [[ $arg =~ ^-[srxpvU]+$ ]]; then
     for opt in $(echo "$arg" | grep -o .); do
     if [[ $opt == "-" ]]; then
         # Ignore the leading dash
@@ -62,10 +62,6 @@ done
 
 # Replace "$@" with the new "args" array
 set -- "${args[@]}"
-
-
-# Check config for additional options
-mapfile -t args < <(add_selfupdate_major_from_config "${args[@]}")
 
 
 # Check for self-update and update the script if required

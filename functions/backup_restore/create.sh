@@ -2,6 +2,8 @@
 
 
 create_backup(){
+    [[ -n "$1" ]] && local number_of_backups=$1
+
     echo_backup+=("🄱 🄰 🄲 🄺 🅄 🄿 🅂")
     echo_backup+=("Number of backups was set to $number_of_backups")
 

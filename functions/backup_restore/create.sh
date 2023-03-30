@@ -11,7 +11,7 @@ create_backup(){
     local backup_type="$2"
 
     if [[ "$backup_type" != "update" ]]; then
-        echo "${blue}Please wait while the backup is created..${reset}"
+        echo -e "${blue}Please wait while the backup is created..${reset}"
     fi
 
     echo_backup+=("🄱 🄰 🄲 🄺 🅄 🄿 🅂")

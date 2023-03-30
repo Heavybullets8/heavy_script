@@ -2,6 +2,7 @@
 
 
 commander(){
+    declare -p
     mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | 
                         tr -d " \t\r" | 
                         grep -E ",true($|,)" | 

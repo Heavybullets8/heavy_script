@@ -19,8 +19,14 @@ self_update_handler() {
     fi
 
     local args
-    # Read the config.ini file
-    mapfile -t args < <(add_selfupdate_major_from_config "${input_args[@]}")
+    # check for --no-config
+    if check_no_config; then
+        # If --no-config is passed, use the input arguments
+        args=("${input_args[@]}")
+    else
+        # Read the config.ini file if --no-config is not passed
+        mapfile -t args < <(add_selfupdate_major_from_config "${input_args[@]}")
+    fi
 
     local self_update=false
     local no_self_update=false

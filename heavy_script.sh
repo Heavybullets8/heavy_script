@@ -73,10 +73,11 @@ mapfile -t args < <(remove_self_update_args "${args[@]}")
 mapfile -t args < <(remove_force_update_args "${args[@]}")
 
 
-# If no arguments are passed or the first argument is '-' or '--', open the menu function.
-if [[ "${#args[@]}" -eq 0 || "${args[0]}" == "-" || "${args[0]}" == "--" ]]; then
+# If no arguments are passed, the first argument is an empty string, '-', or '--', open the menu function.
+if [[ "${#args[@]}" -eq 0 || "${args[0]}" =~ ^(--)?$ ]]; then
     menu
 fi
+
 
 while [[ "${#args[@]}" -gt 0 ]]; do
   case $1 in

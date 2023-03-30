@@ -150,3 +150,4 @@ update_handler() {
         prune 
     fi
 }
+export -f update_handler

@@ -3,10 +3,15 @@
 
 self_update_handler() {
     local input_args=("$@")
-    
+
     # Check if "self-update" is the first argument and the second argument is a help option
     if [[ "${input_args[0]}" == "self-update" ]] && [[ "${input_args[1]}" =~ ^(--help|-h)$ ]]; then
         self_update_help
+        exit
+    fi
+
+    if [[ "${#input_args[@]}" ]]; then
+        menu_toggle=true
         exit
     fi
 
@@ -29,7 +34,7 @@ self_update_handler() {
     done
 
     if $self_update && ! $no_self_update; then
-        self_update 
+        self_update "$menu_toggle"
     fi
 }
 export -f self_update_handler

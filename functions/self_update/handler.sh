@@ -20,7 +20,7 @@ self_update_handler() {
 
     local args
     # check for --no-config
-    if check_no_config; then
+    if check_no_config "${input_args[@]}"; then
         # If --no-config is passed, use the input arguments
         args=("${input_args[@]}")
     else

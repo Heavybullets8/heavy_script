@@ -2,17 +2,17 @@
 
 
 update_handler() {
-    declare -g concurrent
-    declare -g timeout
-    declare -g ignore
-    declare -g prune
-    declare -g rollback
-    declare -g sync
-    declare -g stop_before_update
-    declare -g update_all_apps
-    declare -g verbose
-    declare -g no_config=false
-    declare -g number_of_backups
+    declare -x concurrent
+    declare -x timeout
+    declare -x ignore
+    declare -x prune
+    declare -x rollback
+    declare -x sync
+    declare -x stop_before_update
+    declare -x update_all_apps
+    declare -x verbose
+    declare -x no_config=false
+    declare -x number_of_backups
 
     # Check if --no-config is in the arguments
     if check_no_config "$@"; then

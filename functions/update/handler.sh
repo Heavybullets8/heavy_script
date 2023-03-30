@@ -13,11 +13,9 @@ update_handler() {
     local verbose
 
     # Check if --no-config is in the arguments
-    if check_no_config "${args[@]}"; then
+    if check_no_config "$@"; then
         no_config=true
     fi
-
-    mapfile -t args < <(remove_no_config_args "${args[@]}")
 
     # Read from config.ini
     if ! $no_config; then
@@ -119,6 +117,9 @@ update_handler() {
               verbose=true
               shift
               ;;
+            --no_config)
+                shift
+                ;;
             *)
               echo "Unknown update option: $1"
               exit 1

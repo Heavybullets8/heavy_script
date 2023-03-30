@@ -27,13 +27,14 @@ update_handler() {
     # Set variables from config.ini if they exist
     concurrent="${UPDATE__UPDATE__concurrent:-1}"
     timeout="${UPDATE__UPDATE__timeout:-500}"
+    number_of_backups="${UPDATE__UPDATE__backup:-}"
+    update_all_apps="${UPDATE__UPDATE__include_major:-false}"
+    ignore_image_update="${UPDATE__UPDATE__ignore_img:-false}"
     prune="${UPDATE__UPDATE__prune:-false}"
     rollback="${UPDATE__UPDATE__rollback:-false}"
     sync="${UPDATE__UPDATE__sync:-false}"
     stop_before_update="${UPDATE__UPDATE__stop_before_update:-false}"
-    update_all_apps="${UPDATE__UPDATE__update_all_apps:-false}"
     verbose="${UPDATE__UPDATE__verbose:-false}"
-    number_of_backups="${UPDATE__UPDATE__backup:-}"
 
     # Get the ignore value from config.ini
     ignore_value="${UPDATE__UPDATE__ignore:-}"
@@ -88,7 +89,7 @@ update_handler() {
                 shift
                 ;;
             -I|--ignore-img)
-                # Handle --ignore-img option here
+                ignore_image_update=true
                 shift
                 ;;
             -p|--prune)

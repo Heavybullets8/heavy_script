@@ -11,7 +11,7 @@ backup_handler() {
         echo -e "Error: -c|--create needs to be assigned an interger\n\"""${args[1]}""\" is not an interger" >&2
         exit
       fi
-      create_backup "${args[2]}"
+      create_backup "${args[1]}"
       ;;
     -r|--restore)
       restore_backup

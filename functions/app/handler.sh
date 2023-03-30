@@ -7,16 +7,16 @@ app_handler() {
 
   case $action in
     -s|--start)
-      start_app
+      start_app_prompt
       ;;
     -x|--stop)
-      stop_app
+      stop_app_prompt
       ;;
     -r|--restart)
-      restart_app
+      restart_app_prompt
       ;;
     -d|--delete)
-      delete_app
+      delete_app_prompt
       ;;
     -h|--help)
       app_help

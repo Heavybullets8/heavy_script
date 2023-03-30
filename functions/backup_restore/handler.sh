@@ -8,7 +8,7 @@ backup_handler() {
   case $action in
     -c|--create)
       if ! [[ ${args[1]} =~ ^[0-9]+$  ]]; then
-        echo -e "Error: -c|--create needs to be assigned an interger\n\"""${args[1]}""\" is not an interger" >&2
+        echo -e "Error: \"$action\" needs to be assigned an interger\n\"""${args[1]}""\" is not an interger" >&2
         exit
       fi
       create_backup "${args[1]}"

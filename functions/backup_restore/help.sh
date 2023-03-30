@@ -12,7 +12,7 @@ backup_help() {
     echo
     echo -e "${bold}Options${reset}"
     echo -e "${bold}-------${reset}"
-    echo -e "${blue}-c${reset}, ${blue}--create${reset}"
+    echo -e "${blue}-c${reset}, ${blue}--create${reset} followed by a number"
     echo -e "    Create a backup."
     echo -e "${blue}-r${reset}, ${blue}--restore${reset}"
     echo -e "    Restore a backup."
@@ -21,4 +21,7 @@ backup_help() {
     echo -e "${blue}-h${reset}, ${blue}--help${reset}"
     echo -e "    Display this help message."
     echo
+    echo -e "${bold}Examples${reset}"
+    echo -e "${bold}--------${reset}"
+    echo -e "${blue}heavyscript backup -c 15${reset}"
 }

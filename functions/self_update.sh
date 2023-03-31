@@ -79,7 +79,7 @@ choose_branch() {
 
 update_func(){
 
-    if [[ "$include_major" == "true" ]] || is_major_update "v3.0.0" "v4.0.0"; then
+    if [[ "$include_major" == "true" ]] || ! is_major_update "v3.0.0" "v4.0.0"; then
         echo "will update"
     else
         echo "will not update"

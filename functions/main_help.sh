@@ -5,7 +5,7 @@ main_help(){
     clear -x
     echo -e "${bold}HeavyScript${reset}"
     echo -e "${bold}-----------${reset}"
-    echo -e "${blue}heavyscript${reset} | ${blue}[Utility]${reset} | ${blue}[Option(s)]${reset}"
+    echo -e "${blue}heavyscript${reset} | ${blue}[Utility]${reset} | ${blue}[Option]${reset}"
     echo
     echo -e "${bold}HeavyScript Menu${reset}"
     echo -e "${bold}----------------${reset}"
@@ -13,14 +13,14 @@ main_help(){
     echo
     echo -e "${bold}Utilities${reset}               | ${bold}[Options]${reset}"
     echo -e "${bold}---------${reset}               | ${bold}---------${reset}"
-    echo -e "${blue}heavyscript app${reset}         | [--start|--stop|--restart|--delete|--help]"
-    echo -e "${blue}heavyscript backup${reset}      | [--create|--restore|--delete|--help]"
-    echo -e "${blue}heavyscript dns${reset}         | [--all|--help]"
-    echo -e "${blue}heavyscript git${reset}         | [--branch|--global-path|--help]"
-    echo -e "${blue}heavyscript pod${reset}         | [--logs|--shell|--help]"
-    echo -e "${blue}heavyscript pvc${reset}         | [--mount|--unmount|--help]"
-    echo -e "${blue}heavyscript self-update${reset} | [--major|--help]"
-    echo -e "${blue}heavyscript update${reset}      | [--help]"
+    echo -e "${blue}heavyscript app${reset}         | [${blue}--start${reset}|${blue}--stop${reset}|${blue}--restart${reset}|${blue}--delete${reset}|${blue}--help${reset}]"
+    echo -e "${blue}heavyscript backup${reset}      | [${blue}--create${reset}|${blue}--restore${reset}|${blue}--delete${reset}|${blue}--help${reset}]"
+    echo -e "${blue}heavyscript dns${reset}         | [${blue}--all${reset}|${blue}--help${reset}]"
+    echo -e "${blue}heavyscript git${reset}         | [${blue}--branch${reset}|${blue}--global-path${reset}|${blue}--help${reset}]"
+    echo -e "${blue}heavyscript pod${reset}         | [${blue}--logs${reset}|${blue}--shell${reset}|${blue}--help${reset}]"
+    echo -e "${blue}heavyscript pvc${reset}         | [${blue}--mount${reset}|${blue}--unmount${reset}|${blue}--help${reset}]"
+    echo -e "${blue}heavyscript self-update${reset} | [${blue}--major${reset}|${blue}--help${reset}]"
+    echo -e "${blue}heavyscript update${reset}      | [${blue}--help${reset}]"
     echo
     echo -e "${bold}Configuration${reset}"
     echo -e "${bold}-------------${reset}"

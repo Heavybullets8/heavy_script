@@ -14,6 +14,11 @@ update_handler() {
     declare -x no_config=false
     declare -x number_of_backups
 
+
+    for i in "$@"; do
+        echo "$i"
+    done
+
     # Check if --no-config is in the arguments
     if check_no_config "$@"; then
         no_config=true

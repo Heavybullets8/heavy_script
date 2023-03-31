@@ -3,21 +3,24 @@
 
 main_help(){
     clear -x
-
+    echo -e "${bold}HeavyScript${reset}"
+    echo -e "${bold}-----------${reset}"
+    echo -e "${blue}heavyscript${reset} | ${blue}[Option]${reset}"
+    echo
     echo -e "${bold}HeavyScript Menu${reset}"
     echo -e "${bold}----------------${reset}"
-    echo -e "${blue}heavyscript${reset} [-h|--help]"
+    echo -e "${blue}heavyscript${reset}"
     echo
     echo -e "${bold}Utilities${reset}"
     echo -e "${bold}---------${reset}"
-    echo -e "${blue}heavyscript app${reset}        | [--start|--stop|--restart|--delete|--help]"
-    echo -e "${blue}heavyscript backup${reset}     | [--create|--restore|--delete|--help]"
-    echo -e "${blue}heavyscript dns${reset}        | [--all|--help]"
-    echo -e "${blue}heavyscript git${reset}        | [--branch|--global-path|--help]"
-    echo -e "${blue}heavyscript pod${reset}        | [--logs|--shell|--help]"
-    echo -e "${blue}heavyscript pvc${reset}        | [--mount|--unmount|--help]"
-    echo -e "${blue}heavyscript self-update${reset}| [--major|--help]"
-    echo -e "${blue}heavyscript update${reset}     | [--help]"
+    echo -e "${blue}heavyscript app${reset}         | [--start|--stop|--restart|--delete|--help]"
+    echo -e "${blue}heavyscript backup${reset}      | [--create|--restore|--delete|--help]"
+    echo -e "${blue}heavyscript dns${reset}         | [--all|--help]"
+    echo -e "${blue}heavyscript git${reset}         | [--branch|--global-path|--help]"
+    echo -e "${blue}heavyscript pod${reset}         | [--logs|--shell|--help]"
+    echo -e "${blue}heavyscript pvc${reset}         | [--mount|--unmount|--help]"
+    echo -e "${blue}heavyscript self-update${reset} | [--major|--help]"
+    echo -e "${blue}heavyscript update${reset}      | [--help]"
     echo
     echo -e "${bold}Configuration${reset}"
     echo -e "${bold}-------------${reset}"

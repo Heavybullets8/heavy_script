@@ -78,7 +78,11 @@ choose_branch() {
 
 
 update_func(){
-    echo "major: $include_major"
+    if [[ "$include_major" == "true" ]]; then
+        echo "On"
+    else
+        echo "Off"
+    fi
 
     # Check if using a tag or branch
     if ! [[ "$hs_version" =~ v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+ ]]; then

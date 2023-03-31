@@ -5,19 +5,14 @@ update_handler() {
     declare -x concurrent
     declare -x timeout
     declare -x ignore
-    declare -x prune
     declare -x rollback
-    declare -x sync
     declare -x stop_before_update
     declare -x update_all_apps
     declare -x verbose
-    declare -x no_config=false
-    declare -x number_of_backups
-
-
-    for i in "$@"; do
-        echo "$i"
-    done
+    local sync
+    local number_of_backups
+    local no_config=false
+    local prune
 
     # Check if --no-config is in the arguments
     if check_no_config "$@"; then

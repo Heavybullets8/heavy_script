@@ -4,6 +4,21 @@
 args=("$@")
 
 
+is_major_update() {
+    local current_version="${1#v}"
+    local latest_version="${2#v}"
+
+    local current_major_version="${current_version%%.*}"
+    local latest_major_version="${latest_version%%.*}"
+
+    if [[ "$latest_major_version" -gt "$current_major_version" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+
 choose_branch() {
     clear -x
     echo "Pulling git information.."
@@ -63,6 +78,8 @@ choose_branch() {
 
 
 update_func(){
+    echo "major: $include_major"
+
     # Check if using a tag or branch
     if ! [[ "$hs_version" =~ v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+ ]]; then
         # Check for updates on the main branch
@@ -86,14 +103,20 @@ update_func(){
     else
         latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
         if  [[ "$hs_version" != "$latest_tag" ]] ; then
-            echo "Found a new version of HeavyScript, updating myself..."
-            git checkout --force "$latest_tag" &>/dev/null 
-            echo "Updating from: $hs_version"
-            echo "Updating To: $latest_tag"
-            echo "Changelog:"
-            curl --silent "https://api.github.com/repos/HeavyBullets8/heavy_script/releases/latest" | jq -r .body
-            echo 
-            return 111
+            if [[ "$include_major" == "true" ]] || ! is_major_update "${hs_version}" "${latest_tag}"; then
+                echo "Found a new version of HeavyScript, updating myself..."
+                git checkout --force "$latest_tag" &>/dev/null 
+                echo "Updating from: $hs_version"
+                echo "Updating To: $latest_tag"
+                echo "Changelog:"
+                curl --silent "https://api.github.com/repos/HeavyBullets8/heavy_script/releases/latest" | jq -r .body
+                echo 
+                return 111
+            else
+                echo "A major update is available: $latest_tag"
+                echo "Skipping the update due to major version change."
+                echo "To update to the latest version, run: heavyscript --self-update --major"
+            fi
         else 
             echo "HeavyScript is already the latest version:"
             echo -e "$hs_version\n\n"

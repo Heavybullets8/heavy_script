@@ -91,6 +91,9 @@ do
        restart-app)
                   restart_app=true
                   ;;
+             major)
+                  include_major=true
+                  ;;
                 *)
                   echo -e "Invalid Option \"--$OPTARG\"\n"
                   help

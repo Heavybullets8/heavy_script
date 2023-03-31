@@ -4,7 +4,7 @@
 prune_help(){
     echo -e "${bold}Prune${reset}"
     echo -e "${bold}-----${reset}"
-    echo -e "${blue}heavyscript prune${reset} | [--help]"
+    echo -e "${blue}heavyscript prune${reset} | ${blue}[Option]${reset}"
     echo
     echo -e "${bold}Description${reset}"
     echo -e "${bold}-----------${reset}"

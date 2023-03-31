@@ -4,7 +4,7 @@
 backup_help() {
     echo -e "${bold}Backup Handler${reset}"
     echo -e "${bold}--------------${reset}"
-    echo -e "${blue}heavyscript backup${reset} | [-c | --create | -r | --restore | -d | --delete | -h | --help]"
+    echo -e "${blue}heavyscript backup [Option]${reset}"
     echo
     echo -e "${bold}Description${reset}"
     echo -e "${bold}-----------${reset}"

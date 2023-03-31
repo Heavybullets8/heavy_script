@@ -4,7 +4,7 @@
 pod_help() {
     echo -e "${bold}Pod Handler${reset}"
     echo -e "${bold}-----------${reset}"
-    echo -e "${blue}heavyscript pod${reset} | [-l | --logs | -s | --shell | -h | --help]"
+    echo -e "${blue}heavyscript pod [Option]${reset}"
     echo
     echo -e "${bold}Description${reset}"
     echo -e "${bold}-----------${reset}"

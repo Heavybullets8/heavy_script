@@ -4,7 +4,7 @@
 app_help() {
     echo -e "${bold}App Handler${reset}"
     echo -e "${bold}-----------${reset}"
-    echo -e "${blue}heavyscript app${reset} | [-s | --start | -x | --stop | -r | --restart | -d | --delete | -h | --help]"
+    echo -e "${blue}heavyscript app [Option]${reset}"
     echo
     echo -e "${bold}Description${reset}"
     echo -e "${bold}-----------${reset}"

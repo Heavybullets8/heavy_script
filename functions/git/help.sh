@@ -4,7 +4,7 @@
 git_help() {
     echo -e "${bold}Git Handler${reset}"
     echo -e "${bold}-----------${reset}"
-    echo -e "${blue}heavyscript git${reset} | [-b | --branch | -g | --global | -h | --help]"
+    echo -e "${blue}heavyscript git [Option]${reset} "
     echo
     echo -e "${bold}Description${reset}"
     echo -e "${bold}-----------${reset}"

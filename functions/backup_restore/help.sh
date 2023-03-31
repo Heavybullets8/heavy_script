@@ -12,8 +12,8 @@ backup_help() {
     echo
     echo -e "${bold}Options${reset}"
     echo -e "${bold}-------${reset}"
-    echo -e "${blue}-c${reset}, ${blue}--create${reset} followed by a number"
-    echo -e "    Create a backup."
+    echo -e "${blue}-c [number]${reset}, ${blue}--create [number]${reset}"
+    echo -e "    Create a backup with the specified retention number."
     echo -e "${blue}-r${reset}, ${blue}--restore${reset}"
     echo -e "    Restore a backup."
     echo -e "${blue}-d${reset}, ${blue}--delete${reset}"
@@ -25,3 +25,4 @@ backup_help() {
     echo -e "${bold}--------${reset}"
     echo -e "${blue}heavyscript backup -c 15${reset}"
 }
+

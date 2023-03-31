@@ -30,14 +30,15 @@ backup_selection(){
                     exit
                 fi
                 backup_selection=true
+                create_backup "$number_of_backups" "direct"
                 ;;
             2)
                 backup_selection=true
-                deleteBackup
+                delete_backup
                 ;;
             3)
                 backup_selection=true
-                restore
+                restore_backup
                 ;;
             *)
                 echo -e "${red}\"$selection\" was not an option, please try again${reset}"

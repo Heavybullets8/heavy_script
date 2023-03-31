@@ -78,7 +78,7 @@ menu(){
         
         # Applicaiton Options
         2)
-            while true
+            while [[ $misc_selection != true ]]
             do
                 clear -x
                 title
@@ -102,35 +102,35 @@ menu(){
                         ;;
                     1)
                         dns_handler
-                        exit
+                        misc_selection=true
                         ;;
                     2)
                         mount_prompt
-                        exit
+                        misc_selection=true
                         ;;
                     3)
                         container_shell_or_logs "shell"
-                        exit
+                        misc_selection=true
                         ;;
                     4)
                         container_shell_or_logs "logs"
-                        exit
+                        misc_selection=true
                         ;;
                     5)
                         start_app_prompt
-                        exit
+                        misc_selection=true
                         ;;
                     6)
                         restart_app_prompt
-                        exit
+                        misc_selection=true
                         ;;
                     7)
                         delete_app_prompt
-                        exit
+                        misc_selection=true
                         ;;
                     8)
                         stop_app_prompt
-                        exit
+                        misc_selection=true
                         ;;
                     *)
                         echo -e "${red}\"$selection\" was not an option, please try again${reset}"

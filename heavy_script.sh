@@ -71,6 +71,7 @@ mapfile -t args < <(remove_force_update_args "${args[@]}")
 # If no arguments are passed, the first argument is an empty string, '-', or '--', open the menu function.
 if [[ "${#args[@]}" -eq 0 || "${args[0]}" =~ ^(-{1,2})?$ ]]; then
     menu
+    exit
 fi
 
 

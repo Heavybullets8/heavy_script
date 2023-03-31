@@ -5,14 +5,14 @@ main_help(){
     clear -x
     echo -e "${bold}HeavyScript${reset}"
     echo -e "${bold}-----------${reset}"
-    echo -e "${blue}heavyscript${reset} | ${blue}[Option]${reset}"
+    echo -e "${blue}heavyscript${reset} | ${blue}[Utility]${reset} | ${blue}[Option(s)]${reset}"
     echo
     echo -e "${bold}HeavyScript Menu${reset}"
     echo -e "${bold}----------------${reset}"
     echo -e "${blue}heavyscript${reset}"
     echo
-    echo -e "${bold}Utilities${reset}"
-    echo -e "${bold}---------${reset}"
+    echo -e "${bold}Utilities${reset}               | ${bold}[Options]${reset}"
+    echo -e "${bold}---------${reset}               | ${bold}---------${reset}"
     echo -e "${blue}heavyscript app${reset}         | [--start|--stop|--restart|--delete|--help]"
     echo -e "${blue}heavyscript backup${reset}      | [--create|--restore|--delete|--help]"
     echo -e "${blue}heavyscript dns${reset}         | [--all|--help]"

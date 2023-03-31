@@ -3,6 +3,8 @@
 
 self_update() {
     local menu_toggle=$1
+    local include_major=$2
+
     echo "🅂 🄴 🄻 🄵"
     echo "🅄 🄿 🄳 🄰 🅃 🄴"
     git reset --hard &>/dev/null
@@ -26,7 +28,7 @@ self_update() {
     fi
 
     if [[ $switched != true ]]; then
-        update_func
+        update_func "$include_major"
         if [[ $? == 111 ]]; then
             updated=true
         fi

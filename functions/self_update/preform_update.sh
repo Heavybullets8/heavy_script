@@ -19,7 +19,6 @@ is_major_update() {
 
 
 update_branch() {
-    local hs_version="$1"
 
     updates=$(git log HEAD..origin/"$hs_version" --oneline)
     if [[ -n "$updates" ]]; then
@@ -38,8 +37,7 @@ update_branch() {
 
 
 update_tagged_version() {
-    local hs_version="$1"
-    local include_major="$2"
+    local include_major="$1"
     local latest_tag
     latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
 
@@ -65,9 +63,12 @@ update_tagged_version() {
 
 
 update_func() {
+    local include_major="$1"
     if ! [[ "$hs_version" =~ v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+ ]]; then
-        update_branch "$hs_version"
+        update_branch
     else
-        update_tagged_version "$hs_version"
+        update_tagged_version "$include_major"
     fi
+
+    echo "Include major: $include_major"
 }

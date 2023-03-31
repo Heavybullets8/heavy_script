@@ -5,7 +5,8 @@ is_major_update() {
     local current_version="$1"
     local latest_version="$2"
 
-    local current_major_version latest_major_version
+    local current_major_version
+    local latest_major_version
 
     current_major_version="${current_version%%.*}"
     latest_major_version="${latest_version%%.*}"
@@ -19,7 +20,6 @@ is_major_update() {
 
 
 update_branch() {
-
     updates=$(git log HEAD..origin/"$hs_version" --oneline)
     if [[ -n "$updates" ]]; then
         if git pull --force --quiet; then
@@ -54,6 +54,7 @@ update_tagged_version() {
         else
             echo "A major update is available: $latest_tag"
             echo "Skipping the update due to major version change."
+            echo "To update to the latest version, run the script with the --major argument."
         fi
     else
         echo "HeavyScript is already the latest version:"
@@ -64,11 +65,9 @@ update_tagged_version() {
 
 update_func() {
     local include_major="$1"
-    if ! [[ "$hs_version" =~ v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+ ]]; then
-        update_branch
+    if [[ "$hs_version" =~ v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+ ]]; then
+        update_tagged_version "$include_major"        
     else
-        update_tagged_version "$include_major"
+        update_branch
     fi
-
-    echo "Include major: $include_major"
 }

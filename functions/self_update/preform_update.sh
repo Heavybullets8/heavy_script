@@ -2,14 +2,11 @@
 
 
 is_major_update() {
-    local current_version="$1"
-    local latest_version="$2"
+    local current_version="${1#v}"
+    local latest_version="${2#v}"
 
-    local current_major_version
-    local latest_major_version
-
-    current_major_version="${current_version%%.*}"
-    latest_major_version="${latest_version%%.*}"
+    local current_major_version="${current_version%%.*}"
+    local latest_major_version="${latest_version%%.*}"
 
     if [[ "$latest_major_version" -gt "$current_major_version" ]]; then
         return 0
@@ -42,7 +39,7 @@ update_tagged_version() {
     latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
 
     if [[ "$hs_version" != "$latest_tag" ]]; then
-        if [[ "$include_major" == "true" ]] || ! is_major_update "${hs_version#v}" "${latest_tag#v}"; then
+        if [[ "$include_major" == "true" ]] || ! is_major_update "${hs_version}" "${latest_tag}"; then
             echo "Found a new version of HeavyScript, updating myself..."
             git checkout --force "$latest_tag" &>/dev/null
             echo "Updating from: $hs_version"

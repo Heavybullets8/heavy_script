@@ -80,11 +80,28 @@ choose_branch() {
 update_func(){
 
     if [[ "$include_major" == "true" ]] || ! is_major_update "v3.0.0" "v4.0.0"; then
-        echo "will update"
+        echo "will update v3.0.0 -> v4.0.0"
     else
-        echo "will not update"
+        echo "will not update v3.0.0 -> v4.0.0"
     fi
 
+    if [[ "$include_major" == "true" ]] || ! is_major_update "v3.0.0" "v3.2.3"; then
+        echo "will update: v3.0.0 -> v3.2.3"
+    else
+        echo "will not update v3.0.0 -> v3.2.3"
+    fi
+
+    if [[ "$include_major" == "true" ]] || ! is_major_update "v3.1.2" "v3.9.9"; then
+        echo "will update: v3.1.2 -> v3.9.9"
+    else
+        echo "will not update v3.1.2 -> v3.9.9"
+    fi
+
+    if [[ "$include_major" == "true" ]] || ! is_major_update "v3.1.2" "v4.0.0"; then
+        echo "will update: v3.1.2 -> v4.0.0"
+    else
+        echo "will not update v3.1.2 -> v4.0.0"
+    fi
 
     # Check if using a tag or branch
     if ! [[ "$hs_version" =~ v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+ ]]; then

@@ -111,9 +111,9 @@ mount_app_func(){
                 rows+=("$i)\t$pool\t$path\t$avail")
             done
 
-            # Add an option for the root directory
-            root_num=$((i+1))
-            root_avail=$(
+            # Add an option for the boot directory
+            boot_num=$((i+1))
+            boot_avail=$(
             zfs list -p -o name,avail boot-pool \
             | grep -o '[0-9]*$' \
             | awk '{
@@ -123,7 +123,7 @@ mount_app_func(){
                     printf "%.2fGB", $1/1024/1024/1024
             }'
             )
-            rows+=("$root_num)\troot\t/mnt\t$root_avail")
+            rows+=("$boot_num)\tboot\t/mnt\t$boot_avail")
 
             # Print output with header and rows formatted in columns
             printf "%b\n" "$header" "${rows[@]}" | column -t -s $'\t'
@@ -155,12 +155,12 @@ mount_app_func(){
 
         clear -x
         title
-        if  [[ $pool_name == "root" ]]; then
+        if  [[ $pool_name == "boot" ]]; then
             # Mount the PVC to the selected dataset                    
             if ! zfs set mountpoint=/mounted_pvc/"$data_name" "$full_path" ; then
                 mount_failure=true
             fi
-            root_mount=true
+            boot_mount=true
         else
             # Mount the PVC to the selected dataset                    
             if ! zfs set mountpoint=/"$pool_name"/mounted_pvc/"$data_name" "$full_path" ; then
@@ -178,7 +178,7 @@ mount_app_func(){
             echo -e "${bold}Status:${reset} ${red}Mount Failure${reset}"
         fi
         echo
-        if [[ $root_mount == true ]]; then
+        if [[ $boot_mount == true ]]; then
             echo -e "${bold}Unmount Manually with:${reset}\n${blue}zfs set mountpoint=legacy \"$full_path\" && rmdir /mnt/mounted_pvc/$data_name${reset}"
         else
             echo -e "${bold}Unmount Manually with:${reset}\n${blue}zfs set mountpoint=legacy \"$full_path\" && rmdir /mnt/*/mounted_pvc/$data_name${reset}"

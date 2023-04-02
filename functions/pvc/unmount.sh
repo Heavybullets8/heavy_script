@@ -10,8 +10,8 @@ unmount_app_func(){
     # Use mapfile command to read the output of cli command into an array
     mapfile -t pool_query < <(cli -m csv -c "storage pool query name,path" | sed -e '1d' -e '/^$/d')
 
-    # Add an option for the root directory
-    pool_query+=("root,/mnt")
+    # Add an option for the boot directory
+    pool_query+=("boot,/mnt")
 
     # Create an empty array to store the results
     unmount_array=()

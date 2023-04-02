@@ -2,6 +2,14 @@
 
 
 unmount_app_func(){
+    ix_apps_pool=$(cli -c 'app kubernetes config' | 
+                   grep -E "pool\s\|" | 
+                   awk -F '|' '{print $3}' | 
+                   sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
+    # Use mapfile command to read the output of cli command into an array
+    mapfile -t pool_query < <(cli -m csv -c "storage pool query name,path" | sed -e '1d' -e '/^$/d')
+
     # Add an option for the root directory
     pool_query+=("root,/mnt")
 

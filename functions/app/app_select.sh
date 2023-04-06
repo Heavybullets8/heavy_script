@@ -5,6 +5,8 @@ apps=()
 
 
 prompt_app_selection() {
+    local action="$2"
+    
     clear -x
     echo -e "${blue}Fetching applications..${reset}"
 
@@ -33,7 +35,7 @@ prompt_app_selection() {
     title
 
     while true; do
-        echo -e "${bold}Choose an application${reset}"
+        echo -e "${bold}Choose an application to: $action${reset}"
         echo
         for i in "${!apps[@]}"; do
             echo "$((i+1))) ${apps[i]}" | awk -F ',' '{print $1}'

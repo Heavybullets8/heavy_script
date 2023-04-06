@@ -3,7 +3,7 @@
 
 restart_app_prompt(){
     while true; do
-        prompt_app_selection "ALL"
+        prompt_app_selection "ALL" "restart"
         app_name=$(echo "${apps[app_index-1]}" | awk -F ',' '{print $1}')
         
         clear -x

@@ -3,7 +3,7 @@
 
 start_app_prompt(){
     while true; do
-        prompt_app_selection "STOPPED"
+        prompt_app_selection "STOPPED" "start"
         app_name=$(echo "${apps[app_index-1]}" | awk -F ',' '{print $1}')
         
         clear -x

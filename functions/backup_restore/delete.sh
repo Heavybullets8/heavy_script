@@ -41,7 +41,7 @@ delete_backup(){
                 [Yy] | [Yy][Ee][Ss])
                     break
                     ;;
-                [Nn] | [Nn][Oo])
+                [Nn] | [Nn][Oo]|"")
                     exit
                     ;;
                 *)

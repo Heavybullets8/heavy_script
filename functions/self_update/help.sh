@@ -12,6 +12,8 @@ self_update_help() {
     echo
     echo -e "${bold}Options${reset}"
     echo -e "${bold}-------${reset}"
+    echo -e "${blue}--major${reset}"
+    echo -e "    Update to the next major version of heavyscript if available."
     echo -e "${blue}-h${reset} | ${blue}--help${reset}"
     echo -e "    Display this help message."
     echo

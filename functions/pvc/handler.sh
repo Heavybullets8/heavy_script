@@ -2,33 +2,33 @@
 
 
 pvc_handler() {
-    if [[ "$#" -eq 0 ]]; then
+    local args=("$@")
+
+    mapfile -t args < <(remove_no_config_args "${args[@]}")
+
+    # If no arguments are provided, call the mount_prompt function
+    if [ -z "${args[*]}" ]; then
         mount_prompt
-        exit
+        return
     fi
 
-    while [[ "$#" -gt 0 ]]; do
-        case $1 in
-            --no-config)
-                shift
-                ;;
-            -m | --mount)
-                # Call the function to mount the app
-                mount_app_func
-                ;;
-            -u | --unmount)
-                # Call the function to unmount the app
-                unmount_app_func
-                ;;
-            -h | --help)
-                # Call the function to display help for the pvc command
-                pvc_help
-                ;;
-            *)
-                echo "Invalid option: $1"
-                pvc_help
-                ;;
-        esac
-        shift
-    done
+    case "${args[0]}" in
+        -m | --mount)
+            # Call the function to mount the app
+            mount_app_func
+            ;;
+        -u | --unmount)
+            # Call the function to unmount the app
+            unmount_app_func
+            ;;
+        -h | --help)
+            # Call the function to display help for the pvc command
+            pvc_help
+            ;;
+        *)
+            echo "Invalid option: ${args[0]}"
+            pvc_help
+            exit 1
+            ;;
+    esac
 }

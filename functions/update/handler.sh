@@ -126,6 +126,7 @@ update_handler() {
                 ;;
             *)
                 echo "Unknown update option: $1"
+                update_help
                 exit 1
                 ;;
         esac

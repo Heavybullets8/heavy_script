@@ -11,16 +11,17 @@ main_help(){
     echo -e "${bold}----------------${reset}"
     echo -e "${blue}heavyscript${reset}"
     echo
-    echo -e "${bold}Utilities${reset}               | ${bold}[Options]${reset}"
-    echo -e "${bold}---------${reset}               | ${bold}---------${reset}"
-    echo -e "${blue}heavyscript app${reset}         | [${blue}--start${reset}|${blue}--stop${reset}|${blue}--restart${reset}|${blue}--delete${reset}|${blue}--help${reset}]"
-    echo -e "${blue}heavyscript backup${reset}      | [${blue}--create${reset}|${blue}--restore${reset}|${blue}--delete${reset}|${blue}--help${reset}]"
-    echo -e "${blue}heavyscript dns${reset}         | [${blue}--all${reset}|${blue}--help${reset}]"
-    echo -e "${blue}heavyscript git${reset}         | [${blue}--branch${reset}|${blue}--global-path${reset}|${blue}--help${reset}]"
-    echo -e "${blue}heavyscript pod${reset}         | [${blue}--logs${reset}|${blue}--shell${reset}|${blue}--help${reset}]"
-    echo -e "${blue}heavyscript pvc${reset}         | [${blue}--mount${reset}|${blue}--unmount${reset}|${blue}--help${reset}]"
-    echo -e "${blue}heavyscript self-update${reset} | [${blue}--major${reset}|${blue}--help${reset}]"
-    echo -e "${blue}heavyscript update${reset}      | [${blue}--help${reset}]"
+    echo -e "${bold}Functions${reset}"
+    echo -e "${bold}---------${reset}"
+    echo -e "${blue}heavyscript app${reset}         | Manage applications (start, stop, restart, delete)"
+    echo -e "${blue}heavyscript backup${reset}      | Manage backups (create, restore, delete)"
+    echo -e "${blue}heavyscript dns${reset}         | View application DNS names"
+    echo -e "${blue}heavyscript git${reset}         | Manage Git repositories (switch branch, set global path)"
+    echo -e "${blue}heavyscript pod${reset}         | Access pod logs and shells"
+    echo -e "${blue}heavyscript pvc${reset}         | Manage PVCs (mount, unmount)"
+    echo -e "${blue}heavyscript self-update${reset} | Update HeavyScript (with or without major version update)"
+    echo -e "${blue}heavyscript update${reset}      | Update applications"
+    echo -e "${blue}heavyscript enable${reset}      | Enable specific features (e.g., k3s remote node, apt)"
     echo
     echo -e "${bold}Configuration${reset}"
     echo -e "${bold}-------------${reset}"
@@ -37,4 +38,3 @@ main_help(){
     echo -e "${blue}heavyscript pvc --mount${reset}"
     echo -e "${blue}heavyscript update${reset}"
 }
-

@@ -21,7 +21,7 @@ pod_handler() {
             ;;
         *)
             echo "Invalid option: ${args[0]}"
-            echo "Usage: heavyscript pod [-l | --logs | -s | --shell | -h | --help]"
+            pod_help
             exit 1
             ;;
     esac

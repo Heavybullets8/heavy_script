@@ -1,0 +1,29 @@
+#!/bin/bash
+
+
+enable_help() {
+    echo -e "${bold}Enable Handler${reset}"
+    echo -e "${bold}-------------${reset}"
+    echo -e "${blue}heavyscript enable | ${blue}[FEATURE]${reset}"
+    echo
+    echo -e "${bold}Description${reset}"
+    echo -e "${bold}-----------${reset}"
+    echo -e "    Enable specific locked down functions in Truenas SCALE."
+    echo
+    echo -e "${bold}FEATURES${reset}"
+    echo -e "${bold}-------${reset}"
+    echo -e "${blue}--api${reset}"
+    echo -e "    Enable kubectl access to the k3s cluster."
+    echo -e "${blue}--apt${reset}"
+    echo -e "    Enable apt, apt-get, and apt-key."
+    echo -e "${blue}--helm${reset}"
+    echo -e "    Enable helm commands."
+    echo -e "${blue}--help${reset}"
+    echo -e "    Show this help message and exit."
+    echo
+    echo -e "${bold}Example${reset}"
+    echo -e "${bold}-------${reset}"
+    echo -e "    ${blue}heavyscript enable k3s${reset}"
+    echo -e "    ${blue}heavyscript enable apt${reset}"
+    echo
+}

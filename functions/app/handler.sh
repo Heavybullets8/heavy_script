@@ -24,7 +24,7 @@ app_handler() {
             ;;
         *)
             echo "Unknown app action: ${args[0]}"
-            echo "Usage: heavyscript app [-s | --start | -x | --stop | -r | --restart | -d | --delete | -h | --help]"
+            app_help
             exit 1
             ;;
     esac

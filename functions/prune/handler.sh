@@ -17,7 +17,7 @@ prune_handler() {
             ;;
         *)
             echo "Invalid option: ${args[0]}"
-            echo "Usage: heavyscript prune [-h | --help]"
+            prune_help
             exit 1
             ;;
     esac

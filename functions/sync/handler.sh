@@ -2,23 +2,26 @@
 
 
 sync_handler() {
-    local args=("$@")
+    if [[ "$#" -eq 0 ]]; then
+        sync_catalog "direct"
+        return
+    fi
 
-    mapfile -t args < <(remove_no_config_args "${args[@]}")
-
-    case "${args[0]}" in
-        -h | --help)
-            # Call the function to display help for the pvc command
-            sync_help
-            ;;
-        "")
-            sync_catalog "direct"
-            return
-            ;;
-        *)
-            echo "Invalid option: ${args[0]}"
-            echo "Usage: heavyscript sync [-h | --help]"
-            exit 1
-            ;;
-    esac
+    while [[ "$#" -gt 0 ]]; do
+        case $1 in
+            --no-config)
+                shift
+                ;;
+            -h | --help)
+                # Call the function to display help for the pvc command
+                sync_help
+                ;;
+            *)
+                echo "Invalid option: $1"
+                sync_help
+                exit 1
+                ;;
+        esac
+        shift
+    done
 }

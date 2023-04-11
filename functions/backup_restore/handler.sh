@@ -25,7 +25,7 @@ backup_handler() {
             ;;
         *)
             echo "Unknown backup action: ${args[0]}"
-            echo "Usage: heavyscript backup [-c | --create | -r | --restore | -d | --delete | -h | --help]"
+            backup_help
             exit 1
             ;;
     esac

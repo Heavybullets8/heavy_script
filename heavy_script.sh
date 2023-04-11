@@ -86,6 +86,9 @@ case $1 in
     dns)
         dns_handler "${args[@]:1}" # Pass remaining arguments to dns_handler
         ;;
+    enable)
+        enable_handler "${args[@]:1}" # Pass remaining arguments to enable_handler
+        ;;
     git)
         git_handler "${args[@]:1}" # Pass remaining arguments to git_handler
         ;;

@@ -21,7 +21,7 @@ git_handler() {
             ;;
         *)
             echo "Invalid option: ${args[0]}"
-            echo "Usage: heavyscript git [-b | --branch | -g | --global | -h | --help]"
+            git_help
             exit 1
             ;;
     esac

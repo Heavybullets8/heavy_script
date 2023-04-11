@@ -39,7 +39,7 @@ dns_handler() {
             ;;
         *)
             echo "Invalid option: ${args[0]}"
-            echo "Usage: heavyscript dns [-a | --all | -h | --help]"
+            dns_help
             exit 1
             ;;
     esac

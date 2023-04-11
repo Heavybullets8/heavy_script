@@ -18,12 +18,12 @@ enable_help() {
     echo -e "    Enable apt, apt-get, and apt-key."
     echo -e "${blue}--helm${reset}"
     echo -e "    Enable helm commands."
-    echo -e "${blue}--help${reset}"
+    echo -e "${blue}-h, --help${reset}"
     echo -e "    Show this help message and exit."
     echo
     echo -e "${bold}Example${reset}"
     echo -e "${bold}-------${reset}"
-    echo -e "    ${blue}heavyscript enable k3s${reset}"
-    echo -e "    ${blue}heavyscript enable apt${reset}"
+    echo -e "    ${blue}heavyscript enable --api${reset}"
+    echo -e "    ${blue}heavyscript enable --apt${reset}"
     echo
 }

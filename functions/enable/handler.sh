@@ -16,7 +16,7 @@ enable_handler() {
         --helm)
             enable_helm
             ;;
-        --help)
+        -h|--help)
             enable_help
             ;;
         *)
@@ -25,16 +25,3 @@ enable_handler() {
             ;;
     esac
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

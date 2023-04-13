@@ -53,8 +53,8 @@ commander(){
             echo -e "\n$app_name\nIgnored, skipping"
             unset "array[$index]"
         #Skip appliaction if major update and not ignoreing major versions
-        elif [[ "$diff_app" != "$diff_chart" && $update_apps == true ]] ; then
-            echo -e "\n$app_name\nMajor Release, update manually"
+        elif [[ "$diff_app" != "$diff_chart" && $update_all_apps != true ]] ; then
+            echo -e "\n$app_name\nSkipping Major Release"
             unset "array[$index]"
         # Skip update if application previously failed on this exact update version
         elif  grep -qs "^$app_name," failed 2>/dev/null; then

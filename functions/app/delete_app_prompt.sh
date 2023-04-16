@@ -40,6 +40,11 @@ delete_app_prompt(){
                     ;;
             esac
         done
+
+        if [[ -z $1 ]]; then
+            break
+        fi
+
         read -rt 120 -p "Would you like to delete another application? (y/n): " choice || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case "$(echo "$choice" | tr '[:upper:]' '[:lower:]')" in
             "yes"|"y")

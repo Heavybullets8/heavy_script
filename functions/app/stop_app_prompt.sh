@@ -25,6 +25,10 @@ stop_app_prompt(){
             echo -e "${green}${result}${reset}"
         fi
 
+        if [[ -z $1 ]]; then
+            break
+        fi
+
         read -rt 120 -p "Would you like to stop another application? (y/n): " choice || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case "$(echo "$choice" | tr '[:upper:]' '[:lower:]')" in
             "yes"|"y")

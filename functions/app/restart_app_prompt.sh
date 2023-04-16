@@ -23,6 +23,10 @@ restart_app_prompt(){
             echo -e "${green}Restarted ${blue}$app_name${reset}"
         fi
 
+        if [[ -z $1 ]]; then
+            break
+        fi
+
         read -rt 120 -p "Would you like to restart another application? (y/N): " choice || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case "$(echo "$choice" | tr '[:upper:]' '[:lower:]')" in
             "yes"|"y")

@@ -27,7 +27,7 @@ scale_resources() {
         wait_for_pods_to_stop "$app_name" "$timeout" && return 0 || return 1
     else
         # Scale up all Deployments, StatefulSets, and ReplicaSets in the namespace
-        apply_scaling"deploy"
+        apply_scaling "deploy"
         apply_scaling "statefulsets"
     fi
 }

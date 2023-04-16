@@ -23,7 +23,7 @@ restart_app_prompt(){
             echo -e "${green}Restarted ${blue}$app_name${reset}"
         fi
 
-        if [[ -z $1 ]]; then
+        if [[ -n $1 ]]; then
             break
         fi
 

@@ -41,7 +41,7 @@ delete_app_prompt(){
             esac
         done
 
-        if [[ -z $1 ]]; then
+        if [[ -n $1 ]]; then
             break
         fi
 

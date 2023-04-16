@@ -25,7 +25,7 @@ stop_app_prompt(){
             echo -e "${green}${result}${reset}"
         fi
 
-        if [[ -z $1 ]]; then
+        if [[ -n $1 ]]; then
             break
         fi
 

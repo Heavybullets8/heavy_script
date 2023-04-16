@@ -31,18 +31,6 @@ get_app_status() {
 }
 
 
-scale_down_resources() {
-    local app_name timeout
-    app_name="$1"
-    timeout="$2"
-
-    if ! k3s kubectl get deployments,statefulsets -n ix-"$app_name" | grep -vE -- "(NAME|^$|-cnpg-)" | awk '{print $1}' | xargs -I{} k3s kubectl scale --replicas=0 -n ix-"$app_name" {} &>/dev/null; then
-        return 1
-    fi
-    wait_for_pods_to_stop "$app_name" "$timeout" && return 0 || return 1
-}
-
-
 handle_stop_code() {
     local stop_code
     stop_code="$1"
@@ -83,7 +71,7 @@ stop_app() {
 
     # Check if the output contains the desired namespace and "cnpg" or "operator"
     if [[ $output == "${app_name},cnpg" ]]; then
-        scale_down_resources "$app_name" "$timeout" && return 0 || return 1
+        scale_resources "$app_name" "$timeout" 0 && return 0 || return 1
     elif [[ $output == "${app_name},operator" ]]; then
         return 3
     fi

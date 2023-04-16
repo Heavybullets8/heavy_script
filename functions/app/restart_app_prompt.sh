@@ -3,8 +3,14 @@
 
 restart_app_prompt(){
     while true; do
-        prompt_app_selection "ALL" "restart"
-        app_name=$(echo "${apps[app_index-1]}" | awk -F ',' '{print $1}')
+        # Prompt user to select an application if one was not passed to the function
+        if [[ -z $1 ]]; then
+            prompt_app_selection "ALL" "restart"
+            app_name=$(echo "${apps[app_index-1]}" | awk -F ',' '{print $1}')
+        else
+            app_name="$1"
+        fi
+
         
         clear -x
         title

@@ -3,9 +3,14 @@
 
 start_app_prompt(){
     while true; do
-        prompt_app_selection "STOPPED" "start"
-        app_name=$(echo "${apps[app_index-1]}" | awk -F ',' '{print $1}')
-        
+        # Prompt user to select an application if one was not passed to the function
+        if [[ -z $1 ]]; then
+            prompt_app_selection "STOPPED" "start"
+            app_name=$(echo "${apps[app_index-1]}" | awk -F ',' '{print $1}')
+        else
+            app_name="$1"
+        fi
+
         clear -x
         title
 
@@ -37,7 +42,7 @@ start_app_prompt(){
         cnpg=$(k3s kubectl get pods -n ix-"$app_name" -o=name | grep -q -- '-cnpg-' && echo "true" || echo "false")
 
         if [[ $cnpg == "true" ]]; then
-            k3s kubectl get deployments,statefulsets -n ix-"$app_name" | grep -vE -- "(NAME|^$|-cnpg-)" | awk '{print $1}' | sort -r | xargs -I{} k3s kubectl scale --replicas="$replica_count" -n ix-"$app_name" {} &>/dev/null
+            scale_resources "$app_name" 120 "$replica_count"
             #TODO: Add a check to ensure the pods are running
             echo -e "${yellow}Sent the command to start all pods in: $app_name${reset}"
             echo -e "${yellow}However, HeavyScript cannot monitor the new applications${reset}"

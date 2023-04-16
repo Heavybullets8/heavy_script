@@ -7,12 +7,11 @@ stop_app_prompt(){
         if [[ -z $1 ]]; then
             prompt_app_selection "ACTIVE" "stop"
             app_name=$(echo "${apps[app_index-1]}" | awk -F ',' '{print $1}')
+            clear -x
+            title
         else 
             app_name="$1"
         fi
-    
-        clear -x
-        title
         
         echo -e "Stopping ${blue}$app_name${reset}..."
 

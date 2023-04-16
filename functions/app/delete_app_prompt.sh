@@ -7,6 +7,8 @@ delete_app_prompt(){
         if [[ -z $1 ]]; then
             prompt_app_selection "ALL" "delete"
             app_name=$(echo "${apps[app_index-1]}" | awk -F ',' '{print $1}')
+            clear -x
+            title
         else
             app_name="$1"
         fi

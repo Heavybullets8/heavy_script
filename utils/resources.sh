@@ -21,3 +21,13 @@ scale_resources() {
         wait_for_pods_to_stop "$app_name" "$timeout" && return 0 || return 1
     fi
 }
+
+restart_app(){
+    # There are no good labels to use to identify the deployment, so we have to simply filter out the cnpg deployment for now
+    dep_name=$(k3s kubectl -n ix-"$app_name" get deploy | grep -vE -- '(-cnpg-)' | sed -e '1d' -e 's/ .*//')
+    if k3s kubectl -n ix-"$app_name" rollout restart deploy "$dep_name" &>/dev/null; then
+        return 0
+    else
+        return 1
+    fi
+}

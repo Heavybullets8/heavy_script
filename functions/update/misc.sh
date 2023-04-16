@@ -1,16 +1,6 @@
 #!/bin/bash
 
 
-restart_app(){
-    dep_name=$(k3s kubectl -n ix-"$app_name" get deploy | sed -e '1d' -e 's/ .*//')
-    if k3s kubectl -n ix-"$app_name" rollout restart deploy "$dep_name" &>/dev/null; then
-        return 0
-    else
-        return 1
-    fi
-}
-
-
 rollback_app() {
     app_update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3}')
 

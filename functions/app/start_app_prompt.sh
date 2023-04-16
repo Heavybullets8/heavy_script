@@ -38,10 +38,10 @@ start_app_prompt(){
         echo -e "Starting ${blue}$app_name${reset}..."
 
 
-        # Check for cnpg pods and scale the application
-        cnpg=$(k3s kubectl get pods -n ix-"$app_name" -o=name | grep -q -- '-cnpg-' && echo "true" || echo "false")
+        # Check if app is a cnpg instance, or an operator instance
+        output=$(check_filtered_apps "$app_name")
 
-        if [[ $cnpg == "true" ]]; then
+        if [[ $output == "${app_name},cnpg" ]]; then
             scale_resources "$app_name" 120 "$replica_count"
             #TODO: Add a check to ensure the pods are running
             echo -e "${yellow}Sent the command to start all pods in: $app_name${reset}"
@@ -57,7 +57,7 @@ start_app_prompt(){
         if [[ -z $1 ]]; then
             break
         fi
-        
+
         read -rt 120 -p "Would you like to start another application? (y/n): " choice || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case "$(echo "$choice" | tr '[:upper:]' '[:lower:]')" in
             "yes"|"y")

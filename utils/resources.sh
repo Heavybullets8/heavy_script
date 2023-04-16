@@ -13,7 +13,7 @@ scale_resources() {
     timeout="$2"
     replicas="${3:-$(pull_replicas "$app_name")}"
 
-    scale() {
+    apply_scaling() {
         local resource_type
         resource_type="$1"
         k3s kubectl get "$resource_type" -n ix-"$app_name" -o custom-columns=':metadata.name' | grep -vE '^$|-cnpg-' | xargs -r -I{} k3s kubectl scale "$resource_type"/{} -n ix-"$app_name" --replicas="$replicas"
@@ -21,14 +21,14 @@ scale_resources() {
 
     if [[ $replicas -eq 0 ]]; then
         # Scale down all Deployments, StatefulSets, and ReplicaSets in the namespace
-        scale "deploy"
-        scale "statefulsets"
+        apply_scaling "deploy"
+        apply_scaling "statefulsets"
 
         wait_for_pods_to_stop "$app_name" "$timeout" && return 0 || return 1
     else
         # Scale up all Deployments, StatefulSets, and ReplicaSets in the namespace
-        scale"deploy"
-        scale "statefulsets"
+        apply_scaling"deploy"
+        apply_scaling "statefulsets"
     fi
 }
 

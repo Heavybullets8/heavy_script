@@ -76,18 +76,18 @@ stop_app() {
     local stop_type app_name timeout status
     stop_type="$1"
     app_name="$2"
-    timeout="50"
+    timeout="150"
 
-    # Grab chart info
-    chart_info=$(midclt call chart.release.get_instance "$app_name")
+    # Check if app is a cnpg instance, or an operator instance
+    output=$(check_filtered_apps "$app_name")
 
-    # Check if app has a cnpg pods
-    if printf "%s" "$chart_info" | grep -sq -- \"cnpg\":;then
+    # Check if the output contains the desired namespace and "cnpg" or "operator"
+    if [[ $output == "${app_name},cnpg" ]]; then
         scale_down_resources "$app_name" "$timeout" && return 0 || return 1
-    # Check if app is a prometheus instance
-    elif printf "%s" "$chart_info" | grep -sq -- \"prometheus\":;then
+    elif [[ $output == "${app_name},operator" ]]; then
         return 3
     fi
+
 
     status=$(get_app_status "$app_name" "$stop_type")
     if [[ "$status" == "STOPPED" ]]; then

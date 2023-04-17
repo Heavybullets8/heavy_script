@@ -20,6 +20,7 @@ get_app_details() {
 
 wait_for_deploying() {
     local app_name=$1
+    local status
 
     # If application is deploying prior to updating, attempt to wait for it to finish
     SECONDS=0
@@ -28,16 +29,17 @@ wait_for_deploying() {
         status=$(grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
         if [[ "$SECONDS" -ge "$timeout" ]]; then
             echo_array+=("Application is stuck Deploying, Skipping to avoid damage")
-            echo_array
             return 1
         fi
         sleep 5
     done
     startstatus="$status"
+    return 0
 }
 
 stop_app_before_update() {
     local app_name=$1
+    local exit_status
     
     # If user is using -S, stop app prior to updating
     if [[ "$verbose" == true ]]; then
@@ -45,15 +47,16 @@ stop_app_before_update() {
     fi
     stop_app "update" "$app_name" "${timeout:-100}"
     result=$(handle_stop_code "$?")
-    if [[ $? -eq 1 ]]; then
+    exit_status=$?
+    if [[ $exit_status -eq 1 ]]; then
         echo_array+=("$result")
-        echo_array
-        return 1
+        return $exit_status
     else
         echo_array+=("$result")
     fi
-
+    return 0
 }
+
 
 update_app_function() {
     local app_name=$1
@@ -74,6 +77,7 @@ update_app_function() {
         return 0
     fi
 }
+
 handle_rollbacks_or_stopped() {
     local app_name=$1
     local startstatus=$2
@@ -131,18 +135,24 @@ pre_process() {
     echo_array+=("\n$app_name")
 
     if [[ "$startstatus" == "DEPLOYING" ]]; then
-        wait_for_deploying  "$app_name" "$startstatus"
+        if ! wait_for_deploying  "$app_name"; then
+            echo_array
+            return
+        fi
     fi
 
     if [[ $stop_before_update == true && "$startstatus" != "STOPPED" ]]; then
-        stop_app_before_update "$app_name"
+        if ! stop_app_before_update "$app_name"; then
+            echo_array
+            return
+        fi
     fi
 
     if ! update_app_function "$app_name" "$old_full_ver" "$new_full_ver"; then
         echo_array
         return
     fi
-    
+
     if [[ $rollback == true || "$startstatus"  ==  "STOPPED" ]]; then
         handle_rollbacks_or_stopped "$app_name" "$startstatus" "$old_full_ver" "$new_full_ver"
     else

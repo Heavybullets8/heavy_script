@@ -129,6 +129,8 @@ pre_process() {
     new_full_ver="${app_vars[3]}"
     rollback_version="${app_vars[4]}"
 
+    echo_array+=("\n$app_name")
+
     if [[ "$startstatus" == "DEPLOYING" ]]; then
         wait_for_deploying  "$app_name" "$startstatus"
     fi

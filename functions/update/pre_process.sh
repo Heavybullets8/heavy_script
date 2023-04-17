@@ -3,11 +3,17 @@
 
 get_app_details() {
     local app_info=$1
-    local app_name=$(echo "$app_info" | awk -F ',' '{print $1}')
-    local startstatus=$(echo "$app_info" | awk -F ',' '{print $2}')
-    local old_full_ver=$(echo "$app_info" | awk -F ',' '{print $4}')
-    local new_full_ver=$(echo "$app_info" | awk -F ',' '{print $5}')
-    local rollback_version=$(echo "$app_info" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
+    local app_name
+    local startstatus
+    local old_full_ver
+    local new_full_ver
+    local rollback_version
+
+    app_name=$(echo "$app_info" | awk -F ',' '{print $1}')
+    startstatus=$(echo "$app_info" | awk -F ',' '{print $2}')
+    old_full_ver=$(echo "$app_info" | awk -F ',' '{print $4}')
+    new_full_ver=$(echo "$app_info" | awk -F ',' '{print $5}')
+    rollback_version=$(echo "$app_info" | awk -F ',' '{print $4}' | awk -F '_' '{print $2}')
 
     echo "$app_name,$startstatus,$old_full_ver,$new_full_ver,$rollback_version"
 }

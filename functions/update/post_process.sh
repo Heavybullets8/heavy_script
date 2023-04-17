@@ -2,8 +2,13 @@
 
 
 post_process(){
+    local app_name=$1
+    local startstatus=$2
+    local new_full_ver=$3
+    local count=0
+
     SECONDS=0
-    count=0
+
 
     while true
     do

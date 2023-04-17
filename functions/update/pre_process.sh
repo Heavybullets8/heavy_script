@@ -29,7 +29,7 @@ wait_for_deploying() {
         if [[ "$SECONDS" -ge "$timeout" ]]; then
             echo_array+=("Application is stuck Deploying, Skipping to avoid damage")
             echo_array
-            return
+            return 1
         fi
         sleep 5
     done
@@ -48,7 +48,7 @@ stop_app_before_update() {
     if [[ $? -eq 1 ]]; then
         echo_array+=("$result")
         echo_array
-        return
+        return 1
     else
         echo_array+=("$result")
     fi
@@ -62,19 +62,18 @@ update_app_function() {
 
     # Send app through update function
     [[ "$verbose" == true ]] && echo_array+=("Updating..")
-    if update_app; then
+    if ! update_app; then
+        echo_array+=("Failed to update\nManual intervention may be required")
+        return 1
+    else
         if [[ $old_full_ver == "$new_full_ver" ]]; then
             echo_array+=("Updated Container Image")
         else
             echo_array+=("Updated\n$old_full_ver\n$new_full_ver")
         fi
-    else
-        echo_array+=("Failed to update\nManual intervention may be required")
-        echo_array
-        return
+        return 0
     fi
 }
-
 handle_rollbacks_or_stopped() {
     local app_name=$1
     local startstatus=$2
@@ -89,12 +88,12 @@ handle_rollbacks_or_stopped() {
             echo_array+=("Application has 0 replicas, skipping post processing")
         fi
         echo_array
-        return
+        return 1
     elif [[ $replicas == "null" ]]; then
         echo_array+=("HeavyScript does not know how many replicas this app has, skipping post processing")
         echo_array+=("Please submit a bug report on github so this can be fixed")
         echo_array
-        return
+        return 1
     elif [[ "$old_full_ver" == "$new_full_ver" ]]; then 
         # restart the app if it was a container image update.
         if [[ "$verbose" == true ]]; then
@@ -139,8 +138,11 @@ pre_process() {
         stop_app_before_update "$app_name"
     fi
 
-    update_app_function "$app_name" "$old_full_ver" "$new_full_ver"
-
+    if ! update_app_function "$app_name" "$old_full_ver" "$new_full_ver"; then
+        echo_array
+        return
+    fi
+    
     if [[ $rollback == true || "$startstatus"  ==  "STOPPED" ]]; then
         handle_rollbacks_or_stopped "$app_name" "$startstatus" "$old_full_ver" "$new_full_ver"
     else

@@ -1,13 +1,18 @@
 #!/bin/bash
 
 
-commander(){
-    mapfile -t array < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | 
-                        tr -d " \t\r" | 
-                        grep -E ",true($|,)" | 
-                        sort)
-    echo -e "🅄 🄿 🄳 🄰 🅃 🄴 🅂"
+get_app_info() {
+    cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' |
+        tr -d " \t\r" |
+        grep -E ",true($|,)" |
+        sort
+}
 
+echo_updates_header() {
+    echo -e "🅄 🄿 🄳 🄰 🅃 🄴 🅂"
+}
+
+display_update_status() {
     if [[ -z ${array[*]} ]]; then
         echo "There are no updates available"
         echo -e "\n"
@@ -17,15 +22,14 @@ commander(){
     fi
 
     echo "Asynchronous Updates: $concurrent"
-    
-    
+
     if [[ -z $timeout ]]; then
         echo "Default Timeout: 500" && timeout=500
     else
         echo "Custom Timeout: $timeout"
     fi
 
-    if [[ "$timeout" -le 120 ]];then 
+    if [[ "$timeout" -le 120 ]]; then
         echo "Warning: Your timeout is set low and may lead to premature rollbacks or skips"
     fi
 
@@ -34,10 +38,12 @@ commander(){
     else
         echo "Image Updates: Enabled"
     fi
+}
 
-    index=0
-    for app in "${array[@]}"
-    do
+process_apps() {
+    local index=0
+    for app in "${array[@]}"; do
+        # process each app and potentially remove it from the array
         app_name=$(echo "$app" | awk -F ',' '{print $1}') #print out first catagory, name.
         old_app_ver=$(echo "$app" | awk -F ',' '{print $4}' | awk -F '_' '{print $1}' | awk -F '.' '{print $1}') #previous/current Application MAJOR Version
         new_app_ver=$(echo "$app" | awk -F ',' '{print $5}' | awk -F '_' '{print $1}' | awk -F '.' '{print $1}') #new Application MAJOR Version
@@ -73,20 +79,15 @@ commander(){
         ((index++))
     done
     array=("${array[@]}")
+}
 
-    if [[ ${#array[@]} == 0 ]]; then
-        echo
-        echo
-        return
-    fi
-
-
-    index=0
-    while_count=0
+handle_concurrency() {
+    local index=0
+    local while_count=0
     rm deploying 2>/dev/null
     rm finished 2>/dev/null
-    while [[ ${#processes[@]} != 0 || $(wc -l finished 2>/dev/null | awk '{ print $1 }') -lt "${#array[@]}" ]]
-    do
+    while [[ ${#processes[@]} != 0 || $(wc -l finished 2>/dev/null | awk '{ print $1 }') -lt "${#array[@]}" ]]; do
+        # handle the concurrency logic
         if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' 2>/dev/null) ; then
             ((while_count++)) 
             if [[ -z $while_status ]]; then
@@ -126,4 +127,18 @@ commander(){
     echo
     echo
 }
-export -f commander
+
+commander() {
+    mapfile -t array < <(get_app_info)
+    echo_updates_header
+    display_update_status
+    process_apps
+
+    if [[ ${#array[@]} == 0 ]]; then
+        echo
+        echo
+        return
+    fi
+
+    handle_concurrency
+}

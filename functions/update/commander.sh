@@ -40,8 +40,45 @@ display_update_status() {
     fi
 }
 
+skip_app_on_ignore_list() {
+    if printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}"; then
+        echo -e "\n$app_name\nIgnored, skipping"
+        unset "array[$index]"
+    fi
+}
+
+skip_major_release() {
+    if [[ "$old_app_ver" != "$new_app_ver" ]]; then
+        echo -e "\n$app_name\nSkipping major app release:\n$new_full_ver"
+        unset "array[$index]"
+    elif [[ "$old_chart_ver" != "$new_chart_ver" ]]; then
+        echo -e "\n$app_name\nSkipping major chart release:\n$new_full_ver"
+        unset "array[$index]"
+    fi
+}
+
+skip_previously_failed_version() {
+    if grep -qs "^$app_name," failed 2>/dev/null; then
+        failed_ver=$(grep "^$app_name," failed | awk -F ',' '{print $2}')
+        if [[ "$failed_ver" == "$new_full_ver" ]]; then
+            echo -e "\n$app_name\nSkipping previously failed version:\n$new_full_ver"
+            unset "array[$index]"
+        else
+            sed -i /"$app_name",/d failed
+        fi
+    fi
+}
+
+skip_image_update() {
+    if [[ $old_full_ver == "$new_full_ver" && $ignore_image_update == true ]]; then
+        echo -e "\n$app_name\nImage update, skipping.."
+        unset "array[$index]"
+    fi
+}
+
 process_apps() {
-    local index=0
+    index=0
+
     for app in "${array[@]}"; do
         # process each app and potentially remove it from the array
         app_name=$(echo "$app" | awk -F ',' '{print $1}')
@@ -51,35 +88,19 @@ process_apps() {
         new_app_ver=$(echo "$new_full_ver" | awk -F '_' '{print $1}' | awk -F '.' '{print $1}')
         old_chart_ver=$(echo "$old_full_ver" | awk -F '_' '{print $2}' | awk -F '.' '{print $1}')
         new_chart_ver=$(echo "$new_full_ver" | awk -F '_' '{print $2}' | awk -F '.' '{print $1}')
-        diff_app=$(diff <(echo "$old_app_ver") <(echo "$new_app_ver"))
-        diff_chart=$(diff <(echo "$old_chart_ver") <(echo "$new_chart_ver"))
 
-        #Skip application if its on ignore list
-        if printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}" ; then
-            echo -e "\n$app_name\nIgnored, skipping"
-            unset "array[$index]"
-        #Skip application if major update and not ignoring major versions
-        elif [[ "$diff_app" != "$diff_chart" && $update_all_apps != true ]] ; then
-            echo -e "\n$app_name\nSkipping Major Release"
-            unset "array[$index]"
-        # Skip update if application previously failed on this exact update version
-        elif  grep -qs "^$app_name," failed 2>/dev/null; then
-            failed_ver=$(grep "^$app_name," failed | awk -F ',' '{print $2}')
-            if [[ "$failed_ver" == "$new_full_ver" ]] ; then
-                echo -e "\n$app_name\nSkipping previously failed version:\n$new_full_ver"
-                unset "array[$index]"
-            else 
-                sed -i /"$app_name",/d failed
-            fi
-        #Skip Image updates if ignore image updates is set to true
-        elif [[ $old_full_ver == "$new_full_ver" && $ignore_image_update == true ]]; then
-            echo -e "\n$app_name\nImage update, skipping.."
-            unset "array[$index]"
+        skip_app_on_ignore_list
+        if [[ $update_all_apps != true ]]; then
+            skip_major_release
         fi
+        skip_previously_failed_version
+        skip_image_update
+
         ((index++))
     done
     array=("${array[@]}")
 }
+
 
 handle_concurrency() {
     local index=0

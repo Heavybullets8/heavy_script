@@ -34,7 +34,7 @@ self_update_handler() {
 
     # Update the script if --self-update/self-update/-U is passed
     # dont update if --no-self-update is passed
-    if $self_update; then
+    if [[ $self_update == true ]]; then
         self_update 
     fi
 }

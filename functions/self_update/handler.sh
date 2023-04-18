@@ -15,7 +15,7 @@ self_update_handler() {
 
     # Check if "self-update" is the first argument and the second argument is a help option
     # heavyscript self-update --help/-h
-    if [[ $self_update == true ]] && [[ "${args[1]}" =~ ^(--help|-h)$ ]]; then
+    if [[ $self_update == true ]] && [[ "${args[0]}" =~ ^(--help|-h)$ ]]; then
         self_update_help
         exit
     fi

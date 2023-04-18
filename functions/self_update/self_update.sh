@@ -43,6 +43,7 @@ self_update() {
     # Check if the script was updated, and if so, run the new version
     if [[ "$updated" == true ]]; then
         echo -e "Running the new version...\n\n"
+        mapfile -t args < <(remove_no_self_update_args "${args[@]}")
         exec bash "$script_name" "${args[@]}" --no-self-update
         # Now exit this old instance
         exit

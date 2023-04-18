@@ -37,7 +37,7 @@ remove_no_self_update_args() {
 remove_force_update_args() {
     local input_args=("$@")
     local output_args=()
-    export force_update=false
+    export major_self_update=false
 
     for arg in "${input_args[@]}"; do
         if [[ "$arg" == "--major" ]]; then

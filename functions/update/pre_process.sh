@@ -2,12 +2,8 @@
 
 
 get_app_details() {
-    local app_name
-    local startstatus
-    local old_full_ver
-    local new_full_ver
-    local rollback_version
-
+    local app_info=$1
+    
     app_name=$(echo "$app_info" | awk -F ',' '{print $1}')
     startstatus=$(echo "$app_info" | awk -F ',' '{print $2}')
     old_full_ver=$(echo "$app_info" | awk -F ',' '{print $4}')
@@ -18,8 +14,6 @@ get_app_details() {
 }
 
 wait_for_deploying() {
-    local status
-
     # If application is deploying prior to updating, attempt to wait for it to finish
     SECONDS=0
     while [[ "$status"  ==  "DEPLOYING" ]]
@@ -82,13 +76,8 @@ check_replicas() {
 pre_process() {
     local app_info=$1
     local app_details
-    local app_name
-    local startstatus
-    local old_full_ver
-    local new_full_ver
-    local rollback_version
 
-    app_details=$(get_app_details)
+    app_details=$(get_app_details "$app_info")
     IFS=',' read -ra app_vars <<<"$app_details"
     app_name="${app_vars[0]}"
     startstatus="${app_vars[1]}"

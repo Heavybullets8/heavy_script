@@ -18,7 +18,7 @@ verify_active(){
 }
 
 update_status() {
-    status=$(grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
+    grep "^$app_name," all_app_status | awk -F ',' '{print $2}'
 }
 
 rollbacks_disabled(){
@@ -40,7 +40,7 @@ handle_rollback() {
     echo_array+=("If this is a slow starting application, set a higher timeout with -t")
     echo_array+=("If this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration")
     echo_array+=("Reverting update..")       
-    if rollback_app ; then
+    if rollback_app "$rollback_version" ; then
         echo_array+=("Rolled Back")
     else
         echo_array+=("Error: Failed to rollback $app_name\nAbandoning")
@@ -49,15 +49,23 @@ handle_rollback() {
 }
 
 post_process(){
-    local app_name=$1
-    local startstatus=$2
-    local new_full_ver=$3
+    # dump all variables for debugging
+    echo "app_name: $app_name"
+    echo "startstatus: $startstatus"
+    echo "old_full_ver: $old_full_ver"
+    echo "new_full_ver: $new_full_ver"
+    echo "rollback_version: $rollback_version"
+    echo "rollback: $rollback"
+    echo "timeout: $timeout"
+    echo "verbose: $verbose"
+    echo "status: $status"
+    
+
     local rolled_back=false
-    local status
 
     SECONDS=0
 
-    update_status
+    status=$(update_status)
 
     if [[ $status == "ACTIVE" ]] && ! grep -q "^$app_name,DEPLOYING" deploying 2>/dev/null; then
         verify_active
@@ -65,7 +73,7 @@ post_process(){
 
     while true
     do
-        update_status
+        status=$(update_status)
 
         if [[ "$status"  ==  "ACTIVE" ]]; then
             if [[ "$startstatus"  ==  "STOPPED" ]]; then

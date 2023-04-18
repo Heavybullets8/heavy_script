@@ -50,7 +50,8 @@ update_tagged_version() {
         else
             echo "A major update is available: $latest_tag"
             echo "Skipping the update due to major version change."
-            echo "To update to the latest version, run the script with the --major argument."
+            echo "To update to the latest version, run \"heavyscript self-update --major\"."
+            echo "Alternatively, edit the config file to always include major updates."
         fi
     else
         echo "HeavyScript is already the latest version:"

@@ -12,8 +12,6 @@ self_update_handler() {
     local SELFUPDATE__SELFUPDATE__when_updating
     local SELFUPDATE__SELFUPDATE__major
 
-    echo "self_update: $self_update"
-
     # Check if "self-update" is the first argument and the second argument is a help option
     # heavyscript self-update --help/-h
     if [[ $self_update == true ]] && [[ "${args[0]}" =~ ^(--help|-h)$ ]]; then

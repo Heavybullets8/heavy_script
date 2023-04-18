@@ -88,10 +88,6 @@ if mapfile -t args < <(remove_force_update_args "${args[@]}"); then
     major_self_update=true
 fi
 
-
-echo "args: ${args[*]}"
-echo "self_update: $self_update"
-
 if [[ $no_self_update == false ]]; then
     self_update_handler "${args[@]}"
 fi

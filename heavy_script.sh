@@ -67,7 +67,7 @@ done
 # Replace "$@" with the new "args" array
 set -- "${args[@]}"
 
-if check_no_config;then
+if check_no_config "${args[@]}";then
     no_config=true
     mapfile -t args < <(remove_no_config_args "${args[@]}")
 fi

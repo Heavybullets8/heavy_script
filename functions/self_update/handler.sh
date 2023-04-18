@@ -7,7 +7,6 @@ self_update_handler() {
     declare -x major_self_update
     declare -x no_self_update
     declare -x no_config
-    declare -x menu_toggle
     local SELFUPDATE__SELFUPDATE__always
     local SELFUPDATE__SELFUPDATE__when_updating
     local SELFUPDATE__SELFUPDATE__major

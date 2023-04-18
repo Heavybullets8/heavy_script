@@ -2,8 +2,6 @@
 
 
 self_update() {
-    local menu_toggle=$1
-
     echo "🅂 🄴 🄻 🄵"
     echo "🅄 🄿 🄳 🄰 🅃 🄴"
     git reset --hard &>/dev/null
@@ -37,7 +35,7 @@ self_update() {
     chmod +x "$script_name" ; chmod +x "$script_path"/bin/heavyscript 2>/dev/null
 
     # Check if there are any arguments left
-    if [[ -z ${args[*]} && $menu_toggle == false ]]; then
+    if [[ -z ${args[*]} ]]; then
         echo -e "No more arguments, exiting..\n\n" && exit
     fi
     # Check if the script was updated, and if so, run the new version

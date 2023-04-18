@@ -78,7 +78,7 @@ if check_self_update_args; then
     mapfile -t args < <(remove_self_update_args "${args[@]}")
 fi
 
-if check_major_self_update_args; then
+if check_force_update_args; then
     major_self_update=true
     mapfile -t args < <(remove_major_self_update_args "${args[@]}")
 fi
@@ -88,12 +88,7 @@ if check_no_self_update_args; then
     mapfile -t args < <(remove_no_self_update_args "${args[@]}")
 fi
 
-if check_force_update_args; then
-    major_self_update=true
-    mapfile -t args < <(remove_force_update_args "${args[@]}")
-fi
-
-if check_no_config_args; then
+if check_no_config; then
     no_config=true
     mapfile -t args < <(remove_no_config_args "${args[@]}")
 fi

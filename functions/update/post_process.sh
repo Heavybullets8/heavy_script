@@ -1,115 +1,97 @@
 #!/bin/bash
 
+verify_active(){
+    if [[ "$verbose" == true ]]; then
+        echo_array+=("Verifying $status..")
+    fi
+    before_loop=$(head -n 1 all_app_status)
+    current_loop=0
+    until [[ "$status" != "ACTIVE" || $current_loop -gt 4 ]] 
+    do
+        update_status "$app_name"
+        sleep 1
+        if ! echo -e "$(head -n 1 all_app_status)" | grep -qs ^"$before_loop" ; then
+            before_loop=$(head -n 1 all_app_status)
+            ((current_loop++))
+        fi
+    done
+}
+
+update_status() {
+    status=$(grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
+}
+
+rollbacks_disabled(){
+    echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
+    echo_array+=("If this is a slow starting application, set a higher timeout with -t")
+    echo_array+=("If this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration")
+    echo_array+=("Manual intervention is required\nStopping, then Abandoning")
+}
+
+handle_wait() {
+    if [[ "$verbose" == true ]]; then
+        echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be ACTIVE")
+    fi
+    sleep 5
+}
+
+handle_rollback() {
+    echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
+    echo_array+=("If this is a slow starting application, set a higher timeout with -t")
+    echo_array+=("If this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration")
+    echo_array+=("Reverting update..")       
+    if rollback_app ; then
+        echo_array+=("Rolled Back")
+    else
+        echo_array+=("Error: Failed to rollback $app_name\nAbandoning")
+        return 1
+    fi                    
+}
 
 post_process(){
     local app_name=$1
     local startstatus=$2
     local new_full_ver=$3
-    local count=0
+    local rolled_back=false
 
     SECONDS=0
 
+    update_status
+
+    if [[ $status == "ACTIVE" ]] && ! grep -q "^$app_name,DEPLOYING" deploying 2>/dev/null; then
+        verify_active
+    fi
 
     while true
     do
-        # If app reports ACTIVE right away, assume its a false positive and wait for it to change, or trust it after 5 updates to all_app_status
-        status=$(grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
-        # If status shows up as Active or Stopped on the first check, verify that. Otherwise it may be a false report..
-        if [[ $count -lt 1 && $status == "ACTIVE" && "$(grep "^$app_name," deploying 2>/dev/null | awk -F ',' '{print $2}')" != "DEPLOYING" ]]; then  
-            if [[ "$verbose" == true ]]; then
-                echo_array+=("Verifying $status..")
-            fi
-            before_loop=$(head -n 1 all_app_status)
-            current_loop=0
-            # Wait for a specific change to app status, or 3 refreshes of the file to go by.
-            until [[ "$status" != "ACTIVE" || $current_loop -gt 4 ]] 
-            do
-                status=$(grep "^$app_name," all_app_status | awk -F ',' '{print $2}')
-                sleep 1
-                if ! echo -e "$(head -n 1 all_app_status)" | grep -qs ^"$before_loop" ; then
-                    before_loop=$(head -n 1 all_app_status)
-                    ((current_loop++))
-                fi
-            done
-        fi
-        (( count++ ))
+        update_status
 
         if [[ "$status"  ==  "ACTIVE" ]]; then
             if [[ "$startstatus"  ==  "STOPPED" ]]; then
-                if [[ "$verbose" == true ]]; then
-                    echo_array+=("Returing to STOPPED state..")
-                fi
-                stop_app "update" "$app_name" "${timeout:-100}"
-                result=$(handle_stop_code "$?")
-                if [[ $? -eq 1 ]]; then
-                    echo_array+=("$result")
-                    echo_array
-                    return
-                else
-                    echo_array+=("$result")
-                fi
-                break
+                update_stop_handler 'Returing to STOPPED state...'
             else
                 echo_array+=("Active")
-                break 
             fi
+            break
         elif [[ "$SECONDS" -ge "$timeout" ]]; then
+            echo "$app_name,$new_full_ver" >> failed
             if [[ $rollback == true ]]; then
-                if [[ "$failed" != true ]]; then
-                    echo "$app_name,$new_full_ver" >> failed
-                    echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
-                    echo_array+=("If this is a slow starting application, set a higher timeout with -t")
-                    echo_array+=("If this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration")
-                    echo_array+=("Reverting update..")       
-                    if rollback_app ; then
-                        echo_array+=("Rolled Back")
-                    else
-                        echo_array+=("Error: Failed to rollback $app_name\nAbandoning")
-                        echo_array
-                        return 1
-                    fi                    
-                    failed=true
+                if [[ "$rolled_back" == false ]]; then
+                    handle_rollback || break
+                    rolled_back=true
                     SECONDS=0
-                    count=0
-                    continue #run back post_process function if the app was stopped prior to update
+                    continue
                 else
-                    echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
-                    echo_array+=("The application failed to be ACTIVE even after a rollback")
-                    echo_array+=("Manual intervention is required\nStopping, then Abandoning")
-                    stop_app "update" "$app_name" "${timeout:-100}"
-                    result=$(handle_stop_code "$?")
-                    if [[ $? -eq 1 ]]; then
-                        echo_array+=("$result")
-                        echo_array
-                        return
-                    else
-                        echo_array+=("$result")
-                    fi
+                    update_stop_handler 'Stopping...'
                     break
                 fi
             else
-                echo "$app_name,$new_full_ver" >> failed
-                echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
-                echo_array+=("If this is a slow starting application, set a higher timeout with -t")
-                echo_array+=("If this applicaion is always DEPLOYING, you can disable all probes under the Healthcheck Probes Liveness section in the edit configuration")
-                echo_array+=("Manual intervention is required\nStopping, then Abandoning")
-                stop_app "update" "$app_name" "${timeout:-100}"
-                result=$(handle_stop_code "$?")
-                if [[ $? -eq 1 ]]; then
-                    echo_array+=("$result")
-                    echo_array
-                    return
-                else
-                    echo_array+=("$result")
-                fi
+                rollbacks_disabled
+                update_stop_handler 'Stopping...'
                 break
             fi
         else
-            if [[ "$verbose" == true ]]; then
-                echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be ACTIVE")
-            fi
-            sleep 5
-            continue
+            handle_wait
         fi
     done
 

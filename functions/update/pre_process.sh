@@ -2,7 +2,6 @@
 
 
 get_app_details() {
-    local app_info=$1
     local app_name
     local startstatus
     local old_full_ver
@@ -19,7 +18,6 @@ get_app_details() {
 }
 
 wait_for_deploying() {
-    local app_name=$1
     local status
 
     # If application is deploying prior to updating, attempt to wait for it to finish
@@ -37,32 +35,7 @@ wait_for_deploying() {
     return 0
 }
 
-stop_app_before_update() {
-    local app_name=$1
-    local exit_status
-    
-    # If user is using -S, stop app prior to updating
-    if [[ "$verbose" == true ]]; then
-        echo_array+=("Stopping prior to update..")
-    fi
-    stop_app "update" "$app_name" "${timeout:-100}"
-    result=$(handle_stop_code "$?")
-    exit_status=$?
-    if [[ $exit_status -eq 1 ]]; then
-        echo_array+=("$result")
-        return $exit_status
-    else
-        echo_array+=("$result")
-    fi
-    return 0
-}
-
-
 update_app_function() {
-    local app_name=$1
-    local old_full_ver=$2
-    local new_full_ver=$3
-
     # Send app through update function
     [[ "$verbose" == true ]] && echo_array+=("Updating..")
     if ! update_app; then
@@ -90,7 +63,6 @@ image_update_restart() {
 }
 
 check_replicas() {
-    local app_name=$1
     local replicas
     replicas=$(pull_replicas "$app_name")
 
@@ -116,7 +88,7 @@ pre_process() {
     local new_full_ver
     local rollback_version
 
-    app_details=$(get_app_details "$app_info")
+    app_details=$(get_app_details)
     IFS=',' read -ra app_vars <<<"$app_details"
     app_name="${app_vars[0]}"
     startstatus="${app_vars[1]}"
@@ -127,26 +99,26 @@ pre_process() {
     echo_array+=("\n$app_name")
 
     if [[ "$startstatus" == "DEPLOYING" ]]; then
-        if ! wait_for_deploying "$app_name"; then
+        if ! wait_for_deploying; then
             echo_array
             return
         fi
     fi
 
     if [[ $stop_before_update == true && "$startstatus" != "STOPPED" ]]; then
-        if ! stop_app_before_update "$app_name"; then
+        if ! update_stop_handler 'Stopping prior to update..'; then
             echo_array
             return
         fi
     fi
 
-    if ! update_app_function "$app_name" "$old_full_ver" "$new_full_ver"; then
+    if ! update_app_function; then
         echo_array
         return
     fi
 
     if [[ $rollback == true || "$startstatus"  ==  "STOPPED" ]]; then
-        if ! check_replicas "$app_name"; then
+        if ! check_replicas; then
             echo_array
             return
         fi
@@ -157,7 +129,7 @@ pre_process() {
             return
         fi
 
-        post_process "$app_name" "$startstatus" "$new_full_ver"
+        post_process
     else
         echo_array
         return

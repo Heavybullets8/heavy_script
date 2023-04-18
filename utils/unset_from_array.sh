@@ -5,6 +5,7 @@ remove_self_update_args() {
     while [ $index -lt ${#args[@]} ]; do
         if [[ "${args[index]}" =~ ^(--)?self-update$ || "${args[index]}" == "-U" ]]; then
             self_update=true
+            from_cli=true
             args=("${args[@]:0:index}" "${args[@]:index+1}")
         else
             ((index++))

@@ -5,6 +5,7 @@ declare -x no_self_update=false
 declare -x self_update=false
 declare -x major_self_update=false
 declare -x menu_toggle=false
+declare -x from_cli=false
 declare -x script
 declare -x script_path
 declare -x script_name
@@ -83,7 +84,7 @@ if [[ $no_self_update == false ]]; then
 fi
 
 # If no arguments are passed, the first argument is an empty string, '-', or '--', open the menu function.
-if [[ "${#args[@]}" -eq 0 || "${args[0]}" =~ ^(-{1,2})?$ ]]; then
+if [[ "${#args[@]}" -eq 0 || "${args[0]}" =~ ^(-{1,2})?$ && $from_cli == false ]]; then
     menu
     exit
 fi

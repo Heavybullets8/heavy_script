@@ -49,10 +49,10 @@ skip_app_on_ignore_list() {
 
 skip_major_release() {
     if [[ "$old_app_ver" != "$new_app_ver" ]]; then
-        echo -e "\n$app_name\nSkipping major app release:\n$new_full_ver"
+        echo -e "\n$app_name\nSkipping major app release\n$old_full_ver\n$new_full_ver"
         unset "array[$index]"
     elif [[ "$old_chart_ver" != "$new_chart_ver" ]]; then
-        echo -e "\n$app_name\nSkipping major chart release:\n$new_full_ver"
+        echo -e "\n$app_name\nSkipping major chart release\n$old_full_ver\n$new_full_ver"
         unset "array[$index]"
     fi
 }
@@ -61,7 +61,7 @@ skip_previously_failed_version() {
     if grep -qs "^$app_name," failed 2>/dev/null; then
         failed_ver=$(grep "^$app_name," failed | awk -F ',' '{print $2}')
         if [[ "$failed_ver" == "$new_full_ver" ]]; then
-            echo -e "\n$app_name\nSkipping previously failed version:\n$new_full_ver"
+            echo -e "\n$app_name\nSkipping previously failed version\n$new_full_ver"
             unset "array[$index]"
         else
             sed -i /"$app_name",/d failed

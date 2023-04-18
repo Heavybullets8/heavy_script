@@ -14,8 +14,6 @@ dns_handler() {
         read_ini "config.ini" --prefix DNS
     fi
 
-    mapfile -t args < <(remove_no_config_args "${args[@]}")
-
     # Set the default option using the config file
     local verbose="${DNS__DNS__verbose:-false}"
 

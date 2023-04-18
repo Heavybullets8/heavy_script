@@ -49,18 +49,6 @@ handle_rollback() {
 }
 
 post_process(){
-    # dump all variables for debugging
-    echo "app_name: $app_name"
-    echo "startstatus: $startstatus"
-    echo "old_full_ver: $old_full_ver"
-    echo "new_full_ver: $new_full_ver"
-    echo "rollback_version: $rollback_version"
-    echo "rollback: $rollback"
-    echo "timeout: $timeout"
-    echo "verbose: $verbose"
-    echo "status: $status"
-    
-
     local rolled_back=false
 
     SECONDS=0

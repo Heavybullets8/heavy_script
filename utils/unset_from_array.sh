@@ -5,7 +5,9 @@ remove_self_update_args() {
     local output_args=()
 
     for arg in "${input_args[@]}"; do
-        if ! [[ "$arg" =~ ^(--)?self-update$ || "$arg" == "-U" ]]; then
+        if [[ "$arg" =~ ^(--)?self-update$ || "$arg" == "-U" ]]; then
+            self_update=true
+        else
             output_args+=("$arg")
         fi
     done
@@ -19,7 +21,9 @@ remove_no_self_update_args() {
     local output_args=()
 
     for arg in "${input_args[@]}"; do
-        if ! [[ "$arg" == "--no-self-update" ]]; then
+        if [[ "$arg" == "--no-self-update" ]]; then
+            no_self_update=true
+        else
             output_args+=("$arg")
         fi
     done
@@ -33,8 +37,10 @@ remove_force_update_args() {
     local output_args=()
 
     for arg in "${input_args[@]}"; do
-        if ! [[ "$arg" == "--major" ]]; then
-            output_args+=("$arg")
+        if [[ "$arg" == "--major" ]]; then
+            major_self_update=true
+        else
+            output_args+=("$arg")   
         fi
     done
 
@@ -47,7 +53,9 @@ remove_no_config_args() {
     local output_args=()
 
     for arg in "${input_args[@]}"; do
-        if ! [[ "$arg" == "--no-config" ]]; then
+        if [[ "$arg" == "--no-config" ]]; then
+            no_config=true
+        else
             output_args+=("$arg")
         fi
     done

@@ -3,7 +3,6 @@
 
 self_update() {
     local menu_toggle=$1
-    local include_major=$2
 
     echo "🅂 🄴 🄻 🄵"
     echo "🅄 🄿 🄳 🄰 🅃 🄴"
@@ -28,16 +27,12 @@ self_update() {
     fi
 
     if [[ $switched != true ]]; then
-        update_func "$include_major"
+        update_func
         if [[ $? == 111 ]]; then
             updated=true
         fi
     fi
  
-    # Unset the self-update/major argument
-    mapfile -t args < <(remove_self_update_args "${args[@]}")
-    mapfile -t args < <(remove_force_update_args "${args[@]}")
-
     # Make the script executable
     chmod +x "$script_name" ; chmod +x "$script_path"/bin/heavyscript 2>/dev/null
 

@@ -1,6 +1,10 @@
 #!/bin/bash
 
 declare -x no_config=false
+declare -x no_self_update=false
+declare -x self_update=false
+declare -x major_self_update=false
+declare -x menu_toggle=false
 declare -x script
 declare -x script_path
 declare -x script_name
@@ -67,26 +71,21 @@ done
 # Replace "$@" with the new "args" array
 set -- "${args[@]}"
 
-if check_no_config "${args[@]}";then
-    no_config=true
-    mapfile -t args < <(remove_no_config_args "${args[@]}")
+# Remove arguments from the array, then set boolean variables
+mapfile -t args < <(remove_no_config_args "${args[@]}") # no_config=true/false
+mapfile -t args < <(remove_no_self_update_args "${args[@]}") # no_self_update=true/false
+mapfile -t args < <(remove_self_update_args "${args[@]}") # self_update=true/false
+mapfile -t args < <(remove_force_update_args "${args[@]}") # major_self_update=true/false
+
+if [[ $no_self_update == true ]]; then
+    self_update_handler "${args[@]}"
 fi
-
-# Check for self-update and update the script if required
-self_update_handler "${args[@]}"
-
-# Unset self-update arguments/--no-self-update/--major
-mapfile -t args < <(remove_no_self_update_args "${args[@]}")
-mapfile -t args < <(remove_self_update_args "${args[@]}")
-mapfile -t args < <(remove_force_update_args "${args[@]}")
 
 # If no arguments are passed, the first argument is an empty string, '-', or '--', open the menu function.
 if [[ "${#args[@]}" -eq 0 || "${args[0]}" =~ ^(-{1,2})?$ ]]; then
     menu
     exit
 fi
-
-
 
 case $1 in
     app)

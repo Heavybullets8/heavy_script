@@ -34,12 +34,11 @@ update_branch() {
 
 
 update_tagged_version() {
-    local include_major="$1"
     local latest_tag
     latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
 
     if [[ "$hs_version" != "$latest_tag" ]]; then
-        if [[ "$include_major" == "true" ]] || ! is_major_update "${hs_version}" "${latest_tag}"; then
+        if [[ "$major_self_update" == "true" ]] || ! is_major_update "${hs_version}" "${latest_tag}"; then
             echo "Found a new version of HeavyScript, updating myself..."
             git checkout --force "$latest_tag" &>/dev/null
             echo "Updating from: $hs_version"
@@ -61,9 +60,8 @@ update_tagged_version() {
 
 
 update_func() {
-    local include_major="$1"
     if [[ "$hs_version" =~ v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+ ]]; then
-        update_tagged_version "$include_major"        
+        update_tagged_version       
     else
         update_branch
     fi

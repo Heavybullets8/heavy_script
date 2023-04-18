@@ -78,41 +78,33 @@ update_app_function() {
     fi
 }
 
-handle_rollbacks_or_stopped() {
+image_update_restart() {
+    if [[ "$verbose" == true ]]; then
+        echo_array+=("Restarting..")
+    fi
+    if ! restart_app; then
+        echo_array+=("Error: Failed to restart $app_name")
+    else
+        echo_array+=("Restarted")
+    fi
+}
+
+check_replicas() {
     local app_name=$1
-    local startstatus=$2
-    local old_full_ver=$3
-    local new_full_ver=$4
     local replicas
     replicas=$(pull_replicas "$app_name")
 
-    # If app is external services, skip post processing
     if [[ $replicas == "0" ]]; then
         if [[ "$verbose" == true ]]; then
             echo_array+=("Application has 0 replicas, skipping post processing")
         fi
-        echo_array
         return 1
     elif [[ $replicas == "null" ]]; then
         echo_array+=("HeavyScript does not know how many replicas this app has, skipping post processing")
         echo_array+=("Please submit a bug report on github so this can be fixed")
-        echo_array
         return 1
-    elif [[ "$old_full_ver" == "$new_full_ver" ]]; then 
-        # restart the app if it was a container image update.
-        if [[ "$verbose" == true ]]; then
-            echo_array+=("Restarting..")
-        fi
-        if ! restart_app; then
-            echo_array+=("Error: Failed to restart $app_name")
-        else
-            echo_array+=("Restarted")
-        fi
-        echo_array
-        return
-    else
-        post_process "$app_name" "$startstatus" "$new_full_ver"
     fi
+    return 0
 }
 
 pre_process() {
@@ -135,7 +127,7 @@ pre_process() {
     echo_array+=("\n$app_name")
 
     if [[ "$startstatus" == "DEPLOYING" ]]; then
-        if ! wait_for_deploying  "$app_name"; then
+        if ! wait_for_deploying "$app_name"; then
             echo_array
             return
         fi
@@ -154,7 +146,18 @@ pre_process() {
     fi
 
     if [[ $rollback == true || "$startstatus"  ==  "STOPPED" ]]; then
-        handle_rollbacks_or_stopped "$app_name" "$startstatus" "$old_full_ver" "$new_full_ver"
+        if ! check_replicas "$app_name"; then
+            echo_array
+            return
+        fi
+
+        if [[ "$old_full_ver" == "$new_full_ver" ]]; then 
+            image_update_restart
+            echo_array
+            return
+        fi
+
+        post_process "$app_name" "$startstatus" "$new_full_ver"
     else
         echo_array
         return

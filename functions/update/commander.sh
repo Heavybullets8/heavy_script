@@ -83,16 +83,18 @@ process_apps() {
 
 handle_concurrency() {
     local index=0
-    local while_count=0
+    local iteration_count=0
     rm deploying finished 2>/dev/null
 
+    # Loop until all processes are finished or the total number of finished processes equals the length of the array
     while [[ ${#processes[@]} != 0 || $(wc -l finished 2>/dev/null | awk '{ print $1 }') -lt "${#array[@]}" ]]; do
         if while_status=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' 2>/dev/null) ; then
-            ((while_count++))
+            ((iteration_count++))
             if [[ -n $while_status ]]; then
-                echo -e "$while_count\n$while_status" > all_app_status
+                echo -e "$iteration_count\n$while_status" > all_app_status
             fi
 
+            # Check for applications with a "DEPLOYING" status and add them to the 'deploying' file
             mapfile -t deploying_check < <(grep ",DEPLOYING," all_app_status)
             for i in "${deploying_check[@]}"
             do
@@ -109,11 +111,13 @@ handle_concurrency() {
             continue
         fi
 
+        # Check if background jobs are still running; if not, remove them from the 'processes' array
         for i in "${!processes[@]}"; do
             kill -0 "${processes[i]}" &> /dev/null || unset "processes[$i]"
         done
         processes=("${processes[@]}")
 
+        # Start new background jobs if the number of concurrent jobs is less than the allowed number ($concurrent)
         if [[ $index -lt ${#array[@]} && "${#processes[@]}" -lt "$concurrent" ]]; then
             pre_process "${array[$index]}" &
             processes+=($!)
@@ -123,10 +127,12 @@ handle_concurrency() {
         fi
     done
 
+    # Clean up temporary files
     rm deploying finished 2>/dev/null
     echo
     echo
 }
+
 
 commander() {
     mapfile -t array < <(get_app_info)

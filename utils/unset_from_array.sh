@@ -6,7 +6,7 @@ remove_self_update_args() {
 
     for arg in "${input_args[@]}"; do
         if [[ "$arg" =~ ^(--)?self-update$ || "$arg" == "-U" ]]; then
-            self_update=true
+            declare -g self_update=true
         else
             output_args+=("$arg")
         fi

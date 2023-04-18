@@ -5,7 +5,7 @@ main_help(){
     clear -x
     echo -e "${bold}HeavyScript${reset}"
     echo -e "${bold}-----------${reset}"
-    echo -e "${blue}heavyscript${reset} | ${blue}[Utility]${reset} | ${blue}[Option]${reset}"
+    echo -e "${blue}heavyscript${reset} | ${blue}[Function]${reset} | ${blue}[Flag]${reset}"
     echo
     echo -e "${bold}HeavyScript Menu${reset}"
     echo -e "${bold}----------------${reset}"
@@ -26,7 +26,7 @@ main_help(){
     echo -e "${bold}Configuration${reset}"
     echo -e "${bold}-------------${reset}"
     echo -e "The config.ini file sets default values for various functions of the script."
-    echo -e "To ignore the modified config and use default values, add the ${blue}--no-config${reset} option."
+    echo -e "To ignore the modified config and use default values, add the ${blue}--no-config${reset} flag."
     echo
     echo -e "${bold}Examples${reset}"
     echo -e "${bold}--------${reset}"

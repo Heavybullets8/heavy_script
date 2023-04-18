@@ -49,12 +49,12 @@ ___
 ### App
 > heavyscript app [Flag]
 
-| Flag           | Example                                  | Description                               |
-|----------------|------------------------------------------|-------------------------------------------|
-| -s<br>--start  | -s<br>--start                            | Start an application.                     |
-| -x<br>--stop   | -x<br>--stop                             | Stop an application.                      |
-| -r<br>--restart| -r<br>--restart                          | Restart an application.                   |
-| -d<br>--delete | -d<br>--delete                           | Delete an application.                    |
+| Flag           | Example                                  | Parameter                 | Description                               |
+|----------------|------------------------------------------|---------------------------|-------------------------------------------|
+| -s<br>--start  | -s<br>--start                            | [Optional: app name]      | Start an application.                     |
+| -x<br>--stop   | -x<br>--stop                             | [Optional: app name]      | Stop an application.                      |
+| -r<br>--restart| -r<br>--restart                          | [Optional: app name]      | Restart an application.                   |
+| -d<br>--delete | -d<br>--delete                           | [Optional: app name]      | Delete an application.                    |
 
 <br>
 
@@ -70,7 +70,7 @@ ___
 <br>
 
 ### DNS
-> heavyscript dns [Flag]
+> heavyscript dns [Optional Flag]
 
 | Flag                       | Example                                  | Description                             |
 |----------------------------|------------------------------------------|-----------------------------------------|
@@ -99,7 +99,7 @@ ___
 <br>
 
 ### PVC
-> heavyscript pvc [Flag]
+> heavyscript pvc [Optional Flag]
 
 | Flag                       | Example                                  | Description                                  |
 |----------------------------|------------------------------------------|----------------------------------------------|

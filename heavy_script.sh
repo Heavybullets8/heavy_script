@@ -68,8 +68,8 @@ for arg in "$@"; do
     fi
 done
 
-# Replace "$@" with the new "args" array
-set -- "${args[@]}"
+# # Replace "$@" with the new "args" array
+# set -- "${args[@]}"
 
 # Remove arguments from the array, then set boolean variables
 mapfile -t args < <(remove_no_config_args "${args[@]}") # no_config=true/false

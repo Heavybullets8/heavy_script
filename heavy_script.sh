@@ -73,10 +73,30 @@ done
 set -- "${args[@]}"
 
 # Remove arguments from the array, then set boolean variables
-remove_self_update_args
-remove_no_self_update_args
-remove_force_update_args
-remove_no_config_args
+if check_self_update_args; then
+    self_update=true
+    mapfile -t args < <(remove_self_update_args "${args[@]}")
+fi
+
+if check_major_self_update_args; then
+    major_self_update=true
+    mapfile -t args < <(remove_major_self_update_args "${args[@]}")
+fi
+
+if check_no_self_update_args; then
+    no_self_update=true
+    mapfile -t args < <(remove_no_self_update_args "${args[@]}")
+fi
+
+if check_force_update_args; then
+    major_self_update=true
+    mapfile -t args < <(remove_force_update_args "${args[@]}")
+fi
+
+if check_no_config_args; then
+    no_config=true
+    mapfile -t args < <(remove_no_config_args "${args[@]}")
+fi
 
 
 if [[ $no_self_update == false ]]; then

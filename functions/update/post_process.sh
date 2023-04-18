@@ -53,6 +53,7 @@ post_process(){
     local startstatus=$2
     local new_full_ver=$3
     local rolled_back=false
+    local status
 
     SECONDS=0
 

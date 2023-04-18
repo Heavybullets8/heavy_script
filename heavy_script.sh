@@ -1,5 +1,21 @@
 #!/bin/bash
 
+declare -x no_config=false
+declare -x script
+declare -x script_path
+declare -x script_name
+declare -x current_tag
+declare -x current_version
+declare -x hs_version
+# colors
+declare -x reset='\033[0m'
+declare -x red='\033[0;31m'
+declare -x yellow='\033[1;33m'
+declare -x green='\033[0;32m'
+declare -x blue='\033[0;34m'
+declare -x bold='\033[1m'
+declare -x gray='\033[38;5;7m'
+
 # cd to script, this ensures the script can find the source scripts below, even when ran from a separate directory
 script=$(readlink -f "$0")
 script_path=$(dirname "$script")
@@ -18,15 +34,6 @@ else
     # The current version is a branch, assign the name of the current branch to the hs_version variable
     hs_version=${current_version}
 fi
-
-# colors
-reset='\033[0m'
-red='\033[0;31m'
-yellow='\033[1;33m'
-green='\033[0;32m'
-blue='\033[0;34m'
-bold='\033[1m'
-gray='\033[38;5;7m'
 
 # Source all functions and utilities
 while IFS= read -r script_file; do
@@ -59,6 +66,11 @@ done
 
 # Replace "$@" with the new "args" array
 set -- "${args[@]}"
+
+if check_no_config;then
+    no_config=true
+    mapfile -t args < <(remove_no_config_args "${args[@]}")
+fi
 
 # Check for self-update and update the script if required
 self_update_handler "${args[@]}"

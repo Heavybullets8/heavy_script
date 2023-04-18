@@ -20,10 +20,7 @@ self_update_handler() {
 
     local args
     # check for --no-config
-    if check_no_config "${input_args[@]}"; then
-        # If --no-config is passed, remove it from the array
-        mapfile -t args < <(remove_no_config_args "${input_args[@]}")
-    else
+    if [[ $no_config == false ]]; then
         # Read the config.ini file if --no-config is not passed
         mapfile -t args < <(add_selfupdate_major_from_config "${input_args[@]}")
     fi

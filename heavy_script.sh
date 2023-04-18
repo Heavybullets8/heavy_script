@@ -77,7 +77,7 @@ mapfile -t args < <(remove_no_self_update_args "${args[@]}") # no_self_update=tr
 mapfile -t args < <(remove_self_update_args "${args[@]}") # self_update=true/false
 mapfile -t args < <(remove_force_update_args "${args[@]}") # major_self_update=true/false
 
-if [[ $no_self_update == true ]]; then
+if [[ $no_self_update == false ]]; then
     self_update_handler "${args[@]}"
 fi
 

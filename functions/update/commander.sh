@@ -48,7 +48,10 @@ skip_app_on_ignore_list() {
 }
 
 skip_major_release() {
-    if [[ "$old_app_ver" != "$new_app_ver" ]]; then
+    if [[ "$old_app_ver" != "$new_app_ver" ]] && [[ "$old_chart_ver" != "$new_chart_ver" ]]; then
+        echo -e "\n$app_name\nSkipping major app and chart release\n$old_full_ver\n$new_full_ver"
+        unset "array[$index]"
+    elif [[ "$old_app_ver" != "$new_app_ver" ]]; then
         echo -e "\n$app_name\nSkipping major app release\n$old_full_ver\n$new_full_ver"
         unset "array[$index]"
     elif [[ "$old_chart_ver" != "$new_chart_ver" ]]; then

@@ -3,10 +3,6 @@
 
 self_update_handler() {
     local args=("$@")
-    declare -x self_update
-    declare -x major_self_update
-    declare -x no_self_update
-    declare -x no_config
     local SELFUPDATE__SELFUPDATE__always
     local SELFUPDATE__SELFUPDATE__when_updating
     local SELFUPDATE__SELFUPDATE__major

@@ -4,15 +4,25 @@ remove_self_update_args() {
     local input_args=("$@")
     local output_args=()
 
+    # Set a flag to indicate whether self-update argument is found
+    local self_update_found=false
+
     for arg in "${input_args[@]}"; do
         if [[ "$arg" =~ ^(--)?self-update$ || "$arg" == "-U" ]]; then
-            declare -g self_update=true
+            self_update_found=true
         else
             output_args+=("$arg")
         fi
     done
 
     printf "%s\n" "${output_args[@]}"
+
+    # Return 0 if self-update argument is found, 1 otherwise
+    if $self_update_found; then
+        return 0
+    else
+        return 1
+    fi
 }
 
 

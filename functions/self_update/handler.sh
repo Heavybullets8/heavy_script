@@ -19,12 +19,6 @@ self_update_handler() {
         exit
     fi
 
-    # Toggle the menu if no arguments are passed, the first argument is an empty string, '-', or '--'
-    # This is useful for when a user has self-update always set to true in the config file
-    if [[ "${#args[@]}" -eq 0 || "${args[0]}" =~ ^(-{1,2})?$ ]]; then
-        menu_toggle=true
-    fi
-
     if [[ $no_config == false ]]; then
         read_ini "config.ini" --prefix SELFUPDATE
 

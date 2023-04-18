@@ -80,7 +80,7 @@ fi
 
 if check_force_update_args "${args[@]}"; then
     major_self_update=true
-    mapfile -t args < <(remove_major_self_update_args "${args[@]}")
+    mapfile -t args < <(remove_force_update_args "${args[@]}")
 fi
 
 if check_no_self_update_args "${args[@]}"; then

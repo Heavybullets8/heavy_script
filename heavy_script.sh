@@ -84,7 +84,7 @@ if [[ $no_self_update == false ]]; then
 fi
 
 # If no arguments are passed, the first argument is an empty string, '-', or '--', open the menu function.
-if [[ $from_cli == false ]] && { [[ "${#args[@]}" -eq 0 || "${args[0]}" =~ ^(-{1,2})?$ ]] }; then
+if [[ $from_cli == false ]] && [[ "${#args[@]}" -eq 0 || "${args[0]}" =~ ^(-{1,2})?$ ]]; then
     menu
     exit
 fi

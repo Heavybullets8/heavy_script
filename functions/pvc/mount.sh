@@ -11,7 +11,7 @@ mount_app_func(){
     mapfile -t pool_query < <(cli -m csv -c "storage pool query name,path" | sed -e '1d' -e '/^$/d')
 
     # Run the command and store the output in an array
-    readarray -t output < <(k3s kubectl get pvc -A | sort -u | awk '{print $1 "\t" $2 "\t" $4}' | sed "s/^0/ /")
+    readarray -t output < <(k3s kubectl get pvc -A | sort -u | awk '{print $1 "\t" $2 "\t" $4}' | sed "s/^0/ /" | grep -v -- "-cnpg-main")
 
     # Assign a number to each element of the array, except for the first one
     count=0

@@ -72,7 +72,6 @@ done
 # Replace "$@" with the new "args" array
 set -- "${args[@]}"
 
-# Remove arguments from the array, then set boolean variables
 if check_self_update_args "${args[@]}"; then
     self_update=true
     mapfile -t args < <(remove_self_update_args "${args[@]}")
@@ -100,7 +99,6 @@ if [[ $from_cli == false ]] && [[ "${#args[@]}" -eq 0 || "${args[0]}" =~ ^(-{1,2
     menu
     exit
 fi
-
 
 case $1 in
     app)

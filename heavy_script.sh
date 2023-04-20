@@ -79,7 +79,7 @@ if check_no_self_update_args "${args[@]}"; then
     no_self_update=true
     mapfile -t args < <(remove_no_self_update_args "${args[@]}")
 fi
-if check_no_config; then
+if remove_no_config_args; then
     no_config=true
 fi
 

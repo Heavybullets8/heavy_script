@@ -67,9 +67,6 @@ for arg in "$@"; do
     fi
 done
 
-# Replace "$@" with the new "args" array
-set -- "${args[@]}"
-
 if check_self_update_args "${args[@]}"; then
     self_update=true
     mapfile -t args < <(remove_self_update_args "${args[@]}")
@@ -98,7 +95,7 @@ if [[ "${#args[@]}" -eq 0 || "${args[0]}" =~ ^(-{1,2})?$ ]]; then
     exit
 fi
 
-case $1 in
+case "${args[0]}" in
     app)
         app_handler "${args[@]:1}" # Pass remaining arguments to app_handler
         ;;

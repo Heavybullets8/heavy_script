@@ -8,7 +8,7 @@ verify_active(){
     current_loop=0
     until [[ "$status" != "ACTIVE" || $current_loop -gt 4 ]] 
     do
-        update_status "$app_name"
+        status=$(update_status)
         sleep 1
         if ! echo -e "$(head -n 1 all_app_status)" | grep -qs ^"$before_loop" ; then
             before_loop=$(head -n 1 all_app_status)

@@ -79,9 +79,8 @@ if check_no_self_update_args "${args[@]}"; then
     no_self_update=true
     mapfile -t args < <(remove_no_self_update_args "${args[@]}")
 fi
-if check_no_config "${args[@]}"; then
+if check_no_config; then
     no_config=true
-    mapfile -t args < <(remove_no_config_args "${args[@]}")
 fi
 
 # Run the self update function if the script has not already been updated

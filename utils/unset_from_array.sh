@@ -41,16 +41,19 @@ remove_force_update_args() {
     printf "%s\n" "${output_args[@]}"
 }
 
-
+# Function to remove --no-config from the arguments and return exit code
 remove_no_config_args() {
-    local input_args=("$@")
     local output_args=()
+    local found=1
 
-    for arg in "${input_args[@]}"; do
-        if ! [[ "$arg" == "--no-config" ]]; then
+    for arg in "${args[@]}"; do
+        if [[ "$arg" == "--no-config" ]]; then
+            found=0
+        else
             output_args+=("$arg")
         fi
     done
 
-    printf "%s\n" "${output_args[@]}"
+    args=("${output_args[@]}")
+    return $found
 }

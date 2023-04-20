@@ -67,18 +67,18 @@ for arg in "$@"; do
     fi
 done
 
-if check_self_update_args "${args[@]}"; then
+if remove_self_update_args; then
     self_update=true
-    mapfile -t args < <(remove_self_update_args "${args[@]}")
 fi
-if check_force_update_args "${args[@]}"; then
+
+if remove_force_update_args; then
     major_self_update=true
-    mapfile -t args < <(remove_force_update_args "${args[@]}")
 fi
-if check_no_self_update_args "${args[@]}"; then
+
+if remove_no_self_update_args; then
     no_self_update=true
-    mapfile -t args < <(remove_no_self_update_args "${args[@]}")
 fi
+
 if remove_no_config_args; then
     no_config=true
 fi

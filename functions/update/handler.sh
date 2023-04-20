@@ -10,12 +10,13 @@ update_handler() {
     declare -x update_all_apps
     declare -x verbose
     declare -x ignore_image_update
+    export no_config
     local sync
     local number_of_backups
     local prune
 
     # Check if --no-config is in the arguments
-    if ! check_no_config "$@"; then
+    if no_config=false; then
         read_ini "config.ini" --prefix UPDATE
     fi
 

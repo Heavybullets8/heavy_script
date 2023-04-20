@@ -2,6 +2,8 @@
 
 
 self_update_handler() {
+    export no_config
+    export major_self_update
     local args=("$@")
     local SELFUPDATE__SELFUPDATE__always
     local SELFUPDATE__SELFUPDATE__when_updating

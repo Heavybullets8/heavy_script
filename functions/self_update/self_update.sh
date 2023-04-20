@@ -2,6 +2,10 @@
 
 
 self_update() {
+    export script_name
+    export script_path
+    export hs_version
+    
     echo "🅂 🄴 🄻 🄵"
     echo "🅄 🄿 🄳 🄰 🅃 🄴"
     git reset --hard &>/dev/null

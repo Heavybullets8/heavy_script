@@ -35,15 +35,19 @@ unmount_app_func(){
 
     for pvc_name in "${unmount_array[@]}"; do
         # Get the PVC details
-        main=$(k3s kubectl get pvc -A | grep -E "\s$pvc_name\s" | awk '{print $1, $2, $4}')
-        app=$(echo -e "$main" | awk '{print $1}' | cut -c 4-)
-        pvc=$(echo -e "$main" | awk '{print $3}')
-        full_path=$(find "/mnt/$ix_apps_pool/ix-applications/releases/$app/volumes/" -maxdepth 0 | cut -c 6-)
+        main=$(k3s kubectl get pvc --all-namespaces \
+            --output="go-template={{range .items}}{{if eq .metadata.name \"$pvc_name\"}}\
+            {{.metadata.namespace}} {{.metadata.name}} {{.spec.volumeName}}{{\"\n\"}}\
+            {{end}}{{end}}")
+
+        read -r app pvc_name pvc <<< "$main"
+        app=${app:3}
+        full_path="/mnt/$ix_apps_pool/ix-applications/releases/$app/volumes"
 
         # Set the mountpoint to "legacy" and unmount
-        if zfs set mountpoint=legacy "$full_path""$pvc"; then
+        if zfs set mountpoint=legacy "$full_path/$pvc"; then
             echo -e "${blue}$pvc_name ${green}unmounted successfully.${reset}"
-            rmdir /mnt/*/mounted_pvc/"$pvc_name" 2>/dev/null || rmdir /mnt/mounted_pvc/"$pvc_name" 2>/dev/null
+            rmdir "/mnt/*/mounted_pvc/$pvc_name" 2>/dev/null || rmdir "/mnt/mounted_pvc/$pvc_name" 2>/dev/null
         else
             echo -e "${red}Failed to unmount ${blue}$pvc_name.${reset}"
         fi

@@ -42,7 +42,7 @@ unmount_app_func(){
 
         read -r app pvc_name pvc <<< "$main"
         app=${app:3}
-        full_path="/mnt/$ix_apps_pool/ix-applications/releases/$app/volumes"
+        full_path="$ix_apps_pool/ix-applications/releases/$app/volumes"
 
         # Set the mountpoint to "legacy" and unmount
         if zfs set mountpoint=legacy "$full_path/$pvc"; then

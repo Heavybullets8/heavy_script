@@ -47,9 +47,10 @@ unmount_app_func(){
         # Set the mountpoint to "legacy" and unmount
         if zfs set mountpoint=legacy "$full_path/$pvc"; then
             echo -e "${blue}$pvc_name ${green}unmounted successfully.${reset}"
-            rmdir "/mnt/*/mounted_pvc/$pvc_name" 2>/dev/null || rmdir "/mnt/mounted_pvc/$pvc_name" 2>/dev/null
+            rmdir /mnt/*/mounted_pvc/"$pvc_name" 2>/dev/null || rmdir /mnt/mounted_pvc/"$pvc_name" 2>/dev/null
         else
             echo -e "${red}Failed to unmount ${blue}$pvc_name.${reset}"
+            echo -e "${yellow}Please make sure your terminal is not open in the mounted directory${reset}"
         fi
 
     done

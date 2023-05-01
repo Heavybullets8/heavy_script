@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-create_backup(){
+create_snapshot(){
     if [[ -z "$1" ]]; then
         echo -e "Error: No number of backups specified" >&2
         return 1
@@ -9,6 +9,7 @@ create_backup(){
 
     local number_of_backups="$1"
     local backup_type="$2"
+    local timestamp="$3"
 
     if [[ "$backup_type" != "update" ]]; then
         echo -e "${blue}Please wait while the backup is created..${reset}"
@@ -17,11 +18,8 @@ create_backup(){
     echo_backup+=("🄱 🄰 🄲 🄺 🅄 🄿 🅂")
     echo_backup+=("Number of backups was set to $number_of_backups")
 
-    # Get current date and time in a specific format
-    current_date_time=$(date '+%Y_%m_%d_%H_%M_%S')
-
     # Create a new backup with the current date and time as the name
-    if ! output=$(cli -c "app kubernetes backup_chart_releases backup_name=\"HeavyScript_$current_date_time\""); then
+    if ! output=$(cli -c "app kubernetes backup_chart_releases backup_name=\"HeavyScript_$timestamp\""); then
         echo -e "Error: Failed to create new backup" >&2
         return 1
     fi

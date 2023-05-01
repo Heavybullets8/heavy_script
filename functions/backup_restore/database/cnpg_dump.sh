@@ -77,7 +77,7 @@ backup_cnpg_databases(){
     done
 
     if [[ $failure = false ]]; then
-        echo_backup+=("Success\n")
+        echo_backup+=("Success")
     fi
 
     remove_old_dumps "$retention"

@@ -32,7 +32,6 @@ get_app_status() {
     fi
 }
 
-
 handle_stop_code() {
     local stop_code
     stop_code="$1"
@@ -56,7 +55,6 @@ handle_stop_code() {
             ;;
     esac
 }
-
 
 stop_app() {
     # Return 1 if cli command outright fails

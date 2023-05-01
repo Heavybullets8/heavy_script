@@ -54,7 +54,7 @@ backup_cnpg_databases(){
         return
     fi
 
-    echo_array+=("Backing up CNPG databases...")
+    echo_backup+=("Backing up CNPG databases..")
 
     for app in "${cnpg_apps[@]}"; do
         # Store the current replica count before scaling down
@@ -65,7 +65,7 @@ backup_cnpg_databases(){
         fi
         
         if ! dump_database "$app"; then
-            echo_array+=("Failed to back up $app's database.")
+            echo_backup+=("Failed to back up $app's database.")
             failure=true
         fi
 
@@ -77,9 +77,8 @@ backup_cnpg_databases(){
     done
 
     if [[ $failure = false ]]; then
-        echo_array+=("Success")
+        echo_backup+=("Success\n")
     fi
 
     remove_old_dumps "$retention"
-    echo
 }

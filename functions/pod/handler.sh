@@ -4,8 +4,6 @@
 pod_handler() {
     local args=("$@")
 
-    mapfile -t args < <(remove_no_config_args "${args[@]}")
-
     case "${args[0]}" in
         -l | --logs)
             # Call the function to display container logs

@@ -1,5 +1,24 @@
 #!/bin/bash
 
+declare -x no_config=false
+declare -x no_self_update=false
+declare -x self_update=false
+declare -x major_self_update=false
+declare -x script
+declare -x script_path
+declare -x script_name
+declare -x current_tag
+declare -x current_version
+declare -x hs_version
+# colors
+declare -x reset='\033[0m'
+declare -x red='\033[0;31m'
+declare -x yellow='\033[1;33m'
+declare -x green='\033[0;32m'
+declare -x blue='\033[0;34m'
+declare -x bold='\033[1m'
+declare -x gray='\033[38;5;7m'
+
 # cd to script, this ensures the script can find the source scripts below, even when ran from a separate directory
 script=$(readlink -f "$0")
 script_path=$(dirname "$script")
@@ -18,15 +37,6 @@ else
     # The current version is a branch, assign the name of the current branch to the hs_version variable
     hs_version=${current_version}
 fi
-
-# colors
-reset='\033[0m'
-red='\033[0;31m'
-yellow='\033[1;33m'
-green='\033[0;32m'
-blue='\033[0;34m'
-bold='\033[1m'
-gray='\033[38;5;7m'
 
 # Source all functions and utilities
 while IFS= read -r script_file; do
@@ -57,16 +67,26 @@ for arg in "$@"; do
     fi
 done
 
-# Replace "$@" with the new "args" array
-set -- "${args[@]}"
+if remove_self_update_args; then
+    self_update=true
+fi
 
-# Check for self-update and update the script if required
-self_update_handler "${args[@]}"
+if remove_force_update_args; then
+    major_self_update=true
+fi
 
-# Unset self-update arguments/--no-self-update/--major
-mapfile -t args < <(remove_no_self_update_args "${args[@]}")
-mapfile -t args < <(remove_self_update_args "${args[@]}")
-mapfile -t args < <(remove_force_update_args "${args[@]}")
+if remove_no_self_update_args; then
+    no_self_update=true
+fi
+
+if remove_no_config_args; then
+    no_config=true
+fi
+
+# Run the self update function if the script has not already been updated
+if [[ $no_self_update == false ]]; then
+    self_update_handler "${args[@]}"
+fi
 
 # If no arguments are passed, the first argument is an empty string, '-', or '--', open the menu function.
 if [[ "${#args[@]}" -eq 0 || "${args[0]}" =~ ^(-{1,2})?$ ]]; then
@@ -74,9 +94,7 @@ if [[ "${#args[@]}" -eq 0 || "${args[0]}" =~ ^(-{1,2})?$ ]]; then
     exit
 fi
 
-
-
-case $1 in
+case "${args[0]}" in
     app)
         app_handler "${args[@]:1}" # Pass remaining arguments to app_handler
         ;;

@@ -4,8 +4,6 @@
 pvc_handler() {
     local args=("$@")
 
-    mapfile -t args < <(remove_no_config_args "${args[@]}")
-
     # If no arguments are provided, call the mount_prompt function
     if [ -z "${args[*]}" ]; then
         mount_prompt

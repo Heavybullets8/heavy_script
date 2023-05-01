@@ -3,22 +3,14 @@
 
 dns_handler() {
     local args=("$@")
-    local no_config=false
 
-    # Check if the help option or --no-config is in the arguments
+    # Check if the help option is in the arguments
     if check_help "${args[@]}"; then
         dns_help
         exit
     fi
-    # Check if --no-config is in the arguments
-    if check_no_config "${args[@]}"; then
-        no_config=true
-    fi
-
-    mapfile -t args < <(remove_no_config_args "${args[@]}")
-
     # Load the config.ini file if --no-config is not passed
-    if ! $no_config; then
+    if [[ $no_config == true ]]; then
         read_ini "config.ini" --prefix DNS
     fi
 

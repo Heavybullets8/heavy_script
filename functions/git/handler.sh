@@ -4,8 +4,6 @@
 git_handler() {
     local args=("$@")
 
-    mapfile -t args < <(remove_no_config_args "${args[@]}")
-
     case "${args[0]}" in
         -b|--branch)
             # Call the function to choose a branch

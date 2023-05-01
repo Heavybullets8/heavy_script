@@ -2,9 +2,10 @@
 
 
 self_update() {
-    local menu_toggle=$1
-    local include_major=$2
-
+    export script_name
+    export script_path
+    export hs_version
+    
     echo "🅂 🄴 🄻 🄵"
     echo "🅄 🄿 🄳 🄰 🅃 🄴"
     git reset --hard &>/dev/null
@@ -28,21 +29,17 @@ self_update() {
     fi
 
     if [[ $switched != true ]]; then
-        update_func "$include_major"
+        update_func
         if [[ $? == 111 ]]; then
             updated=true
         fi
     fi
  
-    # Unset the self-update/major argument
-    mapfile -t args < <(remove_self_update_args "${args[@]}")
-    mapfile -t args < <(remove_force_update_args "${args[@]}")
-
     # Make the script executable
     chmod +x "$script_name" ; chmod +x "$script_path"/bin/heavyscript 2>/dev/null
 
     # Check if there are any arguments left
-    if [[ -z ${args[*]} && $menu_toggle == false ]]; then
+    if [[ -z ${args[*]} ]]; then
         echo -e "No more arguments, exiting..\n\n" && exit
     fi
     # Check if the script was updated, and if so, run the new version

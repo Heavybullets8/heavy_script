@@ -12,6 +12,7 @@ backup_handler() {
                 echo -e "Error: \"${args[1]}\" needs to be assigned an interger\n\"""${args[1]}""\" is not an interger" >&2
                 exit
             fi
+            backup_cnpg_databases "${args[1]}"
             create_backup "${args[1]}" "direct"
             ;;
         -r|--restore)

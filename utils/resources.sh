@@ -16,18 +16,18 @@ scale_resources() {
     apply_scaling() {
         local resource_type
         resource_type="$1"
-        k3s kubectl get "$resource_type" -n ix-"$app_name" -o custom-columns=':metadata.name' | grep -vE '^$|-cnpg-' | xargs -r -I{} k3s kubectl scale "$resource_type"/{} -n ix-"$app_name" --replicas="$replicas"
+        k3s kubectl get "$resource_type" -n ix-"$app_name" -o json | jq -r '.items[] | select(.metadata.name | contains("-cnpg-main-") | not) | .metadata.name' | xargs -r -I{} k3s kubectl scale "$resource_type"/{} -n ix-"$app_name" --replicas="$replicas"
     }
 
     if [[ $replicas -eq 0 ]]; then
-        # Scale down all Deployments, StatefulSets, and ReplicaSets in the namespace
-        apply_scaling "deploy"
+        # Scale down all Deployments and StatefulSets in the namespace
+        apply_scaling "deployments"
         apply_scaling "statefulsets"
 
         wait_for_pods_to_stop "$app_name" "$timeout" && return 0 || return 1
     else
-        # Scale up all Deployments, StatefulSets, and ReplicaSets in the namespace
-        apply_scaling "deploy"
+        # Scale up all Deployments and StatefulSets in the namespace
+        apply_scaling "deployments"
         apply_scaling "statefulsets"
     fi
 }

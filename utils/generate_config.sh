@@ -24,4 +24,10 @@ add_database_options() {
         # Add the dump_folder option with a default value and description
         sed -i '/^\[databases\]/a # File path for database dump folder\ndump_folder=' "$config_file"
     fi
+
+    # Check if the enable option exists
+    if ! grep -q "^enable=" "$config_file"; then
+        # Add the enable option with a default value and description
+        sed -i '/^dump_folder=/a \n# true/false options\n# Enable or disable database dumps\nenable=true' "$config_file"
+    fi
 }

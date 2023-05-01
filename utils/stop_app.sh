@@ -7,7 +7,7 @@ wait_for_pods_to_stop() {
     timeout="$2"
 
     SECONDS=0
-    while k3s kubectl get pods -n ix-"$app_name" --field-selector=status.phase!=Succeeded,status.phase!=Failed -o=name | grep -v -- '-cnpg-' | grep -vE -- '-\d$'; do
+    while k3s kubectl get pods -n ix-"$app_name" --field-selector=status.phase!=Succeeded,status.phase!=Failed -o=name | grep -v -- '-cnpg-' | grep -vqE -- '-[[:digit:]]$'; do
         if [[ "$SECONDS" -gt $timeout ]]; then
             return 1
         fi

@@ -7,7 +7,7 @@ create_snapshot(){
 
     # Create a new backup with the current date and time as the name
     if ! output=$(cli -c "app kubernetes backup_chart_releases backup_name=\"HeavyScript_$timestamp\""); then
-        echo -e "Error: Failed to create new backup" >&2
+        echo_array+=("Error: Failed to create new backup")
         return 1
     fi
     if [[ "$verbose" == true ]]; then

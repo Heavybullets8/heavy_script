@@ -12,7 +12,7 @@ dump_database() {
     app="$1"
     # Variables
     output_dir="database_dumps/${app}"
-    output_file="${output_dir}/${app}_${timestamp}.sql"
+    output_file="${output_dir}/${app}_${timestamp}.sql.gz"
 
     # Create the output directory if it doesn't exist
     mkdir -p "${output_dir}"
@@ -20,8 +20,8 @@ dump_database() {
     # Grab the database name from the app's configmap
     db_name=$(midclt call chart.release.get_instance "$app" | jq .config.cnpg.main.database)
 
-    # Perform pg_dump and save output to a file
-    if k3s kubectl exec -n "ix-$app" -c "postgres" "${app}-cnpg-main-1" -- bash -c "pg_dump -Fc -d $db_name" > "$output_file"; then
+    # Perform pg_dump and save output to a file, then compress it using gzip
+    if k3s kubectl exec -n "ix-$app" -c "postgres" "${app}-cnpg-main-1" -- bash -c "pg_dump -Fc -d $db_name" | gzip > "$output_file"; then
         return 0
     else
         return 1
@@ -36,7 +36,7 @@ remove_old_dumps() {
     # Traverse each subdirectory
     find "$main_directory" -mindepth 1 -type d | while read -r subdir; do
         # Remove the oldest dumps that exceed the number specified and print their names
-        find "$subdir" -type f -name "*.sql" -printf "%T@ %p\n" | sort -rn | awk -v retention="$retention" 'NR>retention {print $2}' | while read -r file; do
+        find "$subdir" -type f -name "*.sql.gz" -printf "%T@ %p\n" | sort -rn | awk -v retention="$retention" 'NR>retention {print $2}' | while read -r file; do
             rm "$file"
         done
     done

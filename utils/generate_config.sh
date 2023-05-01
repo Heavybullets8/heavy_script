@@ -9,3 +9,20 @@ generate_config_ini() {
         sleep 5
     fi
 }
+
+add_database_options() {
+    config_file="config.ini"
+
+    # Check if the [databases] section exists
+    if ! grep -q "^\[databases\]" "$config_file"; then
+        # Add the [databases] section to the config file
+        echo -e "\n[databases]" >> "$config_file"
+    fi
+
+    # Check if the dump_folder option exists
+    if ! grep -q "^dump_folder=" "$config_file"; then
+        # Add the dump_folder option with a default value and description
+        sed -i '/^\[databases\]/a # File path for database dump folder\n\
+dump_folder=database_dumps' "$config_file"
+    fi
+}

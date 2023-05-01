@@ -23,6 +23,6 @@ add_database_options() {
     if ! grep -q "^dump_folder=" "$config_file"; then
         # Add the dump_folder option with a default value and description
         sed -i '/^\[databases\]/a # File path for database dump folder\n\
-dump_folder=database_dumps' "$config_file"
+dump_folder=\n' "$config_file"
     fi
 }

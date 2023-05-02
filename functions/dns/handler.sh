@@ -10,7 +10,7 @@ dns_handler() {
         exit
     fi
     # Load the config.ini file if --no-config is not passed
-    if [[ $no_config == true ]]; then
+    if no_config=false; then
         read_ini "config.ini" --prefix DNS
     fi
 

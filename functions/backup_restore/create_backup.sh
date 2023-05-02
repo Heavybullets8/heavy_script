@@ -8,7 +8,7 @@ create_backup(){
     timestamp=$(date '+%Y_%m_%d_%H_%M_%S')
 
     # Load the config.ini file if --no-config is not passed
-    if no_config=false; then
+    if [[ $no_config == false ]]; then
         read_ini "config.ini" --prefix DATABASES
     fi
 

@@ -50,7 +50,6 @@ display_app_sizes() {
     # Add header lines to the output string
     headers="App Name\tTotal Size"
     output+="$headers\n"
-    output+="---------\t----------\n"
 
     # Read the output of the du command and append it to the output string
     while IFS= read -r line; do
@@ -98,7 +97,7 @@ backup_cnpg_databases(){
     done
 
     if [[ $failure = false ]]; then
-        echo_backup+=("Successfully backed up all CNPG databases")
+        echo_backup+=("Successfully backed up CNPG databases:")
     fi
 
     remove_old_dumps "$dump_folder" "$retention"

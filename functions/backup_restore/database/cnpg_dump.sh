@@ -84,16 +84,19 @@ backup_cnpg_databases(){
     output=""
 
     # Add header lines to the output string
-    output+=$(printf "%-15s %s\n" "App Name" "Directory Size")
-    output+=$(printf "%-15s %s\n" "---------" "--------------")
+    headers="App Name\tDirectory Size"
+    output+="$headers\n"
+    output+="---------\t--------------\n"
 
     # Read the output of the du command and append it to the output string
     while IFS= read -r line; do
         app_name=$(echo "$line" | awk '{print $1}')
         dir_size=$(echo "$line" | awk '{print $2}')
-        output+=$(printf "%-15s %s\n" "$app_name" "$dir_size")
+
+        output+="${app_name}\t${dir_size}\n"
     done < <(du -sh "${dump_folder}"/* | awk -F "${dump_folder}/" '{print $2 "\t" $1}')
 
-    # Add the formatted output to the echo_backup array
-    echo_backup+=("$output")
+    # Format the combined output using column -t and add it to the echo_backup array
+    formatted_output=$(echo -e "$output" | column -t -s $'\t')
+    echo_backup+=("$formatted_output")
 }

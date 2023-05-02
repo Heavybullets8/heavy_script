@@ -81,4 +81,7 @@ backup_cnpg_databases(){
     fi
 
     remove_old_dumps "$dump_folder" "$retention"
+    while IFS= read -r line; do
+        echo_backup+=("$line")
+    done < <(du -sh "${dump_folder}"/* | awk -F "${dump_folder}/" '{print $2 "\t" $1}' | column -t)
 }

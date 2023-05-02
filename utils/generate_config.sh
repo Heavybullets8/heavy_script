@@ -28,6 +28,6 @@ add_database_options() {
     # Check if the dump_folder option exists
     if ! grep -q "^dump_folder=" "$config_file"; then
         # Add the dump_folder option with a default value and description
-        awk -i inplace -v dump_folder_option="\n## String options ##\n# File path for database dump folder\ndump_folder=" '/^enabled=true/ { print; print dump_folder_option; next }1' "$config_file"
+        awk -i inplace -v dump_folder_option="\n## String options ##\n# File path for database dump folder\ndump_folder=./database_dumps" '/^enabled=true/ { print; print dump_folder_option; next }1' "$config_file"
     fi
 }

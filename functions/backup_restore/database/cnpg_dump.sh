@@ -54,8 +54,6 @@ backup_cnpg_databases(){
         return
     fi
 
-    echo_backup+=("Backing up CNPG databases..")
-
     for app in "${cnpg_apps[@]}"; do
         # Store the current replica count before scaling down
         original_replicas=$(get_current_replica_count "$app")
@@ -77,11 +75,18 @@ backup_cnpg_databases(){
     done
 
     if [[ $failure = false ]]; then
-        echo_backup+=("Success")
+        echo_backup+=("Successfully backed up all CNPG databases")
     fi
 
     remove_old_dumps "$dump_folder" "$retention"
+
+    # Combine header lines and the output of the du command into a single string
+    output="App Name\tDirectory Size\n---------\t--------------\n"
     while IFS= read -r line; do
-        echo_backup+=("$line")
-    done < <(du -sh "${dump_folder}"/* | awk -F "${dump_folder}/" '{print $2 "\t" $1}' | column -t)
+        output+="$line\n"
+    done < <(du -sh "${dump_folder}"/* | awk -F "${dump_folder}/" '{print $2 "\t" $1}')
+
+    # Format the combined output using column -t and add it to the echo_backup array
+    formatted_output=$(echo -e "$output" | column -t)
+    echo_backup+=("$formatted_output")
 }

@@ -8,13 +8,13 @@ create_backup(){
     timestamp=$(date '+%Y_%m_%d_%H_%M_%S')
 
     # Load the config.ini file if --no-config is not passed
-    if ! $no_config; then
+    if [[ $no_config == true ]]; then
         read_ini "config.ini" --prefix DATABASES
     fi
 
     # Set the default option using the config file
-    local db_backups_enabled="${DATABASES__DATABASES__enabled:-true}"
-    local dump_folder="${DATABASES__DATABASES__dump_folder:-"./database_dumps"}"
+    local db_backups_enabled="${DATABASES__databases__enabled:-true}"
+    local dump_folder="${DATABASES__databases__dump_folder:-"./database_dumps"}"
 
 
     if [[ -z "$retention" ]]; then

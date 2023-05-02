@@ -80,8 +80,14 @@ backup_cnpg_databases(){
 
     remove_old_dumps "$dump_folder" "$retention"
 
-    # Combine header lines and the output of the du command into a single string
-    output="App Name\tDirectory Size\n---------\t--------------\n"
+    # Initialize an empty string for the output
+    output=""
+
+    # Add header lines to the output string
+    output+="App Name\tDirectory Size\n"
+    output+="---------\t--------------\n"
+
+    # Read the output of the du command and append it to the output string
     while IFS= read -r line; do
         output+="$line\n"
     done < <(du -sh "${dump_folder}"/* | awk -F "${dump_folder}/" '{print $2 "\t" $1}')

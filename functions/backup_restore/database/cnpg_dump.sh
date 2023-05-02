@@ -80,27 +80,20 @@ backup_cnpg_databases(){
 
     remove_old_dumps "$dump_folder" "$retention"
 
-    # Add header lines to the echo_backup array
-    echo_backup+=("App Name        Directory Size")
-    echo_backup+=("---------       --------------")
+    # Initialize an empty string for the output
+    output=""
 
-    # Calculate the maximum app name length
-    max_app_name_length=0
-    while IFS= read -r line; do
-        app_name=$(echo "$line" | awk '{print $1}')
-        if [[ ${#app_name} -gt $max_app_name_length ]]; then
-            max_app_name_length=${#app_name}
-        fi
-    done < <(du -sh "${dump_folder}"/* | awk -F "${dump_folder}/" '{print $2 "\t" $1}')
+    # Add header lines to the output string
+    output+=$(printf "%-15s %s\n" "App Name" "Directory Size")
+    output+=$(printf "%-15s %s\n" "---------" "--------------")
 
-    # Read the output of the du command and format it using printf with dynamic column width
-    formatted_output=""
+    # Read the output of the du command and append it to the output string
     while IFS= read -r line; do
         app_name=$(echo "$line" | awk '{print $1}')
         dir_size=$(echo "$line" | awk '{print $2}')
-        formatted_output+=$(printf "%-*s %s\n" $((max_app_name_length + 2)) "$app_name" "$dir_size")
+        output+=$(printf "%-15s %s\n" "$app_name" "$dir_size")
     done < <(du -sh "${dump_folder}"/* | awk -F "${dump_folder}/" '{print $2 "\t" $1}')
 
     # Add the formatted output to the echo_backup array
-    echo_backup+=("$formatted_output")
+    echo_backup+=("$output")
 }

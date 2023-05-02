@@ -41,6 +41,29 @@ remove_old_dumps() {
     done
 }
 
+display_app_sizes() {
+    local dump_folder="$1"
+
+    # Initialize an empty string for the output
+    output=""
+
+    # Add header lines to the output string
+    headers="App Name\Total Size"
+    output+="$headers\n"
+    output+="---------\t----------\n"
+
+    # Read the output of the du command and append it to the output string
+    while IFS= read -r line; do
+        app_name=$(echo "$line" | awk '{print $1}')
+        dir_size=$(echo "$line" | awk '{print $2}')
+
+        output+="${app_name}\t${dir_size}\n"
+    done < <(du -sh "${dump_folder}"/* | awk -F "${dump_folder}/" '{print $2 "\t" $1}')
+
+    # Format the combined output using column -t and return it
+    echo -e "$output" | column -t -s $'\t'
+}
+
 backup_cnpg_databases(){
     retention=$1
     timestamp=$2
@@ -80,23 +103,6 @@ backup_cnpg_databases(){
 
     remove_old_dumps "$dump_folder" "$retention"
 
-    # Initialize an empty string for the output
-    output=""
-
-    # Add header lines to the output string
-    headers="App Name\tDirectory Size"
-    output+="$headers\n"
-    output+="---------\t--------------\n"
-
-    # Read the output of the du command and append it to the output string
-    while IFS= read -r line; do
-        app_name=$(echo "$line" | awk '{print $1}')
-        dir_size=$(echo "$line" | awk '{print $2}')
-
-        output+="${app_name}\t${dir_size}\n"
-    done < <(du -sh "${dump_folder}"/* | awk -F "${dump_folder}/" '{print $2 "\t" $1}')
-
-    # Format the combined output using column -t and add it to the echo_backup array
-    formatted_output=$(echo -e "$output" | column -t -s $'\t')
+    formatted_output=$(display_app_sizes "$dump_folder")
     echo_backup+=("$formatted_output")
 }

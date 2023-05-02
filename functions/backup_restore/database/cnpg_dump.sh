@@ -48,7 +48,7 @@ display_app_sizes() {
     output=""
 
     # Add header lines to the output string
-    headers="App Name\Total Size"
+    headers="App Name\tTotal Size"
     output+="$headers\n"
     output+="---------\t----------\n"
 

@@ -19,15 +19,15 @@ add_database_options() {
         echo -e "\n[databases]" >> "$config_file"
     fi
 
-    # Check if the enable option exists
-    if ! grep -q "^enable=" "$config_file"; then
-        # Add the enable option with a default value and description
-        awk -i inplace -v enable_option="## true/false options ##\n# Enable or disable database dumps\nenable=true\n" '/^\[databases\]/ { print; print enable_option; next }1' "$config_file"
+    # Check if the enabled option exists
+    if ! grep -q "^enabled=" "$config_file"; then
+        # Add the enabled option with a default value and description
+        awk -i inplace -v enable_option="## true/false options ##\n# Enable or disable database dumps\nenabled=true\n" '/^\[databases\]/ { print; print enable_option; next }1' "$config_file"
     fi
 
     # Check if the dump_folder option exists
     if ! grep -q "^dump_folder=" "$config_file"; then
         # Add the dump_folder option with a default value and description
-        awk -i inplace -v dump_folder_option="\n## String options ##\n# File path for database dump folder\ndump_folder=" '/^enable=true/ { print; print dump_folder_option; next }1' "$config_file"
+        awk -i inplace -v dump_folder_option="\n## String options ##\n# File path for database dump folder\ndump_folder=" '/^enabled=true/ { print; print dump_folder_option; next }1' "$config_file"
     fi
 }

@@ -10,8 +10,7 @@ get_current_replica_count() {
 
 dump_database() {
     app="$1"
-    # Variables
-    output_dir="database_dumps/${app}"
+    output_dir="$2/${app}"
     output_file="${output_dir}/${app}_${timestamp}.sql.gz"
 
     # Create the output directory if it doesn't exist
@@ -30,8 +29,8 @@ dump_database() {
 
 # remove databases, keep up to the number of dumps specified, traverse each subdirectory and remove the oldest dumps that exceed the number specified
 remove_old_dumps() {
-    local main_directory="database_dumps"
-    local retention=$1
+    local main_directory="$1"
+    local retention=$2
 
     # Traverse each subdirectory
     find "$main_directory" -mindepth 1 -type d | while read -r subdir; do
@@ -45,6 +44,7 @@ remove_old_dumps() {
 backup_cnpg_databases(){
     retention=$1
     timestamp=$2
+    dump_folder=$3
     declare cnpg_apps=()
     local failure=false
     
@@ -64,7 +64,7 @@ backup_cnpg_databases(){
             scale_resources "$app" 300 0 > /dev/null 2>&1
         fi
         
-        if ! dump_database "$app"; then
+        if ! dump_database "$app" "$dump_folder"; then
             echo_backup+=("Failed to back up $app's database.")
             failure=true
         fi
@@ -80,5 +80,5 @@ backup_cnpg_databases(){
         echo_backup+=("Success")
     fi
 
-    remove_old_dumps "$retention"
+    remove_old_dumps "$dump_folder" "$retention"
 }

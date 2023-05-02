@@ -7,6 +7,16 @@ create_backup(){
     declare timestamp
     timestamp=$(date '+%Y_%m_%d_%H_%M_%S')
 
+    # Load the config.ini file if --no-config is not passed
+    if ! $no_config; then
+        read_ini "config.ini" --prefix DATABASES
+    fi
+
+    # Set the default option using the config file
+    local db_backups_enabled="${DATABASES__DATABASES__enabled:-true}"
+    local dump_folder="${DATABASES__DATABASES__dump_folder:-"./database_dumps"}"
+
+
     if [[ -z "$retention" ]]; then
         echo -e "Error: No number of backups specified" >&2
         return 1
@@ -17,9 +27,11 @@ create_backup(){
     fi
 
     echo_backup+=("🄱 🄰 🄲 🄺 🅄 🄿 🅂")
-    echo_backup+=("Number of backups was set to $number_of_backups\n")
+    echo_backup+=("Number of backups was set to $retention\n")
 
-    backup_cnpg_databases "$retention" "$timestamp"
+    if [[ "$db_backups_enabled" == "true" ]]; then
+        backup_cnpg_databases "$retention" "$timestamp" "$dump_folder"
+    fi
 
     create_snapshot "$retention" "$timestamp"
 

@@ -7,14 +7,16 @@ wait_for_pods_to_stop() {
     timeout="$2"
 
     SECONDS=0
-    while k3s kubectl get pods -n ix-"$app_name" -o=name | grep -qv -- '-cnpg-'; do
+    while k3s kubectl get pods -n ix-"$app_name" \
+            --field-selector=status.phase!=Succeeded,status.phase!=Failed -o=name \
+            | grep -v -- '-cnpg-' \
+            | grep -vqE -- '-[[:digit:]]$'; do
         if [[ "$SECONDS" -gt $timeout ]]; then
             return 1
         fi
         sleep 1
     done
 }
-
 
 get_app_status() {
     local app_name stop_type
@@ -29,7 +31,6 @@ get_app_status() {
             awk -F ',' '{print $2}'
     fi
 }
-
 
 handle_stop_code() {
     local stop_code
@@ -54,7 +55,6 @@ handle_stop_code() {
             ;;
     esac
 }
-
 
 stop_app() {
     # Return 1 if cli command outright fails

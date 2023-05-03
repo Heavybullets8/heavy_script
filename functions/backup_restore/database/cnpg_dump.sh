@@ -59,7 +59,7 @@ display_app_sizes() {
         dir_size=$(echo "$line" | awk '{print $2}')
 
         output+="${app_name}\t${dir_size}\n"
-    done < <(du --apparent-size "${dump_folder}"/* | awk -F "${dump_folder}/" '{print $2 "\t" $1}')
+    done < <(du -sh --apparent-size "${dump_folder}"/* | awk -F "${dump_folder}/" '{print $2 "\t" $1}')
 
     # Format the combined output using column -t and return it
     echo -e "$output" | column -t -s $'\t'

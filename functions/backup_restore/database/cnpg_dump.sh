@@ -16,11 +16,13 @@ dump_database() {
     # Create the output directory if it doesn't exist
     mkdir -p "${output_dir}"
 
+    cnpg_pod=$(k3s kubectl get pods -n "ix-$app" --no-headers -o custom-columns=":metadata.name" | grep -E -- "-cnpg-main-1$")
+
     # Grab the database name from the app's configmap
     db_name=$(midclt call chart.release.get_instance "$app" | jq .config.cnpg.main.database)
 
     # Perform pg_dump and save output to a file, then compress it using gzip
-    if k3s kubectl exec -n "ix-$app" -c "postgres" "${app}-cnpg-main-1" -- bash -c "pg_dump -Fc -d $db_name" | gzip > "$output_file"; then
+    if k3s kubectl exec -n "ix-$app" -c "postgres" "${cnpg_pod}" -- bash -c "pg_dump -Fc -d $db_name" | gzip > "$output_file"; then
         return 0
     else
         return 1
@@ -57,7 +59,7 @@ display_app_sizes() {
         dir_size=$(echo "$line" | awk '{print $2}')
 
         output+="${app_name}\t${dir_size}\n"
-    done < <(du -sh "${dump_folder}"/* | awk -F "${dump_folder}/" '{print $2 "\t" $1}')
+    done < <(du --apparent-size "${dump_folder}"/* | awk -F "${dump_folder}/" '{print $2 "\t" $1}')
 
     # Format the combined output using column -t and return it
     echo -e "$output" | column -t -s $'\t'

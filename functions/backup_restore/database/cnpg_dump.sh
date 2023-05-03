@@ -13,13 +13,23 @@ dump_database() {
     output_dir="$2/${app}"
     output_file="${output_dir}/${app}_${timestamp}.sql.gz"
 
-    # Create the output directory if it doesn't exist
-    mkdir -p "${output_dir}"
-
     cnpg_pod=$(k3s kubectl get pods -n "ix-$app" --no-headers -o custom-columns=":metadata.name" | grep -E -- "-cnpg-main-1$")
+
+    if [[ -z $cnpg_pod ]]; then
+        echo_backup+=("Failed to get cnpg pod for $app.")
+        return 1
+    fi
 
     # Grab the database name from the app's configmap
     db_name=$(midclt call chart.release.get_instance "$app" | jq .config.cnpg.main.database)
+
+    if [[ -z $db_name ]]; then
+        echo_backup+=("Failed to get database name for $app.")
+        return 1
+    fi
+
+    # Create the output directory if it doesn't exist
+    mkdir -p "${output_dir}"
 
     # Perform pg_dump and save output to a file, then compress it using gzip
     if k3s kubectl exec -n "ix-$app" -c "postgres" "${cnpg_pod}" -- bash -c "pg_dump -Fc -d $db_name" | gzip > "$output_file"; then

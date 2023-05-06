@@ -68,7 +68,10 @@ display_app_sizes() {
         app_name=$(echo "$line" | awk '{print $1}')
         dir_size=$(echo "$line" | awk '{print $2}')
 
-        output+="${app_name}\t${dir_size}\n"
+        # Check if the folder contains files ending in .sql.gz
+        if find "${dump_folder}/${app_name}" -type f -name "*.sql.gz" | grep -q .; then
+            output+="${app_name}\t${dir_size}\n"
+        fi
     done < <(du -sh --apparent-size "${dump_folder}"/* | awk -F "${dump_folder}/" '{print $2 "\t" $1}')
 
     # Format the combined output using column -t and return it

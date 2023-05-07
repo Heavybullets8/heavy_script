@@ -133,7 +133,7 @@ container_shell_or_logs(){
         read -rsn1 -d ' ' ; echo
         clear -x
         title
-        if ! k3s kubectl exec -n "ix-$app_name" -c "$container" "${pod}" -it sh -c '[ -e /bin/bash ] && exec /bin/bash || exec /bin/sh'; then
+        if ! k3s kubectl exec -n "ix-$app_name" "${pod}" -c "$container" -it -- sh -c '[ -e /bin/bash ] && exec /bin/bash || exec /bin/sh'; then
             echo -e "${red}This container does not accept shell access, try a different one.${reset}"
         fi
         break

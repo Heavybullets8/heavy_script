@@ -63,17 +63,21 @@ display_app_sizes() {
     headers="App Name\tTotal Size"
     output+="$headers\n"
 
-    # Find .sql.gz files one folder deep and calculate folder sizes
+    # Read the output of the du command and append it to the output string
     while IFS= read -r line; do
-        app_name=$(echo "$line" | awk -F "${dump_folder}/" '{print $2}' | cut -d/ -f1)
-        dir_size=$(du -sh --apparent-size "${dump_folder}/${app_name}" | awk '{print $1}')
+        app_name=$(echo "$line" | awk '{print $1}')
+        dir_size=$(echo "$line" | awk '{print $2}')
 
-        output+="${app_name}\t${dir_size}\n"
-    done < <(find "${dump_folder}" -maxdepth 2 -type f -name "*.sql.gz")
+        # Check if the folder contains files ending in .sql.gz, only one folder deep
+        if find "${dump_folder}/${app_name}" -maxdepth 1 -type f -name "*.sql.gz" | grep -q .; then
+            output+="${app_name}\t${dir_size}\n"
+        fi
+    done < <(du -sh --apparent-size "${dump_folder}"/* | awk -F "${dump_folder}/" '{print $2 "\t" $1}')
 
     # Format the combined output using column -t and return it
     echo -e "$output" | column -t -s $'\t'
 }
+
 backup_cnpg_databases(){
     retention=$1
     timestamp=$2

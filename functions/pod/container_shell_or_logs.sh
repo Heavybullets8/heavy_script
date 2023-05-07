@@ -1,8 +1,6 @@
 #!/bin/bash
 
-
-container_shell_or_logs(){
-    # Store the app names and their corresponding numbers in a map
+cmd_get_app_names() {
     declare -A app_map
     app_names=$(k3s kubectl get namespaces -o custom-columns=NAME:.metadata.name --no-headers | grep "^ix-" | sed 's/^ix-//' | sort)
     num=1
@@ -10,26 +8,32 @@ container_shell_or_logs(){
         app_map[$num]=$app
         num=$((num+1))
     done
+}
 
+cmd_check_app_names() {
     # Check if there are any apps
     if [ -z "$app_names" ]; then
         echo -e "${yellow}There are no applications available"
         exit 0
     fi
+}
 
+cmd_header() {
+    clear -x
+    title 
+
+    if [[ $1 == "logs" ]];then
+        echo -e "${bold}Logs to Container Menu${reset}"
+        echo -e "${bold}----------------------${reset}"
+    else
+        echo -e "${bold}Command to Container Menu${reset}"
+        echo -e "${bold}-------------------------${reset}"
+    fi
+}
+
+cmd_display_app_menu() {
     # Display menu and get selection from user
     while true; do
-        clear -x
-        title 
-
-        if [[ $1 == "logs" ]];then
-            echo -e "${bold}Logs to Container Menu${reset}"
-            echo -e "${bold}----------------------${reset}"
-        else
-            echo -e "${bold}Command to Container Menu${reset}"
-            echo -e "${bold}-------------------------${reset}"
-        fi
-
         for i in "${!app_map[@]}"; do
             printf "%d) %s\n" "$i" "${app_map[$i]}"
         done | sort -n
@@ -51,7 +55,9 @@ container_shell_or_logs(){
     done
 
     app_name=${app_map[$selection]}
+}
 
+cmd_get_pod() {
     # Get all available pods in the namespace
     mapfile -t pods < <(k3s kubectl get pods --namespace ix-"$app_name" -o custom-columns=NAME:.metadata.name --no-headers | sort)
 
@@ -74,7 +80,9 @@ container_shell_or_logs(){
 
         pod=${pods[$((pod_selection-1))]}
     fi
+}
 
+cmd_get_container() {
     # Get all available containers in the selected pod
     mapfile -t containers < <(k3s kubectl get pods "$pod" --namespace ix-"$app_name" -o jsonpath='{range.spec.containers[*]}{.name}{"\n"}{end}' | sort)
 
@@ -98,42 +106,16 @@ container_shell_or_logs(){
 
         container=${containers[$((container_selection-1))]}
     fi
+}
 
-    if [[ $1 == "logs" ]]; then
-        # ask for number of lines to display
-        while true
-        do
-            clear -x
-            title
-            echo -e "${bold}App Name:${reset}  ${blue}${app_name}${reset}"
-            echo -e "${bold}Pod:${reset}       ${blue}${pod}${reset}"
-            echo -e "${bold}Container:${reset} ${blue}${container}${reset}"
-            echo
-            read -rt 120 -p "How many lines of logs do you want to display?(\"-1\" for all): " lines || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
-            if ! [[ $lines =~ ^[0-9]+$|^-1$ ]]; then
-                echo -e "${red}Error: ${blue}\"$lines\"${red} was not a number.. Try again${reset}"
-                sleep 3
-                continue
-            else
-                break
-            fi
-        done
-
-        # Display logs
-        if ! k3s kubectl logs --namespace "ix-$app_name" --tail "$lines" -f "$pod" -c "$container"; then
-            echo -e "${red}Failed to retrieve logs for container: ${blue}$container_id${reset}"
-            exit
-        fi
-        exit
-    fi
-
-
+cmd_execute_shell() {
     while true
     do
         clear -x
         title
-        echo -e "${bold}App Name:${reset} ${blue}$app_name${reset}"
-        echo -e "${bold}Container:${reset} ${blue}$container${reset}"
+        echo -e "${bold}App Name:${reset}  ${blue}${app_name}${reset}"
+        echo -e "${bold}Pod:${reset}       ${blue}${pod}${reset}"
+        echo -e "${bold}Container:${reset} ${blue}${container}${reset}"
         echo 
         echo -e "If everything looks correct press enter/spacebar, or press ctrl+c to exit"
         read -rsn1 -d ' ' ; echo
@@ -144,5 +126,48 @@ container_shell_or_logs(){
         fi
         break
     done
+}
 
+cmd_execute_logs() {
+    while true
+    do
+        clear -x
+        title
+        echo -e "${bold}App Name:${reset}  ${blue}${app_name}${reset}"
+        echo -e "${bold}Pod:${reset}       ${blue}${pod}${reset}"
+        echo -e "${bold}Container:${reset} ${blue}${container}${reset}"
+        echo
+        read -rt 120 -p "How many lines of logs do you want to display?(\"-1\" for all): " lines || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
+        if ! [[ $lines =~ ^[0-9]+$|^-1$ ]]; then
+            echo -e "${red}Error: ${blue}\"$lines\"${red} was not a number.. Try again${reset}"
+            sleep 3
+            continue
+        else
+            break
+        fi
+    done
+
+    # Display logs
+    if ! k3s kubectl logs --namespace "ix-$app_name" --tail "$lines" -f "$pod" -c "$container"; then
+        echo -e "${red}Failed to retrieve logs for container: ${blue}$container_id${reset}"
+        exit
+    fi
+    exit
+}
+
+container_shell_or_logs(){
+    mode="$1" 
+    cmd_get_app_names
+    cmd_map_app_names
+    cmd_check_app_names
+    cmd_header "$mode"
+    cmd_display_app_menu
+    cmd_get_pod
+    cmd_get_container
+
+    if [[ $mode == "logs" ]]; then
+        execute_logs
+    else
+        execute_shell
+    fi
 }

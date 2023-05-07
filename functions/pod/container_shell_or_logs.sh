@@ -166,7 +166,6 @@ container_shell_or_logs(){
     export containers
 
     cmd_get_app_names
-    cmd_map_app_names
     cmd_check_app_names
     cmd_header "$mode"
     cmd_display_app_menu

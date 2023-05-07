@@ -149,7 +149,7 @@ cmd_execute_logs() {
 
     # Display logs
     if ! k3s kubectl logs --namespace "ix-$app_name" --tail "$lines" -f "$pod" -c "$container"; then
-        echo -e "${red}Failed to retrieve logs for container: ${blue}$container_id${reset}"
+        echo -e "${red}Failed to retrieve logs for container: ${blue}$container${reset}"
         exit
     fi
     exit
@@ -157,6 +157,14 @@ cmd_execute_logs() {
 
 container_shell_or_logs(){
     mode="$1" 
+    export app_name
+    export pod
+    export container
+    export app_names
+    export app_map
+    export pods
+    export containers
+
     cmd_get_app_names
     cmd_map_app_names
     cmd_check_app_names

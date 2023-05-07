@@ -4,7 +4,7 @@
 container_shell_or_logs(){
     # Store the app names and their corresponding numbers in a map
     declare -A app_map
-    app_names=$(k3s kubectl get namespaces -o custom-columns=NAME:.metadata.name --no-headers | grep "^ix-" | sed 's/^ix-//')
+    app_names=$(k3s kubectl get namespaces -o custom-columns=NAME:.metadata.name --no-headers | grep "^ix-" | sed 's/^ix-//' | sort)
     num=1
     for app in $app_names; do
         app_map[$num]=$app
@@ -53,13 +53,14 @@ container_shell_or_logs(){
     app_name=${app_map[$selection]}
 
     # Get all available pods in the namespace
-    mapfile -t pods < <(k3s kubectl get pods --namespace ix-"$app_name" -o custom-columns=NAME:.metadata.name --no-headers)
+    mapfile -t pods < <(k3s kubectl get pods --namespace ix-"$app_name" -o custom-columns=NAME:.metadata.name --no-headers | sort)
 
     # Let the user choose a pod
     echo "Available Pods:"
     for i in "${!pods[@]}"; do
         echo "$((i+1))) ${pods[$i]}"
     done
+    echo
     echo "0) Exit"
     read -r -p "Choose a pod by number: " pod_selection
 
@@ -71,7 +72,7 @@ container_shell_or_logs(){
     pod=${pods[$((pod_selection-1))]}
 
     # Get all available containers in the selected pod
-    mapfile -t containers < <(k3s kubectl get pods "$pod" --namespace ix-"$app_name" -o jsonpath='{.spec.containers[*].name}')
+    mapfile -t containers < <(k3s kubectl get pods "$pod" --namespace ix-"$app_name" -o jsonpath='{.spec.containers[*].name}' | sort)
 
     # If there's only one container, automatically choose it
     if [[ ${#containers[@]} == 1 ]]; then
@@ -82,6 +83,7 @@ container_shell_or_logs(){
         for i in "${!containers[@]}"; do
             echo "$((i+1))) ${containers[$i]}"
         done
+        echo
         echo "0) Exit"
         read -r -p "Choose a container by number: " container_selection
 

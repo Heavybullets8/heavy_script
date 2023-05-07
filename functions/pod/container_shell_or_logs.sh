@@ -4,7 +4,7 @@
 container_shell_or_logs(){
     # Store the app names and their corresponding numbers in a map
     declare -A app_map
-    app_names=$(cli -m csv -c 'app chart_release query name' | grep -Ev "name|^$")
+    app_names=$(k3s kubectl get namespaces -o custom-columns=NAME:.metadata.name --no-headers | grep "^ix-" | sed 's/^ix-//')
     num=1
     for app in $app_names; do
         app_map[$num]=$app

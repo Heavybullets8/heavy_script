@@ -1,7 +1,6 @@
 #!/bin/bash
 
 cmd_get_app_names() {
-    local app_names
     app_names=$(k3s kubectl get namespaces -o custom-columns=NAME:.metadata.name --no-headers | grep "^ix-" | sed 's/^ix-//' | sort)
     num=1
     for app in $app_names; do
@@ -68,11 +67,16 @@ cmd_get_pod() {
     # Get all available pods in the namespace
     mapfile -t pods < <(k3s kubectl get pods --namespace ix-"$app_name" -o custom-columns=NAME:.metadata.name --no-headers | sort)
 
+    if [[ ${#pods[@]} -eq 0 ]]; then
+        echo "${red}There are no pods available${reset}"
+        exit
+    fi
+
     if [[ ${#pods[@]} -eq 1 ]]; then
         pod=${pods[0]}
     else
         # Let the user choose a pod
-        echo "Available Pods:"
+        echo -e "${bold}Available Pods:${reset}"
         for i in "${!pods[@]}"; do
             echo "$((i+1))) ${pods[$i]}"
         done
@@ -96,12 +100,17 @@ cmd_get_container() {
     # Get all available containers in the selected pod
     mapfile -t containers < <(k3s kubectl get pods "$pod" --namespace ix-"$app_name" -o jsonpath='{range.spec.containers[*]}{.name}{"\n"}{end}' | sort)
 
+    if [[ ${#containers[@]} -eq 0 ]]; then
+        echo -e "${red}There are no containers available${reset}"
+        exit
+    fi
+
     # If there's only one container, automatically choose it
     if [[ ${#containers[@]} == 1 ]]; then
         container=${containers[0]}
     else
         # Let the user choose a container
-        echo "Available Containers:"
+        echo -e "${bold}Available Containers:${reset}"
         for i in "${!containers[@]}"; do
             echo "$((i+1))) ${containers[$i]}"
         done

@@ -55,24 +55,28 @@ container_shell_or_logs(){
     # Get all available pods in the namespace
     mapfile -t pods < <(k3s kubectl get pods --namespace ix-"$app_name" -o custom-columns=NAME:.metadata.name --no-headers | sort)
 
-    # Let the user choose a pod
-    echo "Available Pods:"
-    for i in "${!pods[@]}"; do
-        echo "$((i+1))) ${pods[$i]}"
-    done
-    echo
-    echo "0) Exit"
-    read -r -p "Choose a pod by number: " pod_selection
+    if [[ ${#pods[@]} -eq 1 ]]; then
+        pod=${pods[0]}
+    else
+        # Let the user choose a pod
+        echo "Available Pods:"
+        for i in "${!pods[@]}"; do
+            echo "$((i+1))) ${pods[$i]}"
+        done
+        echo
+        echo "0) Exit"
+        read -r -p "Choose a pod by number: " pod_selection
 
-    if [[ $pod_selection == 0 ]]; then
-        echo "Exiting..."
-        exit
+        if [[ $pod_selection == 0 ]]; then
+            echo "Exiting..."
+            exit
+        fi
+
+        pod=${pods[$((pod_selection-1))]}
     fi
 
-    pod=${pods[$((pod_selection-1))]}
-
     # Get all available containers in the selected pod
-    mapfile -t containers < <(k3s kubectl get pods "$pod" --namespace ix-"$app_name" -o jsonpath='{.spec.containers[*].name}' | sort)
+    mapfile -t containers < <(k3s kubectl get pods "$pod" --namespace ix-"$app_name" -o jsonpath='{range.spec.containers[*]}{.name}{"\n"}{end}' | sort)
 
     # If there's only one container, automatically choose it
     if [[ ${#containers[@]} == 1 ]]; then
@@ -142,4 +146,3 @@ container_shell_or_logs(){
     done
 
 }
-export -f container_shell_or_logs

@@ -172,8 +172,8 @@ container_shell_or_logs(){
     cmd_get_container
 
     if [[ $mode == "logs" ]]; then
-        execute_logs
+        cmd_execute_logs
     else
-        execute_shell
+        cmd_execute_shell
     fi
 }

@@ -4,12 +4,7 @@
 container_shell_or_logs(){
     # Store the app names and their corresponding numbers in a map
     declare -A app_map
-    app_names=$(k3s crictl pods -s ready --namespace ix | 
-                sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//' | 
-                sed '1d' | 
-                awk '{print $4}' | 
-                cut -c4- | 
-                sort -u)
+    app_names=$(cli -m csv -c 'app chart_release query name' | grep -Ev "name|^$")
     num=1
     for app in $app_names; do
         app_map[$num]=$app
@@ -18,7 +13,7 @@ container_shell_or_logs(){
 
     # Check if there are any apps
     if [ -z "$app_names" ]; then
-        echo -e "${yellow}There are no applications active.."
+        echo -e "${yellow}There are no applications available"
         exit 0
     fi
 
@@ -57,71 +52,59 @@ container_shell_or_logs(){
 
     app_name=${app_map[$selection]}
 
-    rm cont_file 2> /dev/null
-    mapfile -t pod_id < <(k3s crictl pods -s ready --namespace ix | 
-                          grep -v "[[:space:]]svclb-" | 
-                          grep -E "[[:space:]]ix-${app_name}[[:space:]]" | 
-                          awk '{print $1}')
-    search=$(k3s crictl ps -a -s running | 
-             sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//')
-    for pod in "${pod_id[@]}"
-    do
-        echo -e "$search" | grep "$pod" >> cont_file
+    # Get all available pods in the namespace
+    mapfile -t pods < <(k3s kubectl get pods --namespace ix-"$app_name" -o custom-columns=NAME:.metadata.name --no-headers)
+
+    # Let the user choose a pod
+    echo "Available Pods:"
+    for i in "${!pods[@]}"; do
+        echo "$((i+1))) ${pods[$i]}"
     done
-    mapfile -t containers < <(sort -u cont_file 2> /dev/null)
-    case "${#containers[@]}" in
-        0)
-            echo -e "${red}No containers available\nAre you sure the application in running?${reset}"
+    echo "0) Exit"
+    read -r -p "Choose a pod by number: " pod_selection
+
+    if [[ $pod_selection == 0 ]]; then
+        echo "Exiting..."
+        exit
+    fi
+
+    pod=${pods[$((pod_selection-1))]}
+
+    # Get all available containers in the selected pod
+    mapfile -t containers < <(k3s kubectl get pods "$pod" --namespace ix -o jsonpath='{.spec.containers[*].name}')
+
+    # If there's only one container, automatically choose it
+    if [[ ${#containers[@]} == 1 ]]; then
+        container=${containers[0]}
+    else
+        # Let the user choose a container
+        echo "Available Containers:"
+        for i in "${!containers[@]}"; do
+            echo "$((i+1))) ${containers[$i]}"
+        done
+        echo "0) Exit"
+        read -r -p "Choose a container by number: " container_selection
+
+        if [[ $container_selection == 0 ]]; then
+            echo "Exiting..."
             exit
-            ;;
-        1)
-            container=$(grep "${pod_id[0]}" cont_file | awk '{print $4}')
-            container_id=$(grep -E "[[:space:]]${container}[[:space:]]" cont_file | awk '{print $1}')
-            ;;
-        *)
-            while true
-            do
-                clear -x
-                title
-                echo -e "${bold}Available Containers${reset}"
-                echo -e "${bold}--------------------${reset}"
-                cont_search=$(
-                for i in "${containers[@]}"
-                do
-                    echo -e "$i" | awk '{print $4}'
-                done | nl -s ") " | column -t
-                )
-                echo -e "$cont_search"
-                echo
-                echo -e "0)  Exit"
-                read -rt 120 -p "Choose a container by number: " selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
-                if [[ $selection == 0 ]]; then
-                    echo -e "Exiting.."
-                    exit
-                elif ! echo -e "$cont_search" | grep -qs ^"$selection)" ; then
-                    echo -e "${red}Error: ${blue}\"$selection\"${red} was not an option.. Try again${reset}"
-                    sleep 3
-                    continue
-                else
-                    break
-                fi
-            done
-            container=$(echo -e "$cont_search" | grep ^"$selection)" | awk '{print $2}')
-            container_id=$(grep -E "[[:space:]]${container}[[:space:]]" cont_file | awk '{print $1}')
-            ;;
-    esac
+        fi
 
-    rm cont_file 2> /dev/null
+        container=${containers[$((container_selection-1))]}
+    fi
 
-    if [[ $logs == true || $1 == "logs" ]];
-    then
+    # Get the container ID
+    container_id=$(k3s crictl ps -a -s running --namespace ix --pod "$pod" --name "$container" -q)
+
+    if [[ $1 == "logs" ]]; then
         # ask for number of lines to display
         while true
         do
             clear -x
             title
-            echo -e "${bold}App Name:${reset} ${blue}${app_name}${reset}"
-            echo -e "${bold}Container:${reset} ${blue}$container${reset}"
+            echo -e "${bold}App Name:${reset}  ${blue}${app_name}${reset}"
+            echo -e "${bold}Pod:${reset}       ${blue}${pod}${reset}"
+            echo -e "${bold}Container:${reset} ${blue}${container}${reset}"
             echo
             read -rt 120 -p "How many lines of logs do you want to display?(\"-1\" for all): " lines || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
             if ! [[ $lines =~ ^[0-9]+$|^-1$ ]]; then
@@ -134,7 +117,7 @@ container_shell_or_logs(){
         done
 
         # Display logs
-        if ! k3s crictl logs --tail "$lines" -f "$container_id"; then
+        if ! k3s kubectl logs --namespace "ix-$app_name" --tail "$lines" -f "$pod" -c "$container"; then
             echo -e "${red}Failed to retrieve logs for container: ${blue}$container_id${reset}"
             exit
         fi
@@ -153,7 +136,7 @@ container_shell_or_logs(){
         read -rsn1 -d ' ' ; echo
         clear -x
         title
-        if ! k3s crictl exec -it "$container_id" sh -c '[ -e /bin/bash ] && exec /bin/bash || exec /bin/sh'; then
+        if ! k3s kubectl exec -n "ix-$app_name" -c "$container" "${pod}" -it sh -c '[ -e /bin/bash ] && exec /bin/bash || exec /bin/sh'; then
             echo -e "${red}This container does not accept shell access, try a different one.${reset}"
         fi
         break

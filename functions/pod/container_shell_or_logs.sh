@@ -71,7 +71,7 @@ container_shell_or_logs(){
     pod=${pods[$((pod_selection-1))]}
 
     # Get all available containers in the selected pod
-    mapfile -t containers < <(k3s kubectl get pods "$pod" --namespace ix -o jsonpath='{.spec.containers[*].name}')
+    mapfile -t containers < <(k3s kubectl get pods "$pod" --namespace ix-"$app_name" -o jsonpath='{.spec.containers[*].name}')
 
     # If there's only one container, automatically choose it
     if [[ ${#containers[@]} == 1 ]]; then
@@ -92,9 +92,6 @@ container_shell_or_logs(){
 
         container=${containers[$((container_selection-1))]}
     fi
-
-    # Get the container ID
-    container_id=$(k3s crictl ps -a -s running --namespace ix --pod "$pod" --name "$container" -q)
 
     if [[ $1 == "logs" ]]; then
         # ask for number of lines to display

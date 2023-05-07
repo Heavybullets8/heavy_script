@@ -83,7 +83,7 @@ cmd_get_pod() {
     mapfile -t pods < <(k3s kubectl get pods --namespace ix-"$app_name" -o custom-columns=NAME:.metadata.name --no-headers | sort)
 
     if [[ ${#pods[@]} -eq 0 ]]; then
-        echo "${red}There are no pods available${reset}"
+        echo -e "${red}There are no pods available${reset}"
         exit
     fi
 

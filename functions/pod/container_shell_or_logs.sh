@@ -1,7 +1,6 @@
 #!/bin/bash
 
 cmd_get_app_names() {
-    declare -A app_map
     app_names=$(k3s kubectl get namespaces -o custom-columns=NAME:.metadata.name --no-headers | grep "^ix-" | sed 's/^ix-//' | sort)
     num=1
     for app in $app_names; do

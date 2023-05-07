@@ -1,10 +1,11 @@
 #!/bin/bash
 
 cmd_get_app_names() {
+    local app_names
     app_names=$(k3s kubectl get namespaces -o custom-columns=NAME:.metadata.name --no-headers | grep "^ix-" | sed 's/^ix-//' | sort)
     num=1
     for app in $app_names; do
-        app_map[$num]=$app
+        app_map[num]=$app
         num=$((num+1))
     done
 }
@@ -34,6 +35,7 @@ cmd_header() {
 export -f cmd_header
 
 cmd_display_app_menu() {
+    local selection
     # Display menu and get selection from user
     while true; do
         for i in "${!app_map[@]}"; do
@@ -61,6 +63,8 @@ cmd_display_app_menu() {
 export -f cmd_display_app_menu
 
 cmd_get_pod() {
+    local pods
+
     # Get all available pods in the namespace
     mapfile -t pods < <(k3s kubectl get pods --namespace ix-"$app_name" -o custom-columns=NAME:.metadata.name --no-headers | sort)
 
@@ -87,6 +91,8 @@ cmd_get_pod() {
 export -f cmd_get_pod
 
 cmd_get_container() {
+    local containers
+
     # Get all available containers in the selected pod
     mapfile -t containers < <(k3s kubectl get pods "$pod" --namespace ix-"$app_name" -o jsonpath='{range.spec.containers[*]}{.name}{"\n"}{end}' | sort)
 
@@ -135,6 +141,7 @@ cmd_execute_shell() {
 export -f cmd_execute_shell
 
 cmd_execute_logs() {
+    local lines
     while true
     do
         clear -x

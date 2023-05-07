@@ -9,6 +9,7 @@ cmd_get_app_names() {
         num=$((num+1))
     done
 }
+export -f cmd_get_app_names
 
 cmd_check_app_names() {
     # Check if there are any apps
@@ -17,6 +18,7 @@ cmd_check_app_names() {
         exit 0
     fi
 }
+export -f cmd_check_app_names
 
 cmd_header() {
     clear -x
@@ -30,6 +32,7 @@ cmd_header() {
         echo -e "${bold}-------------------------${reset}"
     fi
 }
+export -f cmd_header
 
 cmd_display_app_menu() {
     # Display menu and get selection from user
@@ -56,6 +59,7 @@ cmd_display_app_menu() {
 
     app_name=${app_map[$selection]}
 }
+export -f cmd_display_app_menu
 
 cmd_get_pod() {
     # Get all available pods in the namespace
@@ -81,6 +85,7 @@ cmd_get_pod() {
         pod=${pods[$((pod_selection-1))]}
     fi
 }
+export -f cmd_get_pod
 
 cmd_get_container() {
     # Get all available containers in the selected pod
@@ -107,6 +112,7 @@ cmd_get_container() {
         container=${containers[$((container_selection-1))]}
     fi
 }
+export -f cmd_get_container
 
 cmd_execute_shell() {
     while true
@@ -127,6 +133,7 @@ cmd_execute_shell() {
         break
     done
 }
+export -f cmd_execute_shell
 
 cmd_execute_logs() {
     while true
@@ -154,17 +161,10 @@ cmd_execute_logs() {
     fi
     exit
 }
+export -f cmd_execute_logs
 
 container_shell_or_logs(){
     mode="$1" 
-    export app_name
-    export pod
-    export container
-    export app_names
-    export app_map
-    export pods
-    export containers
-
     cmd_get_app_names
     cmd_check_app_names
     cmd_header "$mode"

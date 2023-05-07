@@ -17,7 +17,6 @@ cmd_check_app_names() {
         exit 0
     fi
 }
-export -f cmd_check_app_names
 
 cmd_header() {
     clear -x
@@ -31,7 +30,23 @@ cmd_header() {
         echo -e "${bold}-------------------------${reset}"
     fi
 }
-export -f cmd_header
+
+cmd_print_app_pod_container() {
+    clear -x
+    title
+
+    if [[ -n $app_name ]]; then
+        echo -e "${bold}App Name:${reset}  ${blue}${app_name}${reset}"
+    fi
+
+    if [[ -n $pod ]]; then
+        echo -e "${bold}Pod:${reset}       ${blue}${pod}${reset}"
+    fi
+
+    if [[ -n $container ]]; then
+        echo -e "${bold}Container:${reset} ${blue}${container}${reset}"
+    fi
+}
 
 cmd_display_app_menu() {
     local selection
@@ -75,7 +90,8 @@ cmd_get_pod() {
     if [[ ${#pods[@]} -eq 1 ]]; then
         pod=${pods[0]}
     else
-        # Let the user choose a pod
+        cmd_print_app_pod_container
+        echo
         echo -e "${bold}Available Pods:${reset}"
         for i in "${!pods[@]}"; do
             echo "$((i+1))) ${pods[$i]}"
@@ -109,6 +125,8 @@ cmd_get_container() {
     if [[ ${#containers[@]} == 1 ]]; then
         container=${containers[0]}
     else
+        cmd_print_app_pod_container
+        echo
         # Let the user choose a container
         echo -e "${bold}Available Containers:${reset}"
         for i in "${!containers[@]}"; do
@@ -131,11 +149,7 @@ export -f cmd_get_container
 cmd_execute_shell() {
     while true
     do
-        clear -x
-        title
-        echo -e "${bold}App Name:${reset}  ${blue}${app_name}${reset}"
-        echo -e "${bold}Pod:${reset}       ${blue}${pod}${reset}"
-        echo -e "${bold}Container:${reset} ${blue}${container}${reset}"
+        cmd_print_app_pod_container
         echo 
         echo -e "If everything looks correct press enter/spacebar, or press ctrl+c to exit"
         read -rsn1 -d ' ' ; echo
@@ -153,11 +167,7 @@ cmd_execute_logs() {
     local lines
     while true
     do
-        clear -x
-        title
-        echo -e "${bold}App Name:${reset}  ${blue}${app_name}${reset}"
-        echo -e "${bold}Pod:${reset}       ${blue}${pod}${reset}"
-        echo -e "${bold}Container:${reset} ${blue}${container}${reset}"
+        cmd_print_app_pod_container
         echo
         read -rt 120 -p "How many lines of logs do you want to display?(\"-1\" for all): " lines || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
         if ! [[ $lines =~ ^[0-9]+$|^-1$ ]]; then

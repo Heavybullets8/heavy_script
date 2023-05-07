@@ -1,7 +1,12 @@
 #!/bin/bash
 
 cmd_get_app_names() {
-    app_names=$(k3s kubectl get namespaces -o custom-columns=NAME:.metadata.name --no-headers | grep "^ix-" | sed 's/^ix-//' | sort)
+    app_names=$(k3s crictl pods -s ready --namespace ix | 
+                sed -E 's/[[:space:]]([0-9]*|About)[a-z0-9 ]{5,12}ago[[:space:]]//' | 
+                sed '1d' | 
+                awk '{print $4}' | 
+                cut -c4- | 
+                sort -u)
     num=1
     for app in $app_names; do
         app_map[num]=$app

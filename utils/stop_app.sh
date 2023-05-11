@@ -7,14 +7,16 @@ wait_for_pods_to_stop() {
     timeout="$2"
 
     SECONDS=0
-    while k3s kubectl get pods -n ix-"$app_name" -o=name | grep -qv -- '-cnpg-'; do
+    while k3s kubectl get pods -n ix-"$app_name" \
+            --field-selector=status.phase!=Succeeded,status.phase!=Failed -o=name \
+            | grep -v -- '-cnpg-' \
+            | grep -vqE -- '-[[:digit:]]$'; do
         if [[ "$SECONDS" -gt $timeout ]]; then
             return 1
         fi
         sleep 1
     done
 }
-
 
 get_app_status() {
     local app_name stop_type
@@ -29,19 +31,6 @@ get_app_status() {
             awk -F ',' '{print $2}'
     fi
 }
-
-
-scale_down_resources() {
-    local app_name timeout
-    app_name="$1"
-    timeout="$2"
-
-    if ! k3s kubectl get deployments,statefulsets -n ix-"$app_name" | grep -vE -- "(NAME|^$|-cnpg-)" | awk '{print $1}' | xargs -I{} k3s kubectl scale --replicas=0 -n ix-"$app_name" {} &>/dev/null; then
-        return 1
-    fi
-    wait_for_pods_to_stop "$app_name" "$timeout" && return 0 || return 1
-}
-
 
 handle_stop_code() {
     local stop_code
@@ -67,7 +56,6 @@ handle_stop_code() {
     esac
 }
 
-
 stop_app() {
     # Return 1 if cli command outright fails
     # Return 2 if timeout is reached
@@ -76,18 +64,18 @@ stop_app() {
     local stop_type app_name timeout status
     stop_type="$1"
     app_name="$2"
-    timeout="50"
+    timeout="150"
 
-    # Grab chart info
-    chart_info=$(midclt call chart.release.get_instance "$app_name")
+    # Check if app is a cnpg instance, or an operator instance
+    output=$(check_filtered_apps "$app_name")
 
-    # Check if app has a cnpg pods
-    if printf "%s" "$chart_info" | grep -sq -- \"cnpg\":;then
-        scale_down_resources "$app_name" "$timeout" && return 0 || return 1
-    # Check if app is a prometheus instance
-    elif printf "%s" "$chart_info" | grep -sq -- \"prometheus\":;then
+    # Check if the output contains the desired namespace and "cnpg" or "operator"
+    if [[ $output == "${app_name},cnpg" ]]; then
+        scale_resources "$app_name" "$timeout" 0 && return 0 || return 1
+    elif [[ $output == "${app_name},operator" ]]; then
         return 3
     fi
+
 
     status=$(get_app_status "$app_name" "$stop_type")
     if [[ "$status" == "STOPPED" ]]; then

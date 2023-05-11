@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-mount(){
+mount_app_func(){
     ix_apps_pool=$(cli -c 'app kubernetes config' | 
                    grep -E "pool\s\|" | 
                    awk -F '|' '{print $3}' | 
@@ -10,44 +10,8 @@ mount(){
     # Use mapfile command to read the output of cli command into an array
     mapfile -t pool_query < <(cli -m csv -c "storage pool query name,path" | sed -e '1d' -e '/^$/d')
 
-    while true
-    do
-        clear -x
-        title
-        echo -e "${bold}PVC Mount Menu${reset}"
-        echo -e "${bold}--------------${reset}"
-        echo -e "1)  Mount"
-        echo -e "2)  Unmount All"
-        echo
-        echo -e "0)  Exit"
-        read -rt 120 -p "Please type a number: " selection || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
-        case $selection in
-            0)
-                echo -e "Exiting.."
-                exit
-                ;;
-            1)
-                mount_app_func
-                exit
-                ;;
-            2)
-                unmount_app_func
-                exit
-                ;;
-            *)
-                echo -e "${red}Invalid selection, ${blue}\"$selection\"${red} was not an option${reset}" 
-                sleep 3
-                continue
-                ;;
-        esac
-    done
-}
-export -f mount
-
-
-mount_app_func(){
     # Run the command and store the output in an array
-    readarray -t output < <(k3s kubectl get pvc -A | sort -u | awk '{print $1 "\t" $2 "\t" $4}' | sed "s/^0/ /")
+    readarray -t output < <(k3s kubectl get pvc -A | sort -u | awk '{print $1 "\t" $2 "\t" $4}' | sed "s/^0/ /" | grep -v -- "-cnpg-main")
 
     # Assign a number to each element of the array, except for the first one
     count=0
@@ -147,9 +111,9 @@ mount_app_func(){
                 rows+=("$i)\t$pool\t$path\t$avail")
             done
 
-            # Add an option for the root directory
-            root_num=$((i+1))
-            root_avail=$(
+            # Add an option for the boot directory
+            boot_num=$((i+1))
+            boot_avail=$(
             zfs list -p -o name,avail boot-pool \
             | grep -o '[0-9]*$' \
             | awk '{
@@ -159,7 +123,7 @@ mount_app_func(){
                     printf "%.2fGB", $1/1024/1024/1024
             }'
             )
-            rows+=("$root_num)\troot\t/mnt\t$root_avail")
+            rows+=("$boot_num)\tboot\t/mnt\t$boot_avail")
 
             # Print output with header and rows formatted in columns
             printf "%b\n" "$header" "${rows[@]}" | column -t -s $'\t'
@@ -191,12 +155,12 @@ mount_app_func(){
 
         clear -x
         title
-        if  [[ $pool_name == "root" ]]; then
+        if  [[ $pool_name == "boot" ]]; then
             # Mount the PVC to the selected dataset                    
             if ! zfs set mountpoint=/mounted_pvc/"$data_name" "$full_path" ; then
                 mount_failure=true
             fi
-            root_mount=true
+            boot_mount=true
         else
             # Mount the PVC to the selected dataset                    
             if ! zfs set mountpoint=/"$pool_name"/mounted_pvc/"$data_name" "$full_path" ; then
@@ -214,7 +178,7 @@ mount_app_func(){
             echo -e "${bold}Status:${reset} ${red}Mount Failure${reset}"
         fi
         echo
-        if [[ $root_mount == true ]]; then
+        if [[ $boot_mount == true ]]; then
             echo -e "${bold}Unmount Manually with:${reset}\n${blue}zfs set mountpoint=legacy \"$full_path\" && rmdir /mnt/mounted_pvc/$data_name${reset}"
         else
             echo -e "${bold}Unmount Manually with:${reset}\n${blue}zfs set mountpoint=legacy \"$full_path\" && rmdir /mnt/*/mounted_pvc/$data_name${reset}"
@@ -244,50 +208,4 @@ mount_app_func(){
             esac
         done
     done
-}
-
-
-unmount_app_func(){
-    # Add an option for the root directory
-    pool_query+=("root,/mnt")
-
-    # Create an empty array to store the results
-    unmount_array=()
-
-    # Iterate through all available pools
-    for line in "${pool_query[@]}"; do
-        pool_path=$(echo "$line" | awk -F ',' '{print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-        # Check if the folder "mounted_pvc" exists in the current pool
-        if [ -d "$pool_path/mounted_pvc" ]; then
-            # If it exists, add the contents of the folder to the unmount_array
-            mapfile -t unmount_array_temp < <(find "$pool_path/mounted_pvc" -mindepth 1 -maxdepth 1 -type d -printf '%f\n')
-            unmount_array+=("${unmount_array_temp[@]}")
-        fi
-    done
-
-    # Check if the unmount_array is empty
-    if [[ -z ${unmount_array[*]} ]]; then
-        echo -e "${yellow}There are no PVCS to unmount.${reset}"
-        return
-    fi
-
-    for pvc_name in "${unmount_array[@]}"; do
-        # Get the PVC details
-        main=$(k3s kubectl get pvc -A | grep -E "\s$pvc_name\s" | awk '{print $1, $2, $4}')
-        app=$(echo -e "$main" | awk '{print $1}' | cut -c 4-)
-        pvc=$(echo -e "$main" | awk '{print $3}')
-        full_path=$(find "/mnt/$ix_apps_pool/ix-applications/releases/$app/volumes/" -maxdepth 0 | cut -c 6-)
-
-        # Set the mountpoint to "legacy" and unmount
-        if zfs set mountpoint=legacy "$full_path""$pvc"; then
-            echo -e "${blue}$pvc_name ${green}unmounted successfully.${reset}"
-            rmdir /mnt/*/mounted_pvc/"$pvc_name" 2>/dev/null || rmdir /mnt/mounted_pvc/"$pvc_name" 2>/dev/null
-        else
-            echo -e "${red}Failed to unmount ${blue}$pvc_name.${reset}"
-        fi
-
-    done
-
-    # Remove the mounted_pvc directory if it's empty
-    rmdir /mnt/*/mounted_pvc 2>/dev/null ; rmdir /mnt/mounted_pvc 2>/dev/null
 }

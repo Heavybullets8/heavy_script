@@ -11,86 +11,136 @@ If you have questions or would like to contribute, I have a sub discord category
 [HeavySetup - Further Explanation](https://heavysetup.info/scripts/heavyscript/about/)
 
 ## Table of contents:
+<details>
+  <summary>Click to expand</summary>
+
 * [The Menu](#the-menu)
 * [Arguments](#arguments)
-   * [Update Specific](#update-specific)
-   * [General](#general)
-   * [Utilities](#utilities)
-   * [Miscellaneous](#Miscellaneous)
+   * [App](#app)
+   * [Backup](#backup)
+   * [DNS](#dns)
+   * [Git](#git)
+   * [Pod](#pod)
+   * [PVC](#pvc)
+   * [Self-Update](#self-update)
+   * [Update](#update)
 * [How to Install](#how-to-install)
 * [How to Update](#how-to-update)
+* [Configuration File](#configuration-file)
 * [Cron Jobs](#cron-jobs)
-* [To-Do List](#to-do-list)
-* [Additional Information](#additional-information)
+</details>
 
 
 <br>
+
+___
 
 ## The Menu
 
 ![image](https://user-images.githubusercontent.com/20793231/226242159-f4248e0c-649a-47f1-9ee3-293165f4af3b.png)
 > Access this with `heavyscript`
 
-<br >
-<br >
+<br>
+
+___
 
 ## Arguments
 
-### Update Specific
-| Flag         | Example                | Parameter        | Description                                                                                                                                                                |
-|--------------|------------------------|------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| -U           | -U <br>-U 5            | Optional Integer | Update applications, ignoring major version changes<br>_Optionally, you can supply a number after the argument to update multiple applications at once_                    |
-| -u           | -u<br>-u 5             | Optional Integer | Update applications, do NOT update if there was a major version change<br>_Optionally, you can supply a number after the argument to update multiple applications at once_ |
-| -S           | -S                     |                  | Shutdown the application prior to updating it                                                                                                                              |
-| -i           | -i nextcloud -i sonarr | String           | Exclude an application from updates<br>_List one application after another as shown in the example_                                                                        |
-| -r           | -r                     |                  | Monitors applications after they update<br>If the app does not become "ACTIVE" after the timeout, rollback the application.                                                |
-| -t           | -t 400                 | Integer          | Time in seconds that HeavyScript will wait for an application to no longer be deploying before declaring failure<br>Default: 500                                           |
-| --ignore-img | --ignore-img           |                  | Ignore container image updates                                                                                                                                             |
+### App
+> heavyscript app [Flag]
 
-<br >
+| Flag           | Example                                  | Parameter                 | Description                               |
+|----------------|------------------------------------------|---------------------------|-------------------------------------------|
+| -s<br>--start  | -s<br>--start                            | [Optional: app name]      | Start an application.                     |
+| -x<br>--stop   | -x<br>--stop                             | [Optional: app name]      | Stop an application.                      |
+| -r<br>--restart| -r<br>--restart                          | [Optional: app name]      | Restart an application.                   |
+| -d<br>--delete | -d<br>--delete                           | [Optional: app name]      | Delete an application.                    |
 
-### General
-> These options can be used in conjunction with the update options above
+<br>
 
-> Alternatively, use these options individually or combined with other arguments
+### Backup
+> heavyscript backup [Flag]
 
-| Flag          | Example | Parameter | Description                                                                       |
-|---------------|---------|-----------|-----------------------------------------------------------------------------------|
-| -b            | -b 14   | Integer   | Backup your ix-applications dataset prior to updating, up to the number specified |
-| -s            | -s      |           | Synchronize catalog information                                                   |
-| -p            | -p      |           | Remove unused or old Docker images                                                |
-| --self-update | --self-update      |           | Update HeavyScript prior to executing other commands                              |
+| Flag                           | Example                                  | Parameter        | Description                             |
+|--------------------------------|------------------------------------------|------------------|-----------------------------------------|
+| -c [number]<br>--create [number]| -c 15<br>--create 15                     | Integer          | Create a backup with the specified retention number. |
+| -r<br>--restore                | -r<br>--restore                          |                  | Restore a backup.                       |
+| -d<br>--delete                 | -d<br>--delete                           |                  | Delete a backup.                        |
 
-<br >
+<br>
 
-### Utilities
-> All of these can ALSO be accessed with the HeavyScript menu, that you can access simply by not providing an argument `heavyscript`
+### DNS
+> heavyscript dns [Optional Flag]
 
-| Flag            | Options | Description                                                                                  |
-|-----------------|---------|----------------------------------------------------------------------------------------------|
-| --mount         |         | Initiates mounting feature, choose between unmounting and mounting PVC data                  |
-| --restore       |         | Opens a menu to restore a HeavyScript backup that was taken on your ix-applications dataset  |
-| --delete-backup |         | Opens a menu to delete backups on your system                                                |
-| --dns           | -v      | List all of your applications DNS names and their web ports (-v for verbose output)          |
-| --cmd           |         | Open a shell for one of your applications                                                    |
-| --logs          |         | Open logs for one of your applications                                                       |
-| --start-app     |         | Opens menu to Start one of your applications                                                 |
-| --stop-app      |         | Opens menu to Stop one of your applications                                                  |
-| --restart-app   |         | Opens menu to Restart one of your applications                                               |
-| --delete-app    |         | Opens menu to Delete one of your applications                                                |
+| Flag                       | Example                                  | Description                             |
+|----------------------------|------------------------------------------|-----------------------------------------|
+| -a<br>--all                | -a<br>--all                              | Display all DNS information.            |
+
+<br>
+
+### Git
+> heavyscript git [Flag]
+
+| Flag                       | Example                                  | Description                                   |
+|----------------------------|------------------------------------------|-----------------------------------------------|
+| -b<br>--branch             | -b<br>--branch                           | Choose a branch or tag for HeavyScript to use |
+| -g<br>--global             | -g<br>--global                           | Add the script to the global path.            |
+
+<br>
+
+### Pod
+> heavyscript pod [Flag]
+
+| Flag                       | Example                                  | Description                                  |
+|----------------------------|------------------------------------------|----------------------------------------------|
+| -l<br>--logs               | -l<br>--logs                             | Display container logs.                      |
+| -s<br>--shell              | -s<br>--shell                            | Open a shell for the container.              |
+
+<br>
+
+### PVC
+> heavyscript pvc [Optional Flag]
+
+| Flag                       | Example                                  | Description                                  |
+|----------------------------|------------------------------------------|----------------------------------------------|
+| -m<br>--mount              | -m<br>--mount                            | Open a menu to mount PVCs.                   |
+| -u<br>--unmount            | -u<br>--unmount                          | Unmount all mounted PVCs.                    |
+
+<br>
+
+### Self-Update
+> heavyscript self-update
+
+| Flag       | Example            | Description                               |
+|------------|--------------------|-------------------------------------------|
+| --major    | --major            | Includes major updates when self-updating |
+
 
 
 <br>
 
-### Miscellaneous
-| Flag | Example | Description             |
-|------|---------|-------------------------|
-| -h   | -h      | Displays help message   |
-| -v   | -v      | Display detailed output |
+### Update
+> heavyscript update [Flags]
+
+| Flag                   | Example                                  | Parameter        | Description                                                                                                                                                                |
+|------------------------|------------------------------------------|------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -a<br>--include-major    | -a<br>--include-major                    |                  | Update the application even if it is a major version update                                                                                                                |
+| -b<br>--backup           | -b 14<br>--backup 14                     | Integer          | Take a backup, and set the number of backups to keep                                                                                                                       |
+| -c<br>--concurrent       | -c 5<br>--concurrent 5                   | Integer          | How many applications to concurrently update (default: 1)                                                                                                                  |
+| -i<br>--ignore           | -i nextcloud -i sonarr<br>--ignore nextcloud --ignore sonarr | String           | Ignore updating the specified application                                                                                                                                  |
+| -I<br>--ignore-img       | -I<br>--ignore-img                       |                  | Ignore container image updates                                                                                                                                             |
+| -p<br>--prune            | -p<br>--prune                            |                  | Prune unused images after the update                                                                                                                                       |
+| -r<br>--rollback         | -r<br>--rollback                         |                  | Roll back to the previous version if update failure                                                                                                                         |
+| -s<br>--sync             | -s<br>--sync                             |                  | Sync the catalog prior to updating applications                                                                                                                             |
+| -x<br>--stop             | -x<br>--stop                             |                  | Stop the application prior to updating                                                                                                                                      |
+| -t<br>--timeout          | -t 500<br>--timeout 500                  | Integer          | Set the timeout for the update process in seconds (default: 500)                                                                                                           |
+| -U<br>--self-update      | -U<br>--self-update                      |                  | Update HeavyScript itself prior to updating                                                                                                                                 |
+| -v<br>--verbose          | -v<br>--verbose                          |                  | Display verbose output                                                                                                                                                      |
 
 
 <br>
-<br>
+
+___
 
 
 ## How to Install
@@ -110,20 +160,58 @@ This will:
 From here, you can just run HeavyScript with `heavyscript -ARGUMENTS`
 
 <br>
-<br>
+
+___
  
-## How to Update 
+## How to Update
 
+### While Updating
+
+```bash
+heavyscript update --self-update [OPTIONS]
 ```
-heavyscript --self-update -b 10 -supr
+
+### Direct
+
+```bash
+heavyscript self-update
 ```
 
---self-update will:
-- Update HeavyScript to the latest release, no matter if you're on a branch or tag
-- Lets you use any other arguments you want
+self-update will update HeavyScript to the latest release, regardless of the branch or tag you're on, and allows you to use any other arguments.
 
-<br >
-<br >
+<br>
+
+___
+
+## Configuration File
+
+### Purpose
+
+The configuration file is generated the first time the script is run. You can edit it using nano:
+
+```bash
+nano ~/heavy_script/config.ini
+```
+
+Modifications in the config file will become the script's defaults. 
+
+For example, if you set sync to true under the [UPDATE] section, running `heavyscript update` will sync the catalog without specifying `--sync` or `-s` in the CLI.
+
+<br>
+
+### Disabling the Configuration
+
+To disable the configuration for a specific run of the script, use:
+
+```bash
+heavyscript --no-config
+```
+
+This will ignore the configuration file for that run.
+
+<br>
+
+___
 
 ## Cron Jobs
 
@@ -135,10 +223,10 @@ heavyscript --self-update -b 10 -supr
 4. Cron Jobs
    1. Click Add
 
-![image](https://user-images.githubusercontent.com/20793231/215238304-0ef18468-acc9-417a-8dc3-cbb5a88a36d2.png)
+![image](https://user-images.githubusercontent.com/20793231/229404447-6836ff1f-ba28-439e-99fe-745371f0f24c.png)
 
 
-- Command: `bash /root/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u 10`
+- Command: `bash /root/heavy_script/heavy_script.sh update`
    > The `bash`, as well as the full path to the script is required for cron jobs to work properly.
 - Run as: root
    > Running as root is required for the script to work properly.
@@ -153,37 +241,10 @@ heavyscript --self-update -b 10 -supr
 ### My Personal Cron Job
 
 ```
-bash /root/heavy_script/heavy_script.sh --self-update -b 10 -rsp -u 10
+bash /root/heavy_script/heavy_script.sh update --backup 14 --concurrent 10 --prune --rollback --sync --self-update
 ```
 
 
 <br >
 <br >
-
-## To-Do List
-
-### Current Issues
-
-- [ ] Issue 1: "Command to container" and "Logs" functions do not currently support applications with multiple replicas
-
-### Improvements
-
-- [ ] Improvement 1: Refactor the code to split up large functions into smaller, more manageable functions
-- [ ] Improvement 2: Move frequently used smaller functions to the "utils" folder and ensure all relevant sections of the script utilize them
-
-> If you would like to suggest additional items for these lists, please open an issue.
-
-<br >
-<br >
-
-### Additional Information
-
-#### Verbose vs Non-Verbose 
--  Verbose used `heavyscript -b 5 -Srupv`
-- Non-Verbose used `heavyscript -b 5 -Srup`
-
-| Verbose 	| Non-Verbose 	|
-|---------	|-------------	|
-|  ![image](https://user-images.githubusercontent.com/20793231/167971188-07f71d02-8da3-4e0c-b9a0-cd26e7f63613.png) |   ![image](https://user-images.githubusercontent.com/20793231/167972033-dc8d4ab4-4fb2-4c8a-b7dc-b9311ae55cf8.png) |
-       
 

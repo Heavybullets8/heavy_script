@@ -1,11 +1,29 @@
 #!/bin/bash
 
+declare -x no_config=false
+declare -x no_self_update=false
+declare -x self_update=false
+declare -x major_self_update=false
+declare -x script
+declare -x script_path
+declare -x script_name
+declare -x current_tag
+declare -x current_version
+declare -x hs_version
+# colors
+declare -x reset='\033[0m'
+declare -x red='\033[0;31m'
+declare -x yellow='\033[1;33m'
+declare -x green='\033[0;32m'
+declare -x blue='\033[0;34m'
+declare -x bold='\033[1m'
+declare -x gray='\033[38;5;7m'
 
-# cd to script, this ensures the script can find the source scripts below, even when ran from a seperate directory
+# cd to script, this ensures the script can find the source scripts below, even when ran from a separate directory
 script=$(readlink -f "$0")
 script_path=$(dirname "$script")
 script_name="heavy_script.sh"
-cd "$script_path" || { echo "Error: Failed to change to script directory" ; exit ; } 
+cd "$script_path" || { echo "Error: Failed to change to script directory"; exit; } 
 
 # Get the name of the latest tag
 current_tag=$(git describe --tags --abbrev=0)
@@ -20,244 +38,102 @@ else
     hs_version=${current_version}
 fi
 
-# Source all the functions and utilities
-for script_file in {functions,utils}/*.sh; do
+# Source all functions and utilities
+while IFS= read -r script_file; do
     if [[ "$script_file" == "functions/deploy.sh" ]]; then
         # Ignore the deploy.sh file, it is meant to install the script
         continue
     fi
     # shellcheck source=/dev/null
     source "$script_file"
+done < <(find functions utils -name "*.sh" -exec printf '%s\n' {} \;)
+
+# generate the config.ini file if it does not exist
+generate_config_ini
+
+# Add the [databases] section and dump_folder option to the config.ini file if they do not exist
+add_database_options
+
+# Separate bundled short options
+args=()
+for arg in "$@"; do
+    if [[ $arg =~ ^-[aIprsxUv]+$ ]]; then
+        for opt in $(echo "$arg" | grep -o .); do
+            if [[ $opt == "-" ]]; then
+                # Ignore the leading dash
+                continue
+            fi
+            args+=("-$opt")
+        done
+    else
+        args+=("$arg")
+    fi
 done
 
+if remove_self_update_args; then
+    self_update=true
+fi
 
-# colors
-reset='\033[0m'
-red='\033[0;31m'
-yellow='\033[1;33m'
-green='\033[0;32m'
-blue='\033[0;34m'
-bold='\033[1m'
-gray='\033[38;5;7m'
+if remove_force_update_args; then
+    major_self_update=true
+fi
 
+if remove_no_self_update_args; then
+    no_self_update=true
+fi
 
-#If no argument is passed, open menu function.
-if [[ -z "$*" || "-" == "$*" || "--" == "$*"  ]]; then
+if remove_no_config_args; then
+    no_config=true
+fi
+
+# Run the self update function if the script has not already been updated
+if [[ $no_self_update == false ]]; then
+    self_update_handler "${args[@]}"
+fi
+
+# If no arguments are passed, the first argument is an empty string, '-', or '--', open the menu function.
+if [[ "${#args[@]}" -eq 0 || "${args[0]}" =~ ^(-{1,2})?$ ]]; then
     menu
-fi
-
-# Parse script options
-while getopts ":si:rb:t:uUpSRv-:" opt
-do
-    case $opt in
-      -)
-          case "${OPTARG}" in
-             help)
-                  help=true
-                  ;;
-      self-update)
-                  self_update=true
-                  ;;
-              dns)
-                  dns=true
-                  ;;
-              cmd)
-                  cmd=true
-                  ;;
-          restore)
-                  restore=true
-                  ;;
-            mount)
-                  mount=true
-                  ;;
-    delete-backup)
-                  deleteBackup=true
-                  ;;
-       ignore-img)
-                  ignore_image_update=true
-                  ;;
-              logs)
-                  logs=true
-                  ;;
-         start-app)
-                  start_app=true
-                  ;;
-        delete-app)
-                  delete_app=true
-                  ;;
-          stop-app)
-                  stop_app=true
-                  ;;
-       restart-app)
-                  restart_app=true
-                  ;;
-             major)
-                  include_major=true
-                  ;;
-                *)
-                  echo -e "Invalid Option \"--$OPTARG\"\n"
-                  help
-                  ;;
-          esac
-          ;;
-      :)
-         echo -e "Option: \"-$OPTARG\" requires an argument\n"
-         help
-         ;;
-      b)
-        number_of_backups=$OPTARG
-        if ! [[ $OPTARG =~ ^[0-9]+$  ]]; then
-            echo -e "Error: -b needs to be assigned an interger\n\"""$number_of_backups""\" is not an interger" >&2
-            exit
-        fi
-        if [[ "$number_of_backups" -le 0 ]]; then
-            echo "Error: Number of backups is required to be at least 1"
-            exit
-        fi
-        ;;
-      r)
-        rollback=true
-        ;;
-      i)
-        if ! [[ $OPTARG =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]]; then # Using case insensitive version of the regex used by Truenas Scale
-            echo -e "Error: \"$OPTARG\" is not a possible option for an application name"
-            exit
-        else
-            ignore+=("$OPTARG")
-        fi
-        ;;
-      t)
-        timeout=$OPTARG
-        if ! [[ $timeout =~ ^[0-9]+$ ]]; then
-            echo -e "Error: -t needs to be assigned an interger\n\"""$timeout""\" is not an interger" >&2
-            exit
-        fi
-        ;;
-      s)
-        sync=true
-        ;;
-      U)
-        update_all_apps=true
-        # Check next positional parameter
-        eval nextopt=${!OPTIND}
-        # existing or starting with dash?
-        if [[ -n $nextopt && $nextopt != -* ]] ; then
-            OPTIND=$((OPTIND + 1))
-            update_limit="$nextopt"
-        else
-            update_limit=1
-        fi        
-        ;;
-      u)
-        update_apps=true
-        # Check next positional parameter
-        eval nextopt=${!OPTIND}
-        # existing or starting with dash?
-        if [[ -n $nextopt && $nextopt != -* ]] ; then
-            OPTIND=$((OPTIND + 1))
-            update_limit="$nextopt"
-        else
-            update_limit=1
-        fi
-        ;;
-      S)
-        stop_before_update=true
-        ;;
-      p)
-        prune=true
-        ;;
-      v)
-        verbose=true
-        ;;
-      *)
-        echo -e "Invalid Option \"-$OPTARG\"\n"
-        help
-        ;;
-    esac
-done
-
-
-### exit if incompatable functions are called ### 
-if [[ "$update_all_apps" == true && "$update_apps" == true ]]; then
-    echo -e "-U and -u cannot BOTH be called"
-    exit 1
-fi
-
-### Continue to call functions in specific order ###
-if [[ "$self_update" == true ]]; then 
-    self_update
-fi
-
-if [[ "$help" == true ]]; then
-    help
-fi
-
-if [[ "$delete_app" == true ]]; then
-    delete_app_prompt
     exit
 fi
 
-if [[ "$stop_app" == true ]]; then
-    stop_app_prompt
-    exit
-fi
+case "${args[0]}" in
+    app)
+        app_handler "${args[@]:1}" # Pass remaining arguments to app_handler
+        ;;
+    backup)
+        backup_handler "${args[@]:1}" # Pass remaining arguments to backup_handler
+        ;;
+    dns)
+        dns_handler "${args[@]:1}" # Pass remaining arguments to dns_handler
+        ;;
+    enable)
+        enable_handler "${args[@]:1}" # Pass remaining arguments to enable_handler
+        ;;
+    git)
+        git_handler "${args[@]:1}" # Pass remaining arguments to git_handler
+        ;;
+    pod)
+        pod_handler "${args[@]:1}" # Pass remaining arguments to pod_handler
+        ;;
+    pvc)
+        pvc_handler "${args[@]:1}" # Pass remaining arguments to mount_handler
+        ;;
+    update)
+        update_handler "${args[@]:1}" # Pass remaining arguments to update_handler
+        ;;
+    sync)
+        sync_handler "${args[@]:1}" # Pass remaining arguments to sync_handler
+        ;;
+    prune)
+        prune_handler "${args[@]:1}" # Pass remaining arguments to prune_handler
+        ;;
+    -h|--help|help)
+        main_help
+        ;;
+    *)
+        echo "Unknown command: $1"
+        exit 1
+        ;;
+esac
 
-if [[ "$start_app" == true ]]; then
-    start_app_prompt
-    exit
-fi
-
-if [[ "$restart_app" == true ]]; then
-    restart_app_prompt
-    exit
-fi
-
-if [[ "$cmd" == true || "$logs" == true ]]; then
-    container_shell_or_logs
-    exit
-fi
-
-if [[ "$deleteBackup" == true ]]; then 
-    deleteBackup
-    exit
-fi
-
-if [[ "$dns" == true ]]; then
-    dns
-    exit
-fi
-
-if [[ "$restore" == true ]]; then
-    restore
-    exit
-fi
-
-if [[ "$mount" == true ]]; then 
-    mount
-    exit
-fi
-
-if [[ "$number_of_backups" -gt 1 && "$sync" == true ]]; then # Run backup and sync at the same time
-    echo "🅃 🄰 🅂 🄺 🅂 :"
-    echo -e "-Backing up ix-applications dataset\n-Syncing catalog(s)"
-    echo -e "Please wait for output from both tasks..\n\n"
-    backup &
-    sync &
-    wait
-elif [[ "$number_of_backups" -gt 1 ]]; then # If only backup is true, run it
-    echo "🅃 🄰 🅂 🄺 :"
-    echo -e "-Backing up ix-applications dataset\nPlease wait..\n\n"
-    backup
-elif [[ "$sync" == true ]]; then # If only sync is true, run it
-    echo "🅃 🄰 🅂 🄺 :"
-    echo -e "Syncing Catalog(s)\nThis can take a few minutes, please wait..\n\n"
-    sync
-fi
-
-if [[ "$update_all_apps" == true || "$update_apps" == true ]]; then 
-    commander
-fi
-
-if [[ "$prune" == true ]]; then
-    prune 
-fi

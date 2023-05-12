@@ -23,7 +23,7 @@ scale_resources() {
     fi
 
     if [[ $replicas -eq 0 ]]; then
-        wait_for_pods_to_stop "$app_name" "$timeout" && return 0 || return 1
+        wait_for_pods_to_stop "$app_name" "$timeout" "$deployment_name" && return 0 || return 1
     fi
 }
 

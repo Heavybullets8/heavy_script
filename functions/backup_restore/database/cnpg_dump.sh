@@ -5,7 +5,7 @@ get_current_replica_count() {
     local app_name
     app_name="$1"
 
-    k3s kubectl get deploy -n ix-"$app_name" -o json | jq -r '.items[] | select(.metadata.labels.cnpg != "true" and (.metadata.name | contains("-cnpg-main-") | not)).spec.replicas'
+    k3s kubectl get deploy -n ix-"$app_name" -o json | jq -r '[.items[] | select(.metadata.labels.cnpg != "true" and (.metadata.name | contains("-cnpg-main-") | not)).spec.replicas][0]'
 }
 
 dump_database() {

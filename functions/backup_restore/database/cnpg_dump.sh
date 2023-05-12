@@ -102,7 +102,7 @@ backup_cnpg_databases() {
 
         for deployment in "${!original_replicas[@]}"; do
             if [[ ${original_replicas[$deployment]} -ne 0 ]]; then
-                scale_resources "$deployment" 300 0 > /dev/null 2>&1
+                scale_resources "$app" 300 0 "$deployment" > /dev/null 2>&1
             fi
         done
 
@@ -114,7 +114,7 @@ backup_cnpg_databases() {
         # Scale the resources back to the original replica counts
         for deployment in "${!original_replicas[@]}"; do
             if [[ ${original_replicas[$deployment]} -ne 0 ]]; then
-                scale_resources "$deployment" 300 "${original_replicas[$deployment]}" > /dev/null 2>&1
+                scale_resources "$app" 300 "${original_replicas[$deployment]}" "$deployment" > /dev/null 2>&1
             fi
         done
 

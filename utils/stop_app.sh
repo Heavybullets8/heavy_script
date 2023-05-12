@@ -13,8 +13,9 @@ wait_for_pods_to_stop() {
             # If a specific deployment is provided, check only its pods
             if ! k3s kubectl get pods -n ix-"$app_name" \
                     --field-selector=status.phase!=Succeeded,status.phase!=Failed -o=name \
+                    | grep -vE -- '-[[:digit:]]$' \
                     | rev | cut -d- -f3- | rev \
-                    | grep -v -- '-cnpg-' \
+                    | grep -vE -- "-cnpg$|-cnpg-" \
                     | grep -qE -- "$deployment_name$"; then
                 break
             fi

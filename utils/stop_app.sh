@@ -2,21 +2,39 @@
 
 
 wait_for_pods_to_stop() {
-    local app_name timeout
+    local app_name timeout deployment_name
     app_name="$1"
     timeout="$2"
+    deployment_name="$3"
 
     SECONDS=0
-    while k3s kubectl get pods -n ix-"$app_name" \
-            --field-selector=status.phase!=Succeeded,status.phase!=Failed -o=name \
-            | grep -v -- '-cnpg-' \
-            | grep -vqE -- '-[[:digit:]]$'; do
+    while true; do
+        if [[ -n "$deployment_name" ]]; then
+            # If a specific deployment is provided, check only its pods
+            if ! k3s kubectl get pods -n ix-"$app_name" \
+                    --field-selector=status.phase!=Succeeded,status.phase!=Failed -o=name \
+                    | grep -vE -- '-[[:digit:]]$' \
+                    | rev | cut -d- -f3- | rev \
+                    | grep -vE -- "-cnpg$|-cnpg-" \
+                    | grep -qE -- "$deployment_name$"; then
+                break
+            fi
+        else
+            # If no specific deployment is provided, check any non-CNPG pods
+            if ! k3s kubectl get pods -n ix-"$app_name" \
+                    --field-selector=status.phase!=Succeeded,status.phase!=Failed -o=name \
+                    | grep -v -- '-cnpg-' \
+                    | grep -vqE -- '-[[:digit:]]$'; then
+                break
+            fi
+        fi
         if [[ "$SECONDS" -gt $timeout ]]; then
             return 1
         fi
         sleep 1
     done
 }
+
 
 get_app_status() {
     local app_name stop_type

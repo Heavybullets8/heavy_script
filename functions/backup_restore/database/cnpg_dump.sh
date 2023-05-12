@@ -1,11 +1,11 @@
 #!/bin/bash
 
 
-get_current_replica_count() {
+get_current_replica_counts() {
     local app_name
     app_name="$1"
-
-    k3s kubectl get deploy -n ix-"$app_name" -o json | jq -r '[.items[] | select(.metadata.labels.cnpg != "true" and (.metadata.name | contains("-cnpg-main-") | not)).spec.replicas][0]'
+    # The following command returns a map where the keys are deployment names and the values are replica counts
+    k3s kubectl get deploy -n ix-"$app_name" -o json | jq -r '[.items[] | select(.metadata.labels.cnpg != "true" and (.metadata.name | contains("-cnpg-main-") | not)) | {(.metadata.name): .spec.replicas}] | add'
 }
 
 dump_database() {
@@ -78,13 +78,13 @@ display_app_sizes() {
     echo -e "$output" | column -t -s $'\t'
 }
 
-backup_cnpg_databases(){
+backup_cnpg_databases() {
     retention=$1
     timestamp=$2
     dump_folder=$3
     declare cnpg_apps=()
     local failure=false
-    
+
     mapfile -t cnpg_apps < <(k3s kubectl get deployments --all-namespaces | grep -E '^(ix-.*\s).*-cnpg-main-' | awk '{gsub(/^ix-/, "", $1); print $1}')
 
     if [[ ${#cnpg_apps[@]} -eq 0 ]]; then
@@ -92,23 +92,32 @@ backup_cnpg_databases(){
     fi
 
     for app in "${cnpg_apps[@]}"; do
-        # Store the current replica count before scaling down
-        original_replicas=$(get_current_replica_count "$app")
+        # Store the current replica counts for all deployments in the app before scaling down
+        declare -A original_replicas=()
+        mapfile -t replica_lines < <(get_current_replica_counts "$app" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
+        for line in "${replica_lines[@]}"; do
+            read -r key value <<< "$(echo "$line" | tr '=' ' ')"
+            original_replicas["$key"]=$value
+        done
 
-        if [[ $original_replicas -ne 0 ]]; then
-            scale_resources "$app" 300 0 > /dev/null 2>&1
-        fi
-        
+        for deployment in "${!original_replicas[@]}"; do
+            if [[ ${original_replicas[$deployment]} -ne 0 ]]; then
+                scale_resources "$app" 300 0 "$deployment" > /dev/null 2>&1
+            fi
+        done
+
         if ! dump_database "$app" "$dump_folder"; then
             echo_backup+=("Failed to back up $app's database.")
             failure=true
         fi
 
-        # Scale the resources back to the original replica count
-        if [[ $original_replicas -ne 0 ]]; then
-            scale_resources "$app" 300 "$original_replicas" > /dev/null 2>&1
-        fi
-        
+        # Scale the resources back to the original replica counts
+        for deployment in "${!original_replicas[@]}"; do
+            if [[ ${original_replicas[$deployment]} -ne 0 ]]; then
+                scale_resources "$app" 300 "${original_replicas[$deployment]}" "$deployment" > /dev/null 2>&1
+            fi
+        done
+
     done
 
     if [[ $failure = false ]]; then
@@ -120,3 +129,4 @@ backup_cnpg_databases(){
     formatted_output=$(display_app_sizes "$dump_folder")
     echo_backup+=("$formatted_output")
 }
+

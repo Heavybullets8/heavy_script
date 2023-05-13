@@ -4,6 +4,7 @@
 self_update_handler() {
     export no_config
     export major_self_update
+    export update_always=false
     local args=("$@")
     local SELFUPDATE__SELFUPDATE__always
     local SELFUPDATE__SELFUPDATE__when_updating
@@ -20,8 +21,10 @@ self_update_handler() {
         read_ini "config.ini" --prefix SELFUPDATE
 
         # Check if always or when_updating is set to true in the config file
-        if { [[ "${SELFUPDATE__SELFUPDATE__always}" == "true" ]] || 
-        { [[ "${SELFUPDATE__SELFUPDATE__when_updating}" == "true" ]] && [[ "${args[0]}" == "update" ]]; }; }; then
+        if [[ "${SELFUPDATE__SELFUPDATE__always}" == "true" ]]; then
+            self_update=true
+            update_always=true
+        elif { [[ "${SELFUPDATE__SELFUPDATE__when_updating}" == "true" ]] && [[ "${args[0]}" == "update" ]]; }; then
             self_update=true
         fi
 
@@ -31,7 +34,6 @@ self_update_handler() {
     fi
 
     # Update the script if --self-update/self-update/-U is passed
-    # dont update if --no-self-update is passed
     if [[ $self_update == true ]]; then
         self_update 
     fi

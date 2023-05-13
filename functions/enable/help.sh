@@ -13,7 +13,7 @@ enable_help() {
     echo -e "${bold}FEATURES${reset}"
     echo -e "${bold}-------${reset}"
     echo -e "${blue}--api${reset}"
-    echo -e "    Enable kubectl access to the k3s cluster."
+    echo -e "    Enables external access to the Kubernetes API server"
     echo -e "${blue}--apt${reset}"
     echo -e "    Enable apt, apt-get, and apt-key."
     echo -e "${blue}--helm${reset}"

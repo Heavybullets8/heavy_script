@@ -84,7 +84,7 @@ ___
 
 | Flag          | Example                               | Description                             |
 |---------------|---------------------------------------|-----------------------------------------|
-| --api         | --api                                 | Enable kubectl access to the k3s cluster. |
+| --api         | --api                                 | Enables external access to the Kubernetes API server. |
 | --apt         | --apt                                 | Enable apt, apt-get, and apt-key. |
 | --helm        | --helm                                | Enable helm commands. |
 

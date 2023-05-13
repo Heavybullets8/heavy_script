@@ -76,7 +76,20 @@ ___
 |----------------------------|------------------------------------------|-----------------------------------------|
 | -a<br>--all                | -a<br>--all                              | Display all DNS information.            |
 
-<br>
+<br >
+
+### Enable
+> heavyscript enable [Flag]
+
+
+| Flag          | Example                               | Description                             |
+|---------------|---------------------------------------|-----------------------------------------|
+| --api         | --api                                 | Enable kubectl access to the k3s cluster. |
+| --apt         | --apt                                 | Enable apt, apt-get, and apt-key. |
+| --helm        | --helm                                | Enable helm commands. |
+
+
+<br >
 
 ### Git
 > heavyscript git [Flag]

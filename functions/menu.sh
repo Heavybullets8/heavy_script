@@ -20,7 +20,7 @@ backup_selection(){
                 exit
                 ;;
             1)
-                read -rt 120 -p "What is the maximun number of backups you would like?: " number_of_backups || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
+                read -rt 120 -p "What is the maximum number of backups you would like?: " number_of_backups || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
                 if ! [[ $number_of_backups =~ ^[0-9]+$  ]]; then
                     echo -e "${red}Error: The input must be an interger\n${blue}\"""$number_of_backups""\"${red} is not an interger${reset}" >&2 
                     exit

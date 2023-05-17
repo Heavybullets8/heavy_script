@@ -40,12 +40,9 @@ start_app_prompt(){
         # Check if app is a cnpg instance, or an operator instance
         output=$(check_filtered_apps "$app_name")
 
-        if [[ $output == "${app_name},cnpg" ]]; then
-            scale_resources "$app_name" 120 "$replica_count"
-            #TODO: Add a check to ensure the pods are running
-            echo -e "${yellow}Sent the command to start all pods in: $app_name${reset}"
-            echo -e "${yellow}However, HeavyScript cannot monitor the new applications${reset}"
-            echo -e "${yellow}with the new postgres backend to ensure it worked..${reset}"
+        if [[ $output == "${app_name},stopAll-on" ]]; then
+            cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"1}" &> /dev/null
+            cli -c "app chart_release update chart_release=\"$app_name\" values={\"global\": {\"stopAll\": false}}"
         elif cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replica_count}" &> /dev/null; then
             echo -e "${blue}$app_name ${green}Started${reset}"
             echo -e "${green}Replica count set to ${blue}$replica_count${reset}"

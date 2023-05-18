@@ -9,10 +9,11 @@ pull_replicas() {
 
 restart_app(){
     # There are no good labels to use to identify the deployment, so we have to simply filter out the cnpg deployment for now
-    dep_name=$(k3s kubectl -n ix-"$app_name" get deploy | grep -vE -- '(-cnpg-)' | sed -e '1d' -e 's/ .*//')
-    if k3s kubectl -n ix-"$app_name" rollout restart deploy "$dep_name" &>/dev/null; then
-        return 0
-    else
-        return 1
-    fi
+    dep_names=$(k3s kubectl -n ix-"$app_name" get deploy | grep -vE -- '(-cnpg-)' | sed -e '1d' -e 's/ .*//')
+    for dep_name in $dep_names; do
+        if ! k3s kubectl -n ix-"$app_name" rollout restart deploy "$dep_name" &>/dev/null; then
+            return 1
+        fi
+    done
+    return 0
 }

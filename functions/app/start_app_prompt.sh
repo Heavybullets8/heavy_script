@@ -41,9 +41,9 @@ start_app_prompt(){
         output=$(check_filtered_apps "$app_name")
 
         if [[ $output == "${app_name},stopAll-on" ]]; then
-            cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"1}" &> /dev/null
-            cli -c "app chart_release update chart_release=\"$app_name\" values={\"global\": {\"stopAll\": false}}"
-        elif cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replica_count}" &> /dev/null; then
+            cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"1}" > /dev/null
+            cli -c "app chart_release update chart_release=\"$app_name\" values={\"global\": {\"stopAll\": false}}" > /dev/null
+        elif cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replica_count}" > /dev/null; then
             echo -e "${blue}$app_name ${green}Started${reset}"
             echo -e "${green}Replica count set to ${blue}$replica_count${reset}"
         else

@@ -48,27 +48,36 @@ stop_app() {
     app_name="$2"
     timeout="150"
 
+    handle_timeout() {
+        local timeout_result=$1
+        if [[ $timeout_result -eq 0 ]]; then
+            return 0
+        elif [[ $timeout_result -eq 124 ]]; then
+            return 2
+        else
+            return 1
+        fi
+    }
+
     status=$(get_app_status "$app_name" "$stop_type")
     output=$(check_filtered_apps "$app_name")
+
     if [[ "$status" == "STOPPED" || $output == "${app_name},stopAll-on" ]]; then
         return 0
     fi
 
     # Check if the output contains the desired namespace and "cnpg" or "operator"
-    if [[ $output == "${app_name},stopAll-off" ]]; then
-        cli -c "app chart_release update chart_release=\"$app_name\" values={\"global\": {\"stopAll\": true}}" > /dev/null && return 0 || return 1
-    elif [[ $output == "${app_name},operator" ]]; then
-        return 3
-    fi
-
-    timeout "${timeout}s" cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' > /dev/null
-    timeout_result=$?
-
-    if [[ $timeout_result -eq 0 ]]; then
-        return 0
-    elif [[ $timeout_result -eq 124 ]]; then
-        return 2
-    fi
-
-    return 1
+    case $output in
+        "${app_name},stopAll-off")
+            timeout "${timeout}s" cli -c "app chart_release update chart_release=\"$app_name\" values={\"global\": {\"stopAll\": true}}" > /dev/null
+            handle_timeout $?
+            ;;
+        "${app_name},operator")
+            return 3
+            ;;
+        *)
+            timeout "${timeout}s" cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' > /dev/null
+            handle_timeout $?
+            ;;
+    esac
 }

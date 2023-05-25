@@ -197,7 +197,7 @@ commander() {
     echo_updates_header
     
     if [[ $rollback == true ]]; then 
-        get_apps_with_stopAll_on
+        get_apps_with_status
     fi
 
     display_update_status

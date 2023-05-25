@@ -11,7 +11,7 @@ get_app_status() {
         cli -m csv -c 'app chart_release query name,status' | \
             grep -- "^$app_name," | \
             awk -F ',' '{print $2}' | \
-            tr -d '\r\n '
+            tr -d " \t\r"
     fi
 }
 

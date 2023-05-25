@@ -87,7 +87,7 @@ get_apps_with_status() {
         if [[ "$status" == "stopAll-on" ]] || [[ "$status" == "operator" ]]; then
             apps_with_status+=("$app_name,$status")
         fi
-    done < <(check_filtered_apps "${array[@]}")
+    done < <(check_filtered_apps "${array[@]/,*}")
 
 }
 

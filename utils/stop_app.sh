@@ -61,11 +61,12 @@ stop_app() {
     }
 
     status=$(get_app_status "$app_name" "$stop_type")
-    output=$(check_filtered_apps "$app_name")
 
     if [[ "$status" == "STOPPED" ]]; then
         return 0
     fi
+
+    output=$(check_filtered_apps "$app_name")
 
     # Check if the output contains the desired namespace and "cnpg" or "operator"
     case $output in

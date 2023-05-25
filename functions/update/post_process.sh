@@ -47,14 +47,7 @@ handle_rollback() {
 }
 
 check_rollback_availability() {
-    # Check if app is a cnpg instance, or an operator instance
-    output=$(check_filtered_apps "$app_name")
-
-    # Check if the output contains the desired namespace and "cnpg" or "operator"
-    if [[ $output == "${app_name},cnpg" ]]; then
-        echo_array+=("Error: $app_name contains a cnpg instance, and cannot be rolled back")
-        return 1
-    elif [[ $output == "${app_name},operator" ]]; then
+    if printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},operator"; then
         echo_array+=("Error: $app_name contains an operator instance, and cannot be rolled back")
         return 1
     fi

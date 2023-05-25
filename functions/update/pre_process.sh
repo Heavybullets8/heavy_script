@@ -107,7 +107,7 @@ pre_process() {
     fi
 
     if [[ $rollback == true || "$startstatus"  ==  "STOPPED" ]]; then
-        if printf '%s\0' "${stop_all_apps[@]}" | grep -iFxqz "${app_name}"; then
+        if printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},stopAll-on"; then
             echo_array+=("Stopped")
             echo_array
             return        

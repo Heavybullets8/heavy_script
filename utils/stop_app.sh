@@ -62,13 +62,13 @@ stop_app() {
     status=$(get_app_status "$app_name" "$stop_type")
     output=$(check_filtered_apps "$app_name")
 
-    if [[ "$status" == "STOPPED" || $output == "${app_name},stopAll-on" ]]; then
+    if [[ "$status" == "STOPPED" ]]; then
         return 0
     fi
 
     # Check if the output contains the desired namespace and "cnpg" or "operator"
     case $output in
-        "${app_name},stopAll-off")
+        "${app_name},stopAll-on" | "${app_name},stopAll-off")
             timeout "${timeout}s" cli -c "app chart_release update chart_release=\"$app_name\" values={\"global\": {\"stopAll\": true}}" > /dev/null
             handle_timeout $?
             ;;

@@ -36,14 +36,21 @@ start_app_prompt(){
 
         echo -e "Starting ${blue}$app_name${reset}..."
 
-
         # Check if app is a cnpg instance, or an operator instance
         output=$(check_filtered_apps "$app_name")
 
+        # Initialize a flag
+        cli_success=true
+
         if [[ $output == "${app_name},stopAll-on" ]]; then
-            cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"1}" > /dev/null
-            cli -c "app chart_release update chart_release=\"$app_name\" values={\"global\": {\"stopAll\": false}}" > /dev/null
-        elif cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replica_count}" > /dev/null; then
+            cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"1}" > /dev/null || cli_success=false
+            cli -c "app chart_release update chart_release=\"$app_name\" values={\"global\": {\"stopAll\": false}}" > /dev/null || cli_success=false
+        else
+            cli_success=$(cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replica_count}" > /dev/null) && true || false
+        fi
+
+        # Check if all cli commands were successful
+        if $cli_success; then
             echo -e "${blue}$app_name ${green}Started${reset}"
             echo -e "${green}Replica count set to ${blue}$replica_count${reset}"
         else

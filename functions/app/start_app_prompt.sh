@@ -43,10 +43,16 @@ start_app_prompt(){
         cli_success=true
 
         if [[ $output == "${app_name},stopAll-on" ]]; then
-            cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"1}" > /dev/null || cli_success=false
-            cli -c "app chart_release update chart_release=\"$app_name\" values={\"global\": {\"stopAll\": false}}" > /dev/null || cli_success=false
+            if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"1}" > /dev/null; then
+                cli_success=false
+            fi
+            if ! cli -c "app chart_release update chart_release=\"$app_name\" values={\"global\": {\"stopAll\": false}}" > /dev/null; then
+                cli_success=false
+            fi
         else
-            cli_success=$(cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replica_count}" > /dev/null) && true || false
+            if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replica_count}" > /dev/null; then
+                cli_success=false
+            fi
         fi
 
         # Check if all cli commands were successful

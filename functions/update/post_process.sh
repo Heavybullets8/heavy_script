@@ -46,6 +46,11 @@ handle_rollback() {
     fi                    
 }
 
+failed_rollback() {
+    echo_array+=("Error: Application did not come up even after a rollback")
+    echo_array+=("Manual intervention is required\nStopping, then Abandoning")
+}
+
 check_rollback_availability() {
     if printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},operator"; then
         echo_array+=("Error: $app_name contains an operator instance, and cannot be rolled back")
@@ -92,6 +97,7 @@ post_process(){
                     SECONDS=0
                     continue
                 else
+                    failed_rollback
                     update_stop_handler 'Stopping...'
                     break
                 fi

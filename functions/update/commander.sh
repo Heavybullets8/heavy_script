@@ -196,10 +196,6 @@ commander() {
     mapfile -t array < <(get_app_info)
     echo_updates_header
     
-    if [[ $rollback == true ]]; then 
-        get_apps_with_status
-    fi
-
     display_update_status
     process_apps
 
@@ -207,6 +203,10 @@ commander() {
         echo
         echo
         return
+    fi
+
+    if [[ $rollback == true ]]; then 
+        get_apps_with_status
     fi
 
     handle_concurrency

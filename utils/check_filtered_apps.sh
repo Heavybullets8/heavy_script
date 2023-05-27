@@ -12,6 +12,11 @@ check_filtered_apps() {
             else
                 empty
             end,
+            if .config.cnpg.main.enabled == true then
+                .name + ",cnpg"
+            else
+                empty
+            end,
             if .config.global.stopAll == true then
                 .name + ",stopAll-on"
             elif .config.global.stopAll == false then

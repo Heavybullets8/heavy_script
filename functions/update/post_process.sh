@@ -51,6 +51,8 @@ check_rollback_availability() {
         echo_array+=("Error: $app_name contains an operator instance, and cannot be rolled back")
         return 1
     fi
+    
+    return 0
 }
 
 post_process(){

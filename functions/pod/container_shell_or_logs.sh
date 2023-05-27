@@ -160,13 +160,19 @@ cmd_execute_shell() {
         read -rsn1 -d ' ' ; echo
         clear -x
         title
-        if ! k3s kubectl exec -n "ix-$app_name" "${pod}" -c "$container" -it -- sh -c '[ -e /bin/bash ] && exec /bin/bash || exec /bin/sh'; then
+        k3s kubectl exec -n "ix-$app_name" "${pod}" -c "$container" -it -- sh -c '[ -e /bin/bash ] && exec /bin/bash || exec /bin/sh' 2> >(grep -v "command terminated with exit code 130" >&2)
+        status=$?
+        if [[ $status -eq 130 ]]; then
+            echo "Received exit code 130, ignoring it."
+        elif [[ $status -ne 0 ]]; then
             echo -e "${red}This container does not accept shell access, try a different one.${reset}"
         fi
         break
     done
 }
 export -f cmd_execute_shell
+
+
 
 cmd_execute_logs() {
     local lines

@@ -184,7 +184,8 @@ mount_app_func(){
             echo -e "${bold}Unmount Manually with:${reset}\n${blue}zfs set mountpoint=legacy \"$full_path\" && rmdir /mnt/*/mounted_pvc/$data_name${reset}"
         fi
         echo
-        echo -e "Or use the Unmount All option"
+        echo -e "${bold}Or use the Unmount All option:${reset}"
+        echo -e "${blue}heavyscript pvc --unmount${reset}"
 
         #Ask if user would like to mount something else
         while true

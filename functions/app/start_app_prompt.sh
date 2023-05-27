@@ -36,17 +36,27 @@ start_app_prompt(){
 
         echo -e "Starting ${blue}$app_name${reset}..."
 
-
         # Check if app is a cnpg instance, or an operator instance
         output=$(check_filtered_apps "$app_name")
 
-        if [[ $output == "${app_name},cnpg" ]]; then
-            scale_resources "$app_name" 120 "$replica_count"
-            #TODO: Add a check to ensure the pods are running
-            echo -e "${yellow}Sent the command to start all pods in: $app_name${reset}"
-            echo -e "${yellow}However, HeavyScript cannot monitor the new applications${reset}"
-            echo -e "${yellow}with the new postgres backend to ensure it worked..${reset}"
-        elif cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replica_count}" &> /dev/null; then
+        # Initialize a flag
+        cli_success=true
+
+        if [[ $output == "${app_name},stopAll-on" ]]; then
+            if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"1}" > /dev/null; then
+                cli_success=false
+            fi
+            if ! cli -c "app chart_release update chart_release=\"$app_name\" values={\"global\": {\"stopAll\": false}}" > /dev/null; then
+                cli_success=false
+            fi
+        else
+            if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replica_count}" > /dev/null; then
+                cli_success=false
+            fi
+        fi
+
+        # Check if all cli commands were successful
+        if $cli_success; then
             echo -e "${blue}$app_name ${green}Started${reset}"
             echo -e "${green}Replica count set to ${blue}$replica_count${reset}"
         else

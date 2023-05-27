@@ -8,6 +8,44 @@ get_current_replica_counts() {
     k3s kubectl get deploy -n ix-"$app_name" -o json | jq -r '[.items[] | select(.metadata.labels.cnpg != "true" and (.metadata.name | contains("-cnpg-main-") | not)) | {(.metadata.name): .spec.replicas}] | add'
 }
 
+wait_for_pods_to_stop() {
+    local app_name timeout deployment_name
+    app_name="$1"
+    timeout="$2"
+
+    SECONDS=0
+    while true; do
+        # If a specific deployment is provided, check only its pods
+        if ! k3s kubectl get pods -n ix-"$app_name" \
+                --field-selector=status.phase!=Succeeded,status.phase!=Failed -o=name \
+                | grep -vE -- '-[[:digit:]]$' \
+                | rev | cut -d- -f3- | rev \
+                | grep -vE -- "-cnpg$|-cnpg-" \
+                | grep -qE -- "$deployment_name$"; then
+            break
+        fi
+        if [[ "$SECONDS" -gt $timeout ]]; then
+            return 1
+        fi
+        sleep 1
+    done
+}
+
+scale_deployments() {
+    local app_name timeout replicas deployment_name
+    app_name="$1"
+    timeout="$2"
+    replicas="${3:-$(pull_replicas "$app_name")}"
+    deployment_name="$4"
+
+    # Specific deployment passed, scale only this deployment
+    k3s kubectl scale deployments/"$deployment_name" -n ix-"$app_name" --replicas="$replicas"
+
+    if [[ $replicas -eq 0 ]]; then
+        wait_for_pods_to_stop "$app_name" "$timeout" "$deployment_name" && return 0 || return 1
+    fi
+}
+
 dump_database() {
     app="$1"
     output_dir="$2/${app}"

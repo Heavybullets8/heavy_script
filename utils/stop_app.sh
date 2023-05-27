@@ -1,41 +1,5 @@
 #!/bin/bash
 
-
-wait_for_pods_to_stop() {
-    local app_name timeout deployment_name
-    app_name="$1"
-    timeout="$2"
-    deployment_name="$3"
-
-    SECONDS=0
-    while true; do
-        if [[ -n "$deployment_name" ]]; then
-            # If a specific deployment is provided, check only its pods
-            if ! k3s kubectl get pods -n ix-"$app_name" \
-                    --field-selector=status.phase!=Succeeded,status.phase!=Failed -o=name \
-                    | grep -vE -- '-[[:digit:]]$' \
-                    | rev | cut -d- -f3- | rev \
-                    | grep -vE -- "-cnpg$|-cnpg-" \
-                    | grep -qE -- "$deployment_name$"; then
-                break
-            fi
-        else
-            # If no specific deployment is provided, check any non-CNPG pods
-            if ! k3s kubectl get pods -n ix-"$app_name" \
-                    --field-selector=status.phase!=Succeeded,status.phase!=Failed -o=name \
-                    | grep -v -- '-cnpg-' \
-                    | grep -vqE -- '-[[:digit:]]$'; then
-                break
-            fi
-        fi
-        if [[ "$SECONDS" -gt $timeout ]]; then
-            return 1
-        fi
-        sleep 1
-    done
-}
-
-
 get_app_status() {
     local app_name stop_type
     app_name="$1"
@@ -46,7 +10,8 @@ get_app_status() {
     else
         cli -m csv -c 'app chart_release query name,status' | \
             grep -- "^$app_name," | \
-            awk -F ',' '{print $2}'
+            awk -F ',' '{print $2}' | \
+            tr -d " \t\r"
     fi
 }
 
@@ -84,30 +49,37 @@ stop_app() {
     app_name="$2"
     timeout="150"
 
-    # Check if app is a cnpg instance, or an operator instance
-    output=$(check_filtered_apps "$app_name")
-
-    # Check if the output contains the desired namespace and "cnpg" or "operator"
-    if [[ $output == "${app_name},cnpg" ]]; then
-        scale_resources "$app_name" "$timeout" 0 && return 0 || return 1
-    elif [[ $output == "${app_name},operator" ]]; then
-        return 3
-    fi
-
+    handle_timeout() {
+        local timeout_result=$1
+        if [[ $timeout_result -eq 0 ]]; then
+            return 0
+        elif [[ $timeout_result -eq 124 ]]; then
+            return 2
+        else
+            return 1
+        fi
+    }
 
     status=$(get_app_status "$app_name" "$stop_type")
+
     if [[ "$status" == "STOPPED" ]]; then
         return 0
     fi
 
-    timeout "${timeout}s" cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' &> /dev/null
-    timeout_result=$?
+    output=$(check_filtered_apps "$app_name")
 
-    if [[ $timeout_result -eq 0 ]]; then
-        return 0
-    elif [[ $timeout_result -eq 124 ]]; then
-        return 2
-    fi
-
-    return 1
+    # Check if the output contains the desired namespace and "cnpg" or "operator"
+    case $output in
+        "${app_name},stopAll-on" | "${app_name},stopAll-off")
+            timeout "${timeout}s" cli -c "app chart_release update chart_release=\"$app_name\" values={\"global\": {\"stopAll\": true}}" > /dev/null
+            handle_timeout $?
+            ;;
+        "${app_name},operator")
+            return 3
+            ;;
+        *)
+            timeout "${timeout}s" cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' > /dev/null
+            handle_timeout $?
+            ;;
+    esac
 }

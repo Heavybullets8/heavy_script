@@ -78,6 +78,19 @@ skip_previously_failed_version() {
     return 1
 }
 
+get_apps_with_status() {
+    local app_name status
+
+    # Call the existing function and process its output
+    while IFS=, read -r app_name status; do
+        # If the status is "stopAll-on" or "operator", append the app_name and status to the apps_with_status array
+        if [[ "$status" == "stopAll-on" ]] || [[ "$status" == "operator" ]]; then
+            apps_with_status+=("$app_name,$status")
+        fi
+    done < <(check_filtered_apps "${array[@]/,*}")
+
+}
+
 # Skip if the image update should be ignored
 skip_image_update() {
     if [[ $old_full_ver == "$new_full_ver" && $ignore_image_update == true ]]; then
@@ -179,8 +192,10 @@ handle_concurrency() {
 
 
 commander() {
+    apps_with_status=()
     mapfile -t array < <(get_app_info)
     echo_updates_header
+    
     display_update_status
     process_apps
 
@@ -188,6 +203,10 @@ commander() {
         echo
         echo
         return
+    fi
+
+    if [[ $rollback == true ]]; then 
+        get_apps_with_status
     fi
 
     handle_concurrency

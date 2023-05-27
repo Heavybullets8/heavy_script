@@ -4,10 +4,9 @@
 check_filtered_apps() {
     # Define a function to process each app name
     process_app_name() {
-        appname=$1
+        local app_name=$1
 
-        # Run the command and directly check if the values are true, and include the reason
-        midclt call chart.release.get_instance "$appname" | jq -r '
+        midclt call chart.release.get_instance "$app_name" | jq -r '
             if .config.operator.enabled == true then
                 .name + ",operator"
             else
@@ -15,6 +14,13 @@ check_filtered_apps() {
             end,
             if .config.cnpg.main.enabled == true then
                 .name + ",cnpg"
+            else
+                empty
+            end,
+            if .config.global.stopAll == true then
+                .name + ",stopAll-on"
+            elif .config.global.stopAll == false then
+                .name + ",stopAll-off"
             else
                 empty
             end
@@ -48,9 +54,9 @@ check_filtered_apps() {
     fi
 
     # Process the app names with a maximum of 5 concurrent processes
-    for appname in "${app_names[@]}"; do
+    for app_name in "${app_names[@]}"; do
         wait_for_slot
-        process_app_name "$appname" &
+        process_app_name "$app_name" &
     done
 
     # Wait for any remaining jobs to finish

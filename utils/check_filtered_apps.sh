@@ -26,7 +26,6 @@ check_filtered_apps() {
             end
             | select(length > 0)
         '
-
     }
 
     # Define a function to wait for a free slot in the semaphore

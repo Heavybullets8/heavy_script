@@ -52,7 +52,7 @@ check_and_scale_deployment() {
     deployment_name="$2"
 
     # Get the status of the deployment
-    status=$(k3s kubectl get deployments/"$deployment_name" -n ix-"$app_name" -o jsonpath='{.status.readyReplicas}')
+    status=$(k3s kubectl get deployments/"${app_name}${deployment_name}" -n ix-"$app_name" -o jsonpath='{.status.readyReplicas}')
 
     # If status is not 1, scale up the deployment
     if [[ "$status" -ne 1 ]]; then

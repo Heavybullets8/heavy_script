@@ -43,7 +43,7 @@ start_app_prompt(){
         cli_success=true
 
         if [[ $output == "${app_name},stopAll-on" ]]; then
-            if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"1}" > /dev/null; then
+            if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replica_count}" > /dev/null; then
                 cli_success=false
             fi
             if ! cli -c "app chart_release update chart_release=\"$app_name\" values={\"global\": {\"stopAll\": false}}" > /dev/null; then

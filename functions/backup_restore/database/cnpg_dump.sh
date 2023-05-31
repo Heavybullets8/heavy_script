@@ -46,6 +46,20 @@ scale_deployments() {
     fi
 }
 
+check_and_scale_deployment() {
+    local app_name deployment_name
+    app_name="$1"
+    deployment_name="$2"
+
+    # Get the status of the deployment
+    status=$(k3s kubectl get deployments/"$deployment_name" -n ix-"$app_name" -o jsonpath='{.status.readyReplicas}')
+
+    # If status is not 1, scale up the deployment
+    if [[ "$status" -ne 1 ]]; then
+        scale_deployments "$app_name" 300 1 "$deployment_name"
+    fi
+}
+
 dump_database() {
     app="$1"
     output_dir="$2/${app}"
@@ -65,6 +79,9 @@ dump_database() {
         echo_backup+=("Failed to get database name for $app.")
         return 1
     fi
+
+    # Check and scale up the deployment if necessary
+    check_and_scale_deployment "$app" "cnpg-main-1"
 
     # Create the output directory if it doesn't exist
     mkdir -p "${output_dir}"

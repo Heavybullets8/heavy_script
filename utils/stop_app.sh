@@ -70,17 +70,13 @@ stop_app() {
     fi
 
     # Check if the output contains the desired namespace and "cnpg" or "operator"
-    case $output in
-        "${app_name},stopAll-on" | "${app_name},stopAll-off")
-            timeout "${timeout}s" cli -c "app chart_release update chart_release=\"$app_name\" values={\"global\": {\"stopAll\": true}}" > /dev/null
-            handle_timeout $?
-            ;;
-        "${app_name},operator")
-            return 3
-            ;;
-        *)
-            timeout "${timeout}s" cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' > /dev/null
-            handle_timeout $?
-            ;;
-    esac
+    if echo "$output" | grep -q "${app_name},stopAll-*"; then
+        timeout "${timeout}s" cli -c "app chart_release update chart_release=\"$app_name\" values={\"global\": {\"stopAll\": true}}" > /dev/null
+        handle_timeout $?
+    elif echo "$output" | grep -q "${app_name},operator"; then
+        return 3
+    else
+        timeout "${timeout}s" cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": 0}' > /dev/null
+        handle_timeout $?
+    fi
 }

@@ -66,6 +66,12 @@ dump_database() {
         return 1
     fi
 
+    # Check if the app is already running
+    if [[ $(cli -m csv -c 'app chart_release query name,status' | tr -d " \t\r" | grep "^$app_name," | awk -F, '{print $2}') == "STOPPED" ]]; then
+        # Start the app
+        start_app "$app" 1
+    fi
+
     # Create the output directory if it doesn't exist
     mkdir -p "${output_dir}"
 
@@ -116,23 +122,69 @@ display_app_sizes() {
     echo -e "$output" | column -t -s $'\t'
 }
 
+db_dump_get_app_status() {
+    # Get application names from deployments
+    mapfile -t cnpg_apps < <(k3s kubectl get deployments --all-namespaces | grep -E '^(ix-.*\s).*-cnpg-main-' | awk '{gsub(/^ix-/, "", $1); print $1}')
+
+    # Store the output of the `cli` command into a variable
+    chart_release_output=$(cli -m csv -c 'app chart_release query name,status' | tr -d " \t\r" | tail -n +2)
+
+    declare -a app_status_lines
+
+    # For each app, grep its line from the `cli` command output and add it to the array
+    for app_name in "${cnpg_apps[@]}"; do
+        app_status_line=$(echo "$chart_release_output" | grep "^$app_name,")
+        app_status_lines+=("$app_status_line")
+    done
+
+    for line in "${app_status_lines[@]}"; do
+        echo "$line"
+    done
+}
+
+wait_for_postgres_pod() {
+    app_name=$1
+
+    # shellcheck disable=SC2034
+    for i in {1..30}; do
+        pod_status=$(k3s kubectl get pods "${app_name}-cnpg-main-1" -n "ix-${app_name}" -o jsonpath="{.status.phase}")
+
+        if [[ "$pod_status" == "Running" ]]; then
+            return 0
+        else
+            sleep 5
+        fi
+    done
+    return 1
+}
+
+
 backup_cnpg_databases() {
     retention=$1
     timestamp=$2
     dump_folder=$3
-    declare cnpg_apps=()
+    local db_dump_stopped=false
     local failure=false
 
-    mapfile -t cnpg_apps < <(k3s kubectl get deployments --all-namespaces | grep -E '^(ix-.*\s).*-cnpg-main-' | awk '{gsub(/^ix-/, "", $1); print $1}')
+    mapfile -t app_status_lines < <(db_dump_get_app_status)
 
-    if [[ ${#cnpg_apps[@]} -eq 0 ]]; then
+    if [[ ${#app_status_lines[@]} -eq 0 ]]; then
         return
     fi
 
-    for app in "${cnpg_apps[@]}"; do
+    for app in "${app_status_lines[@]}"; do
+        app_name=$(echo "$app" | awk -F, '{print $1}')
+        app_status=$(echo "$app" | awk -F, '{print $2}')
+
+        if [[ $app_status == "STOPPED" ]]; then
+            start_app "$app_name" 1
+            wait_for_postgres_pod "$app_name"
+            db_dump_stopped=true
+        fi
+
         # Store the current replica counts for all deployments in the app before scaling down
         declare -A original_replicas=()
-        mapfile -t replica_lines < <(get_current_replica_counts "$app" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
+        mapfile -t replica_lines < <(get_current_replica_counts "$app_name" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
         for line in "${replica_lines[@]}"; do
             read -r key value <<< "$(echo "$line" | tr '=' ' ')"
             original_replicas["$key"]=$value
@@ -140,19 +192,24 @@ backup_cnpg_databases() {
 
         for deployment in "${!original_replicas[@]}"; do
             if [[ ${original_replicas[$deployment]} -ne 0 ]]; then
-                scale_resources "$app" 300 0 "$deployment" > /dev/null 2>&1
+                scale_resources "$app_name" 300 0 "$deployment" > /dev/null 2>&1
             fi
         done
 
-        if ! dump_database "$app" "$dump_folder"; then
-            echo_backup+=("Failed to back up $app's database.")
+        if ! dump_database "$app_name" "$dump_folder"; then
+            echo_backup+=("Failed to back up $app_name's database.")
             failure=true
+        fi
+
+        if [[ $db_dump_stopped == true ]];then
+            stop_app "direct" "$app_name"
+            continue
         fi
 
         # Scale the resources back to the original replica counts
         for deployment in "${!original_replicas[@]}"; do
             if [[ ${original_replicas[$deployment]} -ne 0 ]]; then
-                scale_resources "$app" 300 "${original_replicas[$deployment]}" "$deployment" > /dev/null 2>&1
+                scale_resources "$app_name" 300 "${original_replicas[$deployment]}" "$deployment" > /dev/null 2>&1
             fi
         done
 

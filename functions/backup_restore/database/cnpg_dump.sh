@@ -123,36 +123,33 @@ display_app_sizes() {
 }
 
 get_app_status() {
-  # Get application names from deployments
-  mapfile -t cnpg_apps < <(k3s kubectl get deployments --all-namespaces | grep -E '^(ix-.*\s).*-cnpg-main-' | awk '{gsub(/^ix-/, "", $1); print $1}')
+    # Get application names from deployments
+    mapfile -t cnpg_apps < <(k3s kubectl get deployments --all-namespaces | grep -E '^(ix-.*\s).*-cnpg-main-' | awk '{gsub(/^ix-/, "", $1); print $1}')
 
-  # Store the output of the `cli` command into a variable
-  chart_release_output=$(cli -m csv -c 'app chart_release query name,status' | tr -d " \t\r" | tail -n +2)
+    # Store the output of the `cli` command into a variable
+    chart_release_output=$(cli -m csv -c 'app chart_release query name,status' | tr -d " \t\r" | tail -n +2)
 
-  # Declare an empty array to store the output lines
-  declare -a app_status_lines
-
-  # For each app, grep its line from the `cli` command output and add it to the array
-  for app_name in "${cnpg_apps[@]}"; do
-      app_status_line=$(echo "$chart_release_output" | grep "^$app_name,")
-      app_status_lines+=("$app_status_line")
-  done
+    # For each app, grep its line from the `cli` command output and add it to the array
+    for app_name in "${cnpg_apps[@]}"; do
+        app_status_line=$(echo "$chart_release_output" | grep "^$app_name,")
+        app_status_lines+=("$app_status_line")
+    done
 }
 
 backup_cnpg_databases() {
     retention=$1
     timestamp=$2
     dump_folder=$3
-    declare cnpg_apps=()
+    declare app_status_lines=()
     local failure=false
 
     get_app_status
 
-    if [[ ${#cnpg_apps[@]} -eq 0 ]]; then
+    if [[ ${#app_status_lines[@]} -eq 0 ]]; then
         return
     fi
 
-    for app in "${cnpg_apps[@]}"; do
+    for app in "${app_status_lines[@]}"; do
         app_name=$(echo "$app" | awk -F, '{print $1}')
         app_status=$(echo "$app" | awk -F, '{print $2}')
 

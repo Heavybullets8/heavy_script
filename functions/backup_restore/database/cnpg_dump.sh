@@ -129,10 +129,16 @@ get_app_status() {
     # Store the output of the `cli` command into a variable
     chart_release_output=$(cli -m csv -c 'app chart_release query name,status' | tr -d " \t\r" | tail -n +2)
 
+    declare -a app_status_lines
+
     # For each app, grep its line from the `cli` command output and add it to the array
     for app_name in "${cnpg_apps[@]}"; do
         app_status_line=$(echo "$chart_release_output" | grep "^$app_name,")
         app_status_lines+=("$app_status_line")
+    done
+
+    for line in "${app_status_lines[@]}"; do
+        echo "$line"
     done
 }
 
@@ -140,10 +146,9 @@ backup_cnpg_databases() {
     retention=$1
     timestamp=$2
     dump_folder=$3
-    declare app_status_lines=()
     local failure=false
 
-    get_app_status
+    mapfile -t app_status_lines < <(get_app_status)
 
     if [[ ${#app_status_lines[@]} -eq 0 ]]; then
         return

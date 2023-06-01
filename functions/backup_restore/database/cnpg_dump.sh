@@ -163,6 +163,7 @@ backup_cnpg_databases() {
     retention=$1
     timestamp=$2
     dump_folder=$3
+    local db_dump_stopped=false
     local failure=false
 
     mapfile -t app_status_lines < <(db_dump_get_app_status)
@@ -178,6 +179,7 @@ backup_cnpg_databases() {
         if [[ $app_status == "STOPPED" ]]; then
             start_app "$app_name" 1
             wait_for_postgres_pod "$app_name"
+            db_dump_stopped=true
         fi
 
         # Store the current replica counts for all deployments in the app before scaling down
@@ -197,6 +199,11 @@ backup_cnpg_databases() {
         if ! dump_database "$app_name" "$dump_folder"; then
             echo_backup+=("Failed to back up $app_name's database.")
             failure=true
+        fi
+
+        if [[ $db_dump_stopped == true ]];then
+            stop_app "$app_name" "direct"
+            continue
         fi
 
         # Scale the resources back to the original replica counts

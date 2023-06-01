@@ -142,6 +142,23 @@ db_dump_get_app_status() {
     done
 }
 
+wait_for_postgres_pod() {
+    app_name=$1
+
+    # shellcheck disable=SC2034
+    for i in {1..30}; do
+        pod_status=$(k3s kubectl get pods "${app_name}-cnpg-main-1" -n "ix-${app_name}" -o jsonpath="{.status.phase}")
+
+        if [[ "$pod_status" == "Running" ]]; then
+            return 0
+        else
+            sleep 5
+        fi
+    done
+    return 1
+}
+
+
 backup_cnpg_databases() {
     retention=$1
     timestamp=$2
@@ -160,6 +177,7 @@ backup_cnpg_databases() {
 
         if [[ $app_status == "STOPPED" ]]; then
             start_app "$app_name" 1
+            wait_for_postgres_pod "$app_name"
         fi
 
         # Store the current replica counts for all deployments in the app before scaling down

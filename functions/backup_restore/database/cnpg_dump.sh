@@ -122,7 +122,7 @@ display_app_sizes() {
     echo -e "$output" | column -t -s $'\t'
 }
 
-get_app_status() {
+db_dump_get_app_status() {
     # Get application names from deployments
     mapfile -t cnpg_apps < <(k3s kubectl get deployments --all-namespaces | grep -E '^(ix-.*\s).*-cnpg-main-' | awk '{gsub(/^ix-/, "", $1); print $1}')
 
@@ -148,7 +148,7 @@ backup_cnpg_databases() {
     dump_folder=$3
     local failure=false
 
-    mapfile -t app_status_lines < <(get_app_status)
+    mapfile -t app_status_lines < <(db_dump_get_app_status)
 
     if [[ ${#app_status_lines[@]} -eq 0 ]]; then
         return

@@ -16,8 +16,6 @@ delete_app_prompt(){
         clear -x
         title
 
-        echo -e "Stopping ${blue}$app_name${reset}..."
-
         echo -e "${bold}Chosen Application: ${blue}$app_name${reset}"
         echo -e "${yellow}WARNING: This will delete the application and all associated data, including snapshots${reset}"
         echo

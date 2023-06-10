@@ -27,13 +27,6 @@ rollbacks_disabled(){
     echo_array+=("Manual intervention is required\nStopping, then Abandoning")
 }
 
-handle_wait() {
-    if [[ "$verbose" == true ]]; then
-        echo_array+=("Waiting $((timeout-SECONDS)) more seconds for $app_name to be ACTIVE")
-    fi
-    sleep 5
-}
-
 handle_rollback() {
     echo_array+=("Error: Run Time($SECONDS) for $app_name has exceeded Timeout($timeout)")
     echo_array+=("If this is a slow starting application, set a higher timeout with -t")
@@ -81,6 +74,9 @@ post_process(){
         status=$(update_status)
 
         if [[ "$status"  ==  "ACTIVE" ]]; then
+            if [[ "$verbose" == true ]]; then
+                echo_array+=("$app_name became Active after $SECONDS seconds")
+            fi
             if [[ "$startstatus"  ==  "STOPPED" ]]; then
                 update_stop_handler 'Returing to STOPPED state...'
             else
@@ -107,10 +103,11 @@ post_process(){
                 break
             fi
         else
-            handle_wait
+            sleep 5
         fi
     done
 
     echo_array
 }
 export -f post_process
+

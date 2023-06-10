@@ -17,7 +17,7 @@ get_running_job_id(){
 
 start_app(){
     local app_name=$1
-    local replica_count=$2
+    local replica_count=${2:-$(pull_replicas "$app_name")}
     local job_id
 
     # Check if app is a cnpg instance, or an operator instance

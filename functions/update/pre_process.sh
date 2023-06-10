@@ -106,6 +106,13 @@ pre_process() {
         return
     fi
 
+    if [[ $stop_before_update == true && "$startstatus" != "STOPPED" ]]; then
+        if ! start_app "$app_name"; then
+            echo_array
+            return
+        fi
+    fi
+
     if [[ $rollback == true || "$startstatus"  ==  "STOPPED" ]]; then
         if printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},stopAll-on"; then
             echo_array+=("Stopped")

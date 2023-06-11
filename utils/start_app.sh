@@ -2,20 +2,45 @@
 
 abort_job(){
     local app_name=$1
-    job_id=""
+    job_ids=""
 
     # shellcheck disable=SC2034
     for i in {1..60}; do
-        job_id=$(get_running_job_id "$app_name")
+        job_ids=$(get_running_job_id "$app_name")
 
-        if [[ -n "$job_id" ]]; then
-            midclt call core.job_abort "$job_id" > /dev/null 2>&1
+        if [[ -n "$job_ids" ]]; then
+            while IFS= read -r job_id; do
+                midclt call core.job_abort "$job_id" > /dev/null 2>&1
+            done <<< "$job_ids"
             return 0
         fi
 
         sleep 1
     done
     return 1
+}
+
+wait_for_redeploy_methods(){
+    local app_name=$1
+    local methods=""
+    
+    # shellcheck disable=SC2034
+    for i in {1..60}; do
+        methods=$(get_running_methods "$app_name")
+        
+        if [[ "$methods" == *"chart.release.redeploy"* && "$methods" == *"chart.release.redeploy_internal"* ]]; then
+            return 0
+        fi
+        
+        sleep 1
+    done
+    return 1
+}
+
+get_running_methods(){
+    local app_name=$1
+    midclt call core.get_jobs | jq -r --arg app_name "$app_name" \
+        '.[] | select( .time_finished == null and .state == "RUNNING" and (.arguments[0] == $app_name)) | .method'
 }
 
 get_running_job_id(){
@@ -32,17 +57,16 @@ start_app(){
     # Check if app is a cnpg instance, or an operator instance
     output=$(check_filtered_apps "$app_name")
     if [[ $output == *"${app_name},stopAll-on"* ]]; then
-        midclt call chart.release.update "$app_name" '{"values": {"global": {"stopAll": false}}}'
-        # if ! cli -c "app chart_release update chart_release=\"$app_name\" values={\"global\": {\"stopAll\": false}}" > /dev/null 2>&1; then
-        #     return 1
-        # fi
+        if ! cli -c "app chart_release update chart_release=\"$app_name\" values={\"global\": {\"stopAll\": false}}" > /dev/null 2>&1; then
+            return 1
+        fi
         abort_job "$app_name"
-        # job_id=$(midclt call chart.release.scale "$app_name" '{"replica_count": '"$replica_count"'}') || return 1
-        # sleep 5
-        # midclt call core.job_abort "$job_id" > /dev/null 2>&1
+        job_id=$(midclt call chart.release.scale "$app_name" '{"replica_count": '"$replica_count"'}') || return 1
+        wait_for_redeploy_methods "$app_name"
+        midclt call core.job_abort "$job_id" > /dev/null 2>&1
     elif [[ $output == *"${app_name},stopAll-off"* ]]; then
         job_id=$(midclt call chart.release.scale "$app_name" '{"replica_count": '"$replica_count"'}') || return 1
-        sleep 5
+        wait_for_redeploy_methods "$app_name"
         midclt call core.job_abort "$job_id" > /dev/null 2>&1
     else
         if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replica_count}" > /dev/null 2>&1; then

@@ -75,7 +75,7 @@ post_process(){
 
         if [[ "$status"  ==  "ACTIVE" ]]; then
             if [[ "$verbose" == true ]]; then
-                echo_array+=("$app_name became Active after $SECONDS seconds")
+                echo_array+=("Became Active after $SECONDS seconds")
             fi
             if [[ "$startstatus"  ==  "STOPPED" ]]; then
                 update_stop_handler 'Returing to STOPPED state...'

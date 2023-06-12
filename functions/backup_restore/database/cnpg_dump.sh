@@ -147,7 +147,7 @@ wait_for_postgres_pod() {
 
     # shellcheck disable=SC2034
     for i in {1..30}; do
-        pod_status=$(k3s kubectl get pods "${app_name}-cnpg-main-1" -n "ix-${app_name}" -o jsonpath="{.status.phase}")
+        pod_status=$(k3s kubectl get pods "${app_name}-cnpg-main-1" -n "ix-${app_name}" -o jsonpath="{.status.phase}" 2>/dev/null)
 
         if [[ "$pod_status" == "Running" ]]; then
             return 0
@@ -157,7 +157,6 @@ wait_for_postgres_pod() {
     done
     return 1
 }
-
 
 backup_cnpg_databases() {
     retention=$1

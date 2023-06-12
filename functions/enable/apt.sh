@@ -23,12 +23,10 @@ if [ "$success" = true ]; then
     echo -e "\n${bold}Example usage:${reset}"
     echo -e "For most use cases, use ${blue}apt${reset}:"
     echo -e "  ${blue}apt update${reset}"
-    echo -e "  ${blue}apt upgrade${reset}"
     echo -e "  ${blue}apt install package_name${reset}"
     
     echo -e "\nFor advanced users or specific cases, you can use ${blue}apt-get${reset}:"
     echo -e "  ${blue}apt-get update${reset}"
-    echo -e "  ${blue}apt-get upgrade${reset}"
     echo -e "  ${blue}apt-get install package_name${reset}"
 fi
 }

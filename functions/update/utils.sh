@@ -41,6 +41,28 @@ rollback_app() {
     return 1
 }
 
+handle_snapshot_error() {
+    error_message=$(cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' 2>&1 >/dev/null)
+
+    # Check if the error message indicates a snapshot error
+    if [[ $error_message =~ "cannot create snapshot" ]]; then
+        # Extract the snapshot name from the error message
+        snapshot_name=$(echo "$error_message" | grep "cannot create snapshot" | cut -d "'" -f 2)
+
+        # Destroy the snapshot
+        if zfs destroy "$snapshot_name"; then
+            return 0
+        else
+            return 1
+        fi
+    else
+        # If the error message does not indicate a snapshot error, return an error code
+        return 1
+    fi
+}
+export -f handle_snapshot_error
+
+# Update function
 update_app() {
     # Attempt to update the app until successful or no updates are available
     while true; do
@@ -55,11 +77,17 @@ update_app() {
                     # If the update was successful, return 0
                     return 0
                 else
-                    # Upon failure, wait for status update before continuing
-                    before_loop=$(head -n 1 all_app_status)
-                    until [[ $(head -n 1 all_app_status) != "$before_loop" ]]; do
-                        sleep 1
-                    done
+                    # Upon failure, handle the snapshot error
+                    if handle_snapshot_error; then
+                        # If the snapshot error was successfully handled, try updating the app again
+                        continue
+                    else
+                        # Upon failure, wait for status update before continuing
+                        before_loop=$(head -n 1 all_app_status)
+                        until [[ $(head -n 1 all_app_status) != "$before_loop" ]]; do
+                            sleep 1
+                        done
+                    fi
                 fi
             done
             # If the app was not successfully updated after 3 attempts, return an error code

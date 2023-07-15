@@ -84,7 +84,7 @@ get_apps_with_status() {
     # Call the existing function and process its output
     while IFS=, read -r app_name status; do
         # If the status is "stopAll-on" or "operator", append the app_name and status to the apps_with_status array
-        if [[ "$status" == "stopAll-on" ]] || [[ "$status" == "operator" ]]; then
+        if [[ "$status" == "stopAll-on" ]] || [[ "$status" == "operator" ]] || [[ "$status" == "cnpg" ]]; then
             apps_with_status+=("$app_name,$status")
         fi
     done < <(check_filtered_apps "${array[@]/,*}")

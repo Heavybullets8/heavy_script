@@ -20,6 +20,9 @@ app_handler() {
         -h|--help)
             app_help
             ;;
+        -l|--logs)
+            generate_app_logs_prompt "${args[@]:1}"
+            ;;
         *)
             echo "Unknown app action: ${args[0]}"
             app_help

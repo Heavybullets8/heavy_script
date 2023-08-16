@@ -86,12 +86,12 @@ dump_database() {
 # remove databases, keep up to the number of dumps specified, traverse each subdirectory and remove the oldest dumps that exceed the number specified
 remove_old_dumps() {
     local main_directory="$1"
-    local retention=$2
+    local retention="$2"
 
     # Traverse each subdirectory
     find "$main_directory" -mindepth 1 -type d | while IFS= read -r subdir; do
         # Remove the oldest dumps that exceed the number specified and print their names
-        find "$subdir" -type f -name "*.sql.gz" -printf "%T@ %p\n" | sort -rn | awk -v retention="$retention" 'NR>retention {print $2}' | while IFS= read -r file; do
+        find "$subdir" -type f -name "*.sql.gz" -printf "%T@ %p\n" | sort -rn | tail -n +$((retention + 1)) | cut -d' ' -f2- | while IFS= read -r file; do
             rm "$file"
         done
     done

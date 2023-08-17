@@ -43,9 +43,9 @@ start_app_prompt() {
         # Check if all cli commands were successful
         if start_app "$app_name" "$replica_count"; then
             echo -e "${blue}$app_name ${green}Started${reset}"
-            echo -e "${green}Replica count set to ${blue}$replica_count${reset}"
+            echo -e "${green}Replica count set to ${blue}$replica_count${reset}\n"
         else
-            echo -e "${red}Failed to start ${blue}$app_name${reset}"
+            echo -e "${red}Failed to start ${blue}$app_name${reset}\n"
         fi
     done
 

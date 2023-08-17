@@ -22,10 +22,10 @@ stop_app_prompt(){
         stop_app "normal" "$app_name" "${timeout:-50}"
         result=$(handle_stop_code "$?")
         if [[ $? -eq 1 ]]; then
-            echo -e "${red}${result}${reset}"
+            echo -e "${red}${result}${reset}\n"
             exit 1
         else
-            echo -e "${green}${result}${reset}"
+            echo -e "${green}${result}${reset}\n"
         fi
     done
 

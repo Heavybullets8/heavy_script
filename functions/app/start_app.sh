@@ -1,18 +1,22 @@
 #!/bin/bash
 
+# shellcheck disable=SC2120
+start_app_prompt() {
+    local app_names=("$@") # Get all arguments as an array
 
-start_app_prompt(){
-    while true; do
-        # Prompt user to select an application if one was not passed to the function
-        if [[ -z $1 ]]; then
-            prompt_app_selection "STOPPED" "start"
-            app_name=$(echo "${apps[app_index-1]}" | awk -F ',' '{print $1}')
-            clear -x
-            title
-        else
-            app_name="$1"
-        fi
+    # If the first argument is "ALL", populate the app_names array with all apps
+    if [[ ${app_names[0]} == "ALL" ]]; then
+        mapfile -t app_names < <(cli -m csv -c 'app chart_release query name' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF')
+    fi
 
+    # If no arguments are provided, prompt for app selection
+    if [[ ${#app_names[@]} -eq 0 ]]; then
+        prompt_app_selection "STOPPED" "start"
+        app_name=$(echo "${apps[app_index-1]}" | awk -F ',' '{print $1}')
+        app_names=("$app_name")
+    fi
+
+    for app_name in "${app_names[@]}"; do
         # Query chosen replica count for the application
         replica_count=$(pull_replicas "$app_name")
 
@@ -43,15 +47,20 @@ start_app_prompt(){
         else
             echo -e "${red}Failed to start ${blue}$app_name${reset}"
         fi
+    done
 
-        if [[ -n $1 ]]; then
-            break
-        fi
+    # If app names were provided as arguments, we're done
+    if [[ ${#app_names[@]} -gt 0 ]]; then
+        return
+    fi
 
+    # If not, offer the user a chance to start another app
+    while true; do
         read -rt 120 -p "Would you like to start another application? (y/n): " choice || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
         case "$(echo "$choice" | tr '[:upper:]' '[:lower:]')" in
             "yes"|"y")
-                continue
+                start_app_prompt
+                break
                 ;;
             "no"|"n"|"")
                 break

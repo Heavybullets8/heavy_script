@@ -8,9 +8,21 @@ pull_replicas() {
 }
 
 restart_app(){
-    # There are no good labels to use to identify the deployment, so we have to simply filter out the cnpg deployment for now
-    dep_names=$(k3s kubectl -n ix-"$app_name" get deploy | grep -vE -- '(-cnpg-)' | sed -e '1d' -e 's/ .*//')
-    for dep_name in $dep_names; do
+    # Check if the namespace exists
+    if ! k3s kubectl get namespace ix-"$app_name" &>/dev/null; then
+        return 1
+    fi
+
+    # Get deployments excluding the cnpg ones
+    mapfile -t dep_names < <(k3s kubectl -n ix-"$app_name" get deploy | grep -vE -- '(-cnpg-)' | awk 'NR>1 {print $1}')
+
+    # Check if there are any valid deployments to restart
+    if [[ ${#dep_names[@]} -eq 0 ]]; then
+        return 1
+    fi
+
+    # Restart each deployment
+    for dep_name in "${dep_names[@]}"; do
         if ! k3s kubectl -n ix-"$app_name" rollout restart deploy "$dep_name" &>/dev/null; then
             return 1
         fi

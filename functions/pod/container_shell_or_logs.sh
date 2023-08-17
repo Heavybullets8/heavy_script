@@ -204,7 +204,11 @@ container_shell_or_logs(){
     cmd_get_app_names
     cmd_check_app_names
     cmd_header "$mode"
-    cmd_display_app_menu
+    if [[ -z $2 ]]; then
+        cmd_display_app_menu
+    else
+        app_name=$2
+    fi
     cmd_get_pod
     cmd_get_container
 

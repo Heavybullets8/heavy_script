@@ -9,7 +9,10 @@ enable_handler() {
             enable_kube_api
             ;;
         --apt)
-            enable_apt
+            toggle_apt "enable"
+            ;;
+        --disable-apt)
+            toggle_apt "disable"
             ;;
         --helm)
             enable_helm

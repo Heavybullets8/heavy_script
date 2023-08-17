@@ -23,9 +23,9 @@ restart_app_prompt(){
         echo -e "Restarting ${blue}$app_name${reset}..."
 
         if ! restart_app "$app_name"; then
-            echo -e "${red}Failed to restart ${blue}$app_name${reset}"
+            echo -e "${red}Failed to restart ${blue}$app_name${reset}\n"
         else
-            echo -e "${green}Restarted ${blue}$app_name${reset}"
+            echo -e "${green}Restarted ${blue}$app_name${reset}\n"
         fi
     done
 

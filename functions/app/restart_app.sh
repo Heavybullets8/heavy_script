@@ -16,9 +16,6 @@ restart_app_prompt(){
         app_names=("$app_name")
     fi
 
-    clear -x
-    title
-
     for app_name in "${app_names[@]}"; do
         echo -e "Restarting ${blue}$app_name${reset}..."
 

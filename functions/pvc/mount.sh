@@ -32,7 +32,11 @@ pvc_mount_all_in_namespace() {
 }
 
 pvc_select_app() {
+    clear -x
+    echo -e "${blue}Fetching applications..${reset}"
     mapfile -t apps < <(cli -m csv -c 'app chart_release query name' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF')
+    clear -x
+    title
 
     while true; do
         # Display apps with numbers

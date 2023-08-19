@@ -39,30 +39,24 @@ pvc_select_app() {
     title
 
     while true; do
-        # Display apps with numbers
         echo -e "\nSelect an App:"
         for i in "${!apps[@]}"; do
             echo "$((i+1))) ${apps[$i]}"
         done
         
-        # Provide option to exit
         echo -e "\n0) Exit\n"
 
-        # Get user input
         read -rp "Please type a number: " selection
 
-        # Exit if user selects 0
         if [[ "$selection" == "0" ]]; then
             echo "Exiting..."
             exit 0
         fi
 
-        # If user input is valid, echo the app name and break out of loop
         if [[ "$selection" -ge 1 && "$selection" -le "${#apps[@]}" ]]; then
             app="${apps[$((selection-1))]}"
             break
         else
-            # Display an error message for invalid selection
             echo -e "\n${red}Invalid Selection: ${blue}$selection${red}, was not an option${reset}"
         fi
     done
@@ -98,14 +92,14 @@ mount_app_func() {
     if [[ -z $manual_selection ]]; then
         pvc_select_app
     else
-        app=$manual_selection
-        #verify app is valid
+        app=${manual_selection,,}
         mapfile -t apps < <(cli -m csv -c 'app chart_release query name' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF')
-        if [[ ! " ${apps[*]} " =~ " ${app} " ]]; then
-            echo -e "${red}Error:${reset} $app is not a valid app"
+        if [[ ! " ${apps[*]} " =~ ${app} ]]; then
+            echo -e "${red}Error:${reset} $manual_selection is not a valid app"
             exit 1
         fi
     fi
+
 
     pvc_stop_selected_app "$app"
     sleep 2

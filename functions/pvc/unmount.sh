@@ -1,31 +1,65 @@
 #!/bin/bash
 
+unmount_app_menu(){
+    # Use the find command to search for directories within /mnt/mounted_pvc/
+    mapfile -t mounted_apps < <(find /mnt/mounted_pvc/ -mindepth 1 -maxdepth 1 -type d -printf '%f\n')
+
+    # Check if the mounted_apps array is empty
+    if [[ -z ${mounted_apps[*]} ]]; then
+        echo -e "${yellow}There are no PVCs to unmount.${reset}"
+        return
+    else
+        while true; do
+            # Display the menu
+            echo "Currently mounted apps:"
+            for i in "${!mounted_apps[@]}"; do
+                echo "$((i+1))) ${mounted_apps[$i]}"
+            done
+
+            # Add 'All' and 'Exit' options
+            echo "$(( ${#mounted_apps[@]} + 1 ))) All"
+            echo -e "\n0) Exit"
+
+            read -rp "Please select an app to unmount, choose 'All' or 'Exit': " selection
+
+            if [[ $selection -eq 0 ]]; then
+                echo "Exiting..."
+                return
+            # Check if selection is 'All'
+            # elif [[ $selection -eq $(( ${#mounted_apps[@]} + 1 )) ]]; then
+            #     # Call function to unmount all apps or add your logic here
+            #     echo "Unmounting all apps..."
+            #     # unmount_all_apps_function_here
+            #     return
+            # Check if the selection is valid
+            elif [[ $selection -ge 1 && $selection -le ${#mounted_apps[@]} ]]; then
+                app="${mounted_apps[$((selection-1))]}"
+                return
+            else
+                echo -e "${yellow}Invalid selection. Please try again.${reset}"
+            fi
+        done
+    fi
+
+}
+
 
 unmount_app_func(){
+    app=$1
+    unmount_array=()
+
     ix_apps_pool=$(cli -c 'app kubernetes config' | 
                    grep -E "pool\s\|" | 
                    awk -F '|' '{print $3}' | 
                    sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
-    # Use mapfile command to read the output of cli command into an array
-    mapfile -t pool_query < <(cli -m csv -c "storage pool query name,path" | sed -e '1d' -e '/^$/d')
+    if [[ -z $1 ]]; then
+        unmount_app_menu
+    else
+        app=$1
+    fi
 
-    # Add an option for the boot directory
-    pool_query+=("boot,/mnt")
-
-    # Create an empty array to store the results
-    unmount_array=()
-
-    # Iterate through all available pools
-    for line in "${pool_query[@]}"; do
-        pool_path=$(echo "$line" | awk -F ',' '{print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-        # Check if the folder "mounted_pvc" exists in the current pool
-        if [ -d "$pool_path/mounted_pvc" ]; then
-            # If it exists, add the contents of the folder to the unmount_array
-            mapfile -t unmount_array_temp < <(find "$pool_path/mounted_pvc" -mindepth 1 -maxdepth 1 -type d -printf '%f\n')
-            unmount_array+=("${unmount_array_temp[@]}")
-        fi
-    done
+    mapfile -t unmount_array < <(find "$pool_path/mounted_pvc/$app" -mindepth 1 -maxdepth 1 -type d -printf '%f\n')
 
     # Check if the unmount_array is empty
     if [[ -z ${unmount_array[*]} ]]; then

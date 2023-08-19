@@ -66,10 +66,6 @@ pvc_mount_pvc() {
     local data_name=$2
     local full_path=$3
 
-    # if [ ! -d "/mnt/mounted_pvc/$app" ]; then
-    #     mkdir "/mnt/mounted_pvc/$app"
-    # fi
-
     if ! zfs set mountpoint="/mounted_pvc/$app/$data_name" "$full_path"; then
         echo -e "${bold}PVC:${reset} ${red}$data_name${reset}"
         echo -e "${bold}Status:${reset} ${red}Mount Failure${reset}\n"

@@ -111,7 +111,7 @@ pvc_stop_selected_app() {
     fi
 }
 
-pvc_mount_app() {
+mount_app_func() {
     local manual_selection=$1
 
     pvc_retrieve_app_pool

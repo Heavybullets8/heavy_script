@@ -39,7 +39,7 @@ pvc_mount_all_in_namespace() {
     mapfile -t pvc_list < <(k3s kubectl get pvc -n "ix-$app" | awk 'NR>1 {print $1}' | grep -v -- "-cnpg-main")
 
     
-    for data_name in $pvc_list; do
+    for data_name in "${pvc_list[@]}"; do
         local volume_name full_path
 
         volume_name=$(k3s kubectl get pvc "$data_name" -n "ix-$app" -o=jsonpath='{.spec.volumeName}')
@@ -139,7 +139,7 @@ mount_app_func() {
     fi
 
     local data_name volume_name full_path
-    
+
     data_name=$(echo -e "$entire_line" | awk '{print $3}')
     volume_name=$(echo -e "$entire_line" | awk '{print $4}')
     full_path=$(zfs list -t filesystem -r "$ix_apps_pool/ix-applications/releases/$app/volumes" -o name -H | grep "/$volume_name$")

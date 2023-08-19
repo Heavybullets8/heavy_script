@@ -26,15 +26,15 @@ pvc_mount_pvc() {
         mkdir "/mnt/mounted_pvc/$app"
     fi
 
-    if ! zfs set mountpoint=/mounted_pvc/"$data_name/$app" "$full_path"; then
+    if ! zfs set mountpoint="/mounted_pvc/$app/$data_name" "$full_path"; then
         echo -e "${bold}PVC:${reset} ${red}$data_name${reset}"
         echo -e "${bold}Status:${reset} ${red}Mount Failure${reset}\n"
     else
         echo -e "${bold}PVC:${reset} ${blue}$data_name${reset}"
-        echo -e "${bold}Mounted To:${reset} ${blue}/mnt/mounted_pvc/$data_name/$app${reset}"
+        echo -e "${bold}Mounted To:${reset} ${blue}/mnt/mounted_pvc/$app/$data_name${reset}"
         echo -e "${bold}Status:${reset} ${green}Successfully Mounted${reset}"
         echo -e "${bold}To Unmount Manually:${reset}"
-        echo -e "${blue}zfs set mountpoint=legacy \"$full_path\" && rmdir /mnt/mounted_pvc/$data_name${reset}\n"
+        echo -e "${blue}zfs set mountpoint=legacy \"$full_path\" && rmdir /mnt/mounted_pvc/$app/$data_name${reset}\n"
     fi
 }
 

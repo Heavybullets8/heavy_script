@@ -46,7 +46,7 @@ pvc_select_app() {
         done
         
         # Provide option to exit
-        echo -e "0) Exit\n"
+        echo -e "\n0) Exit\n"
 
         # Get user input
         read -rp "Please type a number: " selection

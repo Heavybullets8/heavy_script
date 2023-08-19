@@ -8,36 +8,6 @@ pvc_retrieve_app_pool() {
                    sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 }
 
-# Formats the PVC output.
-pvc_format_output() {
-    readarray -t output < <(k3s kubectl get pvc -A | sort -u | awk '{print $1 "\t" $2 "\t" $4}' | sed "s/^0/ /" | grep -v -- "-cnpg-main")
-    
-    for ((i=1; i<${#output[@]}; i++)); do
-        output[i]="$((i))) ${output[i]}"
-    done
-}
-
-pvc_mount_pvc() {
-    local app=$1
-    local data_name=$2
-    local full_path=$3
-
-    if [ ! -d "/mnt/mounted_pvc/$app" ]; then
-        mkdir "/mnt/mounted_pvc/$app"
-    fi
-
-    if ! zfs set mountpoint="/mounted_pvc/$app/$data_name" "$full_path"; then
-        echo -e "${bold}PVC:${reset} ${red}$data_name${reset}"
-        echo -e "${bold}Status:${reset} ${red}Mount Failure${reset}\n"
-    else
-        echo -e "${bold}PVC:${reset} ${blue}$data_name${reset}"
-        echo -e "${bold}Mounted To:${reset} ${blue}/mnt/mounted_pvc/$app/$data_name${reset}"
-        echo -e "${bold}Status:${reset} ${green}Successfully Mounted${reset}"
-        echo -e "${bold}To Unmount Manually:${reset}"
-        echo -e "${blue}zfs set mountpoint=legacy \"$full_path\" && rmdir /mnt/mounted_pvc/$app/$data_name${reset}\n"
-    fi
-}
-
 pvc_mount_all_in_namespace() {
     local app=$1
     local pvc_list
@@ -61,43 +31,35 @@ pvc_mount_all_in_namespace() {
     echo -e "${blue}heavyscript pvc --unmount${reset}\n"
 }
 
-
-pvc_display_output() {
-    clear -x
-    title
-    for ((i=0; i<${#output[@]}; i++)); do
-        if [[ $i -eq 0 ]]; then
-            echo -e "${blue}# ${output[i]}${reset}"
-        else
-            if [[ $((i % 2)) -eq 0 ]]; then
-                echo -e "${gray}${output[i]}${reset}"
-            else
-                echo -e "${output[i]}"
-            fi
-        fi
-    done | column -t 
-}
-
 pvc_select_app() {
-    while true; do
-        pvc_display_output
-        
-        echo 
-        echo -e "0)  Exit"
-        read -rt 120 -p "Please type a number: " selection || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
+    mapfile -t apps < <(cli -m csv -c 'app chart_release query name' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF')
 
-        if [[ $selection == 0 ]]; then
-            echo -e "Exiting.."
-            exit
+    while true; do
+        # Display apps with numbers
+        echo -e "\nSelect an App:"
+        for i in "${!apps[@]}"; do
+            echo "$((i+1))) ${apps[$i]}"
+        done
+        
+        # Provide option to exit
+        echo -e "0) Exit\n"
+
+        # Get user input
+        read -rp "Please type a number: " selection
+
+        # Exit if user selects 0
+        if [[ "$selection" == "0" ]]; then
+            echo "Exiting..."
+            exit 0
         fi
 
-        app=$(echo -e "${output[selection]}" | awk '{print $2}' | cut -c 4- )
-
-        if [[ -z "$app" ]]; then
-            echo -e "${red}Invalid Selection: ${blue}$selection${red}, was not an option${reset}"
-            sleep 3
-        else
+        # If user input is valid, echo the app name and break out of loop
+        if [[ "$selection" -ge 1 && "$selection" -le "${#apps[@]}" ]]; then
+            app="${apps[$((selection-1))]}"
             break
+        else
+            # Display an error message for invalid selection
+            echo -e "\n${red}Invalid Selection: ${blue}$selection${red}, was not an option${reset}"
         fi
     done
 }
@@ -125,6 +87,7 @@ pvc_stop_selected_app() {
 
 mount_app_func() {
     local manual_selection=$1
+    app=""
 
     pvc_retrieve_app_pool
 
@@ -132,6 +95,12 @@ mount_app_func() {
         pvc_select_app
     else
         app=$manual_selection
+        #verify app is valid
+        mapfile -t apps < <(cli -m csv -c 'app chart_release query name' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF')
+        if [[ ! " ${apps[*]} " =~ " ${app} " ]]; then
+            echo -e "${red}Error:${reset} $app is not a valid app"
+            exit 1
+        fi
     fi
 
     pvc_stop_selected_app "$app"

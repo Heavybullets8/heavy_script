@@ -18,19 +18,20 @@ pvc_format_output() {
 }
 
 pvc_mount_pvc() {
-    local data_name=$1
-    local full_path=$2
+    local app=$1
+    local data_name=$2
+    local full_path=$3
 
-    if [ ! -d "/mnt/mounted_pvc" ]; then
-        mkdir "/mnt/mounted_pvc"
+    if [ ! -d "/mnt/mounted_pvc/$app" ]; then
+        mkdir "/mnt/mounted_pvc/$app"
     fi
 
-    if ! zfs set mountpoint=/mounted_pvc/"$data_name" "$full_path"; then
+    if ! zfs set mountpoint=/mounted_pvc/"$data_name/$app" "$full_path"; then
         echo -e "${bold}PVC:${reset} ${red}$data_name${reset}"
         echo -e "${bold}Status:${reset} ${red}Mount Failure${reset}\n"
     else
         echo -e "${bold}PVC:${reset} ${blue}$data_name${reset}"
-        echo -e "${bold}Mounted To:${reset} ${blue}/mnt/mounted_pvc/$data_name${reset}"
+        echo -e "${bold}Mounted To:${reset} ${blue}/mnt/mounted_pvc/$data_name/$app${reset}"
         echo -e "${bold}Status:${reset} ${green}Successfully Mounted${reset}"
         echo -e "${bold}To Unmount Manually:${reset}"
         echo -e "${blue}zfs set mountpoint=legacy \"$full_path\" && rmdir /mnt/mounted_pvc/$data_name${reset}\n"
@@ -49,7 +50,7 @@ pvc_mount_all_in_namespace() {
         volume_name=$(k3s kubectl get pvc "$data_name" -n "ix-$app" -o=jsonpath='{.spec.volumeName}')
         full_path=$(zfs list -t filesystem -r "$ix_apps_pool/ix-applications/releases/$app/volumes" -o name -H | grep "$volume_name")
         if [ -n "$full_path" ]; then
-            pvc_mount_pvc "$data_name" "$full_path"
+            pvc_mount_pvc "$app" "$data_name" "$full_path"
         else
             echo -e "${red}Error:${reset} Could not find a ZFS path for $data_name"
         fi

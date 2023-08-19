@@ -134,35 +134,8 @@ mount_app_func() {
     pvc_stop_selected_app "$app"
     sleep 2
 
-    if [[ -n $manual_selection ]]; then
-        pvc_mount_all_in_namespace "$app"
-    fi
+    pvc_mount_all_in_namespace "$app"
 
-    local data_name volume_name full_path
-
-    data_name=$(echo -e "$entire_line" | awk '{print $3}')
-    volume_name=$(echo -e "$entire_line" | awk '{print $4}')
-    full_path=$(zfs list -t filesystem -r "$ix_apps_pool/ix-applications/releases/$app/volumes" -o name -H | grep "/$volume_name$")
-
-
-    if [ ! -d "/mnt/mounted_pvc" ]; then
-        mkdir "/mnt/mounted_pvc"
-    fi
-
-    clear -x
-    title
-
-    if ! zfs set mountpoint=/mounted_pvc/"$data_name" "$full_path"; then
-        echo -e "${bold}Status:${reset} ${red}Mount Failure${reset}"
-    else
-        echo -e "${bold}Selected App:${reset} ${blue}$app${reset}"
-        echo -e "${bold}Selected PVC:${reset} ${blue}$data_name${reset}"
-        echo -e "${bold}Mounted To:${reset} ${blue}/mnt/mounted_pvc/$data_name${reset}"
-        echo -e "${bold}Status:${reset} ${green}Successfully Mounted${reset}"
-    fi
-
-    echo -e "${bold}Unmount Manually with:${reset}\n${blue}zfs set mountpoint=legacy \"$full_path\" && rmdir /mnt/mounted_pvc/$data_name${reset}"
-    echo -e "${bold}Or use the Unmount All option:${reset}\n${blue}heavyscript pvc --unmount${reset}"
 
     if [[ -z $manual_selection ]]; then
         while true; do

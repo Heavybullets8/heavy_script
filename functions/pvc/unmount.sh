@@ -59,7 +59,7 @@ unmount_app_func(){
         app=$1
     fi
 
-    mapfile -t unmount_array < <(find "$pool_path/mounted_pvc/$app" -mindepth 1 -maxdepth 1 -type d -printf '%f\n')
+    mapfile -t unmount_array < <(find "/mnt/mounted_pvc/$app" -mindepth 1 -maxdepth 1 -type d -printf '%f\n')
 
     # Check if the unmount_array is empty
     if [[ -z ${unmount_array[*]} ]]; then

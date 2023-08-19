@@ -26,8 +26,7 @@ pvc_mount_all_in_namespace() {
         fi
     done
 
-    echo -e "${bold}──────────────────────────────────────────────${reset}"
-    echo -e "${bold}To Unmount All at Once:${reset}"
+    echo -e "\n${bold}To Unmount All at Once:${reset}"
     echo -e "${blue}heavyscript pvc --unmount${reset}\n"
 }
 
@@ -60,6 +59,27 @@ pvc_select_app() {
             echo -e "\n${red}Invalid Selection: ${blue}$selection${red}, was not an option${reset}"
         fi
     done
+}
+
+pvc_mount_pvc() {
+    local app=$1
+    local data_name=$2
+    local full_path=$3
+
+    if [ ! -d "/mnt/mounted_pvc/$app" ]; then
+        mkdir "/mnt/mounted_pvc/$app"
+    fi
+
+    if ! zfs set mountpoint="/mounted_pvc/$app/$data_name" "$full_path"; then
+        echo -e "${bold}PVC:${reset} ${red}$data_name${reset}"
+        echo -e "${bold}Status:${reset} ${red}Mount Failure${reset}\n"
+    else
+        echo -e "${bold}PVC:${reset} ${blue}$data_name${reset}"
+        echo -e "${bold}Mounted To:${reset} ${blue}/mnt/mounted_pvc/$app/$data_name${reset}"
+        echo -e "${bold}Status:${reset} ${green}Successfully Mounted${reset}"
+        echo -e "${bold}To Unmount Manually:${reset}"
+        echo -e "${blue}zfs set mountpoint=legacy \"$full_path\" && rmdir /mnt/mounted_pvc/$app/$data_name${reset}\n"
+    fi
 }
 
 pvc_stop_selected_app() {

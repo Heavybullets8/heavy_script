@@ -40,8 +40,10 @@ pvc_mount_all_in_namespace() {
 
     
     for data_name in $pvc_list; do
-        local volume_name=$(k3s kubectl get pvc "$data_name" -n "ix-$app" -o=jsonpath='{.spec.volumeName}')
-        local full_path=$(zfs list -t filesystem -r "$ix_apps_pool/ix-applications/releases/$app/volumes" -o name -H | grep "$volume_name")
+        local volume_name full_path
+
+        volume_name=$(k3s kubectl get pvc "$data_name" -n "ix-$app" -o=jsonpath='{.spec.volumeName}')
+        full_path=$(zfs list -t filesystem -r "$ix_apps_pool/ix-applications/releases/$app/volumes" -o name -H | grep "$volume_name")
         if [ -n "$full_path" ]; then
             pvc_mount_pvc "$data_name" "$full_path"
             echo -e "${bold}Unmount Manually with:${reset}\n${blue}zfs set mountpoint=legacy \"$full_path\" && rmdir /mnt/mounted_pvc/$data_name${reset}"
@@ -136,9 +138,11 @@ mount_app_func() {
         pvc_mount_all_in_namespace "$app"
     fi
 
-    local data_name=$(echo -e "$entire_line" | awk '{print $3}')
-    local volume_name=$(echo -e "$entire_line" | awk '{print $4}')
-    local full_path=$(zfs list -t filesystem -r "$ix_apps_pool/ix-applications/releases/$app/volumes" -o name -H | grep "/$volume_name$")
+    local data_name volume_name full_path
+    
+    data_name=$(echo -e "$entire_line" | awk '{print $3}')
+    volume_name=$(echo -e "$entire_line" | awk '{print $4}')
+    full_path=$(zfs list -t filesystem -r "$ix_apps_pool/ix-applications/releases/$app/volumes" -o name -H | grep "/$volume_name$")
 
 
     if [ ! -d "/mnt/mounted_pvc" ]; then

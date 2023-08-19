@@ -13,7 +13,7 @@ pvc_handler() {
     case "${args[0]}" in
         -m | --mount)
             # Call the function to mount the app
-            mount_app_func
+            mount_app_func "${args[@]:1}"
             ;;
         -u | --unmount)
             # Call the function to unmount the app

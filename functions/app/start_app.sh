@@ -26,7 +26,7 @@ start_app_prompt() {
             echo -e "${yellow}This could be due to:${reset}"
             echo -e "${yellow}1. The application does not accept a replica count (external services, cert-manager etc)${reset}"
             echo -e "${yellow}2. The application is set to 0 replicas in its configuration${reset}"
-            echo -e "${yellow}If you beleive this to be a mistake, please submit a bug report on the github.${reset}"
+            echo -e "${yellow}If you believe this to be a mistake, please submit a bug report on the github.${reset}"
             exit
         fi
 

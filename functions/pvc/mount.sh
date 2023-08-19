@@ -34,11 +34,13 @@ pvc_mount_pvc() {
 
 pvc_mount_all_in_namespace() {
     local app=$1
+    local pvc_list
 
-    local pvc_list=$(k3s kubectl get pvc -n "ix-photoprism" | awk '{if(NR>1) print $1}' | grep -v -- "-cnpg-main")
+    mapfile -t pvc_list < <(k3s kubectl get pvc -n "ix-$app" | awk 'NR>1 {print $1}' | grep -v -- "-cnpg-main")
+
     
     for data_name in $pvc_list; do
-        local volume_name=$(k3s kubectl get pvc "$data_name" -n "$app" -o=jsonpath='{.spec.volumeName}')
+        local volume_name=$(k3s kubectl get pvc "$data_name" -n "ix-$app" -o=jsonpath='{.spec.volumeName}')
         local full_path=$(zfs list -t filesystem -r "$ix_apps_pool/ix-applications/releases/$app/volumes" -o name -H | grep "$volume_name")
         if [ -n "$full_path" ]; then
             pvc_mount_pvc "$data_name" "$full_path"

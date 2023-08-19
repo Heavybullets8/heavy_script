@@ -31,7 +31,7 @@ unmount_app_menu(){
                 return
             # Check if the selection is valid
             elif [[ $selection -ge 1 && $selection -le ${#mounted_apps[@]} ]]; then
-                app="${mounted_apps[$((selection-1))]}"
+                apps=("${mounted_apps[$((selection-1))]}")
                 return
             else
                 echo -e "${yellow}Invalid selection. Please try again.${reset}"

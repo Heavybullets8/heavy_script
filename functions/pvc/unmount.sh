@@ -26,11 +26,9 @@ unmount_app_menu(){
                 echo "Exiting..."
                 return
             # Check if selection is 'All'
-            # elif [[ $selection -eq $(( ${#mounted_apps[@]} + 1 )) ]]; then
-            #     # Call function to unmount all apps or add your logic here
-            #     echo "Unmounting all apps..."
-            #     # unmount_all_apps_function_here
-            #     return
+            elif [[ $selection -eq $(( ${#mounted_apps[@]} + 1 )) ]]; then
+                apps=("${mounted_apps[@]}")
+                return
             # Check if the selection is valid
             elif [[ $selection -ge 1 && $selection -le ${#mounted_apps[@]} ]]; then
                 app="${mounted_apps[$((selection-1))]}"
@@ -45,50 +43,56 @@ unmount_app_menu(){
 
 
 unmount_app_func(){
-    app=$1
-    unmount_array=()
+    apps=("$1")
 
     ix_apps_pool=$(cli -c 'app kubernetes config' | 
                    grep -E "pool\s\|" | 
                    awk -F '|' '{print $3}' | 
                    sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
+
+
     if [[ -z $1 ]]; then
         unmount_app_menu
     else
-        app=$1
+        pass
     fi
 
-    mapfile -t unmount_array < <(find "/mnt/mounted_pvc/$app" -mindepth 1 -maxdepth 1 -type d -printf '%f\n')
+    unmount_array=()
 
-    # Check if the unmount_array is empty
-    if [[ -z ${unmount_array[*]} ]]; then
-        echo -e "${yellow}There are no PVCS to unmount.${reset}"
-        return
-    fi
-
-    for pvc_name in "${unmount_array[@]}"; do
-        # Get the PVC details
-        main=$(k3s kubectl get pvc --all-namespaces \
-            --output="go-template={{range .items}}{{if eq .metadata.name \"$pvc_name\"}}\
-            {{.metadata.namespace}} {{.metadata.name}} {{.spec.volumeName}}{{\"\n\"}}\
-            {{end}}{{end}}")
-
-        read -r app pvc_name pvc <<< "$main"
-        app=${app:3}
-        full_path="$ix_apps_pool/ix-applications/releases/$app/volumes"
-
-        # Set the mountpoint to "legacy" and unmount
-        if zfs set mountpoint=legacy "$full_path/$pvc"; then
-            echo -e "${blue}$pvc_name ${green}unmounted successfully.${reset}"
-            rmdir /mnt/*/mounted_pvc/"$pvc_name" 2>/dev/null || rmdir /mnt/mounted_pvc/"$pvc_name" 2>/dev/null
-        else
-            echo -e "${red}Failed to unmount ${blue}$pvc_name.${reset}"
-            echo -e "${yellow}Please make sure your terminal is not open in the mounted directory${reset}"
+    for app in "${apps[@]}"; do
+        mapfile -t unmount_array < <(find "/mnt/mounted_pvc/$app" -mindepth 1 -maxdepth 1 -type d -printf '%f\n')
+        
+        # Check if the unmount_array is empty
+        if [[ -z ${unmount_array[*]} ]]; then
+            echo -e "${yellow}$app's directory is empty, removing directory..${reset}"
+            rmdir "/mnt/$app/mounted_pvc" 2>/dev/null 
+            continue
         fi
 
+        for pvc_name in "${unmount_array[@]}"; do
+            # Get the PVC details
+            main=$(k3s kubectl get pvc --all-namespaces \
+                --output="go-template={{range .items}}{{if eq .metadata.name \"$pvc_name\"}}\
+                {{.metadata.namespace}} {{.metadata.name}} {{.spec.volumeName}}{{\"\n\"}}\
+                {{end}}{{end}}")
+
+            read -r app pvc_name pvc <<< "$main"
+            app=${app:3}
+            full_path="$ix_apps_pool/ix-applications/releases/$app/volumes"
+
+            # Set the mountpoint to "legacy" and unmount
+            if zfs set mountpoint=legacy "$full_path/$pvc"; then
+                echo -e "${blue}$pvc_name ${green}unmounted successfully.${reset}"
+                rmdir "/mnt/mounted_pvc/${app}${pvc_name}" 2>/dev/null
+            else
+                echo -e "${red}Failed to unmount ${blue}$pvc_name.${reset}"
+                echo -e "${yellow}Please make sure your terminal is not open in the mounted directory${reset}"
+            fi
+        done
+        rmdir "/mnt/mounted_pvc/$app" 2>/dev/null
     done
 
     # Remove the mounted_pvc directory if it's empty
-    rmdir /mnt/*/mounted_pvc 2>/dev/null ; rmdir /mnt/mounted_pvc 2>/dev/null
+    rmdir /mnt/mounted_pvc 2>/dev/null
 }

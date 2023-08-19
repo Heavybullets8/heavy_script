@@ -40,7 +40,12 @@ pvc_mount_all_in_namespace() {
     for data_name in $pvc_list; do
         local volume_name=$(k3s kubectl get pvc "$data_name" -n "$app" -o=jsonpath='{.spec.volumeName}')
         local full_path=$(zfs list -t filesystem -r "$ix_apps_pool/ix-applications/releases/$app/volumes" -o name -H | grep "$volume_name")
-        pvc_mount_pvc "$data_name" "$full_path"
+        if [ -n "$full_path" ]; then
+            pvc_mount_pvc "$data_name" "$full_path"
+            echo -e "${bold}Unmount Manually with:${reset}\n${blue}zfs set mountpoint=legacy \"$full_path\" && rmdir /mnt/mounted_pvc/$data_name${reset}"
+        else
+            echo -e "${red}Error:${reset} Could not find a ZFS path for $data_name"
+        fi
     done
 
     echo -e "${bold}Unmount Manually with:${reset}\n${blue}zfs set mountpoint=legacy \"$full_path\" && rmdir /mnt/mounted_pvc/$data_name${reset}"
@@ -131,7 +136,8 @@ mount_app_func() {
 
     local data_name=$(echo -e "$entire_line" | awk '{print $3}')
     local volume_name=$(echo -e "$entire_line" | awk '{print $4}')
-    local full_path=$(zfs list -t filesystem -r "$ix_apps_pool/ix-applications/releases/$app/volumes" -o name -H | grep "$volume_name")
+    local full_path=$(zfs list -t filesystem -r "$ix_apps_pool/ix-applications/releases/$app/volumes" -o name -H | grep "/$volume_name$")
+
 
     if [ ! -d "/mnt/mounted_pvc" ]; then
         mkdir "/mnt/mounted_pvc"

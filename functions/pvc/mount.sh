@@ -35,7 +35,7 @@ pvc_mount_pvc() {
 pvc_mount_all_in_namespace() {
     local app=$1
 
-    local pvc_list=$(k3s kubectl get pvc -n "$app" | awk '{if(NR>1) print $1}')
+    local pvc_list=$(k3s kubectl get pvc -n "ix-photoprism" | awk '{if(NR>1) print $1}' | grep -v -- "-cnpg-main")
     
     for data_name in $pvc_list; do
         local volume_name=$(k3s kubectl get pvc "$data_name" -n "$app" -o=jsonpath='{.spec.volumeName}')

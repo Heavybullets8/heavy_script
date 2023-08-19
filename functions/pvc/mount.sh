@@ -85,7 +85,7 @@ mount_app_func(){
         title
         
         # Mount the PVC to /mnt/mounted_pvc                    
-        if ! zfs set mountpoint=/mnt/mounted_pvc/"$data_name" "$full_path" ; then
+        if ! zfs set mountpoint=/mounted_pvc/"$data_name" "$full_path" ; then
             echo -e "${bold}Status:${reset} ${red}Mount Failure${reset}"
         else
             echo -e "${bold}Selected App:${reset} ${blue}$app${reset}"

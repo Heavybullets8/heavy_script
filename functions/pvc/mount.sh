@@ -118,6 +118,15 @@ pvc_stop_selected_app() {
     fi
 }
 
+pvc_check_for_pvc(){
+    if k3s kubectl get pvc -n "ix-$app" --no-headers | grep -q .; then
+        return 0
+    else
+        echo -e "${yellow}$app, does not contain any PVC's${reset}"
+        exit 1
+    fi
+}
+
 #shellcheck disable=SC2120
 mount_app_func() {
     local manual_selection=$1
@@ -137,6 +146,8 @@ mount_app_func() {
             exit 1
         fi
     fi
+
+    pvc_check_for_pvc
 
     pvc_stop_selected_app "$app"
     sleep 2

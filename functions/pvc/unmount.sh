@@ -51,6 +51,11 @@ unmount_app_func(){
         fi
     done
 
+    if [ ! -d "/mnt/mounted_pvc" ]; then
+        echo -e "${yellow}There is nothing to unmount${reset}"
+        exit 0
+    fi
+    
     ix_apps_pool=$(cli -c 'app kubernetes config' | 
                    grep -E "pool\s\|" | 
                    awk -F '|' '{print $3}' | 

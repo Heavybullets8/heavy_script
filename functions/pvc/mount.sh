@@ -49,8 +49,8 @@ pvc_mount_all_in_namespace() {
     for ((i=0; i<${#results[@]}; i+=2)); do
         echo -e "    $status_color${results[$i+1]}$reset: $blue${results[$i]}$reset"
     done
-    echo -e "${bold}Mounted To:${reset} ${blue}$mount_point${reset}"
-    echo -e "\n${bold}unmount with: ${blue}heavyscript pvc --unmount $app${reset}"
+    echo -e "${bold}Mounted to:${reset} ${blue}$mount_point${reset}"
+    echo -e "${bold}Unmount with: ${blue}heavyscript pvc --unmount $app${reset}\n"
 }
 
 pvc_select_app() {
@@ -128,7 +128,7 @@ mount_app_func() {
         pvc_select_app
     else
         clear -x
-        echo -e "${blue}Validating App${reset}"
+        echo -e "${blue}Validating app...${reset}"
         app=${manual_selection,,}
         mapfile -t apps < <(cli -m csv -c 'app chart_release query name' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF')
         if [[ ! " ${apps[*]} " =~ ${app} ]]; then

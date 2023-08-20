@@ -2,6 +2,8 @@
 
 # Retrieves the application pool.
 pvc_retrieve_app_pool() {
+    clear -x
+    echo -e "${blue}Fetching application pool...${reset}"
     ix_apps_pool=$(cli -c 'app kubernetes config' | 
                    grep -E "pool\s\|" | 
                    awk -F '|' '{print $3}' | 
@@ -45,9 +47,9 @@ pvc_mount_all_in_namespace() {
     # Now print the consolidated output
     echo -e "${bold}PVC's:${reset}"
     for ((i=0; i<${#results[@]}; i+=2)); do
-        echo -e "           $status_color${results[$i+1]}$reset: $blue${results[$i]}$reset"
+        echo -e "    $status_color${results[$i+1]}$reset: $blue${results[$i]}$reset"
     done
-    echo -e "${bold}Mounted To:${reset} $mount_point"
+    echo -e "${bold}Mounted To:${reset} ${blue}$mount_point${reset}"
 }
 
 pvc_select_app() {
@@ -124,6 +126,8 @@ mount_app_func() {
     if [[ -z $manual_selection ]]; then
         pvc_select_app
     else
+        clear -x
+        echo -e "${blue}Validating App${reset}"
         app=${manual_selection,,}
         mapfile -t apps < <(cli -m csv -c 'app chart_release query name' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF')
         if [[ ! " ${apps[*]} " =~ ${app} ]]; then

@@ -14,7 +14,8 @@ pvc_help() {
     echo -e "${blue}-m${reset}, ${blue}--mount${reset} [APPNAME]"
     echo -e "    Mount PVCs for a given app. If no APPNAME is provided, the user will be prompted to select one from the menu."
     echo -e "${blue}-u${reset}, ${blue}--unmount${reset} [APPNAME]"
-    echo -e "    Unmount PVCs for a specific app. If no APPNAME is provided, all mounted PVCs will be unmounted."
+    echo -e "    Unmount PVCs for a specific app. If no APPNAME is provided, the user will be prompted to select one from the menu."
+    echo -e "    Unmount all PVCs with ${blue}heavyscript pvc --unmount ALL${reset}"    
     echo -e "${blue}-h${reset}, ${blue}--help${reset}"
     echo -e "    Display this help message."
     echo

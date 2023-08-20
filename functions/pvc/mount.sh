@@ -57,10 +57,10 @@ pvc_select_app() {
     clear -x
     echo -e "${blue}Fetching applications..${reset}"
     mapfile -t apps < <(cli -m csv -c 'app chart_release query name' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF')
-    clear -x
-    title
 
     while true; do
+        clear -x
+        title
         echo -e "\nSelect an App:"
         for i in "${!apps[@]}"; do
             echo "$((i+1))) ${apps[$i]}"

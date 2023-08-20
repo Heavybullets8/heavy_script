@@ -15,9 +15,9 @@ pvc_handler() {
             # Call the function to mount the app
             mount_app_func "${args[@]:1}"
             ;;
-        -u | --unmount) "${args[@]:1}"
+        -u | --unmount) 
             # Call the function to unmount the app
-            unmount_app_func
+            unmount_app_func "${args[@]:1}"
             ;;
         -h | --help)
             # Call the function to display help for the pvc command

@@ -50,6 +50,7 @@ pvc_mount_all_in_namespace() {
         echo -e "    $status_color${results[$i+1]}$reset: $blue${results[$i]}$reset"
     done
     echo -e "${bold}Mounted To:${reset} ${blue}$mount_point${reset}"
+    echo -e "\n${bold}unmount with: ${blue}heavyscript pvc --unmount $app${reset}"
 }
 
 pvc_select_app() {

@@ -45,6 +45,10 @@ unmount_app_menu(){
 unmount_app_func(){
     apps=("$1")
 
+    for i in "${!apps[@]}"; do
+        apps[i]="${apps[$i],,}"
+    done
+
     ix_apps_pool=$(cli -c 'app kubernetes config' | 
                    grep -E "pool\s\|" | 
                    awk -F '|' '{print $3}' | 

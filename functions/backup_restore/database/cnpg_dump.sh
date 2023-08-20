@@ -181,7 +181,7 @@ backup_cnpg_databases() {
             db_dump_stopped=true
         fi
 
-        if [[ $db_dump_stopped == true ]]; then
+        if [[ $db_dump_stopped == false ]]; then
             # Store the current replica counts for all deployments in the app before scaling down
             declare -A original_replicas=()
             mapfile -t replica_lines < <(get_current_replica_counts "$app_name" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
@@ -203,11 +203,11 @@ backup_cnpg_databases() {
         fi
 
         if [[ $db_dump_stopped == true ]];then
-            stop_app "direct" "$app_name" 5000
+            stop_app "direct" "$app_name"
             continue
         fi
 
-        if [[ $db_dump_stopped == true ]]; then
+        if [[ $db_dump_stopped == false ]]; then
             for deployment in "${!original_replicas[@]}"; do
                 if [[ ${original_replicas[$deployment]} -ne 0 ]]; then
                     scale_resources "$app_name" 300 "${original_replicas[$deployment]}" "$deployment" > /dev/null 2>&1

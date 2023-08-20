@@ -119,7 +119,7 @@ pvc_stop_selected_app() {
 }
 
 pvc_check_for_pvc(){
-    if k3s kubectl get pvc -n "ix-$app" --no-headers | grep -q .; then
+    if k3s kubectl get pvc -n "ix-$app" --no-headers 2>/dev/null | grep -q .;then
         return 0
     else
         echo -e "${yellow}$app, does not contain any PVC's${reset}"

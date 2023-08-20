@@ -78,7 +78,7 @@ post_process(){
                 echo_array+=("Became Active after $SECONDS seconds")
             fi
             if [[ "$startstatus"  ==  "STOPPED" ]]; then
-                update_stop_handler 'Returing to STOPPED state...'
+                update_stop_handler 'Returning to STOPPED state...'
             else
                 echo_array+=("Active")
             fi

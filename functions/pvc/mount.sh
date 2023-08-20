@@ -1,201 +1,168 @@
 #!/bin/bash
 
-
-mount_app_func(){
+# Retrieves the application pool.
+pvc_retrieve_app_pool() {
+    clear -x
+    echo -e "${blue}Fetching application pool...${reset}"
     ix_apps_pool=$(cli -c 'app kubernetes config' | 
                    grep -E "pool\s\|" | 
                    awk -F '|' '{print $3}' | 
                    sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+}
 
-    # Use mapfile command to read the output of cli command into an array
-    mapfile -t pool_query < <(cli -m csv -c "storage pool query name,path" | sed -e '1d' -e '/^$/d')
+pvc_mount_all_in_namespace() {
+    local app=$1
+    local pvc_list
+    local results=()
+    local mount_point="/mnt/mounted_pvc/$app"
 
-    # Run the command and store the output in an array
-    readarray -t output < <(k3s kubectl get pvc -A | sort -u | awk '{print $1 "\t" $2 "\t" $4}' | sed "s/^0/ /" | grep -v -- "-cnpg-main")
+    clear -x
+    echo -e "${blue}Mounting PVC's for $app...${reset}"
+    mapfile -t pvc_list < <(k3s kubectl get pvc -n "ix-$app" | awk 'NR>1 {print $1}' | grep -v -- "-cnpg-main")
+    
+    for data_name in "${pvc_list[@]}"; do
+        local volume_name full_path status_color status
 
-    # Assign a number to each element of the array, except for the first one
-    count=0
-    for ((i=1; i<${#output[@]}; i++)); do
-        output[i]="$((i))) ${output[i]}"
-        count=$((count+1))
+        volume_name=$(k3s kubectl get pvc "$data_name" -n "ix-$app" -o=jsonpath='{.spec.volumeName}')
+        full_path=$(zfs list -t filesystem -r "$ix_apps_pool/ix-applications/releases/$app/volumes" -o name -H | grep "$volume_name")
+        
+        if [ -n "$full_path" ]; then
+            if pvc_mount_pvc "$app" "$data_name" "$full_path"; then
+                status="Success"
+                status_color="$green"
+            else
+                status="Failure"
+                status_color="$red"
+            fi
+        else
+            status="Error: Could not find ZFS path"
+            status_color="$red"
+        fi
+        results+=("$data_name" "$status_color$status")
     done
 
-    while true
-    do
+    clear -x
+    title
+
+    # Now print the consolidated output
+    echo -e "${bold}PVC's:${reset}"
+    for ((i=0; i<${#results[@]}; i+=2)); do
+        echo -e "    ${results[$i+1]}$reset: $blue${results[$i]}$reset"
+    done
+    echo -e "${bold}Mounted to:${reset} ${blue}$mount_point${reset}"
+    echo -e "${bold}Unmount with: ${blue}heavyscript pvc --unmount $app${reset}\n"
+}
+
+pvc_select_app() {
+    clear -x
+    echo -e "${blue}Fetching applications..${reset}"
+    mapfile -t apps < <(cli -m csv -c 'app chart_release query name' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF')
+
+    while true; do
         clear -x
         title
-        # Format the output for display
-        for ((i=0; i<${#output[@]}; i++)); do
-            if [[ $i -eq 0 ]]; then
-                echo -e "${blue}# ${output[i]}${reset}"
-            else
-                if [[ $((i % 2)) -eq 0 ]]; then
-                    echo -e "${gray}${output[i]}${reset}"
-                else
-                    echo -e "${output[i]}"
-                fi
-            fi
-        done | column -t 
-        echo 
-        echo -e "0)  Exit"
-        read -rt 120 -p "Please type a number: " selection || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
-
-        #Check for valid selection. If no issues, continue
-        if [[ $selection == 0 ]]; then
-            echo -e "Exiting.."
-            exit
-        fi
-        app=$(echo -e "${output[selection]}" | awk '{print $2}' | cut -c 4- )
-
-        if [[ -z "$app" ]]; then
-            echo -e "${red}Invalid Selection: ${blue}$selection${red}, was not an option${reset}"
-            sleep 3
-            continue 
-        fi
-
-        entire_line=$(echo -e "${output[selection]}")
-
-        #Stop applicaiton if not stopped
-        status=$(cli -m csv -c 'app chart_release query name,status' | 
-                    grep "^$app," | 
-                    awk -F ',' '{print $2}'| 
-                    sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-        if [[ "$status" != "STOPPED" ]]; then
-            echo -e "\nStopping ${blue}$app${reset} prior to mount"
-            stop_app "normal" "$app" "${timeout:-50}"
-            result=$(handle_stop_code "$?")
-            if [[ $? -eq 1 ]]; then
-                echo -e "${red}${result}${reset}"
-                exit 1
-            else
-                echo -e "${green}${result}${reset}"
-            fi
-        fi
-        sleep 2
-
-        #Grab data then output and mount
-        data_name=$(echo -e "$entire_line" | awk '{print $3}')
-        volume_name=$(echo -e "$entire_line" | awk '{print $4}')
-        full_path=$(zfs list -t filesystem -r "$ix_apps_pool/ix-applications/releases/$app/volumes" -o name -H | grep "$volume_name")
-
-        # Loop until a valid selection is made
-        while true
-        do
-            clear -x
-            title
-            echo -e "${bold}Selected App:${reset} ${blue}$app${reset}"
-            echo -e "${bold}Selected PVC:${reset} ${blue}$data_name${reset}"
-            echo
-            echo -e "Available Pools:"
-
-            # Generate header
-            header="${blue}#\tPool\tPath\tAvailable Capacity${reset}"
-
-            # Generate rows
-            rows=()
-            i=0
-            for line in "${pool_query[@]}"; do
-                (( i++ ))
-                pool=$(echo -e "$line" | awk -F ',' '{print $1}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-                path=$(echo -e "$line" | awk -F ',' '{print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-                avail=$(
-                zfs list -p -o name,avail "$pool" \
-                | grep -o '[0-9]*$' \
-                | awk '{
-                    if ($1/1024/1024/1024/1024 >= 1)
-                        printf "%.2fTB", $1/1024/1024/1024/1024
-                    else
-                        printf "%.2fGB", $1/1024/1024/1024
-                }'
-                )
-                rows+=("$i)\t$pool\t$path\t$avail")
-            done
-
-            # Add an option for the boot directory
-            boot_num=$((i+1))
-            boot_avail=$(
-            zfs list -p -o name,avail boot-pool \
-            | grep -o '[0-9]*$' \
-            | awk '{
-                if ($1/1024/1024/1024/1024 >= 1)
-                    printf "%.2fTB", $1/1024/1024/1024/1024
-                else
-                    printf "%.2fGB", $1/1024/1024/1024
-            }'
-            )
-            rows+=("$boot_num)\tboot\t/mnt\t$boot_avail")
-
-            # Print output with header and rows formatted in columns
-            printf "%b\n" "$header" "${rows[@]}" | column -t -s $'\t'
-
-            # Ask user for input
-            echo
-            read -r -t 120 -p "Please select a pool by number: " pool_num || { echo -e "${red}Failed to make a selection in time${reset}" ; exit; }
-
-            # Check if the input is valid
-            if [[ $pool_num -ge 1 && $pool_num -le ${#rows[@]} ]]; then
-                selected_pool=$(echo -e "${rows[pool_num-1]}")
-                # Exit the loop
-                break
-            else
-                echo -e "${red}Invalid selection please try again${reset}" 
-                sleep 3
-            fi
+        echo -e "\nSelect an App:"
+        for i in "${!apps[@]}"; do
+            echo "$((i+1))) ${apps[$i]}"
         done
+        
+        echo -e "\n0) Exit\n"
 
-        # Assign the selected pool and path to variables
-        path=$(echo "$selected_pool" | awk -F '\t' '{print $3}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-        pool_name=$(echo "$selected_pool" | awk -F '\t' '{print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+        read -rp "Please type a number: " selection
 
-        # Check if the folder "mounted_pvc" exists on the selected pool
-        if [ ! -d "$path/mounted_pvc" ]; then
-            # If it doesn't exist, create it
-            mkdir "$path/mounted_pvc"
+        if [[ "$selection" == "0" ]]; then
+            echo "Exiting..."
+            exit 0
         fi
 
+        if [[ "$selection" -ge 1 && "$selection" -le "${#apps[@]}" ]]; then
+            app="${apps[$((selection-1))]}"
+            break
+        else
+            echo -e "\n${red}Invalid Selection: ${blue}$selection${red}, was not an option${reset}"
+        fi
+    done
+}
+
+pvc_mount_pvc() {
+    local app=$1
+    local data_name=$2
+    local full_path=$3
+
+    # Try to mount the PVC and return whether it was successful
+    if ! zfs set mountpoint="/mounted_pvc/$app/$data_name" "$full_path"; then
+        return 1
+    else
+        return 0
+    fi
+}
+
+pvc_stop_selected_app() {
+    local app=$1
+
+    status=$(cli -m csv -c 'app chart_release query name,status' | 
+             grep "^$app," | 
+             awk -F ',' '{print $2}'| 
+             sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
+    if [[ "$status" != "STOPPED" ]]; then
+        echo -e "\nStopping ${blue}$app${reset} prior to mount"
+        stop_app "normal" "$app" "${timeout:-50}"
+        result=$(handle_stop_code "$?")
+        if [[ $? -eq 1 ]]; then
+            echo -e "${red}${result}${reset}"
+            exit 1
+        else
+            echo -e "${green}${result}${reset}"
+        fi
+    fi
+}
+
+pvc_check_for_pvc(){
+    if k3s kubectl get pvc -n "ix-$app" --no-headers 2>/dev/null | grep -q .;then
+        return 0
+    else
+        echo -e "${yellow}$app, does not contain any PVC's${reset}"
+        exit 1
+    fi
+}
+
+#shellcheck disable=SC2120
+mount_app_func() {
+    local manual_selection=$1
+    app=""
+
+    pvc_retrieve_app_pool
+
+    if [[ -z $manual_selection ]]; then
+        pvc_select_app
+    else
         clear -x
-        title
-        if  [[ $pool_name == "boot" ]]; then
-            # Mount the PVC to the selected dataset                    
-            if ! zfs set mountpoint=/mounted_pvc/"$data_name" "$full_path" ; then
-                mount_failure=true
-            fi
-            boot_mount=true
-        else
-            # Mount the PVC to the selected dataset                    
-            if ! zfs set mountpoint=/"$pool_name"/mounted_pvc/"$data_name" "$full_path" ; then
-                mount_failure=true
-            fi
+        echo -e "${blue}Validating app...${reset}"
+        app=${manual_selection,,}
+        mapfile -t apps < <(cli -m csv -c 'app chart_release query name' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF')
+        if [[ ! " ${apps[*]} " =~ ${app} ]]; then
+            echo -e "${red}Error:${reset} $manual_selection does not exist in the list of applications"
+            exit 1
         fi
+    fi
 
-        echo -e "${bold}Selected App:${reset} ${blue}$app${reset}"
-        echo -e "${bold}Selected PVC:${reset} ${blue}$data_name${reset}"
-        echo -e "${bold}Selected Pool:${reset} ${blue}$pool_name${reset}"
-        echo -e "${bold}Mounted To:${reset} ${blue}$path/mounted_pvc/$data_name${reset}"
-        if [[ $mount_failure != true ]]; then
-            echo -e "${bold}Status:${reset} ${green}Successfully Mounted${reset}"
-        else
-            echo -e "${bold}Status:${reset} ${red}Mount Failure${reset}"
-        fi
-        echo
-        if [[ $boot_mount == true ]]; then
-            echo -e "${bold}Unmount Manually with:${reset}\n${blue}zfs set mountpoint=legacy \"$full_path\" && rmdir /mnt/mounted_pvc/$data_name${reset}"
-        else
-            echo -e "${bold}Unmount Manually with:${reset}\n${blue}zfs set mountpoint=legacy \"$full_path\" && rmdir /mnt/*/mounted_pvc/$data_name${reset}"
-        fi
-        echo
-        echo -e "${bold}Or use the Unmount All option:${reset}"
-        echo -e "${blue}heavyscript pvc --unmount${reset}"
+    pvc_check_for_pvc
 
-        #Ask if user would like to mount something else
-        while true
-        do
+    pvc_stop_selected_app "$app"
+    sleep 2
+
+    pvc_mount_all_in_namespace "$app"
+
+    if [[ -z $manual_selection ]]; then
+        while true; do
             echo
             read -rt 120 -p "Would you like to mount anything else? (y/N): " yesno || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }
             case $yesno in
             [Yy] | [Yy][Ee][Ss])
                 clear -x
                 title
+                mount_app_func
                 break
                 ;;
             [Nn] | [Nn][Oo]|"")
@@ -208,5 +175,5 @@ mount_app_func(){
                 ;;
             esac
         done
-    done
+    fi
 }

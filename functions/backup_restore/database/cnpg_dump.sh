@@ -181,13 +181,15 @@ backup_cnpg_databases() {
             db_dump_stopped=true
         fi
 
-        # Store the current replica counts for all deployments in the app before scaling down
-        declare -A original_replicas=()
-        mapfile -t replica_lines < <(get_current_replica_counts "$app_name" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
-        for line in "${replica_lines[@]}"; do
-            read -r key value <<< "$(echo "$line" | tr '=' ' ')"
-            original_replicas["$key"]=$value
-        done
+        if [[ $db_dump_stopped == true ]]; then
+            # Store the current replica counts for all deployments in the app before scaling down
+            declare -A original_replicas=()
+            mapfile -t replica_lines < <(get_current_replica_counts "$app_name" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
+            for line in "${replica_lines[@]}"; do
+                read -r key value <<< "$(echo "$line" | tr '=' ' ')"
+                original_replicas["$key"]=$value
+            done
+        fi
 
         for deployment in "${!original_replicas[@]}"; do
             if [[ ${original_replicas[$deployment]} -ne 0 ]]; then
@@ -205,12 +207,13 @@ backup_cnpg_databases() {
             continue
         fi
 
-        # Scale the resources back to the original replica counts
-        for deployment in "${!original_replicas[@]}"; do
-            if [[ ${original_replicas[$deployment]} -ne 0 ]]; then
-                scale_resources "$app_name" 300 "${original_replicas[$deployment]}" "$deployment" > /dev/null 2>&1
-            fi
-        done
+        if [[ $db_dump_stopped == true ]]; then
+            for deployment in "${!original_replicas[@]}"; do
+                if [[ ${original_replicas[$deployment]} -ne 0 ]]; then
+                    scale_resources "$app_name" 300 "${original_replicas[$deployment]}" "$deployment" > /dev/null 2>&1
+                fi
+            done
+        fi
 
     done
 

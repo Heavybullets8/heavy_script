@@ -9,7 +9,7 @@ mount_prompt(){
         echo -e "${bold}PVC Mount Menu${reset}"
         echo -e "${bold}--------------${reset}"
         echo -e "1)  Mount"
-        echo -e "2)  Unmount All"
+        echo -e "2)  Unmount"
         echo
         echo -e "0)  Exit"
         read -rt 120 -p "Please type a number: " selection || { echo -e "\n${red}Failed to make a selection in time${reset}" ; exit; }

@@ -118,6 +118,7 @@ pvc_stop_selected_app() {
     fi
 }
 
+#shellcheck disable=SC2120
 mount_app_func() {
     local manual_selection=$1
     app=""
@@ -152,6 +153,7 @@ mount_app_func() {
             [Yy] | [Yy][Ee][Ss])
                 clear -x
                 title
+                mount_app_func
                 break
                 ;;
             [Nn] | [Nn][Oo]|"")

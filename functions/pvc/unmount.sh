@@ -66,7 +66,7 @@ unmount_app_func(){
         # Check if the unmount_array is empty
         if [[ -z ${unmount_array[*]} ]]; then
             echo -e "${yellow}$app's directory is empty, removing directory..${reset}"
-            rmdir "/mnt/$app/mounted_pvc" 2>/dev/null 
+            rmdir "/mnt/mounted_pvc/$app" 2>/dev/null 
             continue
         fi
 
@@ -84,7 +84,7 @@ unmount_app_func(){
             # Set the mountpoint to "legacy" and unmount
             if zfs set mountpoint=legacy "$full_path/$pvc"; then
                 echo -e "${blue}$pvc_name ${green}unmounted successfully.${reset}"
-                rmdir "/mnt/mounted_pvc/${app}${pvc_name}" 2>/dev/null
+                rmdir "/mnt/mounted_pvc/${app}/${pvc_name}" 2>/dev/null
             else
                 echo -e "${red}Failed to unmount ${blue}$pvc_name.${reset}"
                 echo -e "${yellow}Please make sure your terminal is not open in the mounted directory${reset}"

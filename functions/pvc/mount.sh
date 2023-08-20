@@ -142,7 +142,7 @@ mount_app_func() {
         app=${manual_selection,,}
         mapfile -t apps < <(cli -m csv -c 'app chart_release query name' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF')
         if [[ ! " ${apps[*]} " =~ ${app} ]]; then
-            echo -e "${red}Error:${reset} $manual_selection is not a valid app"
+            echo -e "${red}Error:${reset} $manual_selection does not exist in the list of applications"
             exit 1
         fi
     fi

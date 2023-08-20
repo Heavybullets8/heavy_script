@@ -181,6 +181,7 @@ backup_cnpg_databases() {
                 echo_backup+=("Failed to back up $app_name's database.")
                 failure=true
             fi
+            sleep 500
             stop_app "direct" "$app_name"
         else
             # Store the current replica counts for all deployments in the app before scaling down

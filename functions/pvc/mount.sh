@@ -138,12 +138,10 @@ mount_app_func() {
         fi
     fi
 
-
     pvc_stop_selected_app "$app"
     sleep 2
 
     pvc_mount_all_in_namespace "$app"
-
 
     if [[ -z $manual_selection ]]; then
         while true; do

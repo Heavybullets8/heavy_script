@@ -7,6 +7,7 @@ unmount_app_menu(){
     # Check if the mounted_apps array is empty
     if [[ -z ${mounted_apps[*]} ]]; then
         echo -e "${yellow}There are no PVCs to unmount.${reset}"
+        rmdir /mnt/mounted_pvc 2>/dev/null
         exit
     else
         while true; do
@@ -55,7 +56,7 @@ unmount_app_func(){
         echo -e "${yellow}There is nothing to unmount${reset}"
         exit 0
     fi
-    
+
     ix_apps_pool=$(cli -c 'app kubernetes config' | 
                    grep -E "pool\s\|" | 
                    awk -F '|' '{print $3}' | 

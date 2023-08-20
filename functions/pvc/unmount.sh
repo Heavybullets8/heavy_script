@@ -50,7 +50,9 @@ unmount_app_func(){
                    awk -F '|' '{print $3}' | 
                    sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
-    if [[ -z $1 ]]; then
+    if [[ $1 == "ALL" ]]; then
+        mapfile -t apps < <(find /mnt/mounted_pvc/ -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null)
+    elif [[ -z $1 ]]; then
         unmount_app_menu
     fi
 

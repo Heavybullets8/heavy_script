@@ -59,8 +59,14 @@ unmount_app_func(){
     unmount_array=()
 
     for app in "${apps[@]}"; do
+        # Check if the directory exists
+        if [ ! -d "/mnt/mounted_pvc/$app" ]; then
+            echo -e "${red}Error:${reset} The directory '/mnt/mounted_pvc/$app' does not exist."
+            exit 1
+        fi
+
         mapfile -t unmount_array < <(find "/mnt/mounted_pvc/$app" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null )
-        
+
         # Check if the unmount_array is empty
         if [[ -z ${unmount_array[*]} ]]; then
             echo -e "${yellow}$app's directory is empty, removing directory..${reset}"

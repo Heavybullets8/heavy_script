@@ -14,6 +14,8 @@ pvc_mount_all_in_namespace() {
     local results=()
     local mount_point="/mnt/mounted_pvc/$app"
 
+    clear -x
+    echo -e "${blue}Mounting PVC's for $app...${reset}"
     mapfile -t pvc_list < <(k3s kubectl get pvc -n "ix-$app" | awk 'NR>1 {print $1}' | grep -v -- "-cnpg-main")
     
     for data_name in "${pvc_list[@]}"; do
@@ -36,6 +38,9 @@ pvc_mount_all_in_namespace() {
         fi
         results+=("$data_name" "$status_color$status")
     done
+
+    clear -x
+    title
 
     # Now print the consolidated output
     echo -e "${bold}PVC's:${reset}"

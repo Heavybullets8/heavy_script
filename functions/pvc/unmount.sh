@@ -50,12 +50,8 @@ unmount_app_func(){
                    awk -F '|' '{print $3}' | 
                    sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
-
-
     if [[ -z $1 ]]; then
         unmount_app_menu
-    else
-        pass
     fi
 
     unmount_array=()

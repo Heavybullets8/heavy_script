@@ -2,7 +2,7 @@
 
 unmount_app_menu(){
     # Use the find command to search for directories within /mnt/mounted_pvc/
-    mapfile -t mounted_apps < <(find /mnt/mounted_pvc/ -mindepth 1 -maxdepth 1 -type d -printf '%f\n')
+    mapfile -t mounted_apps < <(find /mnt/mounted_pvc/ -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null)
 
     # Check if the mounted_apps array is empty
     if [[ -z ${mounted_apps[*]} ]]; then
@@ -57,7 +57,7 @@ unmount_app_func(){
     unmount_array=()
 
     for app in "${apps[@]}"; do
-        mapfile -t unmount_array < <(find "/mnt/mounted_pvc/$app" -mindepth 1 -maxdepth 1 -type d -printf '%f\n')
+        mapfile -t unmount_array < <(find "/mnt/mounted_pvc/$app" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null )
         
         # Check if the unmount_array is empty
         if [[ -z ${unmount_array[*]} ]]; then

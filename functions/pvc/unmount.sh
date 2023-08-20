@@ -46,7 +46,9 @@ unmount_app_func(){
     apps=("$1")
 
     for i in "${!apps[@]}"; do
-        apps[i]="${apps[$i],,}"
+        if [[ "${apps[$i]}" != "ALL" ]]; then
+            apps[i]="${apps[$i],,}"
+        fi
     done
 
     ix_apps_pool=$(cli -c 'app kubernetes config' | 

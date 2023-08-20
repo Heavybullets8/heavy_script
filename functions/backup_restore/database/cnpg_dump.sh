@@ -159,24 +159,30 @@ get_redeploy_job_ids(){
         '.[] | select( .time_finished == null and .state == "RUNNING" and (.arguments[0] == $app_name) and (.method == "chart.release.redeploy" or .method == "chart.release.redeploy_internal")) | .id'
 }
 
-abort_redeploy_jobs(){
+wait_for_redeploy_jobs(){
     local app_name=$1
-    job_ids=""
+    local sleep_duration=10
+    local timeout=500
+    local elapsed_time=0
 
-    # shellcheck disable=SC2034
-    for i in {1..60}; do
+    while true; do
         job_ids=$(get_redeploy_job_ids "$app_name")
 
-        if [[ -n "$job_ids" ]]; then
-            while IFS= read -r job_id; do
-                midclt call core.job_abort "$job_id" > /dev/null 2>&1
-            done <<< "$job_ids"
-            return 0
-        fi
+        if [[ -z "$job_ids" ]]; then
+            break
+        else
+            sleep "$sleep_duration"
+            elapsed_time=$((elapsed_time + sleep_duration))
 
-        sleep 1
+            # Check for timeout
+            if [[ "$elapsed_time" -ge "$timeout" ]]; then
+                while IFS= read -r job_id; do
+                    midclt call core.job_abort "$job_id" > /dev/null 2>&1
+                done <<< "$job_ids"
+                return 1
+            fi
+        fi
     done
-    return 1
 }
 
 backup_cnpg_databases() {
@@ -207,7 +213,7 @@ backup_cnpg_databases() {
                 echo_backup+=("Failed to back up $app_name's database.")
                 failure=true
             fi
-            abort_redeploy_jobs "$app_name"
+            wait_for_redeploy_jobs "$app_name"
             stop_app "direct" "$app_name"
         else
             # Store the current replica counts for all deployments in the app before scaling down

@@ -74,10 +74,10 @@ unmount_app_func(){
             # Get the PVC details
             main=$(k3s kubectl get pvc --all-namespaces \
                 --output="go-template={{range .items}}{{if eq .metadata.name \"$pvc_name\"}}\
-                {{.metadata.namespace}} {{.metadata.name}} {{.spec.volumeName}}{{\"\n\"}}\
+                {{.metadata.name}} {{.spec.volumeName}}{{\"\n\"}}\
                 {{end}}{{end}}")
 
-            read -r app pvc_name pvc <<< "$main"
+            read -r pvc_name pvc <<< "$main"
 
             full_path="$ix_apps_pool/ix-applications/releases/$app/volumes"
 

@@ -47,7 +47,7 @@ stop_app() {
     local stop_type app_name timeout status
     stop_type="$1"
     app_name="$2"
-    timeout="300"
+    timeout=${3:-300}
 
     handle_timeout() {
         local timeout_result=$1

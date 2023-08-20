@@ -203,7 +203,7 @@ backup_cnpg_databases() {
         fi
 
         if [[ $db_dump_stopped == true ]];then
-            stop_app "direct" "$app_name"
+            stop_app "direct" "$app_name" 500
             continue
         fi
 

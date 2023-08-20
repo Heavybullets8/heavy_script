@@ -11,6 +11,9 @@ pvc_retrieve_app_pool() {
 pvc_mount_all_in_namespace() {
     local app=$1
     local pvc_list
+    local pvc_names=()  # To store the names of PVCs for later output
+    local mount_status="Successfully Mounted"  # Assume success to start
+    local mount_point="/mnt/mounted_pvc/$app"
 
     mapfile -t pvc_list < <(k3s kubectl get pvc -n "ix-$app" | awk 'NR>1 {print $1}' | grep -v -- "-cnpg-main")
     
@@ -19,12 +22,26 @@ pvc_mount_all_in_namespace() {
 
         volume_name=$(k3s kubectl get pvc "$data_name" -n "ix-$app" -o=jsonpath='{.spec.volumeName}')
         full_path=$(zfs list -t filesystem -r "$ix_apps_pool/ix-applications/releases/$app/volumes" -o name -H | grep "$volume_name")
+        
         if [ -n "$full_path" ]; then
-            pvc_mount_pvc "$app" "$data_name" "$full_path"
+            if ! pvc_mount_pvc "$app" "$data_name" "$full_path"; then
+                mount_status="Mount Failure for some volumes"  # Update status if there was a failure
+            else
+                pvc_names+=("$data_name")
+            fi
         else
             echo -e "${red}Error:${reset} Could not find a ZFS path for $data_name"
+            mount_status="Mount Failure for some volumes"
         fi
     done
+
+    # Now print the consolidated output
+    echo -e "${bold}PVC's:${reset}"
+    for pvc in "${pvc_names[@]}"; do
+        echo "           $pvc"
+    done
+    echo -e "${bold}Mounted To:${reset} $mount_point"
+    echo -e "${bold}Status:${reset} $mount_status"
 
     echo -e "\n${bold}To Unmount All at Once:${reset}"
     echo -e "${blue}heavyscript pvc --unmount${reset}\n"
@@ -66,15 +83,11 @@ pvc_mount_pvc() {
     local data_name=$2
     local full_path=$3
 
+    # Try to mount the PVC and return whether it was successful
     if ! zfs set mountpoint="/mounted_pvc/$app/$data_name" "$full_path"; then
-        echo -e "${bold}PVC:${reset} ${red}$data_name${reset}"
-        echo -e "${bold}Status:${reset} ${red}Mount Failure${reset}\n"
+        return 1
     else
-        echo -e "${bold}PVC:${reset} ${blue}$data_name${reset}"
-        echo -e "${bold}Mounted To:${reset} ${blue}/mnt/mounted_pvc/$app/$data_name${reset}"
-        echo -e "${bold}Status:${reset} ${green}Successfully Mounted${reset}"
-        echo -e "${bold}To Unmount Manually:${reset}"
-        echo -e "${blue}zfs set mountpoint=legacy \"$full_path\" && rmdir /mnt/mounted_pvc/$app/$data_name${reset}\n"
+        return 0
     fi
 }
 

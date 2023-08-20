@@ -7,7 +7,7 @@ unmount_app_menu(){
     # Check if the mounted_apps array is empty
     if [[ -z ${mounted_apps[*]} ]]; then
         echo -e "${yellow}There are no PVCs to unmount.${reset}"
-        return
+        exit
     else
         while true; do
             # Display the menu

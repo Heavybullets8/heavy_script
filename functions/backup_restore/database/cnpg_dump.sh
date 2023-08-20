@@ -12,6 +12,7 @@ wait_for_pods_to_stop() {
     local app_name timeout deployment_name
     app_name="$1"
     timeout="$2"
+    deployment_name="$3"
 
     SECONDS=0
     while true; do
@@ -64,12 +65,6 @@ dump_database() {
     if [[ -z $db_name ]]; then
         echo_backup+=("Failed to get database name for $app.")
         return 1
-    fi
-
-    # Check if the app is already running
-    if [[ $(cli -m csv -c 'app chart_release query name,status' | tr -d " \t\r" | grep "^$app_name," | awk -F, '{print $2}') == "STOPPED" ]]; then
-        # Start the app
-        start_app "$app" 1
     fi
 
     # Create the output directory if it doesn't exist
@@ -162,7 +157,6 @@ backup_cnpg_databases() {
     retention=$1
     timestamp=$2
     dump_folder=$3
-    local db_dump_stopped=false
     local failure=false
 
     mapfile -t app_status_lines < <(db_dump_get_app_status)
@@ -172,6 +166,7 @@ backup_cnpg_databases() {
     fi
 
     for app in "${app_status_lines[@]}"; do
+        local db_dump_stopped=false
         app_name=$(echo "$app" | awk -F, '{print $1}')
         app_status=$(echo "$app" | awk -F, '{print $2}')
 
@@ -181,7 +176,13 @@ backup_cnpg_databases() {
             db_dump_stopped=true
         fi
 
-        if [[ $db_dump_stopped == false ]]; then
+        if [[ $db_dump_stopped == true ]]; then
+            if ! dump_database "$app_name" "$dump_folder"; then
+                echo_backup+=("Failed to back up $app_name's database.")
+                failure=true
+            fi
+            stop_app "direct" "$app_name"
+        else
             # Store the current replica counts for all deployments in the app before scaling down
             declare -A original_replicas=()
             mapfile -t replica_lines < <(get_current_replica_counts "$app_name" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
@@ -189,32 +190,24 @@ backup_cnpg_databases() {
                 read -r key value <<< "$(echo "$line" | tr '=' ' ')"
                 original_replicas["$key"]=$value
             done
-        fi
 
-        for deployment in "${!original_replicas[@]}"; do
-            if [[ ${original_replicas[$deployment]} -ne 0 ]]; then
-                scale_resources "$app_name" 300 0 "$deployment" > /dev/null 2>&1
+            for deployment in "${!original_replicas[@]}"; do
+                if [[ ${original_replicas[$deployment]} -ne 0 ]]; then
+                    scale_resources "$app_name" 300 0 "$deployment" > /dev/null 2>&1
+                fi
+            done
+
+            if ! dump_database "$app_name" "$dump_folder"; then
+                echo_backup+=("Failed to back up $app_name's database.")
+                failure=true
             fi
-        done
 
-        if ! dump_database "$app_name" "$dump_folder"; then
-            echo_backup+=("Failed to back up $app_name's database.")
-            failure=true
-        fi
-
-        if [[ $db_dump_stopped == true ]];then
-            stop_app "direct" "$app_name"
-            continue
-        fi
-
-        if [[ $db_dump_stopped == false ]]; then
             for deployment in "${!original_replicas[@]}"; do
                 if [[ ${original_replicas[$deployment]} -ne 0 ]]; then
                     scale_resources "$app_name" 300 "${original_replicas[$deployment]}" "$deployment" > /dev/null 2>&1
                 fi
             done
         fi
-
     done
 
     if [[ $failure = false ]]; then
@@ -226,4 +219,3 @@ backup_cnpg_databases() {
     formatted_output=$(display_app_sizes "$dump_folder")
     echo_backup+=("$formatted_output")
 }
-

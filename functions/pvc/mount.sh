@@ -47,7 +47,7 @@ pvc_mount_all_in_namespace() {
     # Now print the consolidated output
     echo -e "${bold}PVC's:${reset}"
     for ((i=0; i<${#results[@]}; i+=2)); do
-        echo -e "    $status_color${results[$i+1]}$reset: $blue${results[$i]}$reset"
+        echo -e "    ${results[$i+1]}${results[$i+2]}$reset: $blue${results[$i]}$reset"
     done
     echo -e "${bold}Mounted to:${reset} ${blue}$mount_point${reset}"
     echo -e "${bold}Unmount with: ${blue}heavyscript pvc --unmount $app${reset}\n"

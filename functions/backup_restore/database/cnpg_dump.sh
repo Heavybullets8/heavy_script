@@ -189,7 +189,6 @@ backup_cnpg_databases() {
     local retention=$1
     local timestamp=$2
     local dump_folder=$3
-    local failure=false
 
     mapfile -t app_status_lines < <(db_dump_get_app_status)
 
@@ -220,14 +219,12 @@ backup_cnpg_databases() {
         for deployment in "${!original_replicas[@]}"; do
             if [[ ${original_replicas[$deployment]} -ne 0 ]] && ! scale_deployments "$app_name" 300 0 "$deployment" > /dev/null 2>&1; then
                 echo_backup+=("Failed to scale down $app_name's $deployment deployment.")
-                failure=true
             fi
         done
 
         # Dump the database
         if ! dump_database "$app_name" "$dump_folder"; then
             echo_backup+=("Failed to back up $app_name's database.")
-            failure=true
         fi
 
         # Scale up all deployments in the app to their original replica counts, or stop the app if it was stopped
@@ -242,10 +239,6 @@ backup_cnpg_databases() {
             done
         fi
     done
-
-    if [[ $failure = false ]]; then
-        echo_backup+=("Successfully backed up CNPG databases:")
-    fi
 
     remove_old_dumps "$dump_folder" "$retention"
     echo_backup+=("$(display_app_sizes "$dump_folder")")

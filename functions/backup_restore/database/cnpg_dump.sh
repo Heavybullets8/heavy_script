@@ -40,7 +40,7 @@ scale_deployments() {
     deployment_name="$4"
 
     # Specific deployment passed, scale only this deployment
-    k3s kubectl scale deployments/"$deployment_name" -n ix-"$app_name" --replicas="$replicas"
+    k3s kubectl scale deployments/"$deployment_name" -n ix-"$app_name" --replicas="$replicas" || return 1
 
     if [[ $replicas -eq 0 ]]; then
         wait_for_pods_to_stop "$app_name" "$timeout" "$deployment_name" && return 0 || return 1
@@ -197,6 +197,8 @@ backup_cnpg_databases() {
     # Return if there are no app status lines
     if [[ ${#app_status_lines[@]} -eq 0 ]]; then
         return
+    else
+        echo_backup+=("--CNPG Database Backups--")
     fi
 
     # Loop through each app status line
@@ -218,10 +220,12 @@ backup_cnpg_databases() {
             original_replicas["$key"]=$value
         done
 
-        # Scale down all non CNPG deployments to 0 replicas
+        # Scale down all non-CNPG deployments to 0 replicas
         for deployment in "${!original_replicas[@]}"; do
-            if [[ ${original_replicas[$deployment]} -ne 0 ]]; then
-                scale_deployments "$app_name" 300 0 "$deployment" > /dev/null 2>&1
+            # Check if the deployment is not already at 0 replicas
+            if [[ ${original_replicas[$deployment]} -ne 0 ]] && ! scale_deployments "$app_name" 300 0 "$deployment" > /dev/null 2>&1; then
+                echo_backup+=("Failed to scale down $app_name's $deployment deployment.")
+                failure=true
             fi
         done
 

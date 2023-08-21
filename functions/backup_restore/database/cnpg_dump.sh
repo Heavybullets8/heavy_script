@@ -207,7 +207,6 @@ backup_cnpg_databases() {
             wait_for_postgres_pod "$app_name"
         fi
 
-        # Store the current replica counts for all deployments in the app before scaling down
         declare -A original_replicas=()
         mapfile -t replica_lines < <(get_current_replica_counts "$app_name" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
         for line in "${replica_lines[@]}"; do
@@ -219,12 +218,14 @@ backup_cnpg_databases() {
         for deployment in "${!original_replicas[@]}"; do
             if [[ ${original_replicas[$deployment]} -ne 0 ]] && ! scale_deployments "$app_name" 300 0 "$deployment" > /dev/null 2>&1; then
                 echo_backup+=("Failed to scale down $app_name's $deployment deployment.")
+                return
             fi
         done
 
         # Dump the database
         if ! dump_database "$app_name" "$dump_folder"; then
             echo_backup+=("Failed to back up $app_name's database.")
+            return
         fi
 
         # Scale up all deployments in the app to their original replica counts, or stop the app if it was stopped
@@ -233,8 +234,9 @@ backup_cnpg_databases() {
             stop_app "direct" "$app_name"
         else
             for deployment in "${!original_replicas[@]}"; do
-                if [[ ${original_replicas[$deployment]} -ne 0 ]]; then
-                    scale_deployments "$app_name" 300 "${original_replicas[$deployment]}" "$deployment" > /dev/null 2>&1
+                if [[ ${original_replicas[$deployment]} -ne 0 ]] && ! scale_deployments "$app_name" 300 "${original_replicas[$deployment]}" "$deployment" > /dev/null 2>&1; then
+                    echo_backup+=("Failed to scale up $app_name's $deployment deployment.")
+                    return
                 fi
             done
         fi
@@ -243,4 +245,3 @@ backup_cnpg_databases() {
     remove_old_dumps "$dump_folder" "$retention"
     echo_backup+=("$(display_app_sizes "$dump_folder")")
 }
-

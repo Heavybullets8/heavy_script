@@ -253,7 +253,4 @@ backup_cnpg_databases() {
     remove_old_dumps "$dump_folder" "$retention"
     formatted_output=$(display_app_sizes "$dump_folder")
     echo_backup+=("$formatted_output")
-
-    # Print the backup messages
-    printf '%s\n' "${echo_backup[@]}"
 }

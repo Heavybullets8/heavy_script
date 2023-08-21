@@ -191,22 +191,18 @@ backup_cnpg_databases() {
     local dump_folder=$3
     local failure=false
 
-    # Get the app status lines
     mapfile -t app_status_lines < <(db_dump_get_app_status)
 
-    # Return if there are no app status lines
     if [[ ${#app_status_lines[@]} -eq 0 ]]; then
         return
-    else
-        echo_backup+=("--CNPG Database Backups--")
     fi
+    
+    echo_backup+=("--CNPG Database Backups--")
 
-    # Loop through each app status line
     for app in "${app_status_lines[@]}"; do
-        app_name=$(echo "$app" | awk -F, '{print $1}')
-        app_status=$(echo "$app" | awk -F, '{print $2}')
+        IFS=',' read -r app_name app_status <<< "$app"
 
-        # Start app if it is stopped
+        # Start the app if it is stopped
         if [[ $app_status == "STOPPED" ]]; then
             start_app "$app_name" 1
             wait_for_postgres_pod "$app_name"
@@ -216,26 +212,25 @@ backup_cnpg_databases() {
         declare -A original_replicas=()
         mapfile -t replica_lines < <(get_current_replica_counts "$app_name" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
         for line in "${replica_lines[@]}"; do
-            read -r key value <<< "$(echo "$line" | tr '=' ' ')"
+            IFS='=' read -r key value <<< "$line"
             original_replicas["$key"]=$value
         done
 
-        # Scale down all non-CNPG deployments to 0 replicas
+        # Scale down all deployments in the app to 0
         for deployment in "${!original_replicas[@]}"; do
-            # Check if the deployment is not already at 0 replicas
             if [[ ${original_replicas[$deployment]} -ne 0 ]] && ! scale_deployments "$app_name" 300 0 "$deployment" > /dev/null 2>&1; then
                 echo_backup+=("Failed to scale down $app_name's $deployment deployment.")
                 failure=true
             fi
         done
 
-        # Dump the database and set failure flag if it fails
+        # Dump the database
         if ! dump_database "$app_name" "$dump_folder"; then
             echo_backup+=("Failed to back up $app_name's database.")
             failure=true
         fi
 
-        # Stop app if it was originally stopped, otherwise scale up all deployments to their original replica counts
+        # Scale up all deployments in the app to their original replica counts, or stop the app if it was stopped
         if [[ $app_status == "STOPPED" ]]; then
             wait_for_redeploy_jobs "$app_name"
             stop_app "direct" "$app_name"
@@ -248,13 +243,11 @@ backup_cnpg_databases() {
         fi
     done
 
-    # Add success message if there were no failures
     if [[ $failure = false ]]; then
         echo_backup+=("Successfully backed up CNPG databases:")
     fi
 
-    # Remove old dumps and display app sizes
     remove_old_dumps "$dump_folder" "$retention"
-    formatted_output=$(display_app_sizes "$dump_folder")
-    echo_backup+=("$formatted_output")
+    echo_backup+=("$(display_app_sizes "$dump_folder")")
 }
+

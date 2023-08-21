@@ -5,7 +5,7 @@ create_snapshot(){
     local number_of_backups="$1"
     local timestamp="$2"
 
-    echo_backup+=("--Snapshots--")
+    echo_backup+=("\n--Snapshots--")
 
     # Create a new backup with the current date and time as the name
     if ! output=$(cli -c "app kubernetes backup_chart_releases backup_name=\"HeavyScript_$timestamp\""); then
@@ -16,7 +16,7 @@ create_snapshot(){
     if [[ "$verbose" == true ]]; then
         echo_backup+=("$output")
     else
-        echo_backup+=("\nNew Snapshot Name:" "$(echo -e "$output" | tail -n 1)")
+        echo_backup+=("New Snapshot Name:" "$(echo -e "$output" | tail -n 1)")
     fi
 
     # Get a list of backups sorted by name in descending order

@@ -12,6 +12,7 @@ wait_for_pods_to_stop() {
     local app_name timeout deployment_name
     app_name="$1"
     timeout="$2"
+    deployment_name="$3"
 
     SECONDS=0
     while true; do
@@ -39,7 +40,7 @@ scale_deployments() {
     deployment_name="$4"
 
     # Specific deployment passed, scale only this deployment
-    k3s kubectl scale deployments/"$deployment_name" -n ix-"$app_name" --replicas="$replicas"
+    k3s kubectl scale deployments/"$deployment_name" -n ix-"$app_name" --replicas="$replicas" || return 1
 
     if [[ $replicas -eq 0 ]]; then
         wait_for_pods_to_stop "$app_name" "$timeout" "$deployment_name" && return 0 || return 1
@@ -64,12 +65,6 @@ dump_database() {
     if [[ -z $db_name ]]; then
         echo_backup+=("Failed to get database name for $app.")
         return 1
-    fi
-
-    # Check if the app is already running
-    if [[ $(cli -m csv -c 'app chart_release query name,status' | tr -d " \t\r" | grep "^$app_name," | awk -F, '{print $2}') == "STOPPED" ]]; then
-        # Start the app
-        start_app "$app" 1
     fi
 
     # Create the output directory if it doesn't exist
@@ -158,69 +153,95 @@ wait_for_postgres_pod() {
     return 1
 }
 
+get_redeploy_job_ids(){
+    local app_name=$1
+    midclt call core.get_jobs | jq -r --arg app_name "$app_name" \
+        '.[] | select( .time_finished == null and .state == "RUNNING" and (.arguments[0] == $app_name) and (.method == "chart.release.redeploy" or .method == "chart.release.redeploy_internal")) | .id'
+}
+
+wait_for_redeploy_jobs(){
+    local app_name=$1
+    local sleep_duration=10
+    local timeout=500
+    local elapsed_time=0
+
+    while true; do
+        job_ids=$(get_redeploy_job_ids "$app_name")
+
+        if [[ -z "$job_ids" ]]; then
+            break
+        else
+            sleep "$sleep_duration"
+            elapsed_time=$((elapsed_time + sleep_duration))
+
+            # Check for timeout
+            if [[ "$elapsed_time" -ge "$timeout" ]]; then
+                while IFS= read -r job_id; do
+                    midclt call core.job_abort "$job_id" > /dev/null 2>&1
+                done <<< "$job_ids"
+                return 1
+            fi
+        fi
+    done
+}
+
 backup_cnpg_databases() {
-    retention=$1
-    timestamp=$2
-    dump_folder=$3
-    local db_dump_stopped=false
-    local failure=false
+    local retention=$1
+    local timestamp=$2
+    local dump_folder=$3
 
     mapfile -t app_status_lines < <(db_dump_get_app_status)
 
     if [[ ${#app_status_lines[@]} -eq 0 ]]; then
         return
     fi
+    
+    echo_backup+=("--CNPG Database Backups--")
 
     for app in "${app_status_lines[@]}"; do
-        app_name=$(echo "$app" | awk -F, '{print $1}')
-        app_status=$(echo "$app" | awk -F, '{print $2}')
+        IFS=',' read -r app_name app_status <<< "$app"
 
+        # Start the app if it is stopped
         if [[ $app_status == "STOPPED" ]]; then
             start_app "$app_name" 1
             wait_for_postgres_pod "$app_name"
-            db_dump_stopped=true
         fi
 
-        # Store the current replica counts for all deployments in the app before scaling down
         declare -A original_replicas=()
         mapfile -t replica_lines < <(get_current_replica_counts "$app_name" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
         for line in "${replica_lines[@]}"; do
-            read -r key value <<< "$(echo "$line" | tr '=' ' ')"
+            IFS='=' read -r key value <<< "$line"
             original_replicas["$key"]=$value
         done
 
+        # Scale down all deployments in the app to 0
         for deployment in "${!original_replicas[@]}"; do
-            if [[ ${original_replicas[$deployment]} -ne 0 ]]; then
-                scale_resources "$app_name" 300 0 "$deployment" > /dev/null 2>&1
+            if [[ ${original_replicas[$deployment]} -ne 0 ]] && ! scale_deployments "$app_name" 300 0 "$deployment" > /dev/null 2>&1; then
+                echo_backup+=("Failed to scale down $app_name's $deployment deployment.")
+                return
             fi
         done
 
+        # Dump the database
         if ! dump_database "$app_name" "$dump_folder"; then
             echo_backup+=("Failed to back up $app_name's database.")
-            failure=true
+            return
         fi
 
-        if [[ $db_dump_stopped == true ]];then
+        # Scale up all deployments in the app to their original replica counts, or stop the app if it was stopped
+        if [[ $app_status == "STOPPED" ]]; then
+            wait_for_redeploy_jobs "$app_name"
             stop_app "direct" "$app_name"
-            continue
+        else
+            for deployment in "${!original_replicas[@]}"; do
+                if [[ ${original_replicas[$deployment]} -ne 0 ]] && ! scale_deployments "$app_name" 300 "${original_replicas[$deployment]}" "$deployment" > /dev/null 2>&1; then
+                    echo_backup+=("Failed to scale up $app_name's $deployment deployment.")
+                    return
+                fi
+            done
         fi
-
-        # Scale the resources back to the original replica counts
-        for deployment in "${!original_replicas[@]}"; do
-            if [[ ${original_replicas[$deployment]} -ne 0 ]]; then
-                scale_resources "$app_name" 300 "${original_replicas[$deployment]}" "$deployment" > /dev/null 2>&1
-            fi
-        done
-
     done
 
-    if [[ $failure = false ]]; then
-        echo_backup+=("Successfully backed up CNPG databases:")
-    fi
-
     remove_old_dumps "$dump_folder" "$retention"
-
-    formatted_output=$(display_app_sizes "$dump_folder")
-    echo_backup+=("$formatted_output")
+    echo_backup+=("$(display_app_sizes "$dump_folder")")
 }
-

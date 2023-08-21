@@ -27,7 +27,7 @@ create_backup(){
     fi
 
     echo_backup+=("🄱 🄰 🄲 🄺 🅄 🄿 🅂")
-    echo_backup+=("Number of backups was set to $retention\n")
+    echo_backup+=("Retention: $retention\n")
 
     if [[ "$db_backups_enabled" == "true" ]]; then
         backup_cnpg_databases "$retention" "$timestamp" "$dump_folder"

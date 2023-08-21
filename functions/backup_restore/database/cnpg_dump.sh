@@ -221,7 +221,7 @@ backup_cnpg_databases() {
         # Scale down all non CNPG deployments to 0 replicas
         for deployment in "${!original_replicas[@]}"; do
             if [[ ${original_replicas[$deployment]} -ne 0 ]]; then
-                scale_resources "$app_name" 300 0 "$deployment" > /dev/null 2>&1
+                scale_deployments "$app_name" 300 0 "$deployment" > /dev/null 2>&1
             fi
         done
 
@@ -238,7 +238,7 @@ backup_cnpg_databases() {
         else
             for deployment in "${!original_replicas[@]}"; do
                 if [[ ${original_replicas[$deployment]} -ne 0 ]]; then
-                    scale_resources "$app_name" 300 "${original_replicas[$deployment]}" "$deployment" > /dev/null 2>&1
+                    scale_deployments "$app_name" 300 "${original_replicas[$deployment]}" "$deployment" > /dev/null 2>&1
                 fi
             done
         fi

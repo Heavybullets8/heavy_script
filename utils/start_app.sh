@@ -51,7 +51,6 @@ get_running_job_id(){
 
 start_app(){
     local app_name=$1
-    local replica_count=${2:-$(pull_replicas "$app_name")}
     local job_id
 
     # Check if app is a cnpg instance, or an operator instance
@@ -61,15 +60,15 @@ start_app(){
             return 1
         fi
         abort_job "$app_name"
-        job_id=$(midclt call chart.release.scale "$app_name" '{"replica_count": '"$replica_count"'}') || return 1
+        job_id=$(midclt call chart.release.redeploy "$app_name") || return 1
         wait_for_redeploy_methods "$app_name"
         midclt call core.job_abort "$job_id" > /dev/null 2>&1
     elif [[ $output == *"${app_name},stopAll-off"* ]]; then
-        job_id=$(midclt call chart.release.scale "$app_name" '{"replica_count": '"$replica_count"'}') || return 1
+        job_id=$(midclt call chart.release.redeploy "$app_name") || return 1
         wait_for_redeploy_methods "$app_name"
         midclt call core.job_abort "$job_id" > /dev/null 2>&1
     else
-        if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replica_count}" > /dev/null 2>&1; then
+        if ! cli -c 'app chart_release redeploy release_name='\""$app_name"\" > /dev/null 2>&1; then
             return 1
         fi
     fi

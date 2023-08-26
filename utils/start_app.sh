@@ -60,11 +60,11 @@ start_app(){
             return 1
         fi
         abort_job "$app_name"
-        job_id=$(midclt call chart.release.redeploy "$app_name") || return 1
+        job_id=$(midclt call chart.release.redeploy_internal "$app_name") || return 1
         wait_for_redeploy_methods "$app_name"
         midclt call core.job_abort "$job_id" > /dev/null 2>&1
     elif [[ $output == *"${app_name},stopAll-off"* ]]; then
-        job_id=$(midclt call chart.release.redeploy "$app_name") || return 1
+        job_id=$(midclt call chart.release.redeploy_internal "$app_name") || return 1
         wait_for_redeploy_methods "$app_name"
         midclt call core.job_abort "$job_id" > /dev/null 2>&1
     else

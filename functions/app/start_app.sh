@@ -30,7 +30,7 @@ start_app_prompt() {
             exit
         fi
 
-        if [[ $replica_count == "null" ]]; then
+        if [[ $replica_count == "null" && $(check_filtered_apps "$app_name") == *"${app_name},official"* ]]; then
             echo -e "${blue}$app_name${red} cannot be started${reset}"
             echo -e "${yellow}Replica count is null${reset}"
             echo -e "${yellow}Looks like you found an application HS cannot handle${reset}"

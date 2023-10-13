@@ -52,7 +52,7 @@ get_running_job_id(){
 check_mounted(){
     local app_name=$1
 
-    if [[ -d /mnt/mounted_apps/"$app_name" ]]; then
+    if [[ -d /mnt/mounted_pvc/"$app_name" ]]; then
         unmount_app_func "$app_name" > /dev/null 2>&1
     fi
 }

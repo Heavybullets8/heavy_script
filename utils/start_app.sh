@@ -49,9 +49,20 @@ get_running_job_id(){
         '.[] | select( .time_finished == null and .state == "RUNNING" and (.progress.description | test("Waiting for pods to be scaled to [0-9]+ replica\\(s\\)$")) and (.arguments[0] == $app_name and .method == "chart.release.scale") ) | .id'
 }
 
+check_mounted(){
+    local app_name=$1
+
+    if [[ -d /mnt/mounted_apps/"$app_name" ]]; then
+        unmount_app_func "$app_name" > /dev/null 2>&1
+    fi
+}
+
 start_app(){
     local app_name=$1
     local job_id
+
+    #check if app is currently mounted
+    check_mounted "$app_name"
 
     # Check if app is a cnpg instance, or an operator instance
     output=$(check_filtered_apps "$app_name")

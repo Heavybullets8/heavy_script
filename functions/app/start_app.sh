@@ -30,7 +30,7 @@ start_app_prompt() {
             exit
         fi
 
-        if [[ $replica_count == "null" ]]; then
+        if [[ $replica_count == "null" && $(check_filtered_apps "$app_name") != *"${app_name},official"* ]]; then
             echo -e "${blue}$app_name${red} cannot be started${reset}"
             echo -e "${yellow}Replica count is null${reset}"
             echo -e "${yellow}Looks like you found an application HS cannot handle${reset}"
@@ -41,9 +41,8 @@ start_app_prompt() {
         echo -e "Starting ${blue}$app_name${reset}..."
 
         # Check if all cli commands were successful
-        if start_app "$app_name" "$replica_count"; then
+        if start_app "$app_name"; then
             echo -e "${blue}$app_name ${green}Started${reset}"
-            echo -e "${green}Replica count set to ${blue}$replica_count${reset}\n"
         else
             echo -e "${red}Failed to start ${blue}$app_name${reset}\n"
         fi

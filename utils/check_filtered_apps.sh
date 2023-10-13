@@ -12,6 +12,11 @@ check_filtered_apps() {
             else
                 empty
             end,
+            if .catalog == "TRUENAS" then
+                .name + ",official"
+            else
+                empty
+            end,
             if .config.cnpg.main.enabled == true then
                 .name + ",cnpg"
             else

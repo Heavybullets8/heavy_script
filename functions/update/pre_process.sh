@@ -60,14 +60,10 @@ check_replicas() {
     local replicas
     replicas=$(pull_replicas "$app_name")
 
-    if [[ $replicas == "0" ]]; then
+    if [[ $replicas == "0" || $replicas == "null" ]]; then
         if [[ "$verbose" == true ]]; then
-            echo_array+=("Application has 0 replicas, skipping post processing")
+            echo_array+=("No replica data, skipping post processing")
         fi
-        return 1
-    elif [[ $replicas == "null" ]]; then
-        echo_array+=("HeavyScript does not know how many replicas this app has, skipping post processing")
-        echo_array+=("Please submit a bug report on github so this can be fixed")
         return 1
     fi
     return 0

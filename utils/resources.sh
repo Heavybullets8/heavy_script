@@ -4,7 +4,22 @@ pull_replicas() {
     local app_name
     app_name="$1"
 
-    midclt call chart.release.get_instance "$app_name" | jq '.config.controller.replicas // .config.workload.main.replicas'
+    # First Check
+    replica_info=$(midclt call chart.release.get_instance "$app_name" | jq '.config.controller.replicas // .config.workload.main.replicas')
+
+    # Second Check if First Check returns null or 0
+    if [[ "$replica_info" == "null" || "$replica_info" == "0" ]]; then
+        replica_info=$(k3s kubectl get deployments -n "ix-$app_name" --selector=app.kubernetes.io/instance="$app_name" -o=jsonpath='{.items[*].spec.replicas}{"\n"}')
+        # Replace 0 with 1
+        replica_info=$(echo "$replica_info" | awk '{if ($1 == 0) $1 = 1; print $1}')
+    fi
+
+    # Output the replica info or "null" if neither command returned a result
+    if [[ -z "$replica_info" || "$replica_info" == *" "* ]]; then
+        echo "null"
+    else
+        echo "$replica_info"
+    fi
 }
 
 restart_app(){

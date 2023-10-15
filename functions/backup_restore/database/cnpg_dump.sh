@@ -216,7 +216,7 @@ backup_cnpg_databases() {
 
         # Start the app if it is stopped
         if [[ $app_status == "STOPPED" ]]; then
-            start_app "$app_name" 1
+            start_app "$app_name"
             wait_for_postgres_pod "$app_name"
         fi
 

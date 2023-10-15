@@ -79,7 +79,8 @@ start_app(){
         wait_for_redeploy_methods "$app_name"
         midclt call core.job_abort "$job_id" > /dev/null 2>&1
     else
-        if ! cli -c 'app chart_release redeploy release_name='\""$app_name"\" > /dev/null 2>&1; then
+        replicas=$(pull_replicas "$app_name")
+        if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replicas}" > /dev/null 2>&1; then
             return 1
         fi
     fi

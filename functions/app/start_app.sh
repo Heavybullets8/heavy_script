@@ -20,21 +20,13 @@ start_app_prompt() {
         # Query chosen replica count for the application
         replica_count=$(pull_replicas "$app_name")
 
-        if [[ $replica_count == "0" ]]; then
+        if [[ $replica_count == "null" ]]; then
             echo -e "${blue}$app_name${red} cannot be started${reset}"
             echo -e "${yellow}Replica count is 0${reset}"
             echo -e "${yellow}This could be due to:${reset}"
             echo -e "${yellow}1. The application does not accept a replica count (external services, cert-manager etc)${reset}"
             echo -e "${yellow}2. The application is set to 0 replicas in its configuration${reset}"
             echo -e "${yellow}If you believe this to be a mistake, please submit a bug report on the github.${reset}"
-            exit
-        fi
-
-        if [[ $replica_count == "null" && $(check_filtered_apps "$app_name") != *"${app_name},official"* ]]; then
-            echo -e "${blue}$app_name${red} cannot be started${reset}"
-            echo -e "${yellow}Replica count is null${reset}"
-            echo -e "${yellow}Looks like you found an application HS cannot handle${reset}"
-            echo -e "${yellow}Please submit a bug report on the github.${reset}"
             exit
         fi
 

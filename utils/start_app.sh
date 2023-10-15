@@ -66,7 +66,14 @@ start_app(){
 
     # Check if app is a cnpg instance, or an operator instance
     output=$(check_filtered_apps "$app_name")
-    if [[ $output == *"${app_name},stopAll-on"* ]]; then
+    # Remove this first if statement after a while
+    # it is only here to deal with previous errors for a while
+    if [[ $output == *"${app_name},official"* ]]; then
+        replicas=$(pull_replicas "$app_name")
+        if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replicas}" > /dev/null 2>&1; then
+            return 1
+        fi
+    elif [[ $output == *"${app_name},stopAll-on"* ]]; then
         if ! cli -c "app chart_release update chart_release=\"$app_name\" values={\"global\": {\"stopAll\": false}}" > /dev/null 2>&1; then
             return 1
         fi

@@ -28,7 +28,7 @@ start_app(){
     elif [[ $output == *"${app_name},stopAll-"* ]]; then
         ix_apps_pool=$(get_apps_pool)
 
-        latest_version=$(midclt call chart.release.get_instance "$app_name" | jq ".chart_metadata.version")
+        latest_version=$(midclt call chart.release.get_instance "$app_name" | jq -r ".chart_metadata.version")
 
         if ! helm upgrade -n "ix-$app_name" "$app_name" \
             "/mnt/$ix_apps_pool/ix-applications/releases/$app_name/charts/$latest_version" \

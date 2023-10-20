@@ -57,10 +57,7 @@ unmount_app_func(){
         exit 0
     fi
 
-    ix_apps_pool=$(cli -c 'app kubernetes config' | 
-                   grep -E "pool\s\|" | 
-                   awk -F '|' '{print $3}' | 
-                   sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+    ix_apps_pool=$(get_apps_pool)
 
     if [[ $1 == "ALL" ]]; then
         mapfile -t apps < <(find /mnt/mounted_pvc/ -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null)

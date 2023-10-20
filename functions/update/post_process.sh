@@ -94,9 +94,16 @@ post_process(){
 
     if [[ $status == "STOPPED" ]] && ! grep -q "^$app_name,DEPLOYING" deploying 2>/dev/null; then
         if ! verify_stopped; then
-            start_app "$app_name"
+            if ! start_app "$app_name"; then
+                echo_array+=("The app entered post-processing, but could not be started.")
+                echo_array+=("Abandoning...")
+                echo "$app_name,$new_full_ver" >> failed
+                echo_array
+                return
+            fi
         fi
     fi
+
 
     while true
     do

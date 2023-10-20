@@ -17,6 +17,29 @@ verify_active(){
     done
 }
 
+verify_stopped(){
+    if [[ "$verbose" == true ]]; then
+        echo_array+=("Verifying $status..")
+    fi
+    before_loop=$(head -n 1 all_app_status)
+    current_loop=0
+    until [[ "$status" != "STOPPED" || $current_loop -gt 6 ]]
+    do
+        status=$(update_status)
+        sleep 1
+        if ! echo -e "$(head -n 1 all_app_status)" | grep -qs ^"$before_loop" ; then
+            before_loop=$(head -n 1 all_app_status)
+            ((current_loop++))
+        fi
+    done
+
+    if [[ "$status" != "STOPPED" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 update_status() {
     grep "^$app_name," all_app_status | awk -F ',' '{print $2}'
 }
@@ -67,6 +90,12 @@ post_process(){
 
     if [[ $status == "ACTIVE" ]] && ! grep -q "^$app_name,DEPLOYING" deploying 2>/dev/null; then
         verify_active
+    fi
+
+    if [[ $status == "STOPPED" ]] && ! grep -q "^$app_name,DEPLOYING" deploying 2>/dev/null; then
+        if ! verify_stopped; then
+            start_app "$app_name"
+        fi
     fi
 
     while true

@@ -92,7 +92,7 @@ post_process(){
         verify_active
     fi
 
-    if [[ $status == "STOPPED" ]] && ! grep -q "^$app_name,DEPLOYING" deploying 2>/dev/null; then
+    if [[ $status == "STOPPED" ]] && [[ "$startstatus"  ==  "STOPPED" ]] && ! grep -q "^$app_name,DEPLOYING" deploying 2>/dev/null; then
         if ! verify_stopped; then
             if ! start_app "$app_name"; then
                 echo_array+=("The app entered post-processing, but could not be started.")

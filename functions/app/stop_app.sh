@@ -17,6 +17,14 @@ stop_app_prompt(){
     fi
 
     for app_name in "${app_names[@]}"; do
+        # Only check app existence if arguments were provided and it's not "ALL"
+        if [[ $1 && $1 != "ALL" && ${#app_names[@]} -gt 0 ]]; then
+            if ! check_app_existence "$app_name"; then
+                echo -e "${red}Error:${reset} $app_name does not exist"
+                continue
+            fi
+        fi
+        
         echo -e "Stopping ${blue}$app_name${reset}..."
         
         stop_app "normal" "$app_name" "${timeout:-50}"

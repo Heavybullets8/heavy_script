@@ -44,3 +44,19 @@ restart_app(){
     done
     return 0
 }
+
+get_apps_pool(){
+    cli -c 'app kubernetes config' | 
+        grep -E "pool\s\|" | 
+        awk -F '|' '{print $3}' | 
+        sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//'
+}
+
+check_app_existence() {
+    local app=${1,,}
+    mapfile -t apps < <(cli -m csv -c 'app chart_release query name' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF')
+    if [[ ! " ${apps[*]} " =~ ${app} ]]; then
+        return 1
+    fi
+    return 0
+}

@@ -30,10 +30,11 @@ start_app(){
         ix_apps_pool=$(get_apps_pool)
 
         # Get latest version
-        latest_version=$(find "/mnt/$ix_apps_pool/ix-applications/releases/$app_name/charts" -maxdepth 1 -type d | 
+        latest_version=$(find "/mnt/$ix_apps_pool/ix-applications/releases/$app_name/charts" -mindepth 1 -maxdepth 1 -type d | 
                         awk -F'/' '{print $NF}' | 
                         sort -V | 
                         tail -n 1)
+
 
         # Helm upgrade command
         if ! KUBECONFIG="/etc/rancher/k3s/k3s.yaml" \

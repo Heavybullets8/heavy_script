@@ -48,6 +48,9 @@ while IFS= read -r script_file; do
     source "$script_file"
 done < <(find functions utils -name "*.sh" -exec printf '%s\n' {} \;)
 
+# Ensure symlink within /usr/local/bin is active, for when the script is run with sudo
+ensure_symlink
+
 # generate the config.ini file if it does not exist
 generate_config_ini
 
@@ -99,34 +102,43 @@ fi
 
 case "${args[0]}" in
     app)
-        app_handler "${args[@]:1}" # Pass remaining arguments to app_handler
+        check_root "${args[@]}"
+        app_handler "${args[@]:1}"
         ;;
     backup)
-        backup_handler "${args[@]:1}" # Pass remaining arguments to backup_handler
+        check_root "${args[@]}"
+        backup_handler "${args[@]:1}"
         ;;
     dns)
-        dns_handler "${args[@]:1}" # Pass remaining arguments to dns_handler
+        check_root "${args[@]}"
+        dns_handler "${args[@]:1}" 
         ;;
     enable)
-        enable_handler "${args[@]:1}" # Pass remaining arguments to enable_handler
+        check_root "${args[@]}"
+        enable_handler "${args[@]:1}" 
         ;;
     git)
-        git_handler "${args[@]:1}" # Pass remaining arguments to git_handler
+        git_handler "${args[@]:1}"
         ;;
     pod)
-        pod_handler "${args[@]:1}" # Pass remaining arguments to pod_handler
+        check_root "${args[@]}"
+        pod_handler "${args[@]:1}"
         ;;
     pvc)
-        pvc_handler "${args[@]:1}" # Pass remaining arguments to mount_handler
+        check_root "${args[@]}"
+        pvc_handler "${args[@]:1}" 
         ;;
     update)
-        update_handler "${args[@]:1}" # Pass remaining arguments to update_handler
+        check_root "${args[@]}"
+        update_handler "${args[@]:1}" 
         ;;
     sync)
-        sync_handler "${args[@]:1}" # Pass remaining arguments to sync_handler
+        check_root "${args[@]}"
+        sync_handler "${args[@]:1}" 
         ;;
     prune)
-        prune_handler "${args[@]:1}" # Pass remaining arguments to prune_handler
+        check_root "${args[@]}"
+        prune_handler "${args[@]:1}"
         ;;
     -h|--help|help)
         main_help
@@ -136,4 +148,3 @@ case "${args[0]}" in
         exit 1
         ;;
 esac
-

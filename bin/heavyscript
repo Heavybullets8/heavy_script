@@ -2,15 +2,37 @@
 
 set -Eeuo pipefail
 
-script_dir="$HOME/heavy_script"
+find_script_dir() {
+    local home_dirs
+    home_dirs=$(getent passwd | \
+                 cut -d: -f6 | \
+                 sort -u | \
+                 grep -vE '/var/|/run/|/bin|/dev|/nonexistent|/srv/tftp|usr/share/man|^/$')
+
+    for home_dir in $home_dirs; do
+        if [[ -d "$home_dir/heavy_script" ]]; then
+            echo "$home_dir/heavy_script"
+            return
+        fi
+    done
+
+    >&2 echo "Error: heavy_script directory not found."
+    exit 1
+}
 
 err_exit() {
     >&2 echo "$1"
-
     exit "${2:-1}"
 }
 
-# Exit if the script directory doesn't exist
+if [[ $EUID -eq 0 && -n ${SUDO_USER:-} ]]; then
+    script_dir="/home/$SUDO_USER/heavy_script"
+elif [[ -d "$HOME/heavy_script" ]]; then
+    script_dir="$HOME/heavy_script"
+else
+    script_dir=$(find_script_dir)
+fi
+
 if [[ ! -d "$script_dir" ]]; then
     err_exit "Error: $script_dir does not exist."
 fi

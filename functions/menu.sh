@@ -50,6 +50,14 @@ backup_selection(){
 
 }
 
+menu_check_root() {
+    if [[ $EUID -ne 0 ]]; then
+        echo -e "${red}Error: That option requires root privileges."
+        echo -e "Please run the script with ${blue}sudo${red} or as ${blue}root."
+        echo -e "${yellow}Tip: You can re-run the last command with sudo by typing ${blue}sudo !!"
+        exit 1 
+    fi
+}
 
 menu(){
     clear -x
@@ -78,6 +86,7 @@ menu(){
         
         # Applicaiton Options
         2)
+            menu_check_root
             while [[ $misc_selection != true ]]
             do
                 clear -x
@@ -142,6 +151,7 @@ menu(){
             ;;
         # Backup Options
         3)
+            menu_check_root
             backup_selection
             ;;
             
@@ -186,7 +196,8 @@ menu(){
             done
             ;;
         # Patches
-        5) 
+        5)
+            menu_check_root
             # Give users the option to run patch_2212_backups or choose_branch
             while [[ $misc_selection != true ]]
             do

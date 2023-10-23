@@ -31,6 +31,8 @@ ensure_symlink() {
         else
             echo "Warning: The script is not running as root. To restore the symlink, run the script with sudo using the following command:"
             echo "sudo bash $script"
+            echo "or run the script as the root user."
+            sleep 5
         fi
     fi
 }

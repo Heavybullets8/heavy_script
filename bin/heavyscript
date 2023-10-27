@@ -27,7 +27,7 @@ err_exit() {
 
 if [[ -d "/root/heavy_script" ]]; then
     script_dir="/root/heavy_script"
-elif [[ $EUID -eq 0 && -n ${SUDO_USER:-} ]]; then
+elif [[ $EUID -eq 0 && -n ${SUDO_USER:-} && -d "/home/$SUDO_USER/heavy_script" ]]; then
     script_dir="/home/$SUDO_USER/heavy_script"
 elif [[ -d "$HOME/heavy_script" ]]; then
     script_dir="$HOME/heavy_script"

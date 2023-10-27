@@ -50,6 +50,14 @@ backup_selection(){
 
 }
 
+menu_check_root() {
+    if [[ $EUID -ne 0 ]]; then
+        echo -e "${red}Error: That option requires root privileges."
+        echo -e "Please run the script with ${blue}sudo${red} or as ${blue}root."
+        echo -e "${yellow}Tip: You can re-run the last command with sudo by typing ${blue}sudo !!"
+        exit 1 
+    fi
+}
 
 menu(){
     clear -x
@@ -60,7 +68,6 @@ menu(){
     echo -e "2)  Application Options"
     echo -e "3)  Backup Options"
     echo -e "4)  HeavyScript Options"
-    echo -e "5)  Patches"
     echo
     echo -e "0)  Exit"
     read -rt 120 -p "Please select an option by number: " selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
@@ -78,6 +85,7 @@ menu(){
         
         # Applicaiton Options
         2)
+            menu_check_root
             while [[ $misc_selection != true ]]
             do
                 clear -x
@@ -142,6 +150,7 @@ menu(){
             ;;
         # Backup Options
         3)
+            menu_check_root
             backup_selection
             ;;
             
@@ -176,44 +185,6 @@ menu(){
                     3)
                         misc_selection=true
                         add_script_to_global_path
-                        ;;
-                    *)
-                        echo -e "${blue}\"$selection\"${red} was not an option, please try again${reset}"
-                        sleep 3
-                        continue
-                        ;;
-                esac
-            done
-            ;;
-        # Patches
-        5) 
-            # Give users the option to run patch_2212_backups or choose_branch
-            while [[ $misc_selection != true ]]
-            do
-                clear -x
-                title
-                echo -e "${bold}Patch Menu${reset}"
-                echo -e "${bold}----------${reset}"
-                echo -e "1)  Patch 22.12.0 Restore"
-                echo -e "${gray}- - Fixes issue on 22.12.0 where restore points were being saved with empty PVC data${reset}"
-                echo
-                echo -e "2)  Patch 22.12.0 Backups"
-                echo -e "${gray}- - Fixes issue on 22.12.0 where backups would fail on certain applications${reset}"
-                echo
-                echo -e "0)  Exit"
-                read -rt 120 -p "Please select an option by number: " misc_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
-                case $misc_selection in
-                    0)
-                        echo -e "Exiting.."
-                        exit
-                        ;;
-                    1)
-                        misc_selection=true
-                        patch_2212_backups
-                        ;;
-                    2)
-                        misc_selection=true
-                        patch_2212_backups2
                         ;;
                     *)
                         echo -e "${blue}\"$selection\"${red} was not an option, please try again${reset}"

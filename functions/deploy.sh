@@ -8,12 +8,6 @@ green='\033[0;32m'
 blue='\033[0;34m'
 
 
-# Check user's permissions
-if [[ $(id -u) != 0 ]]; then
-    echo -e "${red}This script must be run as root.${reset}" >&2
-    exit 1
-fi
-
 # Check if user has a home
 if [[ -z "$HOME" || $HOME == "/nonexistent" ]]; then
     echo -e "${red}This script requires a home directory.${reset}" >&2
@@ -41,8 +35,10 @@ update_repo() {
 # Define variables
 script_name='heavyscript'
 script_dir="$HOME/heavy_script"
-bin_dir="$HOME/bin"
-script_wrapper="$bin_dir/$script_name"
+user_bin_dir="$HOME/bin"
+system_bin_dir="/usr/local/bin"
+user_script_wrapper="$user_bin_dir/$script_name"
+system_script_wrapper="$system_bin_dir/$script_name"
 
 main() {
     # Check if the script repository already exists
@@ -88,16 +84,21 @@ main() {
 
     echo
 
-    # Create the bin directory if it does not exist
-    if [[ ! -d "$bin_dir" ]]; then
-        echo -e "${blue}Creating $bin_dir directory...${reset}"
-        mkdir "$bin_dir"
+    # Create the user's bin directory if it does not exist
+    if [[ ! -d "$user_bin_dir" ]]; then
+        echo -e "${blue}Creating $user_bin_dir directory...${reset}"
+        mkdir "$user_bin_dir"
     fi
 
-    # Create symlink inside bin, to the script
-    echo -e "${blue}Creating $script_wrapper wrapper...${reset}"
-    ln -sf "$script_dir/bin/$script_name" "$script_wrapper"
+    # Create symlink inside user's bin
+    echo -e "${blue}Creating $user_script_wrapper wrapper...${reset}"
+    ln -sf "$script_dir/bin/$script_name" "$user_script_wrapper"
     chmod +x "$script_dir/bin/$script_name"
+
+    # Create symlink inside system's bin
+    echo -e "${blue}Creating $system_script_wrapper wrapper...${reset}"
+    sudo ln -sf "$script_dir/bin/$script_name" "$system_script_wrapper"
+    sudo chmod +x "$script_dir/bin/$script_name"
 
     echo
 
@@ -108,9 +109,9 @@ main() {
             touch "$HOME/$rc_file"
         fi
 
-        if ! grep -q "$bin_dir" "$HOME/$rc_file"; then
-            echo -e "${blue}Adding $bin_dir to $rc_file...${reset}"
-            echo "export PATH=$bin_dir:\$PATH" >> "$HOME/$rc_file"
+        if ! grep -q "$user_bin_dir" "$HOME/$rc_file"; then
+            echo -e "${blue}Adding $user_bin_dir to $rc_file...${reset}"
+            echo "export PATH=$user_bin_dir:\$PATH" >> "$HOME/$rc_file"
         fi
     done
 

@@ -6,10 +6,6 @@ If you have questions or would like to contribute, I have a sub discord category
 
 [https://discord.gg/tVsPTHWTtr](https://discord.gg/tVsPTHWTtr)
 
-## Website 
-
-[HeavySetup - Further Explanation](https://heavysetup.info/scripts/heavyscript/about/)
-
 ## Table of contents:
 <details>
   <summary>Click to expand</summary>
@@ -37,7 +33,8 @@ ___
 
 ## The Menu
 
-![image](https://user-images.githubusercontent.com/20793231/226242159-f4248e0c-649a-47f1-9ee3-293165f4af3b.png)
+![image](https://github.com/Heavybullets8/heavy_script/assets/20793231/8587a732-ae4d-4ab1-b776-641c1ded0193)
+
 > Access this with `heavyscript`
 
 <br>

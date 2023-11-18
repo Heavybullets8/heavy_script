@@ -74,8 +74,9 @@ check_rollback_availability() {
     fi
     if printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},cnpg"; then
         echo_array+=("Error: $app_name contains a CNPG deployment, and cannot be rolled back")
-        echo_array+=("You can attempt a force rollback by shutting down the application with heavyscript")
-        echo_array+=("Then rolling back from the GUI")
+        echo_array+=("If this happens frequently, set a larger timeout, or set concurrency lower")
+        echo_array+=("If needed, you should have a backup of the database to restore from")
+        echo_array+=("The default database save location is in the HeavyScript directory")
         return 1
     fi
     return 0

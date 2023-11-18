@@ -110,11 +110,20 @@ pre_process() {
     fi
 
     if [[ $rollback == true || "$startstatus"  ==  "STOPPED" ]]; then
-        if printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},stopAll-on"; then
+    
+        if printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},stopAll-on" && [[ $startstatus == "ACTIVE" ]]; then
+            if ! start_app "$app_name"; then
+                echo_array+=("Failed to start $app_name")
+                echo_array
+                return 1
+            fi
+        elif printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},stopAll-on"; then
             echo_array+=("Stopped")
             echo_array
-            return        
-        elif ! check_replicas; then
+            return
+        fi
+
+        if ! check_replicas; then
             echo_array
             return
         fi

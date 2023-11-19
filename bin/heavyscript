@@ -4,12 +4,9 @@ set -Eeuo pipefail
 
 find_script_dir() {
     local home_dirs
-    home_dirs=$(getent passwd | \
-                 cut -d: -f6 | \
-                 sort -u | \
-                 grep -vE '/var/|/run/|/bin|/dev|/nonexistent|/srv/tftp|usr/share/man|^/$')
+    mapfile -t home_dirs < <(cli -m csv -c "account user query home,builtin" | grep ",false" | grep -v "nonexistent," | awk -F ',' '{print $1}')
 
-    for home_dir in $home_dirs; do
+    for home_dir in "${home_dirs[@]}"; do
         if [[ -d "$home_dir/heavy_script" ]]; then
             echo "$home_dir/heavy_script"
             return
@@ -42,6 +39,8 @@ err_exit() {
 user_home=$(get_user_home)
 if [[ -d "$user_home/heavy_script" ]]; then
     script_dir="$user_home/heavy_script"
+elif [[ -d "/root/heavy_script" ]]; then
+    script_dir="/root/heavy_script"
 else
     script_dir=$(find_script_dir)  # Fallback to find_script_dir if not found
 fi

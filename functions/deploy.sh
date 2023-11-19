@@ -139,7 +139,9 @@ main() {
     done
 
     echo
-    echo -e "${green}Successfully installed ${blue}$script_name${reset}"
+    echo -e "${green}Successfully installed ${blue}HeavyScript${green} to ${blue}$script_dir${reset}"
+    echo -e "${green}Your cronjob path is:${reset}"
+    echo -e "${blue}$user_script_wrapper${reset}"
     echo
 }
 

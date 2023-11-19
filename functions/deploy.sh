@@ -109,18 +109,19 @@ main() {
         mkdir "$user_bin_dir"
     fi
 
-    # Create symlink inside user's bin
-    echo -e "${blue}Creating $user_script_wrapper wrapper...${reset}"
-    ln -sf "$script_dir/bin/$script_name" "$user_script_wrapper"
-    chmod +x "$script_dir/bin/$script_name"
-
     if [[ $EUID -ne 0 ]]; then
-        echo -e "${yellow}The script is not running as root. The system-wide wrapper will not be created.${reset}"
+        echo -e "${yellow}Warning: Skipping system-wrapper...${reset}"
+        # Create symlink inside user's bin only
+        echo -e "${blue}Creating $user_script_wrapper wrapper...${reset}"
+        ln -sf "$script_dir/bin/$script_name" "$user_script_wrapper"
+        chmod +x "$script_dir/bin/$script_name"
     else
-        # Create symlink inside system's bin
-        echo -e "${blue}Creating $system_script_wrapper wrapper...${reset}"
-        sudo ln -sf "$script_dir/bin/$script_name" "$system_script_wrapper"
-        sudo chmod +x "$script_dir/bin/$script_name"
+        # Create symlink inside both user's and system's bin
+        echo -e "${blue}Creating $user_script_wrapper and $system_script_wrapper wrappers...${reset}"
+        ln -sf "$script_dir/bin/$script_name" "$user_script_wrapper"
+        ln -sf "$script_dir/bin/$script_name" "$system_script_wrapper"
+        chmod +x "$script_dir/bin/$script_name"
+        chmod +x "$system_script_wrapper"
     fi
 
     echo

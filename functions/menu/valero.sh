@@ -12,6 +12,17 @@ velero_install() {
     wget -qO velero.tar.gz "$release_url"
     mkdir -p "$HOME/bin"
     tar -xzf velero.tar.gz -C "$HOME/bin"
+
+    # Move velero from its extracted folder to $HOME/bin and set executable permissions
+    local velero_dir
+    velero_dir=$(find "$HOME/bin" -type d -name "velero-*" -print -quit)
+    if [[ -d "$velero_dir" && "$velero_dir" == "$HOME/bin/velero-"* ]]; then
+        mv "$velero_dir/velero" "$HOME/bin/velero"
+        chmod +x "$HOME/bin/velero"
+        # Safely remove the extracted directory
+        find "$HOME/bin" -type d -name "velero-*" -exec rm -r {} +
+    fi
+
     ln -sf "$HOME/bin/velero" /usr/local/bin/velero
     rm velero.tar.gz
     echo "Velero installed successfully."

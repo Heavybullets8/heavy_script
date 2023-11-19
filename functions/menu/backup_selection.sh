@@ -10,6 +10,7 @@ backup_selection(){
         echo -e "1)  Create Backup"
         echo -e "2)  Delete Backup"
         echo -e "3)  Restore Backup"
+        echo -e "4)  Install/Update Velero"
         echo
         echo -e "0)  Exit"
         read -rt 120 -p "Please select an option by number: " backup_selection || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }

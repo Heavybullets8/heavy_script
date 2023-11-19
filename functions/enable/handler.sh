@@ -8,6 +8,9 @@ enable_handler() {
         --api)
             enable_kube_api
             ;;
+        --disable-api)
+            disable_kube_api
+            ;;
         --apt)
             toggle_apt "enable"
             ;;
@@ -15,7 +18,10 @@ enable_handler() {
             toggle_apt "disable"
             ;;
         --helm)
-            enable_helm
+            enable_helm "enable"
+            ;;
+        --disable-helm)
+            enable_helm "disable"
             ;;
         -h|--help)
             enable_help

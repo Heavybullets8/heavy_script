@@ -10,20 +10,29 @@ velero_install() {
     local release_url
     release_url=$(velero_latest_release_url)
     wget -qO velero.tar.gz "$release_url"
-    mkdir -p "$HOME/bin"
-    tar -xzf velero.tar.gz -C "$HOME/bin"
+    mkdir -p "$HOME/bin/velero_real"
+    tar -xzf velero.tar.gz -C "$HOME/bin/velero_real"
 
-    # Move velero from its extracted folder to $HOME/bin and set executable permissions
+    # Find and move the Velero binary to the velero_real directory
     local velero_dir
-    velero_dir=$(find "$HOME/bin" -type d -name "velero-*" -print -quit)
-    if [[ -d "$velero_dir" && "$velero_dir" == "$HOME/bin/velero-"* ]]; then
-        mv "$velero_dir/velero" "$HOME/bin/velero"
-        chmod +x "$HOME/bin/velero"
-        # Safely remove the extracted directory
-        find "$HOME/bin" -type d -name "velero-*" -exec rm -r {} +
+    velero_dir=$(find "$HOME/bin/velero_real" -type d -name "velero-*" -print -quit)
+    if [[ -d "$velero_dir" ]]; then
+        mv "$velero_dir/velero" "$HOME/bin/velero_real/velero"
+        rm -rf "$velero_dir"
     fi
 
-    ln -sf "$HOME/bin/velero" /usr/local/bin/velero
+    # Create or update the wrapper script
+    cat > "$HOME/bin/velero" << EOF
+#!/bin/bash
+# Wrapper script for Velero
+if [[ \$1 == "install" ]]; then
+    echo "Direct 'velero install' is not allowed. Please use the containerized version."
+else
+    "$HOME/bin/velero_real/velero" "\$@"
+fi
+EOF
+    chmod +x "$HOME/bin/velero_real/velero"
+    chmod +x "$HOME/bin/velero"
     rm velero.tar.gz
     echo "Velero installed successfully."
 }

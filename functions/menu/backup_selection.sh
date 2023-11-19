@@ -32,15 +32,19 @@ backup_selection() {
                     exit
                 fi
                 create_backup "$number_of_backups" "direct"
+                exit
                 ;;
             2)
                 delete_backup
+                exit
                 ;;
             3)
                 restore_backup
+                exit
                 ;;
             4)
                 velero_check
+                exit
                 ;;
             9)
                 # Break the loop to go back to the main menu

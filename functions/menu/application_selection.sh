@@ -27,27 +27,35 @@ application_menu() {
                 ;;
             1)
                 dns_handler
+                exit
                 ;;
             2)
                 mount_prompt
+                exit
                 ;;
             3)
                 container_shell_or_logs "shell"
+                exit
                 ;;
             4)
                 container_shell_or_logs "logs"
+                exit
                 ;;
             5)
                 start_app_prompt
+                exit
                 ;;
             6)
                 restart_app_prompt
+                exit
                 ;;
             7)
                 delete_app_prompt
+                exit
                 ;;
             8)
                 stop_app_prompt
+                exit
                 ;;
             9)
                 # Break the loop to go back to the main menu

@@ -23,12 +23,15 @@ heavyscript_menu() {
                 ;;
             1)
                 self_update
+                exit
                 ;;
             2)
                 choose_branch
+                exit
                 ;;
             3)
                 add_script_to_global_path
+                exit
                 ;;
             9)
                 # Break the loop to go back to the main menu

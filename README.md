@@ -19,6 +19,7 @@ If you have questions or would like to contribute, I have a sub discord category
    * [Pod](#pod)
    * [PVC](#pvc)
    * [Self-Update](#self-update)
+   * [Sync](#sync)
    * [Update](#update)
 * [How to Install](#how-to-install)
 * [How to Update](#how-to-update)
@@ -125,7 +126,11 @@ ___
 |------------|--------------------|-------------------------------------------|
 | --major    | --major            | Includes major updates when self-updating |
 
+<br>
 
+> heavyscript sync
+
+Syncs the catalog.
 
 <br>
 

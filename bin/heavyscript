@@ -13,8 +13,7 @@ find_script_dir() {
         fi
     done
 
-    >&2 echo "Error: heavy_script directory not found."
-    exit 1
+    err_exit "Error: heavy_script directory not found."
 }
 
 get_user_home() {

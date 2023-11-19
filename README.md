@@ -160,19 +160,51 @@ ___
 
 ## How to Install
 
-### One Line Install
-```
+HeavyScript can be installed in two different ways depending on your needs and privileges on the system:
+
+### Option 1: Non-Privileged Install (Regular User)
+
+This installation method is suitable if you don't have root access or prefer not to install HeavyScript with elevated privileges.
+
+**Installation Command:**
+```bash
 curl -s https://raw.githubusercontent.com/Heavybullets8/heavy_script/main/functions/deploy.sh | bash && source "$HOME/.bashrc" 2>/dev/null && source "$HOME/.zshrc" 2>/dev/null
 ```
 
-This will:
-- Download HeavyScript, then place you on the latest release
-- Place HeavyScript in `/root`
-- Make HeavyScript executable
-- Allow you to run HeavyScript from any directory with `heavyscript`
- > This does not include Cron Jobs, see the Cron section for more information.
+**What This Does:**
+- Downloads and places HeavyScript in your user directory.
+- Makes HeavyScript executable.
+- Allows you to run HeavyScript from any directory using `heavyscript`.
 
-From here, you can just run HeavyScript with `heavyscript -ARGUMENTS`
+**Note:** 
+- Without root privileges, the script will not create a system-wide symlink in `/usr/local/bin`.
+- You might see a warning message indicating the lack of root privileges. You can proceed without root access, but you'll need to run HeavyScript with root privileges at least once to create the system-wide symlink, if required.
+
+### Option 2: Privileged Install (Root or Sudo)
+
+If you have root access or can use `sudo`, this method will set up HeavyScript for all users on the system.
+
+**Installation Command:**
+```bash
+curl -s https://raw.githubusercontent.com/Heavybullets8/heavy_script/main/functions/deploy.sh | sudo bash && source "$HOME/.bashrc" 2>/dev/null && source "$HOME/.zshrc" 2>/dev/null
+```
+
+**What This Does:**
+- Installs HeavyScript with root privileges.
+- Creates a system-wide symlink in `/usr/local/bin`, making HeavyScript accessible to all users.
+- Downloads and places HeavyScript in the root directory (`/root`).
+- Makes HeavyScript executable and accessible system-wide.
+
+**Note:**
+- This method requires root access or sudo privileges.
+- It's recommended for environments where HeavyScript needs to be accessible to multiple users.
+
+---
+
+### Choosing the Right Option:
+
+- **Non-Privileged Install:** Choose this if you're more concerened with security and want to keep HeavyScript isolated to your user account, at least during the initial setup.
+- **Privileged Install:** Choose this if you are less concerened about security and want to make HeavyScript accessible to all users on the system, including the root and sudo user. 
 
 <br>
 

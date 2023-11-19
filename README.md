@@ -128,6 +128,7 @@ ___
 
 <br>
 
+### Sync
 > heavyscript sync
 
 Syncs the catalog.

@@ -264,34 +264,33 @@ ___
 
 ### How to Create a Cron Job
 
-1. TrueNAS SCALE GUI
-2. System Settings
-3. Advanced
-4. Cron Jobs
-   1. Click Add
+To automate tasks using HeavyScript, you can create a cron job. Here's how to set it up in TrueNAS SCALE:
+
+1. Navigate to the TrueNAS SCALE GUI.
+2. Go to **System Settings** > **Advanced**.
+3. Click on **Cron Jobs**.
+4. Click **Add** to create a new cron job.
 
 ![image](https://user-images.githubusercontent.com/20793231/229404447-6836ff1f-ba28-439e-99fe-745371f0f24c.png)
 
+### Important Note on the Command Path
+The command for the cron job should use the full path to the `heavy_script.sh` file. This path depends on the user who installed HeavyScript. For instance, if you installed HeavyScript as a non-root user, replace `/root` with your home directory path.
 
-- Command: `bash /root/heavy_script/heavy_script.sh update`
-   > The `bash`, as well as the full path to the script is required for cron jobs to work properly.
-- Run as: root
-   > Running as root is required for the script to work properly.
-- Schedule: I run mine daily at 4:00 AM
-- Hide Standard Output: Unchecked
-- Hide Standard Error: Unchecked
-   > Keep these both unchecked so you can recive an email.
+> You can find your home directory path by running `echo $HOME` in the terminal.
 
+### Cron Job Settings
 
-<br >
+- **Command:** Use the full command with the correct path, as shown in the examples above. The `bash` prefix and the full path are required for proper execution.
+- **Run as:** Typically, you should run the script as the user who installed HeavyScript. If it was installed with root privileges, use `root`.
+- **Schedule:** Choose the frequency and time for the script to run. For example, daily at 4:00 AM.
+- **Hide Standard Output/Error:** Uncheck these options if you wish to receive email notifications about the cron job's output and errors.
 
 ### My Personal Cron Job
+
+Here's an example of how I set up my personal cron job:
 
 ```
 bash /root/heavy_script/heavy_script.sh update --backup 14 --concurrent 10 --prune --rollback --sync --self-update
 ```
 
-
-<br >
-<br >
-
+> Remember to adjust the path in the command based on where HeavyScript is installed and the user account used for installation.

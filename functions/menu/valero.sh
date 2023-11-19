@@ -27,7 +27,7 @@ create_symlink() {
             echo -e "${green}Symlink in ${blue}/usr/local/bin${green} updated.${reset}"
             ;;
         "check")
-            echo -e "${yellow}Symlink in ${blue}/usr/local/bin${green} verified and recreated if necessary.${reset}"
+            echo -e "${yellow}Symlink in ${blue}/usr/local/bin${yellow} verified and recreated if necessary.${reset}"
             ;;
     esac
 }
@@ -79,17 +79,17 @@ velero_check() {
         current_version=$(velero version --client-only | grep Version | cut -d ':' -f 2 | xargs)
 
         if [ "$current_version" != "$latest_version" ]; then
-            echo "Updating Velero to the latest version."
+            echo -e "${green}Updating Velero to the latest version.${reset}"
             velero_install
             # Recreate the symlink after updating
             create_symlink "update"
         else
-            echo "Velero is up to date."
+            echo -e "${green}Velero is up to date.${reset}"
             # Check and recreate the symlink if needed
             create_symlink "check"
         fi
     else
-        echo "Velero is not installed. Installing now."
+        echo -e "${yellow}Velero is not installed. Installing now.${reset}"
         velero_install
         # Create the symlink for the first time
         create_symlink "install"

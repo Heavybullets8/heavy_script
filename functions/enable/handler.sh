@@ -6,7 +6,10 @@ enable_handler() {
 
     case "${args[0]}" in
         --api)
-            enable_kube_api
+            manage_kube_api "enable"
+            ;;
+        --disable-api)
+            manage_kube_api "disable"
             ;;
         --apt)
             toggle_apt "enable"
@@ -15,7 +18,10 @@ enable_handler() {
             toggle_apt "disable"
             ;;
         --helm)
-            enable_helm
+            enable_helm "enable"
+            ;;
+        --disable-helm)
+            enable_helm "disable"
             ;;
         -h|--help)
             enable_help

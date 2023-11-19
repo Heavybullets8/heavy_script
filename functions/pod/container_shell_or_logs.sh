@@ -172,15 +172,18 @@ cmd_execute_shell() {
 }
 export -f cmd_execute_shell
 
-
-
 cmd_execute_logs() {
-    local lines
-    while true
-    do
+    local lines=500  # Default to 500 lines
+    while true; do
         cmd_print_app_pod_container
         echo
-        read -rt 120 -p "How many lines of logs do you want to display?(\"-1\" for all): " lines || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
+        read -rt 120 -p "How many lines of logs do you want to display? (Default is 500, \"-1\" for all): " lines_input || { 
+            echo -e "${red}\nFailed to make a selection in time${reset}" ; 
+            exit; 
+        }
+
+        [[ -z "$lines_input" ]] || lines=$lines_input
+
         if ! [[ $lines =~ ^[0-9]+$|^-1$ ]]; then
             echo -e "${red}Error: ${blue}\"$lines\"${red} was not a number.. Try again${reset}"
             sleep 3

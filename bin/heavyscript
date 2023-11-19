@@ -4,20 +4,29 @@ set -Eeuo pipefail
 
 find_script_dir() {
     local home_dirs
-    home_dirs=$(getent passwd | \
-                 cut -d: -f6 | \
-                 sort -u | \
-                 grep -vE '/var/|/run/|/bin|/dev|/nonexistent|/srv/tftp|usr/share/man|^/$')
+    mapfile -t home_dirs < <(cli -m csv -c "account user query home,builtin" | grep ",false" | grep -v "nonexistent," | awk -F ',' '{print $1}')
 
-    for home_dir in $home_dirs; do
+    for home_dir in "${home_dirs[@]}"; do
         if [[ -d "$home_dir/heavy_script" ]]; then
             echo "$home_dir/heavy_script"
             return
         fi
     done
 
-    >&2 echo "Error: heavy_script directory not found."
-    exit 1
+    err_exit "Error: heavy_script directory not found."
+}
+
+get_user_home() {
+    local user_home
+
+    if [[ $EUID -eq 0 ]]; then  # Script is running as root
+        # Use SUDO_USER if set, otherwise fall back to root's home
+        user_home=$(getent passwd "${SUDO_USER:-root}" | cut -d: -f6)
+    else  # Script is run by a regular user
+        user_home=$HOME
+    fi
+
+    echo "$user_home"
 }
 
 err_exit() {
@@ -25,26 +34,23 @@ err_exit() {
     exit "${2:-1}"
 }
 
-if [[ -d "/root/heavy_script" ]]; then
+# Use get_user_home to determine the home directory and check for the script
+user_home=$(get_user_home)
+if [[ -d "$user_home/heavy_script" ]]; then
+    script_dir="$user_home/heavy_script"
+elif [[ -d "/root/heavy_script" ]]; then
     script_dir="/root/heavy_script"
-elif [[ $EUID -eq 0 && -n ${SUDO_USER:-} && -d "/home/$SUDO_USER/heavy_script" ]]; then
-    script_dir="/home/$SUDO_USER/heavy_script"
-elif [[ -d "$HOME/heavy_script" ]]; then
-    script_dir="$HOME/heavy_script"
 else
-    script_dir=$(find_script_dir)
+    script_dir=$(find_script_dir)  # Fallback to find_script_dir if not found
 fi
 
 if [[ ! -d "$script_dir" ]]; then
     err_exit "Error: $script_dir does not exist."
 fi
 
-(
-    # Change to the script directory
-    if ! cd "$script_dir" ; then
-        err_exit "Error: Failed to change to $script_dir"
-    fi
+# Change to the script directory and execute heavy_script.sh
+if ! cd "$script_dir" ; then
+    err_exit "Error: Failed to change to $script_dir"
+fi
 
-    # Pass all arguments '$@' to heavy_script.sh
-    bash ./heavy_script.sh "$@"
-)
+bash ./heavy_script.sh "$@"

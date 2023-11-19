@@ -19,6 +19,7 @@ If you have questions or would like to contribute, I have a sub discord category
    * [Pod](#pod)
    * [PVC](#pvc)
    * [Self-Update](#self-update)
+   * [Sync](#sync)
    * [Update](#update)
 * [How to Install](#how-to-install)
 * [How to Update](#how-to-update)
@@ -125,7 +126,12 @@ ___
 |------------|--------------------|-------------------------------------------|
 | --major    | --major            | Includes major updates when self-updating |
 
+<br>
 
+### Sync
+> heavyscript sync
+
+Syncs the catalog.
 
 <br>
 
@@ -155,19 +161,51 @@ ___
 
 ## How to Install
 
-### One Line Install
-```
+HeavyScript can be installed in two different ways depending on your needs and privileges on the system:
+
+### Option 1: Non-Privileged Install (Regular User)
+
+> This installation method is suitable if you don't have root access or prefer not to install HeavyScript with elevated privileges.
+
+**Installation Command:**
+```bash
 curl -s https://raw.githubusercontent.com/Heavybullets8/heavy_script/main/functions/deploy.sh | bash && source "$HOME/.bashrc" 2>/dev/null && source "$HOME/.zshrc" 2>/dev/null
 ```
 
-This will:
-- Download HeavyScript, then place you on the latest release
-- Place HeavyScript in `/root`
-- Make HeavyScript executable
-- Allow you to run HeavyScript from any directory with `heavyscript`
- > This does not include Cron Jobs, see the Cron section for more information.
+**What This Does:**
+- Downloads and places HeavyScript in your user directory.
+- Makes HeavyScript executable.
+- Allows you to run HeavyScript from any directory using `heavyscript`.
 
-From here, you can just run HeavyScript with `heavyscript -ARGUMENTS`
+**Note:** 
+- Without root privileges, the script will not create a system-wide symlink in `/usr/local/bin`.
+- You might see a warning message indicating the lack of root privileges. You can proceed without root access, but you'll need to run HeavyScript with root privileges at least once to create the system-wide symlink, if required.
+
+### Option 2: Privileged Install (Root or Sudo)
+
+> If you have root access or can use `sudo`, this method will set up HeavyScript for all users on the system.
+
+**Installation Command:**
+```bash
+curl -s https://raw.githubusercontent.com/Heavybullets8/heavy_script/main/functions/deploy.sh | sudo bash && source "$HOME/.bashrc" 2>/dev/null && source "$HOME/.zshrc" 2>/dev/null
+```
+
+**What This Does:**
+- Installs HeavyScript with root privileges.
+- Creates a system-wide symlink in `/usr/local/bin`, making HeavyScript accessible to all users.
+- Downloads and places HeavyScript in the root directory (`/root`).
+- Makes HeavyScript executable and accessible system-wide.
+
+**Note:**
+- This method requires root access or sudo privileges.
+- It's recommended for environments where HeavyScript needs to be accessible to multiple users.
+
+---
+
+### Choosing the Right Option:
+
+- **Non-Privileged Install:** Choose this if you're more concerened with security and want to keep HeavyScript isolated to your user account, at least during the initial setup.
+- **Privileged Install:** Choose this if you are less concerened about security and want to make HeavyScript accessible to all users on the system, including the root and sudo user. 
 
 <br>
 
@@ -227,34 +265,33 @@ ___
 
 ### How to Create a Cron Job
 
-1. TrueNAS SCALE GUI
-2. System Settings
-3. Advanced
-4. Cron Jobs
-   1. Click Add
+To automate tasks using HeavyScript, you can create a cron job. Here's how to set it up in TrueNAS SCALE:
+
+1. Navigate to the TrueNAS SCALE GUI.
+2. Go to **System Settings** > **Advanced**.
+3. Click on **Cron Jobs**.
+4. Click **Add** to create a new cron job.
 
 ![image](https://user-images.githubusercontent.com/20793231/229404447-6836ff1f-ba28-439e-99fe-745371f0f24c.png)
 
+### Important Note on the Command Path
+The command for the cron job should use the full path to the `heavy_script.sh` file. This path depends on the user who installed HeavyScript. For instance, if you installed HeavyScript as a non-root user, replace `/root` with your home directory path.
 
-- Command: `bash /root/heavy_script/heavy_script.sh update`
-   > The `bash`, as well as the full path to the script is required for cron jobs to work properly.
-- Run as: root
-   > Running as root is required for the script to work properly.
-- Schedule: I run mine daily at 4:00 AM
-- Hide Standard Output: Unchecked
-- Hide Standard Error: Unchecked
-   > Keep these both unchecked so you can recive an email.
+> You can find your home directory path by running `echo $HOME` in the terminal.
 
+### Cron Job Settings
 
-<br >
+- **Command:** Use the full command with the correct path, as shown in the examples above. The `bash` prefix and the full path are required for proper execution.
+- **Run as:** Typically, you should run the script as the user who installed HeavyScript. If it was installed with root privileges, use `root`.
+- **Schedule:** Choose the frequency and time for the script to run. For example, daily at 4:00 AM.
+- **Hide Standard Output/Error:** Uncheck these options if you wish to receive email notifications about the cron job's output and errors.
 
 ### My Personal Cron Job
+
+Here's an example of how I set up my personal cron job:
 
 ```
 bash /root/heavy_script/heavy_script.sh update --backup 14 --concurrent 10 --prune --rollback --sync --self-update
 ```
 
-
-<br >
-<br >
-
+> Remember to adjust the path in the command based on where HeavyScript is installed and the user account used for installation.

@@ -20,6 +20,7 @@ main_help(){
     echo -e "${blue}heavyscript pod${reset}         | Access pod logs and shells"
     echo -e "${blue}heavyscript pvc${reset}         | Manage PVCs (mount, unmount)"
     echo -e "${blue}heavyscript self-update${reset} | Update HeavyScript (with or without major version update)"
+    echo -e "${blue}heavyscript sync${reset}        | Syncs the catalog"
     echo -e "${blue}heavyscript update${reset}      | Update applications"
     echo -e "${blue}heavyscript enable${reset}      | Enable specific features (e.g., k3s remote node, apt)"
     echo

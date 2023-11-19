@@ -158,9 +158,7 @@ main() {
 
     echo
     echo -e "${green}Successfully installed ${blue}HeavyScript${green} to ${blue}$script_dir${reset}"
-    echo -e "${green}Your cronjob path is:${reset}"
-    echo -e "${blue}$script_dir${reset}"
-    echo -e "${green}example:${reset}"
+    echo -e "${green}Your example cronjob:${reset}"
     echo -e "${blue}bash $script_dir/heavy_script.sh update${reset}"
     echo
 }

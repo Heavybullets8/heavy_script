@@ -165,7 +165,7 @@ HeavyScript can be installed in two different ways depending on your needs and p
 
 ### Option 1: Non-Privileged Install (Regular User)
 
-This installation method is suitable if you don't have root access or prefer not to install HeavyScript with elevated privileges.
+> This installation method is suitable if you don't have root access or prefer not to install HeavyScript with elevated privileges.
 
 **Installation Command:**
 ```bash
@@ -183,7 +183,7 @@ curl -s https://raw.githubusercontent.com/Heavybullets8/heavy_script/main/functi
 
 ### Option 2: Privileged Install (Root or Sudo)
 
-If you have root access or can use `sudo`, this method will set up HeavyScript for all users on the system.
+> If you have root access or can use `sudo`, this method will set up HeavyScript for all users on the system.
 
 **Installation Command:**
 ```bash

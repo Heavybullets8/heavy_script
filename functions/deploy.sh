@@ -150,7 +150,7 @@ main() {
 
     local invoking_user
     invoking_user=$(get_invoking_user)
-    if [[ $EUID -eq 0 ]]; then
+    if [[ $EUID -eq 0 && -n $SUDO_USER ]]; then
         echo -e "${green}Changing ownership of HeavyScript to ${blue}$invoking_user${green}...${reset}"
         chown -R "$invoking_user" "$script_dir"
         chown "$invoking_user" "$user_bin_dir/$script_name"

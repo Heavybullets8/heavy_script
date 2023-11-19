@@ -13,6 +13,15 @@ get_user_home() {
     echo "$user_home"
 }
 
+get_invoking_user() {
+    if [[ $EUID -eq 0 ]]; then  # Script is running as root
+        # Use SUDO_USER if set, otherwise fall back to root
+        echo "${SUDO_USER:-root}"
+    else  # Script is run by a regular user
+        whoami
+    fi
+}
+
 update_repo() {
     local script_dir="$1"
     cd "$script_dir" || return 1
@@ -138,6 +147,14 @@ main() {
             echo "export PATH=$user_bin_dir:\$PATH" >> "$USER_HOME/$rc_file"
         fi
     done
+
+    local invoking_user
+    invoking_user=$(get_invoking_user)
+    if [[ $EUID -eq 0 ]]; then
+        echo -e "${green}Changing ownership of HeavyScript to ${blue}$invoking_user${green}...${reset}"
+        chown -R "$invoking_user" "$script_dir"
+        chown "$invoking_user" "$user_bin_dir/$script_name"
+    fi
 
     echo
     echo -e "${green}Successfully installed ${blue}HeavyScript${green} to ${blue}$script_dir${reset}"

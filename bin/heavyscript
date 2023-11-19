@@ -20,31 +20,42 @@ find_script_dir() {
     exit 1
 }
 
+get_user_home() {
+    local user_home
+
+    if [[ $EUID -eq 0 ]]; then  # Script is running as root
+        if [[ -n $SUDO_USER ]]; then  # Script is run using sudo
+            user_home=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+        else  # Script is run by the root user
+            user_home=$HOME
+        fi
+    else  # Script is run by a regular user
+        user_home=$HOME
+    fi
+
+    echo "$user_home"
+}
+
 err_exit() {
     >&2 echo "$1"
     exit "${2:-1}"
 }
 
-if [[ -d "/root/heavy_script" ]]; then
-    script_dir="/root/heavy_script"
-elif [[ $EUID -eq 0 && -n ${SUDO_USER:-} && -d "/home/$SUDO_USER/heavy_script" ]]; then
-    script_dir="/home/$SUDO_USER/heavy_script"
-elif [[ -d "$HOME/heavy_script" ]]; then
-    script_dir="$HOME/heavy_script"
+# Use get_user_home to determine the home directory and check for the script
+user_home=$(get_user_home)
+if [[ -d "$user_home/heavy_script" ]]; then
+    script_dir="$user_home/heavy_script"
 else
-    script_dir=$(find_script_dir)
+    script_dir=$(find_script_dir)  # Fallback to find_script_dir if not found
 fi
 
 if [[ ! -d "$script_dir" ]]; then
     err_exit "Error: $script_dir does not exist."
 fi
 
-(
-    # Change to the script directory
-    if ! cd "$script_dir" ; then
-        err_exit "Error: Failed to change to $script_dir"
-    fi
+# Change to the script directory and execute heavy_script.sh
+if ! cd "$script_dir" ; then
+    err_exit "Error: Failed to change to $script_dir"
+fi
 
-    # Pass all arguments '$@' to heavy_script.sh
-    bash ./heavy_script.sh "$@"
-)
+bash ./heavy_script.sh "$@"

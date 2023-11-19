@@ -1,5 +1,23 @@
 #!/bin/bash
 
+get_user_home() {
+    local user_home
+
+    if [[ $EUID -eq 0 ]]; then  # Script is running as root
+        if [[ -n $SUDO_USER ]]; then  # Script is run using sudo
+            user_home=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+        else  # Script is run by the root user
+            user_home=$HOME
+        fi
+    else  # Script is run by a regular user
+        user_home=$HOME
+    fi
+
+    echo "$user_home"
+}
+
+USER_HOME=$(get_user_home)
+
 # Function to get the latest Velero release URL
 velero_latest_release_url() {
     wget -qO- "https://api.github.com/repos/vmware-tanzu/velero/releases/latest" | jq -r '.assets[] | select(.name | contains("linux-amd64")).browser_download_url'
@@ -10,42 +28,31 @@ velero_install() {
     local release_url
     release_url=$(velero_latest_release_url)
     wget -qO velero.tar.gz "$release_url"
-    mkdir -p "$HOME/bin/velero_real"
-    tar -xzf velero.tar.gz -C "$HOME/bin/velero_real"
+    mkdir -p "$USER_HOME/bin/velero_real"
+    tar -xzf velero.tar.gz -C "$USER_HOME/bin/velero_real"
 
     # Find and move the Velero binary to the velero_real directory
     local velero_dir
-    velero_dir=$(find "$HOME/bin/velero_real" -type d -name "velero-*" -print -quit)
+    velero_dir=$(find "$USER_HOME/bin/velero_real" -type d -name "velero-*" -print -quit)
     if [[ -d "$velero_dir" ]]; then
-        mv "$velero_dir/velero" "$HOME/bin/velero_real/velero"
+        mv "$velero_dir/velero" "$USER_HOME/bin/velero_real/velero"
         rm -rf "$velero_dir"
     fi
 
     # Create or update the wrapper script
-    cat > "$HOME/bin/velero" << EOF
+    cat > "$USER_HOME/bin/velero" << EOF
 #!/bin/bash
 # Wrapper script for Velero
 if [[ \$1 == "install" ]]; then
     echo "Direct 'velero install' is not allowed. Please use the containerized version."
 else
-    "$HOME/bin/velero_real/velero" "\$@"
+    "$USER_HOME/bin/velero_real/velero" "\$@"
 fi
 EOF
-    chmod +x "$HOME/bin/velero_real/velero"
-    chmod +x "$HOME/bin/velero"
+    chmod +x "$USER_HOME/bin/velero_real/velero"
+    chmod +x "$USER_HOME/bin/velero"
     rm velero.tar.gz
     echo "Velero installed successfully."
-}
-
-# Function to update Velero
-velero_update() {
-    if command -v velero &> /dev/null; then
-        velero_install
-        echo "Velero updated successfully."
-    else
-        echo "Velero is not installed. Installing now."
-        velero_install
-    fi
 }
 
 # Function to check Velero installation and decide action
@@ -58,7 +65,7 @@ velero_check() {
 
         if [ "$current_version" != "$latest_version" ]; then
             echo "Updating Velero to the latest version."
-            velero_update
+            velero_install
         else
             echo "Velero is up to date."
         fi

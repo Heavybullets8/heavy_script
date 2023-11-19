@@ -24,11 +24,8 @@ get_user_home() {
     local user_home
 
     if [[ $EUID -eq 0 ]]; then  # Script is running as root
-        if [[ -n $SUDO_USER ]]; then  # Script is run using sudo
-            user_home=$(getent passwd "$SUDO_USER" | cut -d: -f6)
-        else  # Script is run by the root user
-            user_home=$HOME
-        fi
+        # Use SUDO_USER if set, otherwise fall back to root's home
+        user_home=$(getent passwd "${SUDO_USER:-root}" | cut -d: -f6)
     else  # Script is run by a regular user
         user_home=$HOME
     fi

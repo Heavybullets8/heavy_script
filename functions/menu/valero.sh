@@ -15,6 +15,23 @@ get_user_home() {
 
 USER_HOME=$(get_user_home)
 
+create_symlink() {
+    local context="$1"  # Context of the symlink creation (install, update, or check)
+
+    ln -sf "$USER_HOME/bin/velero" /usr/local/bin/velero
+    case "$context" in
+        "install")
+            echo -e "${green}Symlink created in ${blue}/usr/local/bin${green} for the first time.${reset}"
+            ;;
+        "update")
+            echo -e "${green}Symlink in ${blue}/usr/local/bin${green} updated.${reset}"
+            ;;
+        "check")
+            echo -e "${yellow}Symlink in ${blue}/usr/local/bin${green} verified and recreated if necessary.${reset}"
+            ;;
+    esac
+}
+
 # Function to get the latest Velero release URL
 velero_latest_release_url() {
     wget -qO- "https://api.github.com/repos/vmware-tanzu/velero/releases/latest" | jq -r '.assets[] | select(.name | contains("linux-amd64")).browser_download_url'
@@ -49,7 +66,8 @@ EOF
     chmod +x "$USER_HOME/bin/velero_real/velero"
     chmod +x "$USER_HOME/bin/velero"
     rm velero.tar.gz
-    echo "Velero installed successfully."
+    ln -sf "$USER_HOME/bin/velero" /usr/local/bin/velero
+    echo -e "${green}Velero installed successfully.${reset}"
 }
 
 # Function to check Velero installation and decide action
@@ -63,11 +81,17 @@ velero_check() {
         if [ "$current_version" != "$latest_version" ]; then
             echo "Updating Velero to the latest version."
             velero_install
+            # Recreate the symlink after updating
+            create_symlink "update"
         else
             echo "Velero is up to date."
+            # Check and recreate the symlink if needed
+            create_symlink "check"
         fi
     else
         echo "Velero is not installed. Installing now."
         velero_install
+        # Create the symlink for the first time
+        create_symlink "install"
     fi
 }

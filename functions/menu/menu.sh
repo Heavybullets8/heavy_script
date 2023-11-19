@@ -30,6 +30,7 @@ menu() {
                 ;;
             1)
                 main_help
+                exit
                 ;;
             2) # Application Options
                 menu_check_root

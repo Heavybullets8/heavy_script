@@ -58,7 +58,7 @@ velero_install() {
 #!/bin/bash
 # Wrapper script for Velero
 if [[ \$1 == "install" ]]; then
-    echo "Direct 'velero install' is not allowed. Please use the containerized version."
+    echo "'velero install' is not allowed. Please use the application instead..."
 else
     "$USER_HOME/bin/velero_real/velero" "\$@"
 fi

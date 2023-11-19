@@ -15,7 +15,7 @@ get_user_home() {
 
 USER_HOME=$(get_user_home)
 
-create_symlink() {
+velero_symlink() {
     local context="$1"  # Context of the symlink creation (install, update, or check)
 
     ln -sf "$USER_HOME/bin/velero" /usr/local/bin/velero
@@ -82,16 +82,16 @@ velero_check() {
             echo -e "${green}Updating Velero to the latest version.${reset}"
             velero_install
             # Recreate the symlink after updating
-            create_symlink "update"
+            velero_symlink "update"
         else
             echo -e "${green}Velero is up to date.${reset}"
             # Check and recreate the symlink if needed
-            create_symlink "check"
+            velero_symlink "check"
         fi
     else
         echo -e "${yellow}Velero is not installed. Installing now.${reset}"
         velero_install
         # Create the symlink for the first time
-        create_symlink "install"
+        velero_symlink "install"
     fi
 }

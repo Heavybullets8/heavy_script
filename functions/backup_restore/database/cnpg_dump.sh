@@ -52,7 +52,7 @@ dump_database() {
     output_dir="$2/${app}"
     output_file="${output_dir}/${app}_${timestamp}.sql.gz"
 
-    cnpg_pod=$(k3s kubectl get pods -n "ix-$app" --no-headers -o custom-columns=":metadata.name" | grep -E -- "-cnpg-main-1$")
+    cnpg_pod=$(k3s kubectl get pods -n "ix-$app" --no-headers -o custom-columns=":metadata.name" -l role=primary | head -n 1)
 
     if [[ -z $cnpg_pod ]]; then
         echo_backup+=("Failed to get cnpg pod for $app.")

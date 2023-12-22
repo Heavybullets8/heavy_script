@@ -16,6 +16,7 @@ start_app_prompt() {
         app_names=("$app_name")
     fi
 
+    failure=false
     for app_name in "${app_names[@]}"; do
         # Only check app existence if arguments were provided and it's not "ALL"
         if [[ $1 && $1 != "ALL" && ${#app_names[@]} -gt 0 ]]; then
@@ -36,7 +37,7 @@ start_app_prompt() {
             echo -e "${yellow}1. The application does not accept a replica count (external services, cert-manager etc)${reset}"
             echo -e "${yellow}2. The application is set to 0 replicas in its configuration${reset}"
             echo -e "${yellow}If you believe this to be a mistake, please submit a bug report on the github.${reset}"
-            exit
+            failure=true
         fi
 
         echo -e "Starting ${blue}$app_name${reset}..."
@@ -48,6 +49,9 @@ start_app_prompt() {
             echo -e "${red}Failed to start ${blue}$app_name${reset}\n"
         fi
     done
+    if [[ $failure == true ]]; then
+        exit 1
+    fi
 
     # If app names were provided as arguments, we're done
     if [[ ${#app_names[@]} -gt 0 ]]; then

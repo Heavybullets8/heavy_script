@@ -16,6 +16,7 @@ stop_app_prompt(){
         app_names=("$app_name")
     fi
 
+    failure=false
     for app_name in "${app_names[@]}"; do
         # Only check app existence if arguments were provided and it's not "ALL"
         if [[ $1 && $1 != "ALL" && ${#app_names[@]} -gt 0 ]]; then
@@ -31,11 +32,14 @@ stop_app_prompt(){
         result=$(handle_stop_code "$?")
         if [[ $? -eq 1 ]]; then
             echo -e "${red}${result}${reset}\n"
-            exit 1
+            failure=true
         else
             echo -e "${green}${result}${reset}\n"
         fi
     done
+    if [[ $failure == true ]]; then
+        exit 1
+    fi
 
     # If app names were provided as arguments, we're done
     if [[ ${#app_names[@]} -gt 0 ]]; then

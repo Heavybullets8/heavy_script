@@ -18,14 +18,8 @@ start_app(){
 
     # Check if app is a cnpg instance, or an operator instance
     output=$(check_filtered_apps "$app_name")
-    # Remove this first if statement after a while
-    # it is only here to deal with previous errors for a while
-    if [[ $output == *"${app_name},official"* ]]; then
-        replicas=$(pull_replicas "$app_name")
-        if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replicas}" > /dev/null 2>&1; then
-            return 1
-        fi
-    elif [[ $output == *"${app_name},stopAll-"* ]]; then
+
+    if [[ $output == *"${app_name},stopAll-on"* ]]; then
         ix_apps_pool=$(get_apps_pool)
 
         latest_version=$(midclt call chart.release.get_instance "$app_name" | jq -r ".chart_metadata.version")

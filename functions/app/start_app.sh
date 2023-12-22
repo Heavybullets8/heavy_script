@@ -38,6 +38,7 @@ start_app_prompt() {
             echo -e "${yellow}2. The application is set to 0 replicas in its configuration${reset}"
             echo -e "${yellow}If you believe this to be a mistake, please submit a bug report on the github.${reset}"
             failure=true
+            continue
         fi
 
         echo -e "Starting ${blue}$app_name${reset}..."

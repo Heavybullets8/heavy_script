@@ -5,7 +5,7 @@ pull_replicas() {
     app_name="$1"
 
     # First Check
-    replica_info=$(midclt call chart.release.get_instance "$app_name" | jq '.config.controller.replicas // .config.workload.main.replicas')
+    replica_info=$(midclt call chart.release.get_instance "$app_name" | jq '.config.workload.main.replicas // .config.controller.replicas')
 
     # Second Check if First Check returns null or 0
     if [[ "$replica_info" == "null" || "$replica_info" == "0" ]]; then

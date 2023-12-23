@@ -19,7 +19,7 @@ start_app(){
     # Check if app is a cnpg instance, or an operator instance
     output=$(check_filtered_apps "$app_name")
 
-    if [[ $output == *"${app_name},stopAll-on"* ]]; then
+    if [[ $output == *"${app_name},stopAll-"* ]]; then
         ix_apps_pool=$(get_apps_pool)
 
         latest_version=$(midclt call chart.release.get_instance "$app_name" | jq -r ".chart_metadata.version")
@@ -28,6 +28,7 @@ start_app(){
             "/mnt/$ix_apps_pool/ix-applications/releases/$app_name/charts/$latest_version" \
             --kubeconfig "/etc/rancher/k3s/k3s.yaml" \
             --reuse-values \
+            --set replicaCount="$(pull_replicas "$app_name")" \
             --set global.stopAll=false > /dev/null 2>&1; then 
             return 1
         fi

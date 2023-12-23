@@ -44,6 +44,27 @@ start_app(){
             return 1
         fi
 
+        # Wait for pods to start
+        timeout=60
+        SECONDS=0
+        end=$((SECONDS + timeout))
+
+        pods_started=false
+        while [[ $SECONDS -lt $end ]]; do
+            # Check if pods are in a running or container creating state
+            if k3s kubectl get pods -n "ix-$app_name" | grep -qE 'Running|ContainerCreating|Init:'; then
+                pods_started=true
+                break
+            fi
+            sleep 5
+        done
+
+        # If pods haven't started, redeploy
+        if [ "$pods_started" = false ]; then
+            if ! cli -c 'app chart_release redeploy release_name='\""$app_name"\" > /dev/null 2>&1; then
+                return 1
+            fi
+        fi
     else
         if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replicas}" > /dev/null 2>&1; then
             return 1

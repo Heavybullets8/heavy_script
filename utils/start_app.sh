@@ -19,11 +19,6 @@ start_app(){
     # Check if app is a cnpg instance, or an operator instance
     output=$(check_filtered_apps "$app_name")
 
-    replicas=$(pull_replicas "$app_name")
-    if [[ -z "$replicas" || "$replicas" == "null" ]]; then
-        return 1
-    fi
-
     if [[ $output == *"${app_name},stopAll-"* ]]; then
         ix_apps_pool=$(get_apps_pool)
         if [[ -z "$ix_apps_pool" ]]; then
@@ -39,12 +34,14 @@ start_app(){
             "/mnt/$ix_apps_pool/ix-applications/releases/$app_name/charts/$latest_version" \
             --kubeconfig "/etc/rancher/k3s/k3s.yaml" \
             --reuse-values \
-            --set replicaCount="$replicas" \
             --set global.stopAll=false > /dev/null 2>&1; then 
             return 1
         fi
-
     else
+        replicas=$(pull_replicas "$app_name")
+        if [[ -z "$replicas" || "$replicas" == "null" ]]; then
+            return 1
+        fi
         if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replicas}" > /dev/null 2>&1; then
             return 1
         fi

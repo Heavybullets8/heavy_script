@@ -109,7 +109,7 @@ pre_process() {
         fi
     fi
 
-    if [[ $rollback == true || "$startstatus"  ==  "STOPPED" ]]; then
+    if [[ $rollback == true ]]; then
     
         if printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},stopAll-on" && [[ $startstatus == "ACTIVE" ]]; then
             if ! start_app "$app_name"; then

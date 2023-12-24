@@ -39,7 +39,6 @@ start_app(){
             "/mnt/$ix_apps_pool/ix-applications/releases/$app_name/charts/$latest_version" \
             --kubeconfig "/etc/rancher/k3s/k3s.yaml" \
             --reuse-values \
-            --set replicaCount="$replicas" \
             --set global.stopAll=false > /dev/null 2>&1; then 
             return 1
         fi

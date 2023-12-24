@@ -13,6 +13,18 @@ get_app_details() {
     echo "$app_name,$startstatus,$old_full_ver,$new_full_ver,$rollback_version"
 }
 
+should_start_app() {
+    if [[ $stop_before_update == true && "$startstatus" != "STOPPED" ]]; then
+        return 0 
+    fi
+
+    if printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},stopAll-on" && [[ $startstatus == "ACTIVE" ]]; then
+        return 0 
+    fi
+
+    return 1 
+}
+
 wait_for_deploying() {
     # If application is deploying prior to updating, attempt to wait for it to finish
     SECONDS=0
@@ -102,14 +114,7 @@ pre_process() {
         return
     fi
 
-    should_start_app=false
-    if [[ $stop_before_update == true && "$startstatus" != "STOPPED" ]]; then
-        should_start_app=true
-    elif printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},stopAll-on" && [[ $startstatus == "ACTIVE" ]]; then
-        should_start_app=true
-    fi
-
-    if [[ $should_start_app == true ]]; then
+    if should_start_app; then
         if ! start_app "$app_name"; then
             echo_array+=("Failed to start $app_name")
             echo_array
@@ -117,7 +122,7 @@ pre_process() {
         fi
     fi
 
-    if [[ $rollback == true ]]; then
+    if [[ $rollback == true && $startstatus == "ACTIVE" ]]; then
         if ! check_replicas; then
             echo_array
             return

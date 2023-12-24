@@ -28,6 +28,13 @@ check_filtered_apps() {
                 .name + ",stopAll-off"
             else
                 empty
+            end,
+            if .config.global.ixChartContext.isStopped == true then
+                .name + ",isStopped-on"
+            elif .config.global.ixChartContext.isStopped == false then
+                .name + ",isStopped-off"
+            else
+                empty
             end
             | select(length > 0)
         '

@@ -51,7 +51,7 @@ start_app(){
         pods_started=false
         while [[ $SECONDS -lt $end ]]; do
             # Check if pods are in a running, container creating, or initializing
-            if k3s kubectl get pods -n "ix-$app_name" | grep -qE 'Running|ContainerCreating|Init:'; then
+            if k3s kubectl get pods -n "ix-$app_name" 2>&1 | grep -qE 'Running|ContainerCreating|Init:' > /dev/null 2>&1; then
                 pods_started=true
                 break
             fi

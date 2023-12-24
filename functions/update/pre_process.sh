@@ -102,28 +102,22 @@ pre_process() {
         return
     fi
 
+    should_start_app=false
     if [[ $stop_before_update == true && "$startstatus" != "STOPPED" ]]; then
+        should_start_app=true
+    elif printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},stopAll-on" && [[ $startstatus == "ACTIVE" ]]; then
+        should_start_app=true
+    fi
+
+    if [[ $should_start_app == true ]]; then
         if ! start_app "$app_name"; then
+            echo_array+=("Failed to start $app_name")
             echo_array
-            return
+            return 1
         fi
     fi
 
     if [[ $rollback == true ]]; then
-    
-        #TODO: Fix this
-        if printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},stopAll-on" && [[ $startstatus == "ACTIVE" ]]; then
-            if ! start_app "$app_name"; then
-                echo_array+=("Failed to start $app_name")
-                echo_array
-                return 1
-            fi
-        elif printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},stopAll-on"; then
-            echo_array+=("Stopped")
-            echo_array
-            return
-        fi
-
         if ! check_replicas; then
             echo_array
             return

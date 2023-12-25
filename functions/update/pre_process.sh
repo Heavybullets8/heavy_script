@@ -114,6 +114,12 @@ pre_process() {
         return
     fi
 
+    if [[ "$startstatus" == "STOPPED" ]]; then
+        echo_array+=("Stopped")
+        echo_array
+        return
+    fi
+
     if should_start_app; then
         if ! start_app "$app_name"; then
             echo_array+=("Failed to start $app_name")
@@ -136,6 +142,7 @@ pre_process() {
 
         post_process
     else
+        echo_array+=("Active")
         echo_array
         return
     fi

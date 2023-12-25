@@ -19,7 +19,7 @@ start_app(){
     output=$(check_filtered_apps "$app_name")
 
 
-    if [[ $output == *"${app_name},stopAll-on"* ]]; then
+    if [[ $output == *"${app_name},stopAll-"* ]]; then
         ix_apps_pool=$(get_apps_pool)
         if [[ -z "$ix_apps_pool" ]]; then
             return 1

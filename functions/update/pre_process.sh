@@ -142,7 +142,6 @@ pre_process() {
 
         post_process
     else
-        echo_array+=("Active")
         echo_array
         return
     fi

@@ -30,24 +30,14 @@ start_app(){
             return 1
         fi
 
-        # Disable stopAll
+        # Disable stopAll and isStopped
         if ! helm upgrade -n "ix-$app_name" "$app_name" \
             "/mnt/$ix_apps_pool/ix-applications/releases/$app_name/charts/$latest_version" \
             --kubeconfig "/etc/rancher/k3s/k3s.yaml" \
             --reuse-values \
-            --set global.stopAll=false > /dev/null 2>&1; then 
+            --set global.stopAll=false \
+            --set global.ixChartContext.isStopped=false > /dev/null 2>&1; then 
             return 1
-        fi
-
-        # If isStopped is true, also scale the application up
-        if [[ $output == *"${app_name},isStopped-on"* ]]; then
-            replicas=$(pull_replicas "$app_name")
-            if [[ -z "$replicas" || "$replicas" == "null" ]]; then
-                return 1
-            fi
-            if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replicas}" > /dev/null 2>&1; then
-                return 1
-            fi    
         fi
 
     else

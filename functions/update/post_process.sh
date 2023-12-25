@@ -17,29 +17,6 @@ verify_active(){
     done
 }
 
-verify_stopped(){
-    if [[ "$verbose" == true ]]; then
-        echo_array+=("Verifying $status..")
-    fi
-    before_loop=$(head -n 1 all_app_status)
-    current_loop=0
-    until [[ "$status" != "STOPPED" || $current_loop -gt 6 ]]
-    do
-        status=$(update_status)
-        sleep 1
-        if ! echo -e "$(head -n 1 all_app_status)" | grep -qs ^"$before_loop" ; then
-            before_loop=$(head -n 1 all_app_status)
-            ((current_loop++))
-        fi
-    done
-
-    if [[ "$status" != "STOPPED" ]]; then
-        return 0
-    else
-        return 1
-    fi
-}
-
 update_status() {
     grep "^$app_name," all_app_status | awk -F ',' '{print $2}'
 }
@@ -93,19 +70,6 @@ post_process(){
         verify_active
     fi
 
-    if [[ $status == "STOPPED" ]] && [[ "$startstatus"  ==  "STOPPED" ]] && ! grep -q "^$app_name,DEPLOYING" deploying 2>/dev/null; then
-        if ! verify_stopped; then
-            if ! start_app "$app_name"; then
-                echo_array+=("The app entered post-processing, but could not be started.")
-                echo_array+=("Abandoning...")
-                echo "$app_name,$new_full_ver" >> failed
-                echo_array
-                return
-            fi
-        fi
-    fi
-
-
     while true
     do
         status=$(update_status)
@@ -114,11 +78,7 @@ post_process(){
             if [[ "$verbose" == true ]]; then
                 echo_array+=("Became Active after $SECONDS seconds")
             fi
-            if [[ "$startstatus"  ==  "STOPPED" ]]; then
-                update_stop_handler 'Returning to STOPPED state...'
-            else
-                echo_array+=("Active")
-            fi
+            echo_array+=("Active")
             break
         elif [[ "$SECONDS" -ge "$timeout" ]]; then
             echo "$app_name,$new_full_ver" >> failed

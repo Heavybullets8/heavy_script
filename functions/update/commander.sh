@@ -43,7 +43,7 @@ display_update_status() {
 # Skip if the app is in the ignore list
 skip_app_on_ignore_list() {
     if printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}"; then
-        echo -e "\n$app_name\nIgnored, skipping"
+        echo -e "\n$app_name\nSkipping ignored app\n$old_full_ver\n$new_full_ver"
         return 0
     fi
     return 1
@@ -83,10 +83,8 @@ get_apps_with_status() {
 
     # Call the existing function and process its output
     while IFS=, read -r app_name status; do
-        # If the status is "stopAll-on" or "operator", append the app_name and status to the apps_with_status array
-        if [[ "$status" == "stopAll-on" ]] || [[ "$status" == "operator" ]] || [[ "$status" == "cnpg" ]]; then
-            apps_with_status+=("$app_name,$status")
-        fi
+        # Append the app_name and status to the apps_with_status array
+        apps_with_status+=("$app_name,$status")
     done < <(check_filtered_apps "${array[@]/,*}")
 }
 

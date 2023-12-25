@@ -9,7 +9,6 @@ check_mounted(){
 }
 
 
-
 start_app(){
     local app_name=$1
 
@@ -44,6 +43,10 @@ start_app(){
 
     else
         replicas=$(pull_replicas "$app_name")
+        if [[ -z "$replicas" || "$replicas" == "null" ]]; then
+            return 1
+        fi
+        
         if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replicas}" > /dev/null 2>&1; then
             return 1
         fi

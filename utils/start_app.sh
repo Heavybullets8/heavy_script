@@ -21,8 +21,14 @@ start_app(){
 
     if [[ $output == *"${app_name},stopAll-on"* ]]; then
         ix_apps_pool=$(get_apps_pool)
+        if [[ -z "$ix_apps_pool" ]]; then
+            return 1
+        fi
 
         latest_version=$(midclt call chart.release.get_instance "$app_name" | jq -r ".chart_metadata.version")
+        if [[ -z "$latest_version" ]]; then
+            return 1
+        fi
 
         # Disable stopAll
         if ! helm upgrade -n "ix-$app_name" "$app_name" \
@@ -36,6 +42,9 @@ start_app(){
         # If isStopped is true, also scale the application up
         if [[ $output == *"${app_name},isStopped-on"* ]]; then
             replicas=$(pull_replicas "$app_name")
+            if [[ -z "$replicas" || "$replicas" == "null" ]]; then
+                return 1
+            fi
             if ! cli -c 'app chart_release scale release_name='\""$app_name"\"\ 'scale_options={"replica_count": '"$replicas}" > /dev/null 2>&1; then
                 return 1
             fi    

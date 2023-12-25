@@ -43,7 +43,7 @@ display_update_status() {
 # Skip if the app is in the ignore list
 skip_app_on_ignore_list() {
     if printf '%s\0' "${ignore[@]}" | grep -iFxqz "${app_name}"; then
-        echo -e "\n$app_name\nIgnored, skipping"
+        echo -e "\n$app_name\nSkipping ignored app\n$old_full_ver\n$new_full_ver"
         return 0
     fi
     return 1

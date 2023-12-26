@@ -41,6 +41,7 @@ velero_set_conf() {
         echo -e "${red}Failed to set Velero kubeconfig.${reset}"
     fi
 
+    echo -e "\nSetting Velero namespace..."
     namespace="ix-$(velero_app_find)"
     if [[ "$namespace" != "ix-NULL" ]]; then
         if "$USER_HOME"/bin/velero client config set namespace="$namespace"; then

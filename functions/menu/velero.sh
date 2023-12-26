@@ -32,6 +32,63 @@ velero_symlink() {
     esac
 }
 
+velero_set_conf() {
+    local namespace
+    echo -e "Setting Velero config settings"
+    if "$USER_HOME"/bin/velero client config set kubeconfig=/etc/rancher/k3s/k3s.yaml; then
+        echo -e "${green}Velero config settings set successfully.${reset}"
+    else
+        echo -e "${red}Failed to set Velero config settings.${reset}"
+    fi
+
+    namespace="ix-$(velero_app_find)"
+    if [[ "$namespace" != "ix-NULL" ]]; then
+        if "$USER_HOME"/bin/velero client config set namespace="$namespace"; then
+            echo -e "${green}Velero namespace set successfully.${reset}"
+        else
+            echo -e "${red}Failed to set Velero namespace.${reset}"
+        fi
+    else
+        echo -e "${red}Failed to set Velero namespace.${reset}"
+        echo -e "${red}Are you sure the application is installed?${reset}"
+    fi
+}
+
+velero_app_find() {
+    # Read all application names into an array
+    mapfile -t all_apps < <(cli -m csv -c 'app chart_release query name' | tail -n +2 | tr -d " \t\r" | awk 'NF')
+
+    # Create arrays for apps starting with 'V' and the rest
+    declare -a v_apps
+    declare -a other_apps
+
+    for app in "${all_apps[@]}"; do
+        if [[ $app == v* ]]; then
+            v_apps+=("$app")
+        else
+            other_apps+=("$app")
+        fi
+    done
+
+    # Combine the arrays, with 'V' apps first
+    combined_apps=("${v_apps[@]}" "${other_apps[@]}")
+
+    # Loop through each app name
+    for app_name in "${combined_apps[@]}"; do
+        # Get chart metadata name
+        chart_metadata_name=$(midclt call chart.release.get_instance "$app_name" | jq -r .chart_metadata.name)
+
+        # Check if the chart metadata name is 'velero'
+        if [[ "$chart_metadata_name" == "velero" ]]; then
+            echo "$app_name"
+            return 0
+        fi
+    done
+
+    echo "NULL"
+    return 1
+}
+
 # Function to get the latest Velero release URL
 velero_latest_release_url() {
     wget -qO- "https://api.github.com/repos/vmware-tanzu/velero/releases/latest" | jq -r '.assets[] | select(.name | contains("linux-amd64")).browser_download_url'
@@ -94,4 +151,5 @@ velero_check() {
         # Create the symlink for the first time
         velero_symlink "install"
     fi
+    velero_set_conf
 }

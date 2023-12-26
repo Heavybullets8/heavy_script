@@ -34,11 +34,11 @@ velero_symlink() {
 
 velero_set_conf() {
     local namespace
-    echo -e "Setting Velero config settings"
+
     if "$USER_HOME"/bin/velero client config set kubeconfig=/etc/rancher/k3s/k3s.yaml; then
-        echo -e "${green}Velero config settings set successfully.${reset}"
+        echo -e "${green}Velero kubeconfig set successfully.${reset}"
     else
-        echo -e "${red}Failed to set Velero config settings.${reset}"
+        echo -e "${red}Failed to set Velero kubeconfig.${reset}"
     fi
 
     namespace="ix-$(velero_app_find)"

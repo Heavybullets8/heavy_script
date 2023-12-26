@@ -18,7 +18,7 @@ should_start_app() {
         return 0 
     fi
 
-    if printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},stopAll-on" && [[ $startstatus == "ACTIVE" ]]; then
+    if [[ $stopAll == true && $startstatus == "ACTIVE" ]]; then
         return 0 
     fi
 
@@ -92,6 +92,12 @@ pre_process() {
     old_full_ver="${app_vars[2]}"
     new_full_ver="${app_vars[3]}"
     rollback_version="${app_vars[4]}"
+    
+    export operator isStopped stopAll cnpg 
+    operator=$(printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},operator" && echo true || echo false)
+    isStopped=$(printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},isStopped-on" && echo true || echo false)
+    stopAll=$(printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},stopAll-on" && echo true || echo false)
+    cnpg=$(printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},cnpg" && echo true || echo false)
 
     echo_array+=("\n$app_name")
 
@@ -102,7 +108,7 @@ pre_process() {
         fi
     fi
 
-    if [[ $stop_before_update == true && "$startstatus" != "STOPPED" ]]; then
+    if [[ $operator == false && $stop_before_update == true && "$startstatus" != "STOPPED" ]]; then
         if ! update_stop_handler 'Stopping prior to update..'; then
             echo_array
             return

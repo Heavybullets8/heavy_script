@@ -33,7 +33,7 @@ handle_stop_code() {
             return 1
             ;;
         3)
-            echo "HeavyScript doesn't have the ability to stop Prometheus"
+            echo "Operators are not meant to be stopped"
             return 1
             ;;
     esac
@@ -42,7 +42,7 @@ handle_stop_code() {
 stop_app() {
     # Return 1 if cli command outright fails
     # Return 2 if timeout is reached
-    # Return 3 if app is a prometheus instance
+    # Return 3 if app is an operator 
 
     local stop_type app_name timeout status
     stop_type="$1"

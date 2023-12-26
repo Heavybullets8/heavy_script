@@ -45,11 +45,11 @@ failed_rollback() {
 }
 
 check_rollback_availability() {
-    if printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},operator"; then
+    if [[ $operator == true ]]; then
         echo_array+=("Error: $app_name contains an operator instance, and cannot be rolled back")
         return 1
     fi
-    if printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},cnpg"; then
+    if [[ $cnpg == true ]]; then
         echo_array+=("Error: $app_name contains a CNPG deployment, and cannot be rolled back")
         echo_array+=("If this happens frequently, set a larger timeout, or set concurrency lower")
         echo_array+=("If needed, you should have a backup of the database to restore from")

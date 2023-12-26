@@ -15,7 +15,7 @@ update_help() {
     echo -e "${blue}-p, --prune${reset}            Prune unused images after the update"
     echo -e "${blue}-r, --rollback${reset}         Roll back to the previous version if update failure"
     echo -e "${blue}-s, --sync${reset}             Sync the application images before updating"
-    echo -e "${blue}-x, --stop${reset}             Stop the application before updating"
+    echo -e "${blue}-x, --stop${reset}             Stop the application before updating (Not recommended))"
     echo -e "${blue}-t, --timeout${reset}          Set the timeout for the update process in seconds (default: 500)"
     echo -e "${blue}-U, --self-update${reset}      Update HeavyScript itself"
     echo -e "${blue}-v, --verbose${reset}          Display verbose output\n"

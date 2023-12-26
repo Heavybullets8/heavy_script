@@ -138,8 +138,8 @@ Syncs the catalog.
 ### Update
 > heavyscript update [Flags]
 
-| Flag                   | Example                                  | Parameter        | Description                                                                                                                                                                |
-|------------------------|------------------------------------------|------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Flag                     | Example                                  | Parameter        | Description                                                                                                                                                                |
+|--------------------------|------------------------------------------|------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | -a<br>--include-major    | -a<br>--include-major                    |                  | Update the application even if it is a major version update                                                                                                                |
 | -b<br>--backup           | -b 14<br>--backup 14                     | Integer          | Take a backup, and set the number of backups to keep                                                                                                                       |
 | -c<br>--concurrent       | -c 5<br>--concurrent 5                   | Integer          | How many applications to concurrently update (default: 1)                                                                                                                  |
@@ -148,10 +148,10 @@ Syncs the catalog.
 | -p<br>--prune            | -p<br>--prune                            |                  | Prune unused images after the update                                                                                                                                       |
 | -r<br>--rollback         | -r<br>--rollback                         |                  | Roll back to the previous version if update failure                                                                                                                         |
 | -s<br>--sync             | -s<br>--sync                             |                  | Sync the catalog prior to updating applications                                                                                                                             |
-| -x<br>--stop             | -x<br>--stop                             |                  | Stop the application prior to updating                                                                                                                                      |
+| -x<br>--stop             | -x<br>--stop                             |                  | Stop the application prior to updating (Not recommended)                                                          |
 | -t<br>--timeout          | -t 500<br>--timeout 500                  | Integer          | Set the timeout for the update process in seconds (default: 500)                                                                                                           |
 | -U<br>--self-update      | -U<br>--self-update                      |                  | Update HeavyScript itself prior to updating                                                                                                                                 |
-| -v<br>--verbose          | -v<br>--verbose                          |                  | Display verbose output                                                                                                                                                      |
+| -v<br>--verbose          | -v<br>--verbose                          |                  | Display verbose output
 
 
 <br>

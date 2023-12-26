@@ -9,6 +9,8 @@ check_filtered_apps() {
         midclt call chart.release.get_instance "$app_name" | jq -r '
             if .chart_metadata.name == "prometheus" then
                 .name + ",operator"
+            elif .config.operator.enabled == true then
+                .name + ",operator"
             elif .catalog_train == "operators" then
                 .name + ",operator"
             else

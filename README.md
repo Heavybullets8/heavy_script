@@ -282,7 +282,7 @@ The command for the cron job should use the full path to the `heavy_script.sh` f
 ### Cron Job Settings
 
 - **Command:** Use the full command with the correct path, as shown in the examples above. The `bash` prefix and the full path are required for proper execution.
-- **Run as:** Typically, you should run the script as the user who installed HeavyScript. If it was installed with root privileges, use `root`.
+- **Run as:** Use `root`, the extra permissions are required for most heavyscript functions.
 - **Schedule:** Choose the frequency and time for the script to run. For example, daily at 4:00 AM.
 - **Hide Standard Output/Error:** Uncheck these options if you wish to receive email notifications about the cron job's output and errors.
 

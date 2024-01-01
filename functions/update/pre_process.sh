@@ -93,11 +93,12 @@ pre_process() {
     new_full_ver="${app_vars[3]}"
     rollback_version="${app_vars[4]}"
     
-    export operator isStopped stopAll cnpg 
     operator=$(printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},operator" && echo true || echo false)
     isStopped=$(printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},isStopped-on" && echo true || echo false)
     stopAll=$(printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},stopAll-on" && echo true || echo false)
     cnpg=$(printf '%s\0' "${apps_with_status[@]}" | grep -iFxqz "${app_name},cnpg" && echo true || echo false)
+    
+    export operator isStopped stopAll cnpg 
 
     echo_array+=("\n$app_name")
 

@@ -50,8 +50,9 @@ velero_set_conf() {
             echo -e "${red}Failed to set Velero namespace.${reset}"
         fi
     else
-        echo -e "${red}Failed to set Velero namespace.${reset}"
-        echo -e "${red}Are you sure the application is installed?${reset}"
+        echo -e "${red}Failed to set ${blue}Velero${red} namespace.${reset}"
+        echo -e "${red}Please ensure that ${blue}Velero${red} is installed from the ${blue}Truecharts${red}, ${blue}enterprise${red} train.${reset}"
+        echo -e "${red}After installing the application, please run this function again.${reset}"
     fi
 }
 

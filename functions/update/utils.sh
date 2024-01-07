@@ -70,6 +70,9 @@ process_update() {
             handle_snapshot_error "$output"
             handled_snapshot_error=true
             continue
+        elif [[ $output =~ "dump interrupted" ]]; then
+            sleep 20
+            continue
         else
             if $last_attempt; then
                 echo_array+=("Failed to update\nManual intervention may be required")

@@ -72,7 +72,7 @@ process_update() {
             continue
         elif [[ $output =~ "dump interrupted" ]]; then
             sleep 20
-            continue
+            return 1
         else
             if $last_attempt; then
                 echo_array+=("Failed to update\nManual intervention may be required")

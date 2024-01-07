@@ -76,8 +76,8 @@ process_update() {
 }
 
 update_app() {
-    local before_loop
-
+    local before_loop update_avail count
+    
     while true; do
         # Function to check update availability
         check_update_avail() {

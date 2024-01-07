@@ -58,19 +58,32 @@ export -f handle_snapshot_error
 
 process_update() {
     local output error_message
-    local handled_snapshot_error=false
     local max_error_length=500
     local final_check=$1
+    local last_snapshot_error=""
 
     while true; do
         if output=$(timeout 300s cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' 2>&1); then
             return 0
         elif [[ $output =~ "No update is available" ]]; then
             return 0
-        elif [[ $output =~ "cannot create snapshot" && $handled_snapshot_error == false ]]; then
-            handle_snapshot_error "$output"
-            handled_snapshot_error=true
-            continue
+        elif [[ $output =~ "cannot create snapshot" ]]; then
+            if [[ "$output" == "$last_snapshot_error" ]]; then
+                if $final_check; then
+                    echo_array+=("Repeated failure to remove the same snapshot: $output")
+                fi
+                return 1
+            else
+                last_snapshot_error=$output
+                if handle_snapshot_error "$output"; then 
+                    continue
+                else
+                    if $final_check; then
+                        echo_array+=("Failed to remove the snapshot preventing updates.")
+                    fi
+                    return 1
+                fi
+            fi
         elif [[ $output =~ "dump interrupted" ]]; then
             if $final_check; then
                 echo_array+=("Failed to update.")

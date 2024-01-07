@@ -42,63 +42,139 @@ rollback_app() {
 }
 
 handle_snapshot_error() {
-    error_message=$(cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' 2>&1 >/dev/null)
+    local error_message="$1"
+    local snapshot_name
 
-    # Check if the error message indicates a snapshot error
-    if [[ $error_message =~ "cannot create snapshot" ]]; then
-        # Extract the snapshot name from the error message
-        snapshot_name=$(echo "$error_message" | grep "cannot create snapshot" | cut -d "'" -f 2)
+    snapshot_name=$(echo "$error_message" | grep "cannot create snapshot" | cut -d "'" -f 2)
 
-        # Destroy the snapshot
-        if zfs destroy "$snapshot_name"; then
-            return 0
-        else
-            return 1
-        fi
+    # Destroy the snapshot
+    if zfs destroy "$snapshot_name"; then
+        return 0
     else
-        # If the error message does not indicate a snapshot error, return an error code
         return 1
     fi
 }
 export -f handle_snapshot_error
 
-# Update function
-update_app() {
-    # Attempt to update the app until successful or no updates are available
-    while true; do
-        # Check if updates are available for the app
-        update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3","$6}')
+process_update() {
+    local output error_message
+    local max_error_length=500
+    local final_check=$1
+    local last_snapshot_error=""
 
-        # If updates are available, try to update the app
-        if [[ $update_avail =~ "true" ]]; then
-            # Try updating the app up to 3 times
-            for (( count=1; count<=3; count++ )); do
-                if timeout 250s cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' &> /dev/null; then
-                    # If the update was successful, return 0
-                    return 0
-                else
-                    # Upon failure, handle the snapshot error
-                    if handle_snapshot_error; then
-                        # If the snapshot error was successfully handled, try updating the app again
-                        continue
-                    else
-                        # Upon failure, wait for status update before continuing
-                        before_loop=$(head -n 1 all_app_status)
-                        until [[ $(head -n 1 all_app_status) != "$before_loop" ]]; do
-                            sleep 1
-                        done
-                    fi
-                fi
-            done
-            # If the app was not successfully updated after 3 attempts, return an error code
-            return 1
-        elif [[ ! $update_avail =~ "true" ]]; then
-            # If no updates are available, return 0 (success)
+    while true; do
+        if output=$(timeout "${timeout:-300}"s cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' 2>&1); then
             return 0
+        elif [[ $? == 124 ]]; then
+            if $final_check; then
+                echo_array+=("Update process timed out after ${timeout:-300} seconds.")
+                echo_array+=("Consider raising the timeout value.")
+            fi
+            return 1
+        elif [[ $output =~ "No update is available" ]]; then
+            return 0
+        elif [[ $output =~ "cannot create snapshot" ]]; then
+            if [[ "$output" == "$last_snapshot_error" ]]; then
+                if $final_check; then
+                    echo_array+=("Repeated failure to remove the snapshot preventing updates: $output")
+                fi
+                return 1
+            else
+                last_snapshot_error=$output
+                if handle_snapshot_error "$output"; then 
+                    continue
+                else
+                    if $final_check; then
+                        echo_array+=("Failed to remove the snapshot preventing updates.")
+                    fi
+                    return 1
+                fi
+            fi
+        elif [[ $output =~ "dump interrupted" ]]; then
+            if $final_check; then
+                echo_array+=("Failed to update.")
+                echo_array+=("Middlewared is overloaded. Consider lowering concurrent updates.")
+            else
+                sleep 10
+            fi
+            return 1
         else
-            # If the update availability is not clear, wait 3 seconds and check again
-            sleep 3
+            sleep 10
+            wait_for_status
+
+            # Check if updates are still available after waiting
+            if ! check_update_avail; then
+                return 0
+            fi
+
+            error_message=$(echo "$output" | grep -Ev '^\[[0-9]+%\]')
+            local message_trimmed=false
+            local additional_message="For full error details, visit TrueNAS SCALE GUI: Check the Jobs icon and select your failed job."
+            local additional_message_length=${#additional_message}
+
+            if ! $verbose && ((${#error_message} > max_error_length + additional_message_length)); then
+                error_message=${error_message:0:max_error_length}
+                error_message+="..."
+                message_trimmed=true
+            fi
+
+            echo_array+=("Failed to update. Manual intervention may be required.")
+            echo_array+=("$error_message")
+
+            if $message_trimmed; then
+                echo_array+=("$additional_message")
+            fi
+
+            return 2
         fi
+    done
+}
+
+update_app() {
+    local before_loop update_avail count 
+    local final_check=false
+
+    # Function to check update availability
+    check_update_avail() {
+        update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3","$6}')
+        [[ $update_avail =~ "true" ]]
+    }
+
+    wait_for_status() {
+        before_loop=$(head -n 1 all_app_status)
+        until [[ $(head -n 1 all_app_status) != "$before_loop" ]]; do
+            sleep 1
+        done
+    }
+
+    while true; do
+        # If updates are not available, return success
+        if ! check_update_avail; then
+            return 0
+        fi
+
+        # Try updating the app up to 3 times
+        for (( count=1; count<=3; count++ )); do
+            if [[ $count -ge 3 ]]; then
+                final_check=true
+            fi
+
+            if process_update $final_check; then
+                return 0
+            elif [[ $? -eq 2 ]]; then
+                return 1
+            fi
+
+            wait_for_status
+
+            # Check if updates are still available after waiting
+            if ! check_update_avail; then
+                return 0
+            fi
+        done
+
+        # If the app was not successfully updated after 3 attempts, return an error code
+        return 1
     done
 }
 export -f update_app

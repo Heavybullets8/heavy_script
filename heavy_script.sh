@@ -90,7 +90,7 @@ if remove_no_config_args; then
 fi
 
 # Run the self update function if the script has not already been updated
-if [[ $no_self_update == false ]]; then
+if [[ $no_self_update == false ]] && check_help "${args[@]}"; then
     self_update_handler "${args[@]}"
 fi
 

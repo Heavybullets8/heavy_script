@@ -80,6 +80,14 @@ process_update() {
             fi
             return 1
         else
+            sleep 10
+            wait_for_status
+
+            # Check if updates are still available after waiting
+            if ! check_update_avail; then
+                return 0
+            fi
+
             error_message=$(echo "$output" | grep -Ev '^\[[0-9]+%\]')
             local message_trimmed=false
             local additional_message="For full error details, visit TrueNAS SCALE GUI: Check the Jobs icon and select your failed job."
@@ -107,13 +115,20 @@ update_app() {
     local before_loop update_avail count 
     local final_check=false
 
-    while true; do
-        # Function to check update availability
-        check_update_avail() {
-            update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3","$6}')
-            [[ $update_avail =~ "true" ]]
-        }
+    # Function to check update availability
+    check_update_avail() {
+        update_avail=$(grep "^$app_name," all_app_status | awk -F ',' '{print $3","$6}')
+        [[ $update_avail =~ "true" ]]
+    }
 
+    wait_for_status() {
+        before_loop=$(head -n 1 all_app_status)
+        until [[ $(head -n 1 all_app_status) != "$before_loop" ]]; do
+            sleep 1
+        done
+    }
+
+    while true; do
         # If updates are not available, return success
         if ! check_update_avail; then
             return 0
@@ -131,11 +146,7 @@ update_app() {
                 return 1
             fi
 
-            # Wait for status update before continuing
-            before_loop=$(head -n 1 all_app_status)
-            until [[ $(head -n 1 all_app_status) != "$before_loop" ]]; do
-                sleep 1
-            done
+            wait_for_status
 
             # Check if updates are still available after waiting
             if ! check_update_avail; then

@@ -68,6 +68,7 @@ process_update() {
         elif [[ $? == 124 ]]; then
             if $final_check; then
                 echo_array+=("Update process timed out after ${timeout:-300} seconds.")
+                echo_array+=("Consider raising the timeout value.")
             fi
             return 1
         elif [[ $output =~ "No update is available" ]]; then
@@ -75,7 +76,7 @@ process_update() {
         elif [[ $output =~ "cannot create snapshot" ]]; then
             if [[ "$output" == "$last_snapshot_error" ]]; then
                 if $final_check; then
-                    echo_array+=("Repeated failure to remove the same snapshot: $output")
+                    echo_array+=("Repeated failure to remove the snapshot preventing updates: $output")
                 fi
                 return 1
             else

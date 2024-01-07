@@ -73,7 +73,7 @@ process_update() {
             continue
         elif [[ $output =~ "dump interrupted" ]]; then
             if $final_check; then
-                echo_array+=("Failed to update. Manual intervention may be required.")
+                echo_array+=("Failed to update.")
                 echo_array+=("Middlewared is overloaded. Consider lowering concurrent updates.")
             else
                 sleep 10

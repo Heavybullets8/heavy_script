@@ -60,6 +60,7 @@ process_update() {
     local output error_message
     local handled_snapshot_error=false
     local last_attempt="$1"
+    local max_error_length=1000
 
     while true; do
         if output=$(timeout 300s cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' 2>&1); then
@@ -75,12 +76,25 @@ process_update() {
             return 1
         else
             if $last_attempt; then
-                echo_array+=("Failed to update\nManual intervention may be required")
-                if $verbose; then
-                    error_message=$(echo "$output" | grep -Ev '^\[[0-9]+%\]')
-                    echo_array+=("$error_message")
+                error_message=$(echo "$output" | grep -Ev '^\[[0-9]+%\]')
+                local message_trimmed=false
+                local additional_message="To see the full error, go to TrueNAS SCALE GUI, and look at the Jobs icon. Click your failed jobs to see the full message."
+                local additional_message_length=${#additional_message}
+
+                if ! $verbose && ((${#error_message} > max_error_length + additional_message_length)); then
+                    error_message=${error_message:0:max_error_length}
+                    error_message+="..."
+                    message_trimmed=true
+                fi
+
+                echo_array+=("Failed to update. Manual intervention may be required.")
+                echo_array+=("$error_message")
+
+                if $message_trimmed; then
+                    echo_array+=("$additional_message")
                 fi
             fi
+
             return 1
         fi
     done

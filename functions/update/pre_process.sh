@@ -141,7 +141,7 @@ pre_process() {
         fi
 
         if [[ "$old_full_ver" == "$new_full_ver" ]]; then 
-            image_update_restart
+            # image_update_restart disable for now, as it is most likely no longer needed.
             echo_array
             return
         fi

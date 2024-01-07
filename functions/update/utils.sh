@@ -57,8 +57,9 @@ handle_snapshot_error() {
 export -f handle_snapshot_error
 
 process_update() {
-    local output
+    local output error_message
     local handled_snapshot_error=false
+    local last_attempt="$1"
 
     while true; do
         if output=$(timeout 300s cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' 2>&1); then
@@ -70,14 +71,22 @@ process_update() {
             handled_snapshot_error=true
             continue
         else
+            if $last_attempt; then
+                echo_array+=("Failed to update\nManual intervention may be required")
+                if $verbose; then
+                    error_message=$(echo "$output" | grep -Ev '^\[[0-9]+%\]')
+                    echo_array+=("$error_message")
+                fi
+            fi
             return 1
         fi
     done
 }
 
 update_app() {
-    local before_loop update_avail count
-    
+    local before_loop update_avail count 
+    local last_attempt=false
+
     while true; do
         # Function to check update availability
         check_update_avail() {
@@ -92,7 +101,11 @@ update_app() {
 
         # Try updating the app up to 3 times
         for (( count=1; count<=3; count++ )); do
-            if process_update; then
+            if [[ "$count" -ge 3 ]]; then
+                last_attempt=true
+            fi
+            
+            if process_update $last_attempt; then
                 # If the update was successful, return 0
                 return 0
             fi

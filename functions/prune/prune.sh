@@ -9,9 +9,9 @@ prune(){
                tr -d " \t\r\.")"
     if (( "$version" >= 2310 )); then
         if ! cli -c 'app container config prune prune_options={"remove_unused_images": true}' &>/dev/null ; then
-            echo -e "Failed to Prune Docker Images"
+            echo -e "Failed to Prune Images"
         else
-            echo -e "Pruned Docker Images"
+            echo -e "Pruned Images"
         fi
     elif (( "$version" >= 2212 )); then
         if ! cli -c 'app container config prune prune_options={"remove_unused_images": true, "remove_stopped_containers": true}' | head -n -4; then

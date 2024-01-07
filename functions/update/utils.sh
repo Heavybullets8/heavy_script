@@ -59,8 +59,8 @@ export -f handle_snapshot_error
 process_update() {
     local output error_message
     local handled_snapshot_error=false
-    local last_attempt="$1"
-    local max_error_length=1000
+    local max_error_length=500
+    local final_check=$1
 
     while true; do
         if output=$(timeout 300s cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' 2>&1); then
@@ -72,37 +72,40 @@ process_update() {
             handled_snapshot_error=true
             continue
         elif [[ $output =~ "dump interrupted" ]]; then
-            sleep 20
+            if $final_check; then
+                echo_array+=("Failed to update. Manual intervention may be required.")
+                echo_array+=("Middlewared is overloaded. Consider lowering concurrent updates.")
+            else
+                sleep 10
+            fi
             return 1
         else
-            if $last_attempt; then
-                error_message=$(echo "$output" | grep -Ev '^\[[0-9]+%\]')
-                local message_trimmed=false
-                local additional_message="To see the full error, go to TrueNAS SCALE GUI, and look at the Jobs icon. Click your failed jobs to see the full message."
-                local additional_message_length=${#additional_message}
+            error_message=$(echo "$output" | grep -Ev '^\[[0-9]+%\]')
+            local message_trimmed=false
+            local additional_message="To see the full error, go to TrueNAS SCALE GUI, and look at the Jobs icon. Click your failed jobs to see the full message."
+            local additional_message_length=${#additional_message}
 
-                if ! $verbose && ((${#error_message} > max_error_length + additional_message_length)); then
-                    error_message=${error_message:0:max_error_length}
-                    error_message+="..."
-                    message_trimmed=true
-                fi
-
-                echo_array+=("Failed to update. Manual intervention may be required.")
-                echo_array+=("$error_message")
-
-                if $message_trimmed; then
-                    echo_array+=("$additional_message")
-                fi
+            if ! $verbose && ((${#error_message} > max_error_length + additional_message_length)); then
+                error_message=${error_message:0:max_error_length}
+                error_message+="..."
+                message_trimmed=true
             fi
 
-            return 1
+            echo_array+=("Failed to update. Manual intervention may be required.")
+            echo_array+=("$error_message")
+
+            if $message_trimmed; then
+                echo_array+=("$additional_message")
+            fi
+
+            return 2
         fi
     done
 }
 
 update_app() {
     local before_loop update_avail count 
-    local last_attempt=false
+    local final_check=false
 
     while true; do
         # Function to check update availability
@@ -118,13 +121,14 @@ update_app() {
 
         # Try updating the app up to 3 times
         for (( count=1; count<=3; count++ )); do
-            if [[ "$count" -ge 3 ]]; then
-                last_attempt=true
+            if [[ $count -ge 3 ]]; then
+                final_check=true
             fi
-            
-            if process_update $last_attempt; then
-                # If the update was successful, return 0
+
+            if process_update $final_check; then
                 return 0
+            elif [[ $? -eq 2 ]]; then
+                return 1
             fi
 
             # Wait for status update before continuing

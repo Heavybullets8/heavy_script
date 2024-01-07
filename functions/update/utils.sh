@@ -63,11 +63,11 @@ process_update() {
     local last_snapshot_error=""
 
     while true; do
-        if output=$(timeout 300s cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' 2>&1); then
+        if output=$(timeout "${timeout:-300}"s cli -c 'app chart_release upgrade release_name=''"'"$app_name"'"' 2>&1); then
             return 0
         elif [[ $? == 124 ]]; then
             if $final_check; then
-                echo_array+=("Update process timed out after 300 seconds.")
+                echo_array+=("Update process timed out after ${timeout:-300} seconds.")
             fi
             return 1
         elif [[ $output =~ "No update is available" ]]; then

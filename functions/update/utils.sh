@@ -82,7 +82,7 @@ process_update() {
         else
             error_message=$(echo "$output" | grep -Ev '^\[[0-9]+%\]')
             local message_trimmed=false
-            local additional_message="To see the full error, go to TrueNAS SCALE GUI, and look at the Jobs icon. Click your failed jobs to see the full message."
+            local additional_message="For full error details, visit TrueNAS SCALE GUI: Check the Jobs icon and select your failed job."
             local additional_message_length=${#additional_message}
 
             if ! $verbose && ((${#error_message} > max_error_length + additional_message_length)); then

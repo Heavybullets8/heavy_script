@@ -24,11 +24,19 @@ echo_updates_header() {
 
 display_update_status() {
     if [[ -z ${array[*]} ]]; then
-        echo "There are no updates available"
+        if [[ -z "${update_only[*]}" ]]; then
+            echo "No updates available."
+        else
+            echo "No updates available from your list: ${update_only[*]}"
+        fi
         echo -e "\n"
         return 0
     else
-        echo "Update(s) Available: ${#array[@]}"
+        if [[ -n "${update_only[*]}" ]]; then
+            echo "Update(s) available from your list: ${array[*]}"
+        else
+            echo "Update(s) Available: ${#array[@]}"
+        fi
     fi
 
     echo "Asynchronous Updates: $concurrent"

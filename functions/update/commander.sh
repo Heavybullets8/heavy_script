@@ -20,7 +20,6 @@ get_app_info() {
     fi
 }
 
-
 echo_updates_header() {
     echo -e "🅄 🄿 🄳 🄰 🅃 🄴 🅂"
 }
@@ -154,7 +153,6 @@ process_apps() {
     array=("${filtered_apps[@]}")
 }
 
-
 handle_concurrency() {
     local index=0
     local iteration_count=0
@@ -206,7 +204,6 @@ handle_concurrency() {
     echo
     echo
 }
-
 
 commander() {
     apps_with_status=()

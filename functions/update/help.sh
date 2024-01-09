@@ -17,6 +17,7 @@ update_help() {
     echo -e "${blue}-s, --sync${reset}             Sync the application images before updating"
     echo -e "${blue}-x, --stop${reset}             Stop the application before updating (Not recommended))"
     echo -e "${blue}-t, --timeout${reset}          Set the timeout for the update process in seconds (default: 500)"
+    echo -e "${blue}-u, --update-only${reset}     Only update the specified application(s)"
     echo -e "${blue}-U, --self-update${reset}      Update HeavyScript itself"
     echo -e "${blue}-v, --verbose${reset}          Display verbose output\n"
     echo -e "${blue}--no-config${reset}            Ignore the settings in your config.ini file"

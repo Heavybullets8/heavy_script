@@ -2,10 +2,20 @@
 
 
 get_app_info() {
-    cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' |
-        tr -d " \t\r" |
-        grep -E ",true($|,)" |
-        sort
+    local all_apps
+    all_apps=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' |
+               tr -d " \t\r" |
+               grep -E ",true($|,)")
+
+    if [ ${#update_only[@]} -eq 0 ]; then
+        echo "$all_apps" | sort
+    else
+        local filtered_apps=()
+        for app in "${update_only[@]}"; do
+            filtered_apps+=("$(echo "$all_apps" | grep -E "^$app,.*,true($|,)")")
+        done
+        printf '%s\n' "${filtered_apps[@]}" | sort -u
+    fi
 }
 
 echo_updates_header() {

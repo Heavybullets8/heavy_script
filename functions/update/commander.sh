@@ -10,11 +10,12 @@ get_app_info() {
     if [ ${#update_only[@]} -eq 0 ]; then
         echo "$all_apps" | sort
     else
-        local filtered_apps=()
-        for app in "${update_only[@]}"; do
-            filtered_apps+=("$(echo "$all_apps" | grep -E "^$app,.*,true($|,)")")
-        done
-        printf '%s\n' "${filtered_apps[@]}" | sort -u
+        # Convert update_only array to a string of patterns separated by '|'
+        local pattern
+        pattern=$(IFS='|'; echo "${update_only[*]}")
+
+        # Use awk to filter apps based on update_only list
+        printf '%s\n' "$all_apps" | awk -v pat="$pattern" -F, 'BEGIN { split(pat, apps, "|"); } { for (i in apps) if ($1 == apps[i]) print; }' | sort -u
     fi
 }
 

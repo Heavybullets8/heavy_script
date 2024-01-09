@@ -32,7 +32,6 @@ display_update_status() {
         else
             echo "No updates available from your list: ${update_only[*]}"
         fi
-        echo -e "\n"
         return 0
     else
         if [[ -n "${update_only[*]}" ]]; then

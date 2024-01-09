@@ -2,20 +2,18 @@
 
 
 get_app_info() {
-    local all_apps
-    all_apps=$(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' |
-               tr -d " \t\r" |
-               grep -E ",true($|,)")
+    local all_apps=()
+    mapfile -t all_apps < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | tr -d " \t\r" | grep -E ",true($|,)")
 
     if [ ${#update_only[@]} -eq 0 ]; then
-        echo "$all_apps" | sort
+        printf '%s\n' "${all_apps[@]}" | sort
     else
         # Convert update_only array to a string of patterns separated by '|'
         local pattern
         pattern=$(IFS='|'; echo "${update_only[*]}")
 
         # Use awk to filter apps based on update_only list
-        printf '%s\n' "$all_apps" | awk -v pat="$pattern" -F, 'BEGIN { split(pat, apps, "|"); } { for (i in apps) if ($1 == apps[i]) print; }' | sort -u
+        printf '%s\n' "${all_apps[@]}" | awk -v pat="$pattern" -F, 'BEGIN { split(pat, apps, "|"); } { for (i in apps) if ($1 == apps[i]) print; }' | sort -u
     fi
 }
 

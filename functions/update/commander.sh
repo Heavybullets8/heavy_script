@@ -34,7 +34,7 @@ display_update_status() {
         return 0
     else
         if [[ -n "${update_only[*]}" ]]; then
-            echo "Update(s) available from your list: ${array[*]}"
+            echo "Update(s) available from your list: $(IFS=,; echo "${array[*]}")"
         else
             echo "Update(s) Available: ${#array[@]}"
         fi

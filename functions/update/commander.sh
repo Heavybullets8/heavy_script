@@ -34,7 +34,7 @@ display_update_status() {
         return 0
     else
         if [[ -n "${update_only[*]}" ]]; then
-            echo "Update(s) available from your list: $(printf "%s\n" "${array[@]}" | awk -F, '{print $1}' | tr '\n' ', ')"
+            echo "Update(s) available from your list: $(printf "%s\n" "${array[@]}" | cut -d ',' -f1 | tr '\n' ' ')"
         else
             echo "Update(s) Available: ${#array[@]}"
         fi

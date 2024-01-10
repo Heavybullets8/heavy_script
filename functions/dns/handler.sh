@@ -27,7 +27,7 @@ dns_handler() {
             dns_verbose "${args[@]:1}"
             ;;
         "")
-            dns_non_verbose "${args[@]:1}"
+            dns_verbose "${args[@]:1}"
             ;;
         *)
             echo "Invalid option: ${args[0]}"

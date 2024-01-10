@@ -2,7 +2,15 @@
 
 
 dns_verbose(){
+    app_name="$1"
+
     # Get all ix-namespaces and services
+    if [[ -z $app_name ]]; then
+        services=$(k3s kubectl get service -A | grep ^"ix" | sort -u)
+    else
+        services=$(k3s kubectl get service -n "ix-$app_name" | sort -u)
+    fi
+
     services=$(k3s kubectl get service -A | grep ^"ix" | sort -u)
 
     output=""

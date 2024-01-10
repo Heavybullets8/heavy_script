@@ -68,11 +68,16 @@ ___
 <br>
 
 ### DNS
-> heavyscript dns [Optional Flag]
+> heavyscript dns [Optional App Name(s)]
 
-| Flag                       | Example                                  | Description                             |
-|----------------------------|------------------------------------------|-----------------------------------------|
-| -a<br>--all                | -a<br>--all                              | Display all DNS information.            |
+Pass an optional app name to display DNS information for that specific app.
+
+If no app name is provided, it will show internal DNS addresses for all services.
+
+Example:
+```sh
+heavscript dns sonarr radarr nextcloud
+```
 
 <br >
 

@@ -13,8 +13,6 @@ dns_help() {
     echo -e "${bold}Options${reset}"
     echo -e "${bold}-------${reset}"
     echo -e "${blue}AppName${reset}"
-    echo -e "    Pass one or more app names (separated by spaces) to filter DNS records for those apps."
-    echo -e "${blue}--no-config${reset}"
     echo -e "    Ignore the settings in your config.ini file."
     echo -e "${blue}-h${reset}, ${blue}--help${reset}"
     echo -e "    Display this help message."

@@ -11,8 +11,6 @@ dns_verbose(){
         services=$(k3s kubectl get service -n "ix-$app_name" | sort -u)
     fi
 
-    services=$(k3s kubectl get service -A | grep ^"ix" | sort -u)
-
     output=""
 
     # Iterate through each namespace and service

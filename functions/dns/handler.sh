@@ -9,30 +9,20 @@ dns_handler() {
         dns_help
         exit
     fi
-    # Load the config.ini file if --no-config is not passed
-    if [[ $no_config == false ]]; then
-        read_ini "config.ini" --prefix DNS
+
+    # Check for deprecated options
+    if [[ "${args[0]}" == "-a" || "${args[0]}" == "--all" ]]; then
+        echo "The option '${args[0]}' is deprecated and will be ignored."
+        args=("${args[@]:1}")
     fi
 
-    # Set the default option using the config file
-    local verbose="${DNS__DNS__verbose:-false}"
-
-    if [[ "$verbose" == "true" ]]; then
-        args=("-a")
+    if [[ $# -eq 0 ]]; then
+        dns_verbose
+    elif [[ $1 =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]]; then
+        dns_verbose "$1"
+    else
+        echo "Invalid option or app name: $1"
+        dns_help
+        exit 1
     fi
-
-    case "${args[0]}" in
-        -a|--all)
-            # Call the function to display all DNS information
-            dns_verbose "${args[@]:1}"
-            ;;
-        "")
-            dns_verbose "${args[@]:1}"
-            ;;
-        *)
-            echo "Invalid option: ${args[0]}"
-            dns_help
-            exit 1
-            ;;
-    esac
 }

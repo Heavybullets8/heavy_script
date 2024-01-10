@@ -7,11 +7,9 @@ dns_verbose(){
     # Get all ix-namespaces and services
     if [[ ${#app_names[@]} -eq 0 ]]; then
         services=$(k3s kubectl get service --no-headers -A | grep "^ix" | sort -u)
-    elif [[ ${#app_names[@]} -eq 1 ]]; then
-        services=$(k3s kubectl get service --no-headers -n "ix-${app_names[0]}" | sort -u)
     else
         pattern=$(IFS='|'; echo "${app_names[*]}")
-        services=$(k3s kubectl get service --no-headers -A | grep -E "^ix-($pattern)\b" | sort -u)
+        services=$(k3s kubectl get service --no-headers -A | grep -E "^ix-($pattern)[[:space:]]" | sort -u)
     fi
 
     if [[ -z $services ]]; then

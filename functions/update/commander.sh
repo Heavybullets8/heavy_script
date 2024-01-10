@@ -2,10 +2,22 @@
 
 
 get_app_info() {
-    cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' |
-        tr -d " \t\r" |
-        grep -E ",true($|,)" |
-        sort
+    local all_apps=()
+    mapfile -t all_apps < <(cli -m csv -c 'app chart_release query name,update_available,human_version,human_latest_version,container_images_update_available,status' | tr -d " \t\r" | grep -E ",true($|,)")
+
+    # Common check for non-empty all_apps
+    if [ ${#all_apps[@]} -ne 0 ]; then
+        if [ ${#update_only[@]} -eq 0 ]; then
+            printf '%s\n' "${all_apps[@]}" | sort
+        else
+            # Convert update_only array to a string of patterns separated by '|'
+            local pattern
+            pattern=$(IFS='|'; echo "${update_only[*]}")
+
+            # Use awk to filter apps based on update_only list
+            printf '%s\n' "${all_apps[@]}" | awk -v pat="$pattern" -F, 'BEGIN { split(pat, apps, "|"); } { for (i in apps) if ($1 == apps[i]) print; }' | sort -u
+        fi
+    fi
 }
 
 echo_updates_header() {
@@ -14,11 +26,18 @@ echo_updates_header() {
 
 display_update_status() {
     if [[ -z ${array[*]} ]]; then
-        echo "There are no updates available"
-        echo -e "\n"
+        if [[ -z "${update_only[*]}" ]]; then
+            echo "No updates available."
+        else
+            echo "No updates available from your list: ${update_only[*]}"
+        fi
         return 0
     else
-        echo "Update(s) Available: ${#array[@]}"
+        if [[ -n "${update_only[*]}" ]]; then
+            echo "Update(s) available from your list: $(printf "%s\n" "${array[@]}" | cut -d ',' -f1 | tr '\n' ' ')"
+        else
+            echo "Update(s) Available: ${#array[@]}"
+        fi
     fi
 
     echo "Asynchronous Updates: $concurrent"
@@ -134,7 +153,6 @@ process_apps() {
     array=("${filtered_apps[@]}")
 }
 
-
 handle_concurrency() {
     local index=0
     local iteration_count=0
@@ -186,7 +204,6 @@ handle_concurrency() {
     echo
     echo
 }
-
 
 commander() {
     apps_with_status=()

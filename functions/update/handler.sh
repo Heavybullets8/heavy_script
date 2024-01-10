@@ -10,9 +10,21 @@ update_handler() {
     declare -x update_all_apps
     declare -x verbose
     declare -x ignore_image_update
+    declare -x update_only
     local sync
     local number_of_backups
     local prune
+
+    parse_app_names() {
+        IFS=',' read -ra ADDR <<< "$1"
+        for i in "${ADDR[@]}"; do
+            if ! [[ $i =~ ^[a-zA-Z]([-a-zA-Z0-9,]*[a-zA-Z0-9])?$ ]]; then
+                echo -e "Error: \"$i\" is not a possible option for an application name"
+                exit
+            fi
+            eval "$2+=('$i')"
+        done
+    }
 
     # Check if --no-config is in the arguments
     if [[ $no_config == false ]]; then
@@ -75,12 +87,7 @@ update_handler() {
                 ;;
             -i|--ignore)
                 shift
-                if ! [[ $1 =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]]; then # Using case insensitive version of the regex used by Truenas Scale
-                    echo -e "Error: \"$1\" is not a possible option for an application name"
-                    exit
-                else
-                    ignore+=("$1")
-                fi
+                parse_app_names "$1" ignore
                 shift
                 ;;
             -I|--ignore-img)
@@ -110,6 +117,11 @@ update_handler() {
                     echo -e "Error: -t needs to be assigned an interger\n\"""$timeout""\" is not an interger" >&2
                     exit
                 fi
+                shift
+                ;;
+            -u|--update-only)
+                shift
+                parse_app_names "$1" update_only
                 shift
                 ;;
             -v|--verbose)

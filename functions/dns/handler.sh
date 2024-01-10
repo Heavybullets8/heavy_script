@@ -16,13 +16,17 @@ dns_handler() {
         args=("${args[@]:1}")
     fi
 
-    if [[ $# -eq 0 ]]; then
+    if [[ ${#args[@]} -eq 0 ]]; then
         dns_verbose
-    elif [[ $1 =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]]; then
-        dns_verbose "$1"
     else
-        echo "Invalid option or app name: $1"
-        dns_help
-        exit 1
+        for app_name in "${args[@]}"; do
+            if ! [[ $app_name =~ ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$ ]]; then
+                echo "Invalid option or app name: $app_name"
+                dns_help
+                exit 1
+            fi
+        done
+
+        dns_verbose "${args[@]}"
     fi
 }

@@ -54,8 +54,8 @@ ensure_symlink
 # generate the config.ini file if it does not exist
 generate_config_ini
 
-# Add the [databases] section and dump_folder option to the config.ini file if they do not exist
-add_database_options
+# remove the [DNS] section from the config.ini file if it exists
+remove_dns_section
 
 # Separate bundled short options
 args=()

@@ -2,8 +2,20 @@
 
 
 dns_verbose(){
+    app_names=("${@}")
+
     # Get all ix-namespaces and services
-    services=$(k3s kubectl get service -A | grep ^"ix" | sort -u)
+    if [[ ${#app_names[@]} -eq 0 ]]; then
+        services=$(k3s kubectl get service --no-headers -A | grep "^ix" | sort -u)
+    else
+        pattern=$(IFS='|'; echo "${app_names[*]}")
+        services=$(k3s kubectl get service --no-headers -A | grep -E "^ix-($pattern)[[:space:]]" | sort -u)
+    fi
+
+    if [[ -z $services ]]; then
+        echo -e "${red}No services found${reset}"
+        exit 1
+    fi
 
     output=""
 

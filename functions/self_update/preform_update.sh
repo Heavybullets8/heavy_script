@@ -44,7 +44,7 @@ update_tagged_version() {
             echo "Updating from: $hs_version"
             echo "Updating To: $latest_tag"
             echo "Changelog:"
-            curl --silent "https://api.github.com/repos/HeavyBullets8/heavy_script/releases/latest" | jq -r .body
+            curl -L --silent "https://api.github.com/repos/HeavyBullets8/heavy_script/releases/latest" | jq -r .body
             echo
             return 111
         else

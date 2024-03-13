@@ -119,7 +119,7 @@ display_app_sizes() {
 
 db_dump_get_app_status() {
     # Get application names from deployments
-    mapfile -t cnpg_apps < <(k3s kubectl get deployments --all-namespaces | grep -E '^(ix-.*\s).*-cnpg-main-' | awk '{gsub(/^ix-/, "", $1); print $1}')
+    mapfile -t cnpg_apps < <(k3s kubectl get cluster -A | grep -E '^(ix-.*\s).*-cnpg-main-' | awk '{gsub(/^ix-/, "", $1); print $1}' | sort -u)
 
     # Store the output of the `cli` command into a variable
     chart_release_output=$(cli -m csv -c 'app chart_release query name,status' | tr -d " \t\r" | tail -n +2)

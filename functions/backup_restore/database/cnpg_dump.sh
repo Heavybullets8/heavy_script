@@ -201,7 +201,7 @@ backup_cnpg_databases() {
     unset temp
 
     if [[ ${#app_status_lines[@]} -eq 0 ]]; then
-        return
+        return 0
     fi
     
     echo_backup+=("--CNPG Database Backups--")
@@ -232,7 +232,7 @@ backup_cnpg_databases() {
             for deployment in "${!original_replicas[@]}"; do
                 if [[ ${original_replicas[$deployment]} -ne 0 ]] && ! scale_deployments "$app_name" 300 0 "$deployment" > /dev/null 2>&1; then
                     echo_backup+=("Failed to scale down $app_name's $deployment deployment.")
-                    return
+                    continue
                 fi
             done
         fi
@@ -240,14 +240,14 @@ backup_cnpg_databases() {
         # Dump the database
         if ! dump_database "$app_name" "$dump_folder"; then
             echo_backup+=("Failed to back up $app_name's database.")
-            return
+            continue
         fi
 
         # Stop the app if it was stopped
         if [[ $app_status == "STOPPED" ]]; then
             wait_for_redeploy_jobs "$app_name"
             stop_app "direct" "$app_name"
-            break
+            continue
         fi
 
 
@@ -256,7 +256,7 @@ backup_cnpg_databases() {
             for deployment in "${!original_replicas[@]}"; do
                 if [[ ${original_replicas[$deployment]} -ne 0 ]] && ! scale_deployments "$app_name" 300 "${original_replicas[$deployment]}" "$deployment" > /dev/null 2>&1; then
                     echo_backup+=("Failed to scale up $app_name's $deployment deployment.")
-                    return
+                    continue
                 fi
             done
         fi

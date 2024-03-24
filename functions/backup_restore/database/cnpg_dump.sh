@@ -153,36 +153,20 @@ wait_for_postgres_pod() {
     return 1
 }
 
-get_redeploy_job_ids(){
-    local app_name=$1
-    midclt call core.get_jobs | jq -r --arg app_name "$app_name" \
-        '.[] | select( .time_finished == null and .state == "RUNNING" and (.arguments[0] == $app_name) and (.method == "chart.release.redeploy" or .method == "chart.release.redeploy_internal")) | .id'
-}
+wait_until_active() {
+    app_name=$1
+    timeout=500
+    SECONDS=0
 
-wait_for_redeploy_jobs(){
-    local app_name=$1
-    local sleep_duration=10
-    local timeout=500
-    local elapsed_time=0
-
-    while true; do
-        job_ids=$(get_redeploy_job_ids "$app_name")
-
-        if [[ -z "$job_ids" ]]; then
-            break
-        else
-            sleep "$sleep_duration"
-            elapsed_time=$((elapsed_time + sleep_duration))
-
-            # Check for timeout
-            if [[ "$elapsed_time" -ge "$timeout" ]]; then
-                while IFS= read -r job_id; do
-                    midclt call core.job_abort "$job_id" > /dev/null 2>&1
-                done <<< "$job_ids"
-                return 1
-            fi
+    while [[ $(cli -m csv -c 'app chart_release query name,status' | tr -d " \t\r" | grep "^$app_name," | awk -F ',' '{print $2}')  !=  "ACTIVE" ]]
+    do
+        if [[ "$SECONDS" -ge "$timeout" ]]; then
+            echo_backup+=("$app_name is stuck Deploying, Skipping stop action.")
+            return 1
         fi
+        sleep 5
     done
+    return 0
 }
 
 backup_cnpg_databases() {
@@ -220,23 +204,29 @@ backup_cnpg_databases() {
             wait_for_postgres_pod "$app_name"
         fi
 
-        declare -A original_replicas=()
-        mapfile -t replica_lines < <(get_current_replica_counts "$app_name" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
-        for line in "${replica_lines[@]}"; do
-            IFS='=' read -r key value <<< "$line"
-            original_replicas["$key"]=$value
-        done
-
+        # Scale down all non cnpg deployments in the app to 0
         if [[ $scale_deployments_bool == true ]]; then
+            declare -A original_replicas=()
+            mapfile -t replica_lines < <(get_current_replica_counts "$app_name" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
+            for line in "${replica_lines[@]}"; do
+                IFS='=' read -r key value <<< "$line"
+                original_replicas["$key"]=$value
+            done
+
+            local scale_failure=false
             # Scale down all deployments in the app to 0
             for deployment in "${!original_replicas[@]}"; do
                 if [[ ${original_replicas[$deployment]} -ne 0 ]] && ! scale_deployments "$app_name" 300 0 "$deployment" > /dev/null 2>&1; then
                     echo_backup+=("Failed to scale down $app_name's $deployment deployment.")
-                    continue
+                    scale_failure=true
+                    break
                 fi
             done
+            if [[ $scale_failure == true ]]; then
+                continue
+            fi
         fi
-
+                                         
         # Dump the database
         if ! dump_database "$app_name" "$dump_folder"; then
             echo_backup+=("Failed to back up $app_name's database.")
@@ -245,8 +235,9 @@ backup_cnpg_databases() {
 
         # Stop the app if it was stopped
         if [[ $app_status == "STOPPED" ]]; then
-            wait_for_redeploy_jobs "$app_name"
-            stop_app "direct" "$app_name"
+            if wait_until_active "$app_name"; then 
+                stop_app "direct" "$app_name"
+            fi
             continue
         fi
 
@@ -256,7 +247,7 @@ backup_cnpg_databases() {
             for deployment in "${!original_replicas[@]}"; do
                 if [[ ${original_replicas[$deployment]} -ne 0 ]] && ! scale_deployments "$app_name" 300 "${original_replicas[$deployment]}" "$deployment" > /dev/null 2>&1; then
                     echo_backup+=("Failed to scale up $app_name's $deployment deployment.")
-                    continue
+                    break
                 fi
             done
         fi

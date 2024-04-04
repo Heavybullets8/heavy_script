@@ -138,11 +138,19 @@ db_dump_get_app_status() {
 }
 
 wait_for_postgres_pod() {
-    app_name=$1
+    appname=$1
 
-    # shellcheck disable=SC2034
-    for i in {1..30}; do
-        pod_status=$(k3s kubectl get pods "${app_name}-cnpg-main-1" -n "ix-${app_name}" -o jsonpath="{.status.phase}" 2>/dev/null)
+    for ((i = 1; i <= 30; i++)); do
+        # Get the name of the primary pod
+        primary_pod=$(k3s kubectl get pods -n "ix-$appname" --no-headers -o custom-columns=":metadata.name" -l role=primary | head -n 1 2>/dev/null)
+        
+        if [[ -z "$primary_pod" ]]; then
+            sleep 5
+            continue
+        fi
+
+        # Get the status of the primary pod
+        pod_status=$(k3s kubectl get pod "$primary_pod" -n "ix-$appname" -o jsonpath="{.status.phase}" 2>/dev/null)
 
         if [[ "$pod_status" == "Running" ]]; then
             return 0

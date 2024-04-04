@@ -55,7 +55,7 @@ dump_database() {
     cnpg_pod=$(k3s kubectl get pods -n "ix-$app" --no-headers -o custom-columns=":metadata.name" -l role=primary | head -n 1)
 
     if [[ -z $cnpg_pod ]]; then
-        echo_backup+=("Failed to get cnpg pod for $app.")
+        failed_message+=("Failed to get primary pod")
         return 1
     fi
 
@@ -63,7 +63,7 @@ dump_database() {
     db_name=$(midclt call chart.release.get_instance "$app" | jq .config.cnpg.main.database)
 
     if [[ -z $db_name ]]; then
-        echo_backup+=("Failed to get database name for $app.")
+        failed_message+=("Failed to get database name")
         return 1
     fi
 
@@ -119,7 +119,7 @@ display_app_sizes() {
 
 db_dump_get_app_status() {
     # Get application names from deployments
-    mapfile -t cnpg_apps < <(k3s kubectl get cluster -A | grep -E '^(ix-.*\s).*-cnpg-main-' | awk '{gsub(/^ix-/, "", $1); print $1}' | sort -u)
+    mapfile -t cnpg_apps < <(k3s kubectl get cluster -A | grep -E '^(ix-.*\s).*-cnpg-main-' | awk '{gsub(/^ix-/, "", $1); print $1}' | sort -u 2>/dev/null)
 
     # Store the output of the `cli` command into a variable
     chart_release_output=$(cli -m csv -c 'app chart_release query name,status' | tr -d " \t\r" | tail -n +2)
@@ -138,11 +138,19 @@ db_dump_get_app_status() {
 }
 
 wait_for_postgres_pod() {
-    app_name=$1
+    appname=$1
 
-    # shellcheck disable=SC2034
-    for i in {1..30}; do
-        pod_status=$(k3s kubectl get pods "${app_name}-cnpg-main-1" -n "ix-${app_name}" -o jsonpath="{.status.phase}" 2>/dev/null)
+    for ((i = 1; i <= 30; i++)); do
+        # Get the name of the primary pod
+        primary_pod=$(k3s kubectl get pods -n "ix-$appname" --no-headers -o custom-columns=":metadata.name" -l role=primary | head -n 1 2>/dev/null)
+        
+        if [[ -z "$primary_pod" ]]; then
+            sleep 5
+            continue
+        fi
+
+        # Get the status of the primary pod
+        pod_status=$(k3s kubectl get pod "$primary_pod" -n "ix-$appname" -o jsonpath="{.status.phase}" 2>/dev/null)
 
         if [[ "$pod_status" == "Running" ]]; then
             return 0
@@ -153,35 +161,38 @@ wait_for_postgres_pod() {
     return 1
 }
 
-get_redeploy_job_ids(){
-    local app_name=$1
-    midclt call core.get_jobs | jq -r --arg app_name "$app_name" \
-        '.[] | select( .time_finished == null and .state == "RUNNING" and (.arguments[0] == $app_name) and (.method == "chart.release.redeploy" or .method == "chart.release.redeploy_internal")) | .id'
+wait_until_active() {
+    app_name=$1
+    timeout=500
+    SECONDS=0
+
+    while [[ $(cli -m csv -c 'app chart_release query name,status' | tr -d " \t\r" | grep "^$app_name," | awk -F ',' '{print $2}')  !=  "ACTIVE" ]]
+    do
+        if [[ "$SECONDS" -ge "$timeout" ]]; then
+            failed_message+=("Failed to wait for app to become active")
+            return 1
+        fi
+        sleep 5
+    done
+    return 0
 }
 
-wait_for_redeploy_jobs(){
-    local app_name=$1
-    local sleep_duration=10
-    local timeout=500
-    local elapsed_time=0
-
-    while true; do
-        job_ids=$(get_redeploy_job_ids "$app_name")
-
-        if [[ -z "$job_ids" ]]; then
-            break
-        else
-            sleep "$sleep_duration"
-            elapsed_time=$((elapsed_time + sleep_duration))
-
-            # Check for timeout
-            if [[ "$elapsed_time" -ge "$timeout" ]]; then
-                while IFS= read -r job_id; do
-                    midclt call core.job_abort "$job_id" > /dev/null 2>&1
-                done <<< "$job_ids"
-                return 1
+print_errors() {
+    local -i failures=0
+    local -i all_loops=0
+    
+    for msg in "${failed_message[@]}"; do
+        if [[ "$msg" == *"\n"* ]]; then
+            if (( failures > 0 )); then
+                for (( i=(all_loops-failures-1); i<(all_loops-failures-1)+failures+1; i++ )); do
+                    echo -e "${failed_message[i]}"
+                done
             fi
+            failures=0
+        else
+            (( failures++ ))
         fi
+        ((all_loops++))
     done
 }
 
@@ -190,6 +201,7 @@ backup_cnpg_databases() {
     local timestamp=$2
     local dump_folder=$3
     local stop_before_dump=()
+    export failed_message=()
 
     mapfile -t app_status_lines < <(db_dump_get_app_status)
 
@@ -201,12 +213,13 @@ backup_cnpg_databases() {
     unset temp
 
     if [[ ${#app_status_lines[@]} -eq 0 ]]; then
-        return
+        return 0
     fi
     
     echo_backup+=("--CNPG Database Backups--")
 
     for app in "${app_status_lines[@]}"; do
+        failed_message+=("\n$app")
         scale_deployments_bool=false
         IFS=',' read -r app_name app_status <<< "$app"
 
@@ -216,38 +229,49 @@ backup_cnpg_databases() {
 
         # Start the app if it is stopped
         if [[ $app_status == "STOPPED" ]]; then
-            start_app "$app_name"
-            wait_for_postgres_pod "$app_name"
+            if ! start_app "$app_name" || ! wait_until_active "$app_name"; then
+                failed_message+=("Failed to start")
+                continue
+            fi
         fi
 
-        declare -A original_replicas=()
-        mapfile -t replica_lines < <(get_current_replica_counts "$app_name" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
-        for line in "${replica_lines[@]}"; do
-            IFS='=' read -r key value <<< "$line"
-            original_replicas["$key"]=$value
-        done
-
+        # Scale down all non cnpg deployments in the app to 0
         if [[ $scale_deployments_bool == true ]]; then
+            declare -A original_replicas=()
+            mapfile -t replica_lines < <(get_current_replica_counts "$app_name" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
+            for line in "${replica_lines[@]}"; do
+                IFS='=' read -r key value <<< "$line"
+                original_replicas["$key"]=$value
+            done
+
+            local scale_failure=false
             # Scale down all deployments in the app to 0
             for deployment in "${!original_replicas[@]}"; do
                 if [[ ${original_replicas[$deployment]} -ne 0 ]] && ! scale_deployments "$app_name" 300 0 "$deployment" > /dev/null 2>&1; then
-                    echo_backup+=("Failed to scale down $app_name's $deployment deployment.")
-                    return
+                    failed_message+=("Failed to scale down $deployment")
+                    scale_failure=true
+                    break
                 fi
             done
+            if [[ $scale_failure == true ]]; then
+                continue
+            fi
         fi
-
+                                         
         # Dump the database
         if ! dump_database "$app_name" "$dump_folder"; then
-            echo_backup+=("Failed to back up $app_name's database.")
-            return
+            failed_message+=("Failed to dump database")
+            continue
         fi
 
         # Stop the app if it was stopped
         if [[ $app_status == "STOPPED" ]]; then
-            wait_for_redeploy_jobs "$app_name"
-            stop_app "direct" "$app_name"
-            break
+            if wait_until_active "$app_name"; then 
+                if stop_app "direct" "$app_name"; then
+                    failed_message+=("Failed to stop")
+                fi
+            fi
+            continue
         fi
 
 
@@ -255,12 +279,17 @@ backup_cnpg_databases() {
             # Scale up all deployments in the app to their original replica counts
             for deployment in "${!original_replicas[@]}"; do
                 if [[ ${original_replicas[$deployment]} -ne 0 ]] && ! scale_deployments "$app_name" 300 "${original_replicas[$deployment]}" "$deployment" > /dev/null 2>&1; then
-                    echo_backup+=("Failed to scale up $app_name's $deployment deployment.")
-                    return
+                    failed_message+=("Failed to scale up $deployment")
+                    break
                 fi
             done
         fi
     done
+
+    if [[ ${#failed_message[@]} -gt ${#app_status_lines[@]} ]]; then
+        echo "Failed:"
+        print_errors
+    fi
 
     remove_old_dumps "$dump_folder" "$retention"
     echo_backup+=("$(display_app_sizes "$dump_folder")")

@@ -57,8 +57,6 @@ unmount_app_func(){
         exit 0
     fi
 
-    ix_apps_pool=$(get_apps_pool)
-
     if [[ $1 == "ALL" ]]; then
         mapfile -t apps < <(find /mnt/mounted_pvc/ -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null)
     elif [[ -z $1 ]]; then
@@ -100,13 +98,23 @@ unmount_app_func(){
 
             full_path="$parent_path/$volume_name"
 
-            # Set the mountpoint to "legacy" and unmount
-            if zfs set mountpoint=legacy "$full_path"; then
-                echo -e "${blue}$pvc_name ${green}unmounted successfully.${reset}"
-                rmdir "/mnt/mounted_pvc/${app}/${pvc_name}" 2>/dev/null
-            else
-                echo -e "${red}Failed to unmount ${blue}$pvc_name.${reset}"
-                echo -e "${yellow}Please make sure your terminal is not open in the mounted directory${reset}"
+            for i in {1..5}; do
+                # Attempt to set the mountpoint to "legacy"
+                zfs set mountpoint=legacy "$full_path" &>/dev/null
+                
+                # Verify the mountpoint was set to "legacy"
+                if zfs get mountpoint -Ho "value" "$full_path" | grep -q "legacy"; then
+                    echo -e "${blue}$pvc_name ${green}unmounted successfully.${reset}"
+                    rmdir "/mnt/mounted_pvc/${app}/${pvc_name}" 2>/dev/null
+                    break 
+                else
+                    sleep 1
+                fi
+            done
+
+            if [ "$i" -eq 5 ]; then
+                echo -e "${red}Failed to unmount ${blue}$pvc_name after 5 attempts.${reset}"
+                echo -e "${yellow}Please make sure your terminal is not open in the mounted directory.${reset}"
             fi
         done
         rmdir "/mnt/mounted_pvc/$app" 2>/dev/null

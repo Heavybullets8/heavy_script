@@ -24,9 +24,10 @@ pvc_mount_all_in_namespace() {
         local volume_name full_path status_color status
 
         volume_name=$(k3s kubectl get pvc "$data_name" -n "ix-$app" -o=jsonpath='{.spec.volumeName}')
-        full_path=$(zfs list -t filesystem -r "$ix_apps_pool/ix-applications/releases/$app/volumes" -o name -H | grep "$volume_name")
-        
-        if [ -n "$full_path" ]; then
+        parent_path=$(k3s kubectl describe pv "$volume_name" | grep "poolname=" | awk -F '=' '{print $2}')
+        full_path="${parent_path}/${volume_name}"
+
+        if [[ -n "$volume_name" && -n "$parent_path" ]]; then
             if pvc_mount_pvc "$app" "$data_name" "$full_path"; then
                 status="Success"
                 status_color="$green"
@@ -35,7 +36,7 @@ pvc_mount_all_in_namespace() {
                 status_color="$red"
             fi
         else
-            status="Error: Could not find ZFS path"
+            status="Error: Could not find PV path"
             status_color="$red"
         fi
         results+=("$data_name" "$status_color$status")

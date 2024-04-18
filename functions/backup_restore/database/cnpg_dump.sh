@@ -274,6 +274,9 @@ backup_cnpg_databases() {
             continue
         fi
 
+        # Test failed message
+        failed_message+=("testtesttest")  
+
         if [[ $scale_deployments_bool == true ]]; then
             # Scale up all deployments in the app to their original replica counts
             for deployment in "${!original_replicas[@]}"; do

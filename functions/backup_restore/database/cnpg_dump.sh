@@ -201,7 +201,7 @@ backup_cnpg_databases() {
     local timestamp=$2
     local dump_folder=$3
     local stop_before_dump=()
-    export failed_message=()
+    failed_message=()
 
     mapfile -t app_status_lines < <(db_dump_get_app_status)
 
@@ -275,7 +275,7 @@ backup_cnpg_databases() {
         fi
 
         # Test failed message
-        failed_message+=("testtesttest")  
+        failed_message+=("$app TEST")  
 
         if [[ $scale_deployments_bool == true ]]; then
             # Scale up all deployments in the app to their original replica counts

@@ -74,7 +74,7 @@ unmount_app_func(){
             exit 1
         fi
 
-        mapfile -t unmount_array < <(find "/mnt/mounted_pvc/$app" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null )
+        mapfile -t unmount_array < <(find "/mnt/mounted_pvc/$app" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null)
 
         # Check if the unmount_array is empty
         if [[ -z ${unmount_array[*]} ]]; then
@@ -84,15 +84,21 @@ unmount_app_func(){
         fi
 
         for pvc_name in "${unmount_array[@]}"; do
-            # Get the PVC details
-            main=$(k3s kubectl get pvc --all-namespaces \
-                --output="go-template={{range .items}}{{if eq .metadata.name \"$pvc_name\"}}\
-                {{.metadata.name}} {{.spec.volumeName}}{{\"\n\"}}\
-                {{end}}{{end}}")
+            local volume_name=""
+            local parent_path=""
 
-            read -r pvc_name pvc <<< "$main"
+            volume_name=$(k3s kubectl get pvc "$pvc_name" -n "ix-$app" -o=jsonpath='{.spec.volumeName}')
+            if [[ -z $volume_name ]]; then
+                echo -e "${red}Error:${reset} Could not find volume name for PVC $pvc_name"
+                continue
+            fi
+            parent_path=$(k3s kubectl describe pv "$volume_name" | grep "poolname=" | awk -F '=' '{print $2}')
+            if [[ -z $parent_path ]]; then
+                echo -e "${red}Error:${reset} Could not find parent path for volume $volume_name"
+                continue
+            fi
 
-            full_path="$ix_apps_pool/ix-applications/releases/$app/volumes"
+            full_path="$parent_path/$volume_name"
 
             # Set the mountpoint to "legacy" and unmount
             if zfs set mountpoint=legacy "$full_path/$pvc"; then

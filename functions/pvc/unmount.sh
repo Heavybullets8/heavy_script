@@ -101,7 +101,7 @@ unmount_app_func(){
             full_path="$parent_path/$volume_name"
 
             # Set the mountpoint to "legacy" and unmount
-            if zfs set mountpoint=legacy "$full_path/$pvc"; then
+            if zfs set mountpoint=legacy "$full_path"; then
                 echo -e "${blue}$pvc_name ${green}unmounted successfully.${reset}"
                 rmdir "/mnt/mounted_pvc/${app}/${pvc_name}" 2>/dev/null
             else

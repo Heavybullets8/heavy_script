@@ -54,13 +54,13 @@ dump_database() {
 
     cnpg_pod=$(k3s kubectl get pods -n "ix-$app" --no-headers -o custom-columns=":metadata.name" -l role=primary | head -n 1)
 
-    if [[ -z $cnpg_pod ]]; then
+    if [[ -z $cnpg_pod  ]]; then
         failed_message+=("Failed to get primary pod")
         return 1
     fi
 
     # Grab the database name from the app's configmap
-    db_name=$(midclt call chart.release.get_instance "$app" | jq .config.cnpg.main.database)
+    db_name=$(midclt call chart.release.get_instance "$app" | jq -r '.config.cnpg.main.database // empty')
 
     if [[ -z $db_name ]]; then
         failed_message+=("Failed to get database name")
@@ -273,7 +273,6 @@ backup_cnpg_databases() {
             fi
             continue
         fi
-
 
         if [[ $scale_deployments_bool == true ]]; then
             # Scale up all deployments in the app to their original replica counts

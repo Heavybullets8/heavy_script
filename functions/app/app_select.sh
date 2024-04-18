@@ -20,7 +20,7 @@ prompt_app_selection() {
             search_type="STOPPED"
             ;;
         "ACTIVE")
-            mapfile -t apps < <(cli -m csv -c 'app chart_release query name,status' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF' | grep "ACTIVE")
+            mapfile -t apps < <(cli -m csv -c 'app chart_release query name,status' | tail -n +2 | sort | tr -d " \t\r" | awk 'NF' | grep -E "ACTIVE|DEPLOYING")
             search_type="ACTIVE"
             ;;
     esac

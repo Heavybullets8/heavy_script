@@ -269,7 +269,7 @@ backup_cnpg_databases() {
     done
 
     if [[ ${#failed_message[@]} -gt 0 ]]; then
-        echo -e "\n--Failed Backups--"
+        echo -e "\n--Failed Database Dumps--"
         for message in "${failed_message[@]}"; do
             echo -e "$message"
         done

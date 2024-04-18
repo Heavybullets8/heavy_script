@@ -52,9 +52,7 @@ scale_deployments() {
 dump_database() {
     output_dir="$1/${app_name}"
     output_file="${output_dir}/${app_name}_${timestamp}.sql.gz"
-
-    failed_message+=("\n$app_name\nDATABASE DUMP FUNC")  
-
+ 
     cnpg_pod=$(k3s kubectl get pods -n "ix-$app_name" --no-headers -o custom-columns=":metadata.name" -l role=primary | head -n 1)
 
     if [[ -z $cnpg_pod  ]]; then
@@ -259,9 +257,6 @@ backup_cnpg_databases() {
             continue
         fi
 
-        # Test failed message
-        failed_message+=("\n$app_name\nMAIN SCRIPT TEST")  
-
         if [[ $scale_deployments_bool == true ]]; then
             # Scale up all deployments in the app to their original replica counts
             for deployment in "${!original_replicas[@]}"; do
@@ -273,9 +268,13 @@ backup_cnpg_databases() {
         fi
     done
 
-    for message in "${failed_message[@]}"; do
-        echo -e "$message"
-    done
+    if [[ ${#failed_message[@]} -gt 0 ]]; then
+        echo -e "\n--Failed Backups--"
+        for message in "${failed_message[@]}"; do
+            echo -e "$message"
+        done
+        echo
+    fi
 
     remove_old_dumps "$dump_folder" "$retention"
     echo_backup+=("$(display_app_sizes "$dump_folder")")

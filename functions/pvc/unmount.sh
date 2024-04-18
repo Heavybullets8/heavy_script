@@ -113,7 +113,7 @@ unmount_app_func(){
             done
 
             if [ "$i" -eq 5 ]; then
-                echo -e "${red}Failed to unmount ${blue}$pvc_name after 5 attempts.${reset}"
+                echo -e "${red}Failed to unmount ${blue}$pvc_name${red} after 5 attempts.${reset}"
                 echo -e "${yellow}Please make sure your terminal is not open in the mounted directory.${reset}"
             fi
         done

@@ -1,14 +1,5 @@
 #!/bin/bash
 
-# Retrieves the application pool.
-pvc_retrieve_app_pool() {
-    clear -x
-    echo -e "${blue}Fetching application pool...${reset}"
-    ix_apps_pool=$(cli -c 'app kubernetes config' | 
-                   grep -E "pool\s\|" | 
-                   awk -F '|' '{print $3}' | 
-                   sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-}
 
 pvc_mount_all_in_namespace() {
     local app=$1

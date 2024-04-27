@@ -18,6 +18,12 @@ check_root() {
 }
 
 ensure_symlink() {
+    local current_version=$(cli -c "system version_short" | sed -r 's/\.//g')
+    if [ $current_version -ge 24040 ]; then
+        echo "Ignoring symlink check for version 24.04 and newer."
+        return
+    fi
+
     local system_script_wrapper="/usr/local/bin/heavyscript"
     local script_location="$script_path/bin/heavyscript"
 

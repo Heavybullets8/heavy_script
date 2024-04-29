@@ -37,7 +37,7 @@ ensure_sudoers() {
     IFS='|' read -r user home <<< "$output"
 
     # No need to modify sudoers if the script is run as root
-    if [[ $user == "root" || $home == "/root" || $script_path == "/root/heavy_script" ]]; then
+    if [[ $user == "root" || $home == "/root" || $script_path == "/root/heavy_script" || -z $home || -z $user ]]; then
         return 0
     fi
 

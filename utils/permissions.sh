@@ -18,21 +18,12 @@ check_root() {
 }
 
 ensure_symlink() {
-    local system_script_wrapper="/usr/local/bin/heavyscript"
     local script_location="$script_path/bin/heavyscript"
 
-    if [[ ! -L "$system_script_wrapper" || ! -e "$system_script_wrapper" ]]; then
-        echo "Warning: Symlink from $script_location to $system_script_wrapper is broken."
-
-        if [[ $EUID -eq 0 ]]; then
-            echo -e "Restoring symlink in $system_script_wrapper...\n"
-            ln -sf "$script_location" "$system_script_wrapper"
-            chmod +x "$script_location"
-        else
-            echo "Warning: The script is not running as root. To restore the symlink, run the script with sudo using the following command:"
-            echo "sudo bash $script"
-            echo "or run the script as the root user."
-            sleep 5
-        fi
+    if ! grep -q "$script_location" "/root/$rc_file"; then
+        echo -e "${blue}Adding $script_location to /root/$rc_file...${reset}"
+        echo "export PATH=$script_location:\$PATH" >> "/root/$rc_file"
     fi
 }
+
+

@@ -52,7 +52,6 @@ script_dir="$USER_HOME/heavy_script"
 user_bin_dir="$USER_HOME/bin"
 system_bin_dir="/usr/local/bin"
 user_script_wrapper="$user_bin_dir/$script_name"
-system_script_wrapper="$system_bin_dir/$script_name"
 
 main() {
     # Check if user has a home
@@ -118,20 +117,12 @@ main() {
         mkdir "$user_bin_dir"
     fi
 
-    if [[ $EUID -ne 0 ]]; then
-        echo -e "${yellow}Warning: Skipping system-wrapper...${reset}"
-        # Create symlink inside user's bin only
-        echo -e "${blue}Creating $user_script_wrapper wrapper...${reset}"
-        ln -sf "$script_dir/bin/$script_name" "$user_script_wrapper"
-        chmod +x "$script_dir/bin/$script_name"
-    else
-        # Create symlink inside both user's and system's bin
-        echo -e "${blue}Creating $user_script_wrapper and $system_script_wrapper wrappers...${reset}"
-        ln -sf "$script_dir/bin/$script_name" "$user_script_wrapper"
-        ln -sf "$script_dir/bin/$script_name" "$system_script_wrapper"
-        chmod +x "$script_dir/bin/$script_name"
-        chmod +x "$system_script_wrapper"
-    fi
+
+    # Create symlink inside user's bin only
+    echo -e "${blue}Creating $user_script_wrapper wrapper...${reset}"
+    ln -sf "$script_dir/bin/$script_name" "$user_script_wrapper"
+    chmod +x "$script_dir/bin/$script_name"
+
 
     echo
 
@@ -142,8 +133,15 @@ main() {
             touch "$USER_HOME/$rc_file"
         fi
 
+        if [[ $USER_HOME != "/root" ]]; then
+            if ! grep -q "$user_bin_dir" "/root/$rc_file"; then
+                echo -e "${blue}Adding $user_bin_dir to /root/$rc_file...${reset}"
+                echo "export PATH=$user_bin_dir:\$PATH" >> "/root/$rc_file"
+            fi
+        fi
+
         if ! grep -q "$user_bin_dir" "$USER_HOME/$rc_file"; then
-            echo -e "${blue}Adding $user_bin_dir to $rc_file...${reset}"
+            echo -e "${blue}Adding $user_bin_dir to $USER_HOME/$rc_file...${reset}"
             echo "export PATH=$user_bin_dir:\$PATH" >> "$USER_HOME/$rc_file"
         fi
     done

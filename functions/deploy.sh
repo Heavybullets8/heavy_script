@@ -38,6 +38,48 @@ update_repo() {
     fi
 }
 
+ensure_sudoers() {
+    local  env_keep_exists secure_path_exists TMP_FILE
+    local  user="$1"
+    local  user_bin_dir="$2/bin"
+
+    # Check if specific entries already exist in the sudoers file
+    env_keep_exists=$(grep -c "Defaults:$user env_keep+=\"PATH\"" /etc/sudoers)
+    secure_path_exists=$(grep -c "Defaults:$user secure_path=\"/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$user_bin_dir\"" /etc/sudoers)
+
+    # Exit the function if no changes are needed
+    if [[ $env_keep_exists -gt 0 && $secure_path_exists -gt 0 ]]; then
+        return 0
+    fi
+
+    # Create a temporary file only if changes are needed
+    TMP_FILE=$(mktemp)
+    
+    # Ensure cleanup on exit
+    trap 'rm -f "$TMP_FILE"' EXIT
+
+    # Copy current sudoers to temp
+    cat /etc/sudoers > "$TMP_FILE"
+
+    # Append new lines only if they don't already exist
+    if [[ $env_keep_exists -eq 0 ]]; then
+        echo "Defaults:$user env_keep+=\"PATH\"" >> "$TMP_FILE"
+    fi
+
+    if [[ $secure_path_exists -eq 0 ]]; then
+        echo "Defaults:$user secure_path=\"/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$user_bin_dir\"" >> "$TMP_FILE"
+    fi
+
+    # Check for syntax errors with visudo
+    if visudo -c -f "$TMP_FILE"; then
+        # If the temp file is okay, safely copy it to the actual sudoers file
+        sudo cp "$TMP_FILE" /etc/sudoers
+        echo -e "${green}Sudoers file has been updated successfully.${reset}\n"
+    else
+        echo -e "${red}Error found in sudoers temp file. No changes were made.${reset}"
+    fi
+}
+
 # colors
 reset='\033[0m'
 red='\033[0;31m'
@@ -50,8 +92,8 @@ USER_HOME=$(get_user_home)
 script_name='heavyscript'
 script_dir="$USER_HOME/heavy_script"
 user_bin_dir="$USER_HOME/bin"
-system_bin_dir="/usr/local/bin"
 user_script_wrapper="$user_bin_dir/$script_name"
+invoking_user=$(get_invoking_user)
 
 main() {
     # Check if user has a home
@@ -60,12 +102,6 @@ main() {
         echo -e "${red}Please create a home directory for the user.${reset}" >&2
         echo -e "${red}You can do so under the credentials tab in the Truenas SCALE GUI${reset}" >&2
         exit 1
-    fi
-
-    if [[ $EUID -ne 0 ]]; then
-        echo -e "${yellow}Warning: The script is not running with root privileges. To create a symlink in ${blue}$system_bin_dir${yellow}, please rerun the script with sudo or as the root user.${reset}"
-        echo -e "${yellow}You can exit now with CTRL+C to rerun with sudo, or wait 10 seconds to continue without creating the system-wide symlink.${reset}"
-        sleep 10
     fi
 
     # Check if the script repository already exists
@@ -117,13 +153,19 @@ main() {
         mkdir "$user_bin_dir"
     fi
 
-
     # Create symlink inside user's bin only
     echo -e "${blue}Creating $user_script_wrapper wrapper...${reset}"
     ln -sf "$script_dir/bin/$script_name" "$user_script_wrapper"
     chmod +x "$script_dir/bin/$script_name"
 
 
+    echo
+
+    if [[ $EUID -eq 0 && -n $SUDO_USER ]]; then
+        echo -e "${blue}Adding $invoking_user and $USER_HOME to sudoers...${reset}"
+        ensure_sudoers "$invoking_user" "$USER_HOME"
+    fi
+    
     echo
 
     # Add $USER_HOME/bin to PATH in .bashrc and .zshrc
@@ -133,21 +175,12 @@ main() {
             touch "$USER_HOME/$rc_file"
         fi
 
-        if [[ $USER_HOME != "/root" ]]; then
-            if ! grep -q "$user_bin_dir" "/root/$rc_file"; then
-                echo -e "${blue}Adding $user_bin_dir to /root/$rc_file...${reset}"
-                echo "export PATH=$user_bin_dir:\$PATH" >> "/root/$rc_file"
-            fi
-        fi
-
         if ! grep -q "$user_bin_dir" "$USER_HOME/$rc_file"; then
             echo -e "${blue}Adding $user_bin_dir to $USER_HOME/$rc_file...${reset}"
             echo "export PATH=$user_bin_dir:\$PATH" >> "$USER_HOME/$rc_file"
         fi
     done
 
-    local invoking_user
-    invoking_user=$(get_invoking_user)
     if [[ $EUID -eq 0 && -n $SUDO_USER ]]; then
         echo -e "${green}Changing ownership of HeavyScript to ${blue}$invoking_user${green}...${reset}"
         chown -R "$invoking_user" "$script_dir"

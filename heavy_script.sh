@@ -48,14 +48,13 @@ while IFS= read -r script_file; do
     source "$script_file"
 done < <(find functions utils -name "*.sh" -exec printf '%s\n' {} \;)
 
-# Ensure symlink within /usr/local/bin is active, for when the script is run with sudo
-ensure_symlink
+# Ensure sudoers file contains the necessary configuration
+if [[ $EUID -eq 0 ]]; then
+    ensure_sudoers
+fi
 
 # generate the config.ini file if it does not exist
 generate_config_ini
-
-# remove the [DNS] section from the config.ini file if it exists
-remove_dns_section
 
 # Separate bundled short options
 args=()

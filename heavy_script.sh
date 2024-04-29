@@ -49,7 +49,9 @@ while IFS= read -r script_file; do
 done < <(find functions utils -name "*.sh" -exec printf '%s\n' {} \;)
 
 # Ensure sudoers file contains the necessary configuration
-ensure_sudoers
+if [[ $EUID -eq 0 ]]; then
+    ensure_sudoers
+fi
 
 # generate the config.ini file if it does not exist
 generate_config_ini

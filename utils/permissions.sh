@@ -63,7 +63,6 @@ ensure_sudoers() {
 
     # Exit the function if no changes are needed
     if [[ $env_keep_exists -gt 0 && $secure_path_exists -gt 0 ]]; then
-        echo "No updates needed for sudoers file."
         return 0
     fi
 

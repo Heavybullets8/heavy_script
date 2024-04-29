@@ -26,15 +26,36 @@ ensure_sudoers() {
         fi
     }
 
-    local user env_keep_exists secure_path_exists TMP_FILE
+    get_user_home() {
+        local user_home
 
-    local script_location="$script_path/bin/heavyscript"
+        if [[ $EUID -eq 0 ]]; then  # Script is running as root
+            # Use SUDO_USER if set, otherwise fall back to root's home
+            user_home=$(getent passwd "${SUDO_USER:-root}" | cut -d: -f6)
+        else  # Script is run by a regular user
+            user_home=$HOME
+        fi
+
+        echo "$user_home"
+    }
+
+
+    local user env_keep_exists secure_path_exists TMP_FILE home
+
     user=$(get_invoking_user)
+    home=$(get_user_home)
 
     # No need to modify sudoers if the script is run as root
-    if [[ $user == "root" ]]; then
+    if [[ $user == "root" || $home == "/root" || $script_path == "/root/heavy_script" ]]; then
         return 0
     fi
+
+    local script_location="$home/bin"
+
+    if [[ ! -f "$script_location/heavyscript" ]]; then
+        return 0
+    fi
+
 
     # Check if specific entries already exist in the sudoers file
     env_keep_exists=$(grep -c "Defaults:$user env_keep+=\"PATH\"" /etc/sudoers)

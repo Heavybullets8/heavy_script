@@ -26,6 +26,7 @@ def update_config(config_file_path):
     new_content = []
     in_databases_section = False
     in_backup_section = False
+    added_backup_section = False
 
     for line in lines:
         if line.strip().lower() == '[databases]':
@@ -53,15 +54,12 @@ def update_config(config_file_path):
             new_content.append(line)
 
     # Ensure the [BACKUP] section is added if it does not exist
-    if not backup_section_exists:
+    if not backup_section_exists and not added_backup_section:
         new_content.append('\n[BACKUP]\n')
-        if not export_enabled_exists:
-            new_content.append('export_enabled=true\n')
-        if not full_backup_enabled_exists:
-            new_content.append('full_backup_enabled=true\n')
-        if not custom_dataset_location_exists:
-            new_content.append('# Uncomment the following line to specify a custom dataset location for backups\n')
-            new_content.append('# custom_dataset_location=\n')
+        new_content.append('export_enabled=true\n')
+        new_content.append('full_backup_enabled=true\n')
+        new_content.append('# Uncomment the following line to specify a custom dataset location for backups\n')
+        new_content.append('# custom_dataset_location=\n')
 
     # Write the new content back to the config file
     with config_file_path.open('w') as file:

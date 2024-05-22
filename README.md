@@ -64,6 +64,38 @@ ___
 | -c [number]<br>--create [number]| -c 15<br>--create 15                     | Integer          | Create a backup with the specified retention number. |
 | -r<br>--restore                | -r<br>--restore                          |                  | Restore a backup.                       |
 | -d<br>--delete                 | -d<br>--delete                           |                  | Delete a backup.                        |
+| -l<br>--list                   | -l<br>--list                             |                  | List all backups.                       |
+| -i [backup_name] [app_name]<br>--import [backup_name] [app_name] | -i backup1 app1<br>--import backup1 app1 | Strings | Import a specific backup for an application. |
+
+### Note on Backup and Restore Methods
+
+TrueCharts supports export and import methods as the only official method for backing up and restoring applications. However, HeavyScript provides additional functionality for full backups, which include CNPG databases, PVCs, and more.
+
+#### Export and Import
+- **Export**: Only exports the values of applications.
+- **Import**: Restores applications from exported values.
+
+#### Full Backup and Restore
+- **Full Backup**: Includes CNPG databases, PVCs, and snapshots everything, ensuring a comprehensive backup of the system.
+- **Full Restore**: Restores the entire system, including databases, PVCs, and more.
+
+### Comparison Table
+
+| Feature                            | Full Backup            | Export/Import       |
+|------------------------------------|------------------------|---------------------|
+| Persistent Volume Claims (PVCs)    | ✔️                    | ❌                  |
+| CNPG Databases                     | ✔️                    | ❌                  |
+| Official App Support               | ✔️                    | ❌                 |
+| TrueCharts Apps                    | ✔️                    | ✔️                 |
+| Supported by TrueCharts             | ❌                    | ✔️                 |
+| Snapshotting PVCs                  | ✔️                    | ❌                  |
+
+
+### How to Choose
+
+- **Full Backup and Restore**: Choose this method if you need a comprehensive backup of the entire app system, including CNPG databases and PVCs. This method ensures that all data is captured, but it is more resource-intensive and may take longer to perform.
+
+- **Export and Import**: This method is recommended if you only need to back up and restore application values. It is faster and less resource-intensive but does not capture PVCs or databases. This method is officially supported by TrueCharts.
 
 <br>
 

@@ -22,12 +22,12 @@ backup_and_export() {
     if [[ "$export_enabled" == "true" ]]; then
         echo -e "🄱 🄰 🄲 🄺 🅄 🄿 🅂\n"
         echo -e "Running export with retention: $retention\n"
-        python3 main.py "$dataset_path" export --retention "$retention"
+        python3 functions/backup_restore/main.py "$dataset_path" export --retention "$retention"
         echo -e "\nExport completed.\n"
     fi
     if [[ "$full_backup_enabled" == "true" ]]; then
         echo -e "Running full backup with retention: $retention\n"
-        python3 main.py "$dataset_path" backup_all --retention "$retention"
+        python3 functions/backup_restore/main.py "$dataset_path" backup_all --retention "$retention"
         echo -e "\nFull backup completed.\n"
     fi
 }
@@ -53,10 +53,10 @@ backup_handler() {
             backup_and_export "$default_dataset_path" "${args[1]}"
             ;;
         -r|--restore)
-            python3 main.py "$default_dataset_path" restore_all
+            python3 functions/backup_restore/main.py "$default_dataset_path" restore_all
             ;;
         -d|--delete)
-            python3 main.py "$default_dataset_path" delete
+            python3 functions/backup_restore/main.py "$default_dataset_path" delete
             ;;
         -h|--help)
             echo "Usage: $0 {-c|--create <retention> | -r|--restore | -d|--delete | -h|--help}"

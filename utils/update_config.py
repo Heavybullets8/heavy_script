@@ -1,14 +1,17 @@
-import configparser
 import sys
 from pathlib import Path
+import configparser
 
 def update_config(config_file_path):
     config_file_path = Path(config_file_path)
-    
-    # Read the config file
+    # Read the original content preserving comments
+    with config_file_path.open('r') as file:
+        lines = file.readlines()
+
+    # Create a new config parser object
     config = configparser.ConfigParser(allow_no_value=True)
     config.read(config_file_path)
-
+    
     # Remove the [databases] section if it exists
     if 'databases' in config:
         config.remove_section('databases')
@@ -19,26 +22,30 @@ def update_config(config_file_path):
     full_backup_enabled_exists = backup_section_exists and config.has_option('BACKUP', 'full_backup_enabled')
     custom_dataset_location_exists = backup_section_exists and config.has_option('BACKUP', 'custom_dataset_location')
 
-    # If all required fields are present, no need to update
-    if export_enabled_exists and full_backup_enabled_exists and custom_dataset_location_exists:
-        print(f"{config_file_path} is already up to date.")
-        return
+    # Prepare the new content
+    new_content = []
+    in_databases_section = False
+    for line in lines:
+        if line.strip().lower() == '[databases]':
+            in_databases_section = True
+        elif line.startswith('[') and in_databases_section:
+            in_databases_section = False
+        if not in_databases_section:
+            new_content.append(line)
 
-    # Add the [BACKUP] section with the specified options if they don't exist
     if not backup_section_exists:
-        config.add_section('BACKUP')
-
+        new_content.append('\n[BACKUP]\n')
     if not export_enabled_exists:
-        config.set('BACKUP', 'export_enabled', 'true')
+        new_content.append('export_enabled=true\n')
     if not full_backup_enabled_exists:
-        config.set('BACKUP', 'full_backup_enabled', 'true')
+        new_content.append('full_backup_enabled=true\n')
     if not custom_dataset_location_exists:
-        config.set('BACKUP', '# Uncomment the following line to specify a custom dataset location for backups', None)
-        config.set('BACKUP', '# custom_dataset_location', '')
+        new_content.append('# Uncomment the following line to specify a custom dataset location for backups\n')
+        new_content.append('# custom_dataset_location=\n')
 
-    # Write the changes back to the config file
-    with config_file_path.open('w') as configfile:
-        config.write(configfile, space_around_delimiters=False)
+    # Write the new content back to the config file
+    with config_file_path.open('w') as file:
+        file.writelines(new_content)
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:

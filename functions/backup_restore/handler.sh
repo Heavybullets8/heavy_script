@@ -2,22 +2,17 @@
 
 # Function to handle backups and exports
 backup_and_export() {
-    local dataset_path="$1"
-    local retention="$2"
+    local retention="$1"
 
     # Load the config.ini file if --no-config is not passed
     if [[ $no_config == false ]]; then
         read_ini "config.ini" --prefix BACKUP
     fi
 
-    # Set the default option using the config file
+    # Set the default options using the config file
     local export_enabled="${BACKUP__BACKUP__export_enabled:-false}"
     local full_backup_enabled="${BACKUP__BACKUP__full_backup_enabled:-false}"
-    local custom_dataset_location="${BACKUP__BACKUP__custom_dataset_location:-}"
-
-    if [[ -n "$custom_dataset_location" ]]; then
-        dataset_path="$custom_dataset_location"
-    fi
+    local dataset_path="${BACKUP__BACKUP__custom_dataset_location:-/mnt/$(get_apps_pool)/heavyscript_backups}"
 
     if [[ "$export_enabled" == "true" ]]; then
         echo -e "🄱 🄰 🄲 🄺 🅄 🄿 🅂\n"
@@ -35,15 +30,15 @@ backup_and_export() {
 # Main handler function
 backup_handler() {
     local args=("$@")
-    config_file="config.ini"
 
-    if [[ ! -f "$config_file" ]]; then
-        echo "Error: Configuration file 'config.ini' not found."
-        exit 1
+    # Load the config.ini file if --no-config is not passed
+    if [[ $no_config == false ]]; then
+        read_ini "config.ini" --prefix BACKUP
     fi
 
-    default_dataset_path="/mnt/$(get_apps_pool)/heavyscript_backups"
-    
+    # Set the default options using the config file
+    local dataset_path="${BACKUP__BACKUP__custom_dataset_location:-/mnt/$(get_apps_pool)/heavyscript_backups}"
+
     case "${args[0]}" in
         -c|--create)
             if [[ -z "${args[1]}" ]]; then
@@ -56,36 +51,36 @@ backup_handler() {
                 echo -e "Error: \"$retention\" needs to be assigned an integer\n\"$retention\" is not an integer" >&2
                 exit 1
             fi
-            backup_and_export "$default_dataset_path" "$retention"
+            backup_and_export "$retention"
             ;;
         -r|--restore)
             if [[ -z "${args[1]}" ]]; then
-                python3 functions/backup_restore/main.py "$default_dataset_path" restore_all
+                python3 functions/backup_restore/main.py "$dataset_path" restore_all
             else
-                python3 functions/backup_restore/main.py "$default_dataset_path" restore_all "${args[1]}"
+                python3 functions/backup_restore/main.py "$dataset_path" restore_all "${args[1]}"
             fi
             ;;
         -d|--delete)
             if [[ -z "${args[1]}" ]]; then
-                python3 functions/backup_restore/main.py "$default_dataset_path" delete
+                python3 functions/backup_restore/main.py "$dataset_path" delete
             else
-                python3 functions/backup_restore/main.py "$default_dataset_path" delete "${args[1]}"
+                python3 functions/backup_restore/main.py "$dataset_path" delete "${args[1]}"
             fi
             ;;
         -h|--help)
             echo "Usage: $0 {-c|--create <retention> | -r|--restore [backup_name] | -d|--delete [backup_name] | -l|--list | -i|--import <backup_name> <app_name> | -h|--help}"
             ;;
         -l|--list)
-            python3 functions/backup_restore/main.py "$default_dataset_path" list
+            python3 functions/backup_restore/main.py "$dataset_path" list
             ;;
         -i|--import)
             if [[ -z "${args[1]}" ]]; then
-                python3 functions/backup_restore/main.py "$default_dataset_path" import
+                python3 functions/backup_restore/main.py "$dataset_path" import
             elif [[ -z "${args[2]}" ]]; then
                 echo "Error: Missing app name for import."
                 exit 1
             else
-                python3 functions/backup_restore/main.py "$default_dataset_path" import "${args[1]}" "${args[2]}"
+                python3 functions/backup_restore/main.py "$dataset_path" import "${args[1]}" "${args[2]}"
             fi
             ;;
         *)

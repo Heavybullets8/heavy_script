@@ -59,13 +59,13 @@ ___
 ### Backup
 > heavyscript backup [Flag]
 
-| Flag                           | Example                                  | Parameter        | Description                             |
-|--------------------------------|------------------------------------------|------------------|-----------------------------------------|
-| -c [number]<br>--create [number]| -c 15<br>--create 15                     | Integer          | Create a backup with the specified retention number. |
-| -r<br>--restore                | -r<br>--restore                          |                  | Restore a backup.                       |
-| -d<br>--delete                 | -d<br>--delete                           |                  | Delete a backup.                        |
-| -l<br>--list                   | -l<br>--list                             |                  | List all backups.                       |
-| -i [backup_name] [app_name]<br>--import [backup_name] [app_name] | -i backup1 app1<br>--import backup1 app1 | Strings | Import a specific backup for an application. |
+| Flag                           | Example                                  | Parameter                            | Description                             |
+|--------------------------------|------------------------------------------|--------------------------------------|-----------------------------------------|
+| -c [number]<br>--create [number]| -c 15<br>--create 15                     | Integer                              | Create a backup with the specified retention number. |
+| -r<br>--restore                | -r<br>--restore                          |                                      | Restore a backup.                       |
+| -d<br>--delete                 | -d<br>--delete                           |                                      | Delete a backup.                        |
+| -l<br>--list                   | -l<br>--list                             |                                      | List all backups.                       |
+| -i [backup_name] [app_name]<br>--import [backup_name] [app_name] | -i backup1 app1<br>--import backup1 app1 | [Optional: backup name] [Optional: app name] | Import a specific backup for an application. |
 
 ### Note on Backup and Restore Methods
 

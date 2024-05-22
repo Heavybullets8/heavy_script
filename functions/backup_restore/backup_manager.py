@@ -11,19 +11,23 @@ class BackupManager(BaseManager):
         super().__init__(backup_abs_path)
         self.snapshot_manager = ZFSSnapshotManager()
 
-    def backup_all(self, retention: int = None):
-        """Perform a full backup of the system."""
+    def backup_all(self, retention=None):
+        """Perform a full backup of the system with optional retention."""
         backup = Backup(self.backup_abs_path)
         backup.backup_all()
         print("Backup completed successfully.")
-        self.cleanup_dangling_snapshots(retention)
+        self.cleanup_dangling_snapshots()
+        if retention is not None:
+            self.delete_old_backups(retention)
 
-    def export_chart_info(self, retention: int = None):
-        """Export chart information."""
+    def export_chart_info(self, retention=None):
+        """Export chart information with optional retention."""
         exporter = ChartInfoExporter(self.backup_abs_path)
         exporter.export()
         print("Chart information export completed successfully.")
-        self.cleanup_dangling_snapshots(retention)
+        self.cleanup_dangling_snapshots()
+        if retention is not None:
+            self.delete_old_exports(retention)
 
     def delete_backup_by_name(self, backup_name: str):
         """Delete a specific backup by name."""
@@ -99,7 +103,7 @@ class BackupManager(BaseManager):
         for i, export in enumerate(export_dirs, len(full_backups) + 1):
             print(f"{i}) {export.name}")
 
-    def cleanup_dangling_snapshots(self, retention: int = None):
+    def cleanup_dangling_snapshots(self):
         """Remove dangling snapshots that do not match any full backup names."""
         full_backups, _ = self.list_backups()
         full_backup_names = {Path(backup).name for backup in full_backups}
@@ -118,23 +122,22 @@ class BackupManager(BaseManager):
                     print(f"Deleted snapshot: {snapshot_name}")
                     deleted_snapshots.add(snapshot_name)
 
-        if retention:
-            self.prune_old_backups(retention)
-
-    def prune_old_backups(self, retention: int):
-        """Prune backups to retain only the specified number."""
-        full_backups, export_dirs = self.list_backups()
-        all_backups = sorted(full_backups + export_dirs, key=lambda x: Path(x).stat().st_mtime)
-
-        if len(all_backups) > retention:
-            to_delete = all_backups[:-retention]
-            for backup in to_delete:
+    def delete_old_backups(self, retention):
+        """Delete backups that exceed the retention limit."""
+        full_backups, _ = self.list_backups()
+        if len(full_backups) > retention:
+            for backup in full_backups[retention:]:
                 backup_name = Path(backup).name
-                print(f"Pruning old backup: {backup_name}")
-                if backup in full_backups:
-                    self.lifecycle_manager.delete_dataset(backup)
-                    self.snapshot_manager.delete_snapshots(backup_name)
-                elif backup in export_dirs:
-                    shutil.rmtree(backup)
-                print(f"Pruned backup: {backup_name}")
+                print(f"Deleting old backup: {backup_name}")
+                self.lifecycle_manager.delete_dataset(backup)
+                self.snapshot_manager.delete_snapshots(backup_name)
+                print(f"Deleted old backup: {backup_name} and associated snapshots.")
 
+    def delete_old_exports(self, retention):
+        """Delete exports that exceed the retention limit."""
+        _, export_dirs = self.list_backups()
+        if len(export_dirs) > retention:
+            for export in export_dirs[retention:]:
+                print(f"Deleting old export: {export.name}")
+                shutil.rmtree(export)
+                print(f"Deleted old export: {export.name}")

@@ -46,24 +46,51 @@ backup_handler() {
     
     case "${args[0]}" in
         -c|--create)
-            if ! [[ ${args[1]} =~ ^[0-9]+$ ]]; then
-                echo -e "Error: \"${args[1]}\" needs to be assigned an integer\n\"${args[1]}\" is not an integer" >&2
+            if [[ -z "${args[1]}" ]]; then
+                read -rp "Enter retention number: " retention
+            else
+                retention="${args[1]}"
+            fi
+
+            if ! [[ $retention =~ ^[0-9]+$ ]]; then
+                echo -e "Error: \"$retention\" needs to be assigned an integer\n\"$retention\" is not an integer" >&2
                 exit 1
             fi
-            backup_and_export "$default_dataset_path" "${args[1]}"
+            backup_and_export "$default_dataset_path" "$retention"
             ;;
         -r|--restore)
-            python3 functions/backup_restore/main.py "$default_dataset_path" restore_all
+            if [[ -z "${args[1]}" ]]; then
+                python3 functions/backup_restore/main.py "$default_dataset_path" restore_all
+            else
+                python3 functions/backup_restore/main.py "$default_dataset_path" restore_all "${args[1]}"
+            fi
             ;;
         -d|--delete)
-            python3 functions/backup_restore/main.py "$default_dataset_path" delete
+            if [[ -z "${args[1]}" ]]; then
+                python3 functions/backup_restore/main.py "$default_dataset_path" delete
+            else
+                python3 functions/backup_restore/main.py "$default_dataset_path" delete "${args[1]}"
+            fi
             ;;
         -h|--help)
-            echo "Usage: $0 {-c|--create <retention> | -r|--restore | -d|--delete | -h|--help}"
+            echo "Usage: $0 {-c|--create <retention> | -r|--restore [backup_name] | -d|--delete [backup_name] | -l|--list | -i|--import <backup_name> <app_name> | -h|--help}"
+            ;;
+        -l|--list)
+            python3 functions/backup_restore/main.py "$default_dataset_path" list
+            ;;
+        -i|--import)
+            if [[ -z "${args[1]}" ]]; then
+                python3 functions/backup_restore/main.py "$default_dataset_path" import
+            elif [[ -z "${args[2]}" ]]; then
+                echo "Error: Missing app name for import."
+                exit 1
+            else
+                python3 functions/backup_restore/main.py "$default_dataset_path" import "${args[1]}" "${args[2]}"
+            fi
             ;;
         *)
             echo "Unknown backup action: $1"
-            echo "Usage: $0 {-c|--create <retention> | -r|--restore | -d|--delete | -h|--help}"
+            echo "Usage: $0 {-c|--create <retention> | -r|--restore [backup_name] | -d|--delete [backup_name] | -l|--list | -i|--import <backup_name> <app_name> | -h|--help}"
             exit 1
             ;;
     esac

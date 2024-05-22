@@ -124,8 +124,6 @@ mount_app_func() {
     local manual_selection=$1
     app=""
 
-    pvc_retrieve_app_pool
-
     if [[ -z $manual_selection ]]; then
         pvc_select_app
     else

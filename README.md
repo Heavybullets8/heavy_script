@@ -61,11 +61,11 @@ ___
 
 | Flag                           | Example                                  | Parameter                            | Description                             |
 |--------------------------------|------------------------------------------|--------------------------------------|-----------------------------------------|
-| -c [number]<br>--create [number]| -c 15<br>--create 15                     | Integer                              | Create a backup with the specified retention number. |
+| -c <br>--create| -c 15<br>--create 15                     | Integer                              | Create a backup with the specified retention number. |
 | -r<br>--restore                | -r<br>--restore                          |                                      | Restore a backup.                       |
 | -d<br>--delete                 | -d<br>--delete                           |                                      | Delete a backup.                        |
 | -l<br>--list                   | -l<br>--list                             |                                      | List all backups.                       |
-| -i [backup_name] [app_name]<br>--import [backup_name] [app_name] | -i backup1 app1<br>--import backup1 app1 | [Optional: backup name] [Optional: app name] | Import a specific backup for an application. |
+| -i <br>--import | -i Export--2024-05-22_21:39:37 Sonarr<br>--import Export--2024-05-22_21:39:37 sonarr | [Optional: backup name] [Optional: app name] | Import a specific backup for an application. |
 
 ### Note on Backup and Restore Methods
 

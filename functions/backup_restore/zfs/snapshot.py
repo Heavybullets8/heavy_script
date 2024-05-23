@@ -35,6 +35,12 @@ class ZFSSnapshotManager:
         """
         errors = []
         for path in dataset_paths:
+            if path not in self.cache.datasets:
+                error_msg = f"Dataset {path} does not exist."
+                self.logger.error(error_msg)
+                errors.append(error_msg)
+                continue
+
             matching_snapshots = [snap for snap in self.cache.snapshots if snap.startswith(f"{path}@HeavyScript--")]
             matching_snapshots.sort(key=lambda x: datetime.strptime(re.search(r'HeavyScript--\d{4}-\d{2}-\d{2}_\d{2}:\d{2}:\d{2}', x).group(), "HeavyScript--%Y-%m-%d_%H:%M:%S"))
 
@@ -69,6 +75,12 @@ class ZFSSnapshotManager:
         """
         errors = []
         for path in dataset_paths:
+            if path not in self.cache.datasets:
+                error_msg = f"Dataset {path} does not exist."
+                self.logger.error(error_msg)
+                errors.append(error_msg)
+                continue
+
             snapshot_full_name = f"{path}@{snapshot_name}"
             command = f"/sbin/zfs snapshot \"{snapshot_full_name}\""
             result = run_command(command)
@@ -179,6 +191,10 @@ class ZFSSnapshotManager:
         - snapshot_name (str): The name of the snapshot to rollback to.
         - dataset_path (str): The path of the dataset to rollback snapshots for.
         """
+        if dataset_path not in self.cache.datasets:
+            self.logger.error(f"Dataset {dataset_path} does not exist. Cannot rollback snapshots.")
+            return
+
         try:
             all_snapshots = [snap for snap in self.cache.snapshots if snap.startswith(dataset_path)]
             matching_snapshots = [snap for snap in all_snapshots if snap.endswith(f"@{snapshot_name}")]

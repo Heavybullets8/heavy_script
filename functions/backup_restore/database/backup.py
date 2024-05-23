@@ -274,7 +274,7 @@ class BackupCNPGDatabase:
         Returns:
             bool: True if the app was started successfully, False otherwise.
         """
-        script_path = Path(__file__).parent.parent / "heavy_script.sh"
+        script_path = Path(__file__).parent.parent.parent.parent / "heavy_script.sh"
         command = f"bash \"{script_path}\" --no-self-update --no-config app --start {self.app_name}"
         result = run_command(command)
         if result.is_success():
@@ -287,7 +287,7 @@ class BackupCNPGDatabase:
         """
         Stop the application using the heavy_script.sh script.
         """
-        script_path = Path(__file__).parent.parent / "heavy_script.sh"
+        script_path = Path(__file__).parent.parent.parent.parent / "heavy_script.sh"
         command = f"bash \"{script_path}\" --no-self-update --no-config app --stop {self.app_name}"
         result = run_command(command)
         if result.is_success():

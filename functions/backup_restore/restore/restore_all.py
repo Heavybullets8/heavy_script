@@ -15,7 +15,7 @@ class RestoreAll(RestoreBase):
         self.logger.info("Building Restore Plan\n"
                         "----------------------")
         try:
-            self._build_restore_plan([self.chart_info.all_releases])
+            self._build_restore_plan(self.chart_info.all_releases)
         except RuntimeError as e:
             self.logger.error(str(e))
             return

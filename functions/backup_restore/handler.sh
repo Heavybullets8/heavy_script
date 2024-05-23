@@ -71,7 +71,7 @@ backup_handler() {
             fi
             ;;
         -h|--help)
-            echo "Usage: $0 {-c|--create <retention> | -A|--restore-all [backup_name] | -S|--restore-single [backup_name] | -d|--delete [backup_name] | -l|--list | -i|--import <backup_name> <app_name> | -h|--help}"
+            backup_help
             ;;
         -l|--list)
             python3 functions/backup_restore/main.py "$dataset_path" list
@@ -88,7 +88,7 @@ backup_handler() {
             ;;
         *)
             echo "Unknown backup action: $1"
-            echo "Usage: $0 {-c|--create <retention> | -A|--restore-all [backup_name] | -S|--restore-single [backup_name] | -d|--delete [backup_name] | -l|--list | -i|--import <backup_name> <app_name> | -h|--help}"
+            backup_help
             exit 1
             ;;
     esac

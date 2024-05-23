@@ -1,18 +1,20 @@
 #!/bin/bash
 
-# Function to handle backups and exports
-backup_and_export() {
-    local retention="$1"
-
-    # Load the config.ini file if --no-config is not passed
+# Function to read the config.ini file
+read_config() {
     if [[ $no_config == false ]]; then
         read_ini "config.ini" --prefix BACKUP
     fi
 
     # Set the default options using the config file
-    local export_enabled="${BACKUP__BACKUP__export_enabled:-false}"
-    local full_backup_enabled="${BACKUP__BACKUP__full_backup_enabled:-false}"
-    local dataset_path="${BACKUP__BACKUP__custom_dataset_location:-/mnt/$(get_apps_pool)/heavyscript_backups}"
+    export export_enabled="${BACKUP__BACKUP__export_enabled:-false}"
+    export full_backup_enabled="${BACKUP__BACKUP__full_backup_enabled:-false}"
+    export dataset_path="${BACKUP__BACKUP__custom_dataset_location:-/mnt/$(get_apps_pool)/heavyscript_backups}"
+}
+
+# Function to handle backups and exports
+backup_and_export() {
+    local retention="$1"
 
     if [[ "$export_enabled" == "true" ]]; then
         echo -e "🄱 🄰 🄲 🄺 🅄 🄿 🅂\n"
@@ -31,13 +33,7 @@ backup_and_export() {
 backup_handler() {
     local args=("$@")
 
-    # Load the config.ini file if --no-config is not passed
-    if [[ $no_config == false ]]; then
-        read_ini "config.ini" --prefix BACKUP
-    fi
-
-    # Set the default options using the config file
-    local dataset_path="${BACKUP__BACKUP__custom_dataset_location:-/mnt/$(get_apps_pool)/heavyscript_backups}"
+    read_config
 
     case "${args[0]}" in
         -c|--create)

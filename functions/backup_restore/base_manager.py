@@ -11,7 +11,7 @@ class BaseManager:
         self.snapshot_manager = ZFSSnapshotManager()
 
         if not self.lifecycle_manager.dataset_exists(self.backup_dataset_parent):
-            raise ValueError(f"Dataset {self.backup_dataset_parent} does not exist")
+            self.lifecycle_manager.create_dataset(self.backup_dataset_parent)
 
     def _derive_dataset_parent(self):
         """Derive the ZFS dataset path from the absolute path."""

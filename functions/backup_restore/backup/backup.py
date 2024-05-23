@@ -134,12 +134,11 @@ class Backup:
                 self.logger.info(f"Backing up {app_name} database...")
                 app_database_dir = app_backup_dir / "database"
                 app_database_dir.mkdir(parents=True, exist_ok=True)
-                self.database_manager = BackupCNPGDatabase(app_database_dir, app_name, chart_info.chart_name)
+                self.database_manager = BackupCNPGDatabase(app_database_dir, app_name)
                 result = self.database_manager.backup()
                 if not result["success"]:
                     self.logger.error(f"Failed to backup database for {app_name}: {result['message']}")
                     failures[app_name].append(result["message"])
-
 
             dataset_paths = self.kube_pvc_fetcher.get_volume_paths_by_namespace(f"ix-{app_name}")
             if dataset_paths:

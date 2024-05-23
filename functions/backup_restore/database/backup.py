@@ -3,7 +3,9 @@ import logging
 import gzip
 from pathlib import Path
 from typing import Dict
+from charts.api_fetch import APIChartFetcher
 from utils.type_check import type_check
+from utils.shell import run_command
 from utils.singletons import KubernetesClientManager
 from .utils import DatabaseUtils
 
@@ -13,21 +15,20 @@ class BackupCNPGDatabase:
     """
 
     @type_check
-    def __init__(self, backup_dir: Path, app_name: str, chart_name: str):
+    def __init__(self, backup_dir: Path, app_name: str):
         """
         Initialize the BackupCNPGDatabase class.
 
         Parameters:
             backup_dir (Path): Directory where the backup will be stored.
             app_name (str): Name of the application.
-            chart_name (str): Name of the chart.
         """
         self.logger = logging.getLogger('BackupLogger')
         self.v1_client = KubernetesClientManager.fetch()
+        self.chart_info = APIChartFetcher(app_name)
         self.backup_dir = backup_dir
         self.app_name = app_name
         self.namespace = f"ix-{app_name}"
-        self.chart_name = chart_name
         self.db_utils = DatabaseUtils(self.namespace)
         self.primary_pod = None
         self.database_name = None
@@ -54,19 +55,41 @@ class BackupCNPGDatabase:
             "message": ""
         }
 
+        app_status = self.chart_info.status
+        was_stopped = False
+
+        if app_status == "STOPPED":
+            self.logger.debug(f"App {self.app_name} is stopped, starting it for backup.")
+            if not self._start_app():
+                message = f"Failed to start app {self.app_name}."
+                self.logger.error(message)
+                result["message"] = message
+                return result
+            was_stopped = True
+
         self.primary_pod = self._get_primary_pod(timeout, interval)
         if not self.primary_pod:
             message = "Primary pod not found."
             self.logger.error(message)
             result["message"] = message
+
+            if was_stopped:
+                self.logger.debug(f"Stopping app {self.app_name} after backup failure.")
+                self._stop_app()
+
             return result
 
-        if self.chart_name != "immich":
+        if self.chart_info.chart_name != "immich":
             self.database_name = self._get_database_name()
             if not self.database_name:
                 message = "Database name retrieval failed."
                 self.logger.error(message)
                 result["message"] = message
+
+                if was_stopped:
+                    self.logger.debug(f"Stopping app {self.app_name} after backup failure.")
+                    self._stop_app()
+
                 return result
 
         try:
@@ -76,9 +99,12 @@ class BackupCNPGDatabase:
             result = self._execute_backup_command()
 
             if not result["success"]:
+                if was_stopped:
+                    self.logger.debug(f"Stopping app {self.app_name} after backup failure.")
+                    self._stop_app()
                 return result
 
-            if self.chart_name == "immich":
+            if self.chart_info.chart_name == "immich":
                 self.logger.debug("Modifying dump data for immich database.")
                 self._modify_dump_for_immich()
 
@@ -90,6 +116,10 @@ class BackupCNPGDatabase:
             message = f"Failed to execute dump command: {e}"
             self.logger.error(message, exc_info=True)
             result["message"] = message
+
+        if was_stopped:
+            self.logger.debug(f"Stopping app {self.app_name} after successful backup.")
+            self._stop_app()
 
         return result
 
@@ -132,7 +162,7 @@ class BackupCNPGDatabase:
         Returns:
             list: The dump command as a list of strings.
         """
-        if self.chart_name == "immich":
+        if self.chart_info.chart_name == "immich":
             dump_command = [
                 "k3s", "kubectl", "exec",
                 "--namespace", self.namespace,
@@ -185,9 +215,9 @@ class BackupCNPGDatabase:
                     return result
 
                 # Write the output to the temporary file
-                write_mode = 'w' if self.chart_name == "immich" else 'wb'
+                write_mode = 'w' if self.chart_info.chart_name == "immich" else 'wb'
                 with open(self.temp_file, write_mode) as f:
-                    f.write(stdout.decode('utf-8') if self.chart_name == "immich" else stdout)
+                    f.write(stdout.decode('utf-8') if self.chart_info.chart_name == "immich" else stdout)
 
             result["success"] = True
 
@@ -236,3 +266,32 @@ class BackupCNPGDatabase:
             message = f"Failed to modify dump data for immich: {e}"
             self.logger.error(message, exc_info=True)
             raise
+
+    def _start_app(self) -> bool:
+        """
+        Start the application using the heavy_script.sh script.
+
+        Returns:
+            bool: True if the app was started successfully, False otherwise.
+        """
+        script_path = Path(__file__).parent.parent / "heavy_script.sh"
+        command = f"bash \"{script_path}\" --no-self-update --no-config app --start {self.app_name}"
+        result = run_command(command)
+        if result.is_success():
+            self.logger.debug(f"App {self.app_name} started successfully.")
+        else:
+            self.logger.error(f"Failed to start app {self.app_name}: {result.get_error()}")
+        return result.is_success()
+
+    def _stop_app(self):
+        """
+        Stop the application using the heavy_script.sh script.
+        """
+        script_path = Path(__file__).parent.parent / "heavy_script.sh"
+        command = f"bash \"{script_path}\" --no-self-update --no-config app --stop {self.app_name}"
+        result = run_command(command)
+        if result.is_success():
+            self.logger.debug(f"App {self.app_name} stopped successfully.")
+        else:
+            self.logger.error(f"Failed to stop app {self.app_name}: {result.get_error()}")
+            raise RuntimeError(f"Failed to stop app {self.app_name}: {result.get_error()}")

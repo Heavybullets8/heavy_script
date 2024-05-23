@@ -9,9 +9,10 @@ backup_selection() {
         echo -e "${bold}-----------${reset}"
         echo -e "1)  Create Backup"
         echo -e "2)  Delete Backup"
-        echo -e "3)  Restore Backup"
-        echo -e "4)  List Backups"
-        echo -e "5)  Import Backup"
+        echo -e "3)  Restore All Backups"
+        echo -e "4)  Restore Single Backup"
+        echo -e "5)  List Backups"
+        echo -e "6)  Import Backup"
         echo
         echo -e "9)  Back to Main Menu"
         echo -e "0)  Exit"
@@ -32,23 +33,43 @@ backup_selection() {
                     echo -e "${red}Error: Number of backups is required to be at least 1${reset}"
                     exit
                 fi
-                backup_handler -c "$number_of_backups"
+                backup_handler --create "$number_of_backups"
                 exit
                 ;;
             2)
-                backup_handler -d
+                backup_handler --delete
                 exit
                 ;;
             3)
-                backup_handler -r
+                read -rt 120 -p "Enter the backup name to restore (leave empty to select interactively): " backup_name || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
+                if [[ -z "$backup_name" ]]; then
+                    backup_handler --restore-all
+                else
+                    backup_handler --restore-all "$backup_name"
+                fi
                 exit
                 ;;
             4)
-                backup_handler -l
+                read -rt 120 -p "Enter the backup name to restore (leave empty to select interactively): " backup_name || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
+                if [[ -z "$backup_name" ]]; then
+                    backup_handler --restore-single
+                else
+                    backup_handler --restore-single "$backup_name"
+                fi
                 exit
                 ;;
             5)
-                backup_handler -i
+                backup_handler --list
+                exit
+                ;;
+            6)
+                read -rt 120 -p "Enter the backup name to import: " backup_name || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
+                read -rt 120 -p "Enter the app name to import: " app_name || { echo -e "${red}\nFailed to make a selection in time${reset}" ; exit; }
+                if [[ -z "$backup_name" ]] || [[ -z "$app_name" ]]; then
+                    echo -e "${red}Error: Both backup name and app name are required${reset}"
+                    exit
+                fi
+                backup_handler --import "$backup_name" "$app_name"
                 exit
                 ;;
             9)

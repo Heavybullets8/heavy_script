@@ -1,5 +1,6 @@
 from base_manager import BaseManager
 from restore.restore_all import RestoreAll
+from restore.restore_single import RestoreSingle
 from restore.import_ import ChartInfoImporter
 from pathlib import Path
 
@@ -52,8 +53,19 @@ class RestoreManager(BaseManager):
             return
 
         print("Initiating full restore...")
-        RestoreAll(self.backup_abs_path / backup_name).restore_all()
+        RestoreAll(self.backup_abs_path / backup_name).restore()
         print("Restore All completed successfully.")
+
+    def restore_single(self, backup_name: str, app_name: str = None):
+        """Restore a single application from the specified backup."""
+        if not app_name:
+            app_name = self.interactive_select_chart(backup_name)
+            if not app_name:
+                return
+        
+        print(f"Initiating restore for {app_name} from {backup_name}...")
+        RestoreSingle(self.backup_abs_path / backup_name).restore([app_name])
+        print(f"Restore Single for {app_name} completed successfully.")
 
     def import_chart(self, backup_name: str, app_name: str = None):
         """Import a specific chart from the specified backup."""
@@ -70,17 +82,17 @@ class RestoreManager(BaseManager):
 
     def interactive_restore(self, restore_type: str):
         """Offer an interactive selection to restore backups."""
-        backup_type = "full" if restore_type == 'restore_all' else "export"
+        backup_type = "full" if restore_type in ['restore_all', 'restore_single'] else "export"
         selected_backup = self.interactive_select_backup(backup_type)
         if selected_backup:
             backup_name = Path(selected_backup).name
             if restore_type == 'restore_all':
                 self.restore_all(backup_name)
-            elif restore_type == 'import':
-                self.import_chart(backup_name)
+            elif restore_type == 'restore_single':
+                self.restore_single(backup_name)
 
     def interactive_select_chart(self, backup_name: str) -> str:
-        """Offer an interactive selection of charts for import."""
+        """Offer an interactive selection of charts for import or single restore."""
         charts_dir = self.backup_abs_path / backup_name / "charts"
         if not charts_dir.exists():
             print(f"No charts directory found in {backup_name}.")
@@ -96,7 +108,7 @@ class RestoreManager(BaseManager):
             print(f"  {i}) {chart}")
 
         try:
-            chart_index = int(input("Enter the number of the chart to import: ").strip()) - 1
+            chart_index = int(input("Enter the number of the chart to restore/import: ").strip()) - 1
             if 0 <= chart_index < len(charts):
                 return charts[chart_index]
             else:

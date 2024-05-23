@@ -49,11 +49,18 @@ backup_handler() {
             fi
             backup_and_export "$retention"
             ;;
-        -r|--restore)
+        -A|--restore-all)
             if [[ -z "${args[1]}" ]]; then
                 python3 functions/backup_restore/main.py "$dataset_path" restore_all
             else
                 python3 functions/backup_restore/main.py "$dataset_path" restore_all "${args[1]}"
+            fi
+            ;;
+        -S|--restore-single)
+            if [[ -z "${args[1]}" ]]; then
+                python3 functions/backup_restore/main.py "$dataset_path" restore_single
+            else
+                python3 functions/backup_restore/main.py "$dataset_path" restore_single "${args[1]}"
             fi
             ;;
         -d|--delete)
@@ -64,7 +71,7 @@ backup_handler() {
             fi
             ;;
         -h|--help)
-            echo "Usage: $0 {-c|--create <retention> | -r|--restore [backup_name] | -d|--delete [backup_name] | -l|--list | -i|--import <backup_name> <app_name> | -h|--help}"
+            echo "Usage: $0 {-c|--create <retention> | -A|--restore-all [backup_name] | -S|--restore-single [backup_name] | -d|--delete [backup_name] | -l|--list | -i|--import <backup_name> <app_name> | -h|--help}"
             ;;
         -l|--list)
             python3 functions/backup_restore/main.py "$dataset_path" list
@@ -81,7 +88,7 @@ backup_handler() {
             ;;
         *)
             echo "Unknown backup action: $1"
-            echo "Usage: $0 {-c|--create <retention> | -r|--restore [backup_name] | -d|--delete [backup_name] | -l|--list | -i|--import <backup_name> <app_name> | -h|--help}"
+            echo "Usage: $0 {-c|--create <retention> | -A|--restore-all [backup_name] | -S|--restore-single [backup_name] | -d|--delete [backup_name] | -l|--list | -i|--import <backup_name> <app_name> | -h|--help}"
             exit 1
             ;;
     esac

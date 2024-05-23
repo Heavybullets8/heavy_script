@@ -61,11 +61,12 @@ ___
 
 | Flag                           | Example                                  | Parameter                            | Description                             |
 |--------------------------------|------------------------------------------|--------------------------------------|-----------------------------------------|
-| -c <br>--create| -c 15<br>--create 15                     | Integer                              | Create a backup with the specified retention number. |
-| -r<br>--restore                | -r<br>--restore                          |                                      | Restore a backup.                       |
-| -d<br>--delete                 | -d<br>--delete                           |                                      | Delete a backup.                        |
+| -c <br>--create                | -c 15<br>--create 15                     | Integer                              | Create a backup with the specified retention number. |
+| -A<br>--restore-all            | -A<br>--restore-all                      | [Optional: backup name]              | Restore all backups.                    |
+| -S<br>--restore-single         | -S<br>--restore-single                   | [Optional: backup name]              | Restore a single backup.                |
+| -d<br>--delete                 | -d<br>--delete                           | [Optional: backup name]              | Delete a backup.                        |
 | -l<br>--list                   | -l<br>--list                             |                                      | List all backups.                       |
-| -i <br>--import | -i Export--2024-05-22_21:39:37 Sonarr<br>--import Export--2024-05-22_21:39:37 sonarr | [Optional: backup name] [Optional: app name] | Import a specific backup for an application. |
+| -i <br>--import                | -i Export--2024-05-22_21:39:37 Sonarr<br>--import Export--2024-05-22_21:39:37 Sonarr | [Optional: backup name] [Optional: app name] | Import a specific backup for an application. |
 
 ### Note on Backup and Restore Methods
 

@@ -172,7 +172,7 @@ class Backup:
         """
         Create a snapshot of the backup dataset after all backups are completed.
         """
-        self.logger.info(f"Creating snapshot for dataset: {self.backup_dataset}")
+        self.logger.info(f"\nCreating snapshot for backup: {self.backup_dataset}")
         if self.snapshot_manager.create_snapshots(self.snapshot_name, [self.backup_dataset], self.retention_number):
             self.logger.error("Failed to create snapshot for backup dataset.")
         else:

@@ -113,9 +113,15 @@ class RestoreBase:
             if app_name not in self.create_list:
                 self.logger.info(f"Creating {app_name} dataset if needed...")
                 app_dataset = os.path.join(self.kube_config_reader.dataset, "releases", app_name, "charts")
+                app_volumes_dataset = os.path.join(self.kube_config_reader.pool, "releases", app_name, "volumes", "ix_volumes")
                 if not self.zfs_manager.dataset_exists(app_dataset):
                     if not self.zfs_manager.create_dataset(app_dataset):
-                        self._handle_critical_failure(app_name, "Failed to create dataset")
+                        self._handle_critical_failure(app_name, "Failed to create chart dataset")
+                        return False
+
+                if not self.zfs_manager.dataset_exists(app_volumes_dataset):
+                    if not self.zfs_manager.create_dataset(app_volumes_dataset):
+                        self._handle_critical_failure(app_name, "Failed to create volume dataset")
                         return False
 
                 self.logger.info(f"Ensuring {app_name} has {self.chart_info.get_version(app_name)} available in the chart directory...")

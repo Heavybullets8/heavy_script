@@ -169,11 +169,38 @@ class RestoreBase:
                     self._handle_critical_failure(app_name, f"Failed to redeploy: {e}")
                     return False
 
+            cnpg_delete_file = self.backup_chart_dir / app_name / 'cnpg_pvcs_to_delete.txt'
+            if cnpg_delete_file.exists():
+                self._delete_cnpg_pvcs(cnpg_delete_file)
+
             return True
         except Exception as e:
             self.logger.error(f"Exception during restoration of {app_name}: {e}")
             self.failures[app_name].append(f"Exception during restoration: {e}")
             return False
+
+    def _delete_cnpg_pvcs(self, delete_file: Path):
+        """
+        Delete CNPG PVC datasets listed in the delete file.
+
+        Parameters:
+            delete_file (Path): The file containing CNPG PVC dataset paths to delete.
+        """
+        self.logger.debug("Starting deletion of CNPG PVCs...")
+        try:
+            with open(delete_file, 'r') as f:
+                datasets_to_delete = [line.strip() for line in f]
+
+            for dataset in datasets_to_delete:
+                if self.zfs_manager.dataset_exists(dataset):
+                    self.logger.debug(f"Deleting CNPG PVC dataset: {dataset}")
+                    if not self.zfs_manager.delete_dataset(dataset):
+                        self.logger.error(f"Failed to delete dataset: {dataset}")
+                else:
+                    self.logger.warning(f"Dataset {dataset} does not exist, skipping deletion.")
+        except Exception as e:
+            self.logger.error(f"Error during CNPG PVC deletion: {e}", exc_info=True)
+
 
     def _build_restore_plan(self, app_names):
         """Check that all required items are present."""

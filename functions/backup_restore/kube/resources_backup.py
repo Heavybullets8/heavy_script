@@ -109,14 +109,18 @@ class KubeBackupResources:
         pv_zfs_dir = self.backup_dir / 'pv_zfs_volumes'
         pv_zfs_dir.mkdir(parents=True, exist_ok=True)
 
+        cnpg_delete_file = self.backup_dir / 'cnpg_pvcs_to_delete.txt'
         yaml_cleaner = YAMLCleaner()
         for pv in pvs:
             try:
-                if self.kube_pvc_fetcher.is_cnpg(pv):
+                pvc_info = self.kube_pvc_fetcher.pvc_data[pv]
+                if pvc_info['cnpg']:
                     self.logger.debug(f"Skipping CNPG volume: {pv}")
+                    with open(cnpg_delete_file, 'a') as f:
+                        f.write(pvc_info['dataset_path'] + '\n')
                     continue
 
-                pvc_name = self.kube_pvc_fetcher.get_pvc_name_by_volume_name(pv)
+                pvc_name = pvc_info['pvc_name']
                 self.logger.debug(f"Backing up volume: {pv} from PVC: {pvc_name}")
 
                 pv_output_result = run_command(f"k3s kubectl get pv {pv} -o yaml")

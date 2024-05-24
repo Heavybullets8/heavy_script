@@ -168,8 +168,7 @@ class RestoreBase:
                 except Exception as e:
                     self._handle_critical_failure(app_name, f"Failed to redeploy: {e}")
                     return False
-
-            cnpg_delete_file = self.backup_chart_dir / app_name / 'cnpg_pvcs_to_delete.txt'
+            cnpg_delete_file = self.chart_info.get_file(app_name, "cnpg_pvcs_to_delete")
             if cnpg_delete_file.exists():
                 self._delete_cnpg_pvcs(cnpg_delete_file)
 

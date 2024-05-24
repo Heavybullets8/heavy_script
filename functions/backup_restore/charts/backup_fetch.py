@@ -95,6 +95,7 @@ class BackupChartFetcher:
             chart_info['files']['secrets'] = self._get_files(kubernetes_objects_dir / 'secrets')
             chart_info['files']['crds'] = self._get_files(kubernetes_objects_dir / 'crds')
             chart_info['files']['pv_zfs_volumes'] = self._get_files(kubernetes_objects_dir / 'pv_zfs_volumes')
+            chart_info['files']['cnpg_pvcs_to_delete'] = self._get_file(kubernetes_objects_dir / 'cnpg_pvcs_to_delete.txt')
 
             return chart_info
 

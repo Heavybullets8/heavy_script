@@ -106,7 +106,7 @@ class RestoreAll(RestoreBase):
                 self.logger.error(f"Job for {app_name} failed: {e}")
                 self._handle_critical_failure(app_name, str(f"Job failed: {e}"))
 
-        if self.chart_info.apps_with_crds:
+        if self.chart_info.cnpg_apps:
             self.logger.info("\nRestoring CNPG Databases\n"
                             "------------------------")
         for app_name in self.chart_info.cnpg_apps:

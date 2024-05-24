@@ -17,7 +17,7 @@ class RestoreCNPGDatabase:
     """
 
     @type_check
-    def __init__(self, app_name: str, backup_file: Path):
+    def __init__(self, app_name: str, chart_name: str, backup_file: Path):
         """
         Initialize the RestoreCNPGDatabase class.
 
@@ -31,7 +31,7 @@ class RestoreCNPGDatabase:
         self.chart_info = APIChartFetcher(app_name)
         self.backup_file = backup_file
         self.app_name = app_name
-        self.chart_name = self.chart_info.chart_name
+        self.chart_name = chart_name
         self.namespace = f"ix-{app_name}"
         self.db_utils = DatabaseUtils(self.namespace)
         self.primary_pod = None

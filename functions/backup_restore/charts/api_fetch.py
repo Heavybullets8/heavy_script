@@ -15,7 +15,7 @@ class ChartObserver(ABC):
 
 class APIChartFetcher(ChartObserver):
     @type_check
-    def __init__(self, app_name: str, refresh_on_update: bool = True):
+    def __init__(self, app_name: str, refresh_on_update: bool = False):
         """
         Initialize the APIChartFetcher class.
 
@@ -26,12 +26,34 @@ class APIChartFetcher(ChartObserver):
         self.app_name = app_name
         self.logger = logging.getLogger('BackupLogger')
         self.chart_cache = ChartCache()
+        self.status_callback = None
         self.refresh_on_update = refresh_on_update
         self._chart_data = self.chart_cache.get_chart(self.app_name)
         self.logger.debug(f"Initializing APIChartFetcher for app: {self.app_name}")
 
+        # If the chart data is not valid, trigger a refresh
+        # Needed as sometimes the ChartCache does not yet contain the data for the requested app
+        if not self.is_valid:
+            self.logger.debug(f"Chart data for {self.app_name} is not valid. Triggering refresh.")
+            self.refresh()
+
         if self.refresh_on_update:
             self.chart_cache.add_observer(self)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
+    def register_status_callback(self, callback):
+        """
+        Register a callback to be called when the status changes.
+
+        Parameters:
+            callback (function): The callback function to register.
+        """
+        self.status_callback = callback
 
     def update(self):
         """
@@ -39,22 +61,31 @@ class APIChartFetcher(ChartObserver):
         """
         self.logger.debug(f"Updating chart data for app: {self.app_name}")
         self._chart_data = self.chart_cache.get_chart(self.app_name)
+        if self.status_callback:
+            self.status_callback()
 
     def refresh(self):
         """
-        Manually refresh the chart data. If not an observer, refresh directly from ChartCache.
+        Manually refresh the chart data.
         """
-        self.chart_cache.refresh()
-        if not self.refresh_on_update:
-            self._chart_data = self.chart_cache.get_chart(self.app_name)
+        self.logger.debug(f"Manual refresh requested for app: {self.app_name}")
+        self.chart_cache.queue_refresh(self._update_chart_data)
+
+    def _update_chart_data(self):
+        """
+        Update chart data from ChartCache.
+        """
+        self._chart_data = self.chart_cache.get_chart(self.app_name)
         self.logger.debug(f"Chart data refreshed for app: {self.app_name}")
+        if self.status_callback:
+            self.status_callback()
 
     def close(self):
         """
         Remove this instance from the observer list in ChartCache, if it was added.
         """
         if self.refresh_on_update:
-            self.logger.debug(f"Closing APIChartFetcher for app: {self.app_name}")
+            self.logger.debug(f"Closing APIChartFetcher for app {self.app_name}")
             self.chart_cache.remove_observer(self)
 
     @property
@@ -225,7 +256,7 @@ class APIChartFetcher(ChartObserver):
 
 class APIChartCollection(ChartObserver):
     @type_check
-    def __init__(self, refresh_on_update: bool = True):
+    def __init__(self, refresh_on_update: bool = False):
         """
         Initialize the APIChartCollection class.
 
@@ -261,12 +292,17 @@ class APIChartCollection(ChartObserver):
 
     def refresh(self):
         """
-        Manually refresh the chart data. If not an observer, refresh directly from ChartCache.
+        Manually refresh the chart data.
         """
-        self.chart_cache.refresh()
-        if not self.refresh_on_update:
-            self._charts_data = self.chart_cache.get_all_charts()
-            self._log_charts_truncated()
+        self.logger.debug("Manual refresh requested for all charts.")
+        self.chart_cache.queue_refresh(self._update_charts_data)
+
+    def _update_charts_data(self):
+        """
+        Update charts data from ChartCache.
+        """
+        self._charts_data = self.chart_cache.get_all_charts()
+        self._log_charts_truncated()
         self.logger.debug("All chart data refreshed.")
 
     def close(self):
@@ -340,16 +376,23 @@ class APIChartCollection(ChartObserver):
         return cnpg_apps
     
 class ChartCache:
-    """
-    Singleton class to manage the chart data cache.
-    This class ensures that the chart data is fetched and cached centrally.
-    """
     _instance = None
     _lock = threading.Lock()
     _observer_lock = threading.Lock()
     _observers = []
+    _refresh_thread = None
+    _refresh_interval = 10
+    _refresh_condition = threading.Condition()
+    _is_refreshing = False
+    _refresh_stack = []
 
     def __new__(cls):
+        """
+        Create a new instance of ChartCache if one doesn't already exist.
+
+        Returns:
+            ChartCache: The singleton instance of ChartCache.
+        """
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
@@ -357,11 +400,7 @@ class ChartCache:
                     cls._instance._initialized = False
         return cls._instance
 
-    @type_check
     def __init__(self):
-        """
-        Initialize the ChartCache class. Fetch all charts if not already initialized.
-        """
         if not self._initialized:
             self.logger = logging.getLogger('BackupLogger')
             self.middleware = MiddlewareClientManager.fetch()
@@ -388,19 +427,43 @@ class ChartCache:
             self.logger.error(f"Failed to fetch all chart data: {e}", exc_info=True)
         return {}
 
+    def queue_refresh(self, callback):
+        """
+        Queue a manual refresh request to be executed after the next rolling refresh.
+
+        Parameters:
+            callback (function): The function to call after the refresh.
+        """
+        self.logger.debug("Queueing manual refresh.")
+        with self._refresh_condition:
+            self._refresh_stack.append(callback.__self__)
+            while self._is_refreshing:
+                self.logger.debug("Waiting for the current refresh to complete before queuing.")
+                self._refresh_condition.wait()
+            self.logger.debug("Performing manual refresh.")
+            self.refresh()
+            callback()
+            self.logger.debug("Manual refresh complete.")
+
     def refresh(self) -> None:
         """
-        Perform a refresh by fetching new data from the middleware.
+        Perform a synchronous refresh by fetching new data from the middleware and notifying observers.
         """
-        self.logger.debug("Attempting to acquire lock for refresh.")
-        with self._lock:
-            self.logger.debug("Lock acquired. Starting refresh of chart cache.")
-            self._charts = self._fetch_all_charts()
-            self.logger.debug("Chart cache refreshed.")
+        with self._refresh_condition:
+            while self._is_refreshing:
+                self.logger.debug("Waiting for the current refresh to complete.")
+                self._refresh_condition.wait()
+            self._is_refreshing = True
 
-        self.logger.debug("Notifying observers.")
+        self.logger.debug("Starting refresh of chart cache.")
+        self._charts = self._fetch_all_charts()
+        self.logger.debug("Chart cache refreshed.")
+
+        with self._refresh_condition:
+            self._is_refreshing = False
+            self._refresh_condition.notify_all()
+
         self._notify_observers()
-        self.logger.debug("Refresh complete and observers notified.")
 
     def _notify_observers(self):
         """
@@ -408,68 +471,56 @@ class ChartCache:
         """
         with self._observer_lock:
             for observer in self._observers:
-                self.logger.debug(f"Notifying observer: {observer}")
-                observer.update()
+                if observer not in self._refresh_stack:
+                    self.logger.debug(f"Notifying observer: {observer}")
+                    observer.update()
             self.logger.debug("All observers notified.")
+            self._refresh_stack = []
+
+    def _start_rolling_refresh(self):
+        """
+        Start a background thread for rolling refresh.
+        """
+        if self._refresh_thread is None or not self._refresh_thread.is_alive():
+            self._refresh_thread = threading.Thread(target=self._rolling_refresh)
+            self._refresh_thread.daemon = True
+            self._refresh_thread.start()
+
+    def _rolling_refresh(self):
+        """
+        Perform rolling refresh at regular intervals.
+        """
+        while True:
+            with self._refresh_condition:
+                if not self._observers:
+                    break
+                self.refresh()
+                self._refresh_condition.wait(self._refresh_interval)
 
     @property
     def charts(self) -> Dict[str, dict]:
-        """
-        Return the cached chart data.
-
-        Returns:
-            Dict[str, dict]: A dictionary of all charts and their resources.
-        """
         with self._lock:
             self.logger.debug("Accessing charts property.")
             return self._charts
 
-    @type_check
     def get_chart(self, app_name: str) -> dict:
-        """
-        Retrieve a specific chart from the cached data.
-
-        Parameters:
-            app_name (str): The name of the application.
-
-        Returns:
-            dict: The chart data for the specified application.
-        """
         self.logger.debug(f"Retrieving chart data for application: {app_name}")
         with self._lock:
             return self._charts.get(app_name, None)
 
     def get_all_charts(self) -> List[dict]:
-        """
-        Return a list of all cached charts.
-
-        Returns:
-            List[dict]: A list of all chart data.
-        """
         self.logger.debug("Retrieving all chart data.")
         with self._lock:
             return list(self._charts.values())
 
-    @type_check
     def add_observer(self, observer: ChartObserver):
-        """
-        Add an observer to the notification list.
-
-        Parameters:
-            observer (ChartObserver): The observer to add.
-        """
         self.logger.debug(f"Adding observer: {observer}")
         with self._observer_lock:
             self._observers.append(observer)
-    
-    @type_check
-    def remove_observer(self, observer: ChartObserver):
-        """
-        Remove an observer from the notification list.
+            if len(self._observers) == 1:
+                self._start_rolling_refresh()
 
-        Parameters:
-            observer (ChartObserver): The observer to remove.
-        """
+    def remove_observer(self, observer: ChartObserver):
         self.logger.debug(f"Removing observer: {observer}")
         with self._observer_lock:
             self._observers.remove(observer)

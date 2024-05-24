@@ -29,10 +29,7 @@ class RestoreCNPGDatabase:
         self.logger = logging.getLogger('BackupLogger')
         self.v1_client = KubernetesClientManager.fetch()
         self.chart_info = APIChartFetcher(app_name)
-        
-        # TODO: Remove this once ChartAPIFetcher implements better handling for chart refreshing
-        self.chart_info.refresh()
-        
+                
         self.backup_file = backup_file
         self.app_name = app_name
         self.chart_name = self.chart_info.chart_name

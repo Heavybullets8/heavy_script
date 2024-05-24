@@ -7,12 +7,9 @@ from utils.singletons import MiddlewareClientManager
 
 class ChartObserver(ABC):
     @abstractmethod
-    def update(self, force_refresh: bool = True):
+    def update(self):
         """
         Method to be implemented by subclasses to handle updates from ChartCache.
-
-        Parameters:
-            force_refresh (bool): Flag indicating if the refresh should be forced.
         """
         pass
 
@@ -29,30 +26,36 @@ class APIChartFetcher(ChartObserver):
         self.app_name = app_name
         self.logger = logging.getLogger('BackupLogger')
         self.chart_cache = ChartCache()
-        self.chart_cache.add_observer(self)
         self.refresh_on_update = refresh_on_update
         self._chart_data = self.chart_cache.get_chart(self.app_name)
         self.logger.debug(f"Initializing APIChartFetcher for app: {self.app_name}")
 
-    @type_check
-    def update(self, force_refresh: bool = True):
+        if self.refresh_on_update:
+            self.chart_cache.add_observer(self)
+
+    def update(self):
         """
         Update the chart data when notified by ChartCache.
-
-        Parameters:
-            force_refresh (bool): Flag indicating if the refresh should be forced.
         """
-        if self.refresh_on_update and force_refresh:
-            self._chart_data = self.chart_cache.get_chart(self.app_name)
-            self.logger.debug(f"ChartCache updated for app: {self.app_name}")
+        self.logger.debug(f"Updating chart data for app: {self.app_name}")
+        self._chart_data = self.chart_cache.get_chart(self.app_name)
 
-    @type_check
     def refresh(self):
         """
-        Manually refresh the chart data by forcing ChartCache to update.
+        Manually refresh the chart data. If not an observer, refresh directly from ChartCache.
         """
-        self.logger.debug("Refreshing all chart data in ChartCache.")
         self.chart_cache.refresh()
+        if not self.refresh_on_update:
+            self._chart_data = self.chart_cache.get_chart(self.app_name)
+        self.logger.debug(f"Chart data refreshed for app: {self.app_name}")
+
+    def close(self):
+        """
+        Remove this instance from the observer list in ChartCache, if it was added.
+        """
+        if self.refresh_on_update:
+            self.logger.debug(f"Closing APIChartFetcher for app: {self.app_name}")
+            self.chart_cache.remove_observer(self)
 
     @property
     def chart(self) -> Dict[str, dict]:
@@ -231,23 +234,20 @@ class APIChartCollection(ChartObserver):
         """
         self.logger = logging.getLogger('BackupLogger')
         self.chart_cache = ChartCache()
-        self.chart_cache.add_observer(self)
         self.refresh_on_update = refresh_on_update
         self._charts_data = self.chart_cache.get_all_charts()
         self.logger.debug("Initializing APIChartCollection")
 
-    @type_check
-    def update(self, force_refresh: bool = True):
+        if self.refresh_on_update:
+            self.chart_cache.add_observer(self)
+
+    def update(self):
         """
         Update the chart data when notified by ChartCache.
-
-        Parameters:
-            force_refresh (bool): Flag indicating if the refresh should be forced.
         """
-        if self.refresh_on_update and force_refresh:
-            self._charts_data = self.chart_cache.get_all_charts()
-            self._log_charts_truncated()
-            self.logger.debug("ChartCache updated in APIChartCollection")
+        self.logger.debug("Updating all chart data.")
+        self._charts_data = self.chart_cache.get_all_charts()
+        self._log_charts_truncated()
 
     def _log_charts_truncated(self):
         """
@@ -261,10 +261,21 @@ class APIChartCollection(ChartObserver):
 
     def refresh(self):
         """
-        Manually refresh the chart data by forcing ChartCache to update.
+        Manually refresh the chart data. If not an observer, refresh directly from ChartCache.
         """
-        self.logger.debug("Refreshing all chart data in ChartCache.")
         self.chart_cache.refresh()
+        if not self.refresh_on_update:
+            self._charts_data = self.chart_cache.get_all_charts()
+            self._log_charts_truncated()
+        self.logger.debug("All chart data refreshed.")
+
+    def close(self):
+        """
+        Remove this instance from the observer list in ChartCache, if it was added.
+        """
+        if self.refresh_on_update:
+            self.logger.debug("Closing APIChartCollection")
+            self.chart_cache.remove_observer(self)
 
     @property
     def charts(self) -> List[dict]:
@@ -335,6 +346,7 @@ class ChartCache:
     """
     _instance = None
     _lock = threading.Lock()
+    _observer_lock = threading.Lock()
     _observers = []
 
     def __new__(cls):
@@ -345,6 +357,7 @@ class ChartCache:
                     cls._instance._initialized = False
         return cls._instance
 
+    @type_check
     def __init__(self):
         """
         Initialize the ChartCache class. Fetch all charts if not already initialized.
@@ -356,7 +369,6 @@ class ChartCache:
             self._initialized = True
             self.logger.debug("ChartCache initialized.")
 
-    @type_check
     def _fetch_all_charts(self) -> Dict[str, dict]:
         """
         Fetch all charts from the middleware and cache them.
@@ -365,6 +377,7 @@ class ChartCache:
             Dict[str, dict]: A dictionary of all charts and their resources.
         """
         try:
+            self.logger.debug("Fetching all chart data from middleware.")
             charts = self.middleware.call('chart.release.query', [], {'extra': {'retrieve_resources': True}})
             if charts:
                 self.logger.debug("All chart data fetched successfully.")
@@ -375,22 +388,29 @@ class ChartCache:
             self.logger.error(f"Failed to fetch all chart data: {e}", exc_info=True)
         return {}
 
-    @type_check
     def refresh(self) -> None:
         """
         Perform a refresh by fetching new data from the middleware.
         """
+        self.logger.debug("Attempting to acquire lock for refresh.")
         with self._lock:
+            self.logger.debug("Lock acquired. Starting refresh of chart cache.")
             self._charts = self._fetch_all_charts()
-            self._notify_observers()
-        self.logger.debug("Chart cache refreshed.")
+            self.logger.debug("Chart cache refreshed.")
+
+        self.logger.debug("Notifying observers.")
+        self._notify_observers()
+        self.logger.debug("Refresh complete and observers notified.")
 
     def _notify_observers(self):
         """
         Notify all registered observers of a data update.
         """
-        for observer in self._observers:
-            observer.update()
+        with self._observer_lock:
+            for observer in self._observers:
+                self.logger.debug(f"Notifying observer: {observer}")
+                observer.update()
+            self.logger.debug("All observers notified.")
 
     @property
     def charts(self) -> Dict[str, dict]:
@@ -401,6 +421,7 @@ class ChartCache:
             Dict[str, dict]: A dictionary of all charts and their resources.
         """
         with self._lock:
+            self.logger.debug("Accessing charts property.")
             return self._charts
 
     @type_check
@@ -437,7 +458,9 @@ class ChartCache:
         Parameters:
             observer (ChartObserver): The observer to add.
         """
-        self._observers.append(observer)
+        self.logger.debug(f"Adding observer: {observer}")
+        with self._observer_lock:
+            self._observers.append(observer)
     
     @type_check
     def remove_observer(self, observer: ChartObserver):
@@ -447,4 +470,6 @@ class ChartCache:
         Parameters:
             observer (ChartObserver): The observer to remove.
         """
-        self._observers.remove(observer)
+        self.logger.debug(f"Removing observer: {observer}")
+        with self._observer_lock:
+            self._observers.remove(observer)

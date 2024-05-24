@@ -8,6 +8,7 @@ from kubernetes.client.rest import ApiException
 
 from utils.type_check import type_check
 from utils.singletons import KubernetesClientManager
+from charts.api_fetch import APIChartFetcher
 from .utils import DatabaseUtils
 
 class RestoreCNPGDatabase:
@@ -16,7 +17,7 @@ class RestoreCNPGDatabase:
     """
 
     @type_check
-    def __init__(self, app_name: str, chart_name: str, backup_file: Path):
+    def __init__(self, app_name: str, backup_file: Path):
         """
         Initialize the RestoreCNPGDatabase class.
 
@@ -27,9 +28,10 @@ class RestoreCNPGDatabase:
         """
         self.logger = logging.getLogger('BackupLogger')
         self.v1_client = KubernetesClientManager.fetch()
+        self.chart_info = APIChartFetcher(app_name)
         self.backup_file = backup_file
         self.app_name = app_name
-        self.chart_name = chart_name
+        self.chart_name = self.chart_info.chart_name
         self.namespace = f"ix-{app_name}"
         self.db_utils = DatabaseUtils(self.namespace)
         self.primary_pod = None
@@ -45,9 +47,13 @@ class RestoreCNPGDatabase:
 
         self.logger.debug(f"RestoreCNPGDatabase initialized for app: {self.app_name} with backup file: {self.backup_file}")
 
-    def restore(self) -> Dict[str, str]:
+    def restore(self, timeout=300, interval=5) -> Dict[str, str]:
         """
         Restore a database from a backup file.
+
+        Parameters:
+            timeout (int): Maximum time to wait for the primary pod to be found.
+            interval (int): Interval between retries to find the primary pod.
 
         Returns:
             dict: Result containing status and message.
@@ -69,16 +75,54 @@ class RestoreCNPGDatabase:
             self.logger.debug("Kubernetes cluster is not healthy. Reloading config.")
             KubernetesClientManager.reload_config()
 
-        self.primary_pod = self.db_utils.fetch_primary_pod()
-        self.logger.debug(f"Primary pod: {self.primary_pod}")
+        app_status = self.chart_info.status
+        was_stopped = False
+
+        if app_status == "STOPPED":
+            self.logger.debug(f"App {self.app_name} is stopped, starting it for restore.")
+            if not self.db_utils.start_app(self.app_name):
+                message = f"Failed to start app {self.app_name}."
+                self.logger.error(message)
+                result["message"] = message
+                return result
+            was_stopped = True
+
+        self.primary_pod = self.db_utils.fetch_primary_pod(timeout, interval)
         if not self.primary_pod:
             message = "Primary pod not found."
             self.logger.error(message)
             result["message"] = message
+
+            if was_stopped:
+                self.logger.debug(f"Stopping app {self.app_name} after restore failure.")
+                self.db_utils.stop_app(self.app_name)
+
             return result
 
         self.command, self.open_mode = self._get_restore_command()
-        return self._execute_restore_command()
+
+        try:
+            result = self._execute_restore_command()
+
+            if not result["success"]:
+                if was_stopped:
+                    self.logger.debug(f"Stopping app {self.app_name} after restore failure.")
+                    self.db_utils.stop_app(self.app_name)
+                return result
+
+            result["success"] = True
+            result["message"] = "Database restored successfully."
+
+        except Exception as e:
+            message = f"Failed to execute restore command: {e}"
+            self.logger.error(message, exc_info=True)
+            result["message"] = message
+
+        if was_stopped:
+            self.logger.debug(f"Stopping app {self.app_name} after successful restore.")
+            self.db_utils.stop_app(self.app_name)
+
+        return result
 
     def _get_restore_command(self) -> Tuple[str, str]:
         """

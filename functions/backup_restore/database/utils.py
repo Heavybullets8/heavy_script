@@ -1,9 +1,11 @@
 import base64
 import time
 import logging
+from pathlib import Path
 from kubernetes.client.rest import ApiException
-from utils.type_check import type_check
+from utils.shell import run_command
 from utils.singletons import KubernetesClientManager
+from utils.type_check import type_check
 
 class DatabaseUtils:
     """
@@ -114,3 +116,32 @@ class DatabaseUtils:
         except Exception as e:
             self.logger.error(f"Failed to extract database name from URL '{db_url}': {e}")
             return None
+
+    def start_app(self, app_name: str) -> bool:
+        """
+        Start the application using the heavy_script.sh script.
+
+        Returns:
+            bool: True if the app was started successfully, False otherwise.
+        """
+        script_path = Path(__file__).parent.parent.parent.parent / "heavy_script.sh"
+        command = f"bash \"{script_path}\" --no-self-update --no-config app --start {app_name}"
+        result = run_command(command)
+        if result.is_success():
+            self.logger.debug(f"App {app_name} started successfully.")
+        else:
+            self.logger.error(f"Failed to start app {app_name}: {result.get_error()}")
+        return result.is_success()
+
+    def stop_app(self, app_name: str):
+        """
+        Stop the application using the heavy_script.sh script.
+        """
+        script_path = Path(__file__).parent.parent.parent.parent / "heavy_script.sh"
+        command = f"bash \"{script_path}\" --no-self-update --no-config app --stop {app_name}"
+        result = run_command(command)
+        if result.is_success():
+            self.logger.debug(f"App {app_name} stopped successfully.")
+        else:
+            self.logger.error(f"Failed to stop app {app_name}: {result.get_error()}")
+            raise RuntimeError(f"Failed to stop app {app_name}: {result.get_error()}")

@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Dict
 from charts.api_fetch import APIChartFetcher
 from utils.type_check import type_check
-from utils.shell import run_command
 from utils.singletons import KubernetesClientManager
 from .utils import DatabaseUtils
 
@@ -60,7 +59,7 @@ class BackupCNPGDatabase:
 
         if app_status == "STOPPED":
             self.logger.debug(f"App {self.app_name} is stopped, starting it for backup.")
-            if not self._start_app():
+            if not self.db_utils.start_app(self.app_name):
                 message = f"Failed to start app {self.app_name}."
                 self.logger.error(message)
                 result["message"] = message
@@ -75,7 +74,7 @@ class BackupCNPGDatabase:
 
             if was_stopped:
                 self.logger.debug(f"Stopping app {self.app_name} after backup failure.")
-                self._stop_app()
+                self.db_utils.stop_app(self.app_name)
 
             return result
 
@@ -88,7 +87,7 @@ class BackupCNPGDatabase:
 
                 if was_stopped:
                     self.logger.debug(f"Stopping app {self.app_name} after backup failure.")
-                    self._stop_app()
+                    self.db_utils.stop_app(self.app_name)
 
                 return result
 
@@ -101,7 +100,7 @@ class BackupCNPGDatabase:
             if not result["success"]:
                 if was_stopped:
                     self.logger.debug(f"Stopping app {self.app_name} after backup failure.")
-                    self._stop_app()
+                    self.db_utils.stop_app(self.app_name)
                 return result
 
             if self.chart_info.chart_name == "immich":
@@ -119,7 +118,7 @@ class BackupCNPGDatabase:
 
         if was_stopped:
             self.logger.debug(f"Stopping app {self.app_name} after successful backup.")
-            self._stop_app()
+            self.db_utils.stop_app(self.app_name)
 
         return result
 
@@ -266,32 +265,3 @@ class BackupCNPGDatabase:
             message = f"Failed to modify dump data for immich: {e}"
             self.logger.error(message, exc_info=True)
             raise
-
-    def _start_app(self) -> bool:
-        """
-        Start the application using the heavy_script.sh script.
-
-        Returns:
-            bool: True if the app was started successfully, False otherwise.
-        """
-        script_path = Path(__file__).parent.parent.parent.parent / "heavy_script.sh"
-        command = f"bash \"{script_path}\" --no-self-update --no-config app --start {self.app_name}"
-        result = run_command(command)
-        if result.is_success():
-            self.logger.debug(f"App {self.app_name} started successfully.")
-        else:
-            self.logger.error(f"Failed to start app {self.app_name}: {result.get_error()}")
-        return result.is_success()
-
-    def _stop_app(self):
-        """
-        Stop the application using the heavy_script.sh script.
-        """
-        script_path = Path(__file__).parent.parent.parent.parent / "heavy_script.sh"
-        command = f"bash \"{script_path}\" --no-self-update --no-config app --stop {self.app_name}"
-        result = run_command(command)
-        if result.is_success():
-            self.logger.debug(f"App {self.app_name} stopped successfully.")
-        else:
-            self.logger.error(f"Failed to stop app {self.app_name}: {result.get_error()}")
-            raise RuntimeError(f"Failed to stop app {self.app_name}: {result.get_error()}")

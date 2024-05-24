@@ -141,13 +141,13 @@ update_handler() {
         echo "🅃 🄰 🅂 🄺 🅂 :"
         echo -e "-Backing up ix-applications dataset\n-Syncing catalog(s)"
         echo -e "Please wait for output from both tasks..\n\n"
-        backup_handler --create "$number_of_backups" &
+        backup_handler "--create" "$number_of_backups" &
         sync_catalog "update" &
         wait
     elif [[ "$number_of_backups" -ge 1 ]]; then
         echo "🅃 🄰 🅂 🄺 :"
         echo -e "-Backing up ix-applications dataset\nPlease wait..\n\n"
-        backup_handler --create "$number_of_backups"
+        backup_handler "--create" "$number_of_backups"
     elif [[ "$sync" == true ]]; then
         echo "🅃 🄰 🅂 🄺 :"
         echo -e "Syncing Catalog(s)\nThis can take a few minutes, please wait..\n\n"

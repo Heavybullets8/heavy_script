@@ -1,17 +1,18 @@
-import logging
-from pathlib import Path
 import yaml
+from pathlib import Path
 from typing import List
 from utils.logger import get_logger
 from utils.type_check import type_check
 from utils.shell import run_command
+from utils.yaml_cleaner import YAMLCleaner
 
 class KubeRestoreResources:
     """
-    Class toRestore Kubernetes resources from a backup directory.
+    Class to restore Kubernetes resources from a backup directory.
     """
     def __init__(self):
         self.logger = get_logger()
+        self.yaml_cleaner = YAMLCleaner()
         self.logger.debug(f"KubeRestoreResources initialized")
 
     @type_check
@@ -38,13 +39,50 @@ class KubeRestoreResources:
 
         for file in volume_files:
             self.logger.debug(f"Restoring volume from file: {file}")
-            restoreResult = run_command(f"k3s kubectl apply -f \"{file}\" --validate=false")
-            if restoreResult.is_success():
-                self.logger.debug(f"Restored {file.name}")
-            else:
-                self.logger.error(f"Failed to restore {file.name}: {restoreResult.get_error()}")
+            try:
+                with open(file, 'r') as f:
+                    yaml_data = f.read()
+                    cleaned_data = self.yaml_cleaner.clean_yaml(yaml_data)
+
+                restore_result = run_command(f'k3s kubectl apply -f - --validate=false', input=cleaned_data)
+                if restore_result.is_success():
+                    self.logger.debug(f"Restored {file.name}")
+                else:
+                    self.logger.error(f"Failed to restore {file.name}: {restore_result.get_error()}")
+                    failures.append(file.name)
+            except Exception as e:
+                self.logger.error(f"Error processing volume file {file}: {e}")
                 failures.append(file.name)
         return failures
+
+    @type_check
+    def restore_namespace(self, namespace_file: Path) -> bool:
+        """
+        Restore the namespace configuration from a namespace.yaml file.
+
+        Parameters:
+        - namespace_file (Path): Path to the namespace.yaml file to restore.
+
+        Returns:
+        - bool: True if the namespace is restored successfully, False otherwise.
+        """
+        self.logger.debug(f"Restoring namespace from {namespace_file}...")
+
+        try:
+            with open(namespace_file, 'r') as f:
+                yaml_data = f.read()
+                cleaned_data = self.yaml_cleaner.clean_yaml(yaml_data)
+
+            restore_result = run_command(f'k3s kubectl apply -f - --validate=false', input=cleaned_data)
+            if restore_result.is_success():
+                self.logger.debug(f"Successfully restored namespace from {namespace_file}")
+                return True
+            else:
+                self.logger.error(f"Failed to restore namespace from {namespace_file}: {restore_result.get_error()}")
+                return False
+        except Exception as e:
+            self.logger.error(f"Error processing namespace file {namespace_file}: {e}")
+            return False
 
     @type_check
     def restore_secrets(self, secret_files: List[Path]) -> list:
@@ -113,24 +151,3 @@ class KubeRestoreResources:
                 self.logger.error(f"Failed to restore {file.name}: {restoreResult.get_error()}")
                 failures.append(file.name)
         return failures
-
-    @type_check
-    def restore_namespace(self, namespace_file: Path) -> bool:
-        """
-        Restore the namespace configuration from a namespace.yaml file.
-
-        Parameters:
-        - namespace_file (Path): Path to the namespace.yaml file to restore.
-
-        Returns:
-        - bool: True if the namespace is restored successfully, False otherwise.
-        """
-        self.logger.debug(f"Restoring namespace from {namespace_file}...")
-
-        restore_result = run_command(f"k3s kubectl apply -f \"{namespace_file}\" --validate=false")
-        if restore_result.is_success():
-            self.logger.debug(f"Successfully restored namespace from {namespace_file}")
-            return True
-        else:
-            self.logger.error(f"Failed to restore namespace from {namespace_file}: {restore_result.get_error()}")
-            return False

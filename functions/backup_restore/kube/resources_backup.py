@@ -1,18 +1,18 @@
 import shutil
 from pathlib import Path
 import yaml
-from utils.logger import get_logger
+from utils.logger import get_logger, Truncator
 from utils.shell import run_command
 from utils.type_check import type_check
 from utils.yaml_cleaner import YAMLCleaner
 from utils.singletons import MiddlewareClientManager
 from pvc.api_fetch import KubePVCFetcher
-from utils.logger import Truncator
 
 class KubeBackupResources:
     """
     A class for managing the backup of Kubernetes resources.
     """
+    
     @type_check
     def __init__(self, app_name: str, backup_dir: Path):
         """
@@ -66,7 +66,7 @@ class KubeBackupResources:
                 secret_file = secrets_dir / f"{secret['metadata']['name']}.yaml"
                 with open(secret_file, 'w') as f:
                     f.write(secret_yaml)
-                    self.logger.debug(f"Secret {secret['metadata']['name']} backed up.")
+                self.logger.debug(f"Secret {secret['metadata']['name']} backed up.")
 
             self.logger.debug("Secrets backed up successfully.")
             return True

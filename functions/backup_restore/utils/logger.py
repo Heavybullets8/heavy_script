@@ -71,7 +71,6 @@ def setup_global_logger(operation: str, max_bytes: int = 10*1024*1024, backup_co
 
     Parameters:
         operation (str): The operation type (import, export, backup, restore).
-        backup_root (str): The directory where the log file will be created.
         max_bytes (int): The maximum size of the log file before rotation (default 10MB).
         backup_count (int): The number of backup files to keep (default 5).
 

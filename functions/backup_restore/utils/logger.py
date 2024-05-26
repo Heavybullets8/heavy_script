@@ -87,7 +87,6 @@ class Truncator:
         Returns:
             dict: The truncated dictionary.
         """
-        self.logger.debug(f"Truncating dictionary: {d}")
         truncated = {}
         for key, value in d.items():
             truncated_key = self._truncate(str(key))
@@ -110,7 +109,6 @@ class Truncator:
         Returns:
             The truncated data.
         """
-        self.logger.debug(f"Truncating data: {data}")
         if isinstance(data, dict):
             return self.truncate_dict(data)
         elif isinstance(data, list):

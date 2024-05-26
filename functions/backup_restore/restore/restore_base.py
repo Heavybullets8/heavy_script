@@ -22,6 +22,9 @@ class RestoreBase:
         - backup_dir (Path): Directory where the backup is stored.
         """
         try:
+            self.logger = setup_global_logger("restore")
+            self.logger.info("Restore process initialized.")
+
             self.backup_dir = backup_dir.resolve()
             self.snapshot_name = str(self.backup_dir.name)
             self.backup_dataset = str(self.backup_dir.relative_to("/mnt"))
@@ -31,9 +34,6 @@ class RestoreBase:
             print("Rolling back snapshot for backup dataset, ensuring integrity...")
             self.snapshot_manager = ZFSSnapshotManager()
             self.snapshot_manager.rollback_all_snapshots(self.snapshot_name, self.backup_dataset)
-
-            self.logger = setup_global_logger("restore")
-            self.logger.info("Restore process initialized.")
 
             self.middleware = MiddlewareClientManager.fetch()
             self.kubernetes_config_file = self.backup_dir / "kubernetes_config" / "kubernetes_config.json"

@@ -23,6 +23,8 @@ class ChartInfoExporter:
         - export_dir (Path): Directory to export the chart information.
         - retention_number (int): Number of exports to retain. Defaults to 15.
         """
+        self.logger = setup_global_logger("export")
+        self.logger.info("Initializing ChartInfoExporter...")
         timestamp = datetime.now(timezone.utc).strftime('%Y-%m-%d_%H:%M:%S')
 
         self.export_dir = export_dir.resolve()
@@ -30,7 +32,6 @@ class ChartInfoExporter:
         self.export_root = self.export_dir / f"Export--{timestamp}"
         self.export_root.mkdir(parents=True, exist_ok=True)
 
-        self.logger = setup_global_logger("export")
         self.chart_collection = APIChartCollection()
         self.all_release_names = self.chart_collection.all_release_names
         self.logger.info("ChartInfoExporter initialized.")

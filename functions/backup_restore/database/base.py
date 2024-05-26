@@ -20,8 +20,6 @@ class CNPGBase:
 
         Parameters:
             app_name (str): The name of the application.
-            backup_dir (Path): Directory where the backup will be stored.
-            backup_file (Path): The path to the backup file.
         """
         self.logger = get_logger()
         self.v1_client = KubernetesClientManager.fetch()

@@ -20,7 +20,6 @@ class RestoreCNPGDatabase(CNPGBase):
 
         Parameters:
             app_name (str): The name of the application.
-            chart_name (str): The name of the chart.
             backup_file (Path): The path to the backup file.
         """
         super().__init__(app_name)

@@ -91,7 +91,7 @@ class RestoreSingle(RestoreBase):
                 "------------------------")
                 try:
                     self.logger.info(f"Restoring database for {app_name}...")
-                    db_manager = RestoreCNPGDatabase(app_name, self.chart_info.get_chart_name(app_name), self.chart_info.get_file(app_name, "database"))
+                    db_manager = RestoreCNPGDatabase(app_name, self.chart_info.get_file(app_name, "database"))
                     result = db_manager.restore()
                     if not result["success"]:
                         self.failures[app_name].append(result["message"])

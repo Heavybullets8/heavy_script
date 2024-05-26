@@ -64,7 +64,6 @@ class Truncator:
             max_length (int): The maximum length for truncation.
         """
         self.max_length = max_length
-        self.logger = get_logger()
 
     def _truncate(self, value: str) -> str:
         """
@@ -76,7 +75,6 @@ class Truncator:
         Returns:
             str: The truncated string.
         """
-        self.logger.debug(f"Truncating value: {value}")
         return (value[:self.max_length] + '...') if len(value) > self.max_length else value
 
     def truncate_dict(self, d: dict) -> dict:

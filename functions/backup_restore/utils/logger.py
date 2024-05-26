@@ -11,7 +11,7 @@ def setup_global_logger(operation: str, max_bytes: int = 10*1024*1024, backup_co
     Set up a global logger that logs messages to both a rotating file and the console.
 
     Parameters:
-        operation (str): The operation type (import, export, backup, restore).
+        operation (str): The operation type (general, import, export, backup, restore).
         max_bytes (int): The maximum size of the log file before rotation (default 10MB).
         backup_count (int): The number of backup files to keep (default 5).
 

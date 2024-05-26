@@ -12,7 +12,6 @@ class MiddlewareClientManager:
     """
     _middleware = None
     _lock = threading.Lock()
-    _logger = get_logger()
 
     def __new__(cls):
         if cls._middleware is None:
@@ -29,12 +28,13 @@ class MiddlewareClientManager:
         Returns:
             Client: The Middleware client instance.
         """
+        logger = get_logger()
         if cls._middleware is None:
             with cls._lock:
                 if cls._middleware is None:
                     cls._middleware = Client()
                     atexit.register(cls.close)
-                    cls._logger.debug("Middleware client initialized.")
+                    logger.debug("Middleware client initialized.")
         return cls._middleware
 
     @classmethod
@@ -42,10 +42,11 @@ class MiddlewareClientManager:
         """
         Close the Middleware client if it exists and clean up the instance.
         """
+        logger = get_logger()
         if cls._middleware:
             cls._middleware.close()
             cls._middleware = None
-            cls._logger.debug("Middleware client closed.")
+            logger.debug("Middleware client closed.")
 
 class KubernetesClientManager:
     """
@@ -55,7 +56,6 @@ class KubernetesClientManager:
     """
     _k8s_client = None
     _config_file = '/etc/rancher/k3s/k3s.yaml'
-    _logger = get_logger()
 
     @classmethod
     def fetch(cls) -> client.CoreV1Api:
@@ -66,8 +66,9 @@ class KubernetesClientManager:
         Returns:
             client.CoreV1Api: The Kubernetes CoreV1Api client instance.
         """
+        logger = get_logger()
         if cls._k8s_client is None:
-            cls._logger.debug("Kubernetes client is None, initializing...")
+            logger.debug("Kubernetes client is None, initializing...")
             cls.reload_config()
             atexit.register(cls.close)
         return cls._k8s_client
@@ -78,14 +79,15 @@ class KubernetesClientManager:
         Reload the Kubernetes configuration and update the client.
         This is useful if there are changes to the configuration that need to be applied.
         """
+        logger = get_logger()
         try:
-            cls._logger.debug(f"Loading Kubernetes configuration from {cls._config_file}")
+            logger.debug(f"Loading Kubernetes configuration from {cls._config_file}")
             config.load_kube_config(config_file=cls._config_file)
-            cls._logger.debug("Kubernetes configuration loaded")
+            logger.debug("Kubernetes configuration loaded")
             cls._k8s_client = client.CoreV1Api()
-            cls._logger.debug("Kubernetes CoreV1Api client initialized successfully")
+            logger.debug("Kubernetes CoreV1Api client initialized successfully")
         except Exception as e:
-            cls._logger.error(f"Failed to reload Kubernetes configuration: {e}", exc_info=True)
+            logger.error(f"Failed to reload Kubernetes configuration: {e}", exc_info=True)
 
     @classmethod
     def health_check(cls) -> bool:
@@ -96,15 +98,16 @@ class KubernetesClientManager:
         Returns:
             bool: True if the connection is valid, False otherwise.
         """
-        cls._logger.debug("Performing health check on Kubernetes client...")
+        logger = get_logger()
+        logger.debug("Performing health check on Kubernetes client...")
         try:
             cls.fetch()
             version_api = client.VersionApi(cls._k8s_client.api_client)
             version_info = version_api.get_code()
-            cls._logger.debug(f"Connected to Kubernetes API Server with version: {version_info.major}.{version_info.minor}")
+            logger.debug(f"Connected to Kubernetes API Server with version: {version_info.major}.{version_info.minor}")
             return True
         except client.ApiException as e:
-            cls._logger.error(f"Failed to connect to Kubernetes API Server: {e}", exc_info=True)
+            logger.error(f"Failed to connect to Kubernetes API Server: {e}", exc_info=True)
             return False
 
     @classmethod
@@ -112,6 +115,7 @@ class KubernetesClientManager:
         """
         Clean up the Kubernetes client instance if it exists.
         """
+        logger = get_logger()
         if cls._k8s_client:
-            cls._logger.debug("Closing Kubernetes client connection...")
+            logger.debug("Closing Kubernetes client connection...")
             cls._k8s_client = None

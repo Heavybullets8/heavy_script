@@ -6,25 +6,41 @@ from kubernetes.client.rest import ApiException
 from utils.shell import run_command
 from utils.singletons import KubernetesClientManager
 from utils.type_check import type_check
+from charts.api_fetch import APIChartFetcher
 
-class DatabaseUtils:
+class CNPGBase:
     """
-    Utility class for database operations.
+    Base class for CNPG (Cloud Native PostgreSQL) database operations (backup and restore).
     """
 
     @type_check
-    def __init__(self, namespace: str):
+    def __init__(self, app_name: str):
         """
-        Initialize the DatabaseUtils class.
+        Initialize the CNPGBase class.
 
         Parameters:
-            namespace (str): The namespace to operate in.
+            app_name (str): The name of the application.
+            backup_dir (Path): Directory where the backup will be stored.
+            backup_file (Path): The path to the backup file.
         """
         self.logger = logging.getLogger('BackupLogger')
         self.v1_client = KubernetesClientManager.fetch()
-        self.namespace = namespace
+        self.app_name = app_name
+        self.namespace = f"ix-{app_name}"
+        self.chart_info = APIChartFetcher(app_name)
 
-    def fetch_primary_pod(self, timeout=300, interval=5) -> str:
+        self.primary_pod = None
+        self.database_name = None
+        self.database_user = None
+        self.dump_command = None
+        self.error = None
+
+        # Fetch database name and user if needed
+        if self.chart_info.chart_name != "immich":
+            self.database_name = self.fetch_database_name()
+            self.database_user = self.fetch_database_user() or self.database_name
+
+    def fetch_primary_pod(self, timeout=600, interval=5) -> str:
         """
         Wait for the primary pod to be in the 'Running' state and return its name.
 
@@ -37,7 +53,7 @@ class DatabaseUtils:
         """
         deadline = time.time() + timeout
         self.logger.debug(f"Waiting for primary pod in namespace '{self.namespace}' with timeout={timeout} and interval={interval}")
-        
+
         while time.time() < deadline:
             try:
                 pods = self.v1_client.list_namespaced_pod(self.namespace, label_selector='role=primary')
@@ -48,7 +64,7 @@ class DatabaseUtils:
             except ApiException as e:
                 self.logger.error(f"Failed to list pods: {e}")
             time.sleep(interval)
-        
+
         self.logger.error("Timed out waiting for primary pod.")
         return None
 
@@ -85,7 +101,7 @@ class DatabaseUtils:
             str: The decoded data from the secret if found, otherwise None.
         """
         self.logger.debug(f"Fetching secret data with suffix '{suffix}' and key '{key}' in namespace '{self.namespace}'")
-        
+
         try:
             secrets = self.v1_client.list_namespaced_secret(self.namespace)
             for secret in secrets.items:
@@ -95,7 +111,7 @@ class DatabaseUtils:
                     return decoded_data
         except ApiException as e:
             self.logger.error(f"Failed to fetch secrets: {e}", exc_info=True)
-        
+
         self.logger.warning(f"No secret found with suffix '{suffix}' and key '{key}'")
         return None
 

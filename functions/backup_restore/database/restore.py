@@ -1,17 +1,14 @@
 import subprocess
 import time
 import gzip
-import logging
 from typing import Tuple, Dict
 from pathlib import Path
 from kubernetes.client.rest import ApiException
-
 from utils.type_check import type_check
 from utils.singletons import KubernetesClientManager
-from charts.api_fetch import APIChartFetcher
-from .utils import DatabaseUtils
+from .base import CNPGBase
 
-class RestoreCNPGDatabase:
+class RestoreCNPGDatabase(CNPGBase):
     """
     Class responsible for restoring a CNPG (Cloud Native PostgreSQL) database from a backup file.
     """
@@ -26,26 +23,9 @@ class RestoreCNPGDatabase:
             chart_name (str): The name of the chart.
             backup_file (Path): The path to the backup file.
         """
-        self.logger = logging.getLogger('BackupLogger')
-        self.v1_client = KubernetesClientManager.fetch()
-        self.chart_info = APIChartFetcher(app_name)
-                
-        self.backup_file = backup_file
-        self.app_name = app_name
-        self.chart_name = self.chart_info.chart_name
-        self.namespace = f"ix-{app_name}"
-        self.db_utils = DatabaseUtils(self.namespace)
-        self.primary_pod = None
-        self.command = None
+        super().__init__(app_name)
         self.open_mode = None
-
-        if self.chart_name != "immich":
-            self.database_name = self.db_utils.fetch_database_name()
-            self.database_user = self.db_utils.fetch_database_user() or self.database_name       
-        else:
-            self.database_user = None
-            self.database_name = None
-
+        self.backup_file = backup_file
         self.logger.debug(f"RestoreCNPGDatabase initialized for app: {self.app_name} with backup file: {self.backup_file}")
 
     def restore(self, timeout=300, interval=5) -> Dict[str, str]:
@@ -81,14 +61,14 @@ class RestoreCNPGDatabase:
 
         if app_status == "STOPPED":
             self.logger.debug(f"App {self.app_name} is stopped, starting it for restore.")
-            if not self.db_utils.start_app(self.app_name):
+            if not self.start_app(self.app_name):
                 message = f"Failed to start app {self.app_name}."
                 self.logger.error(message)
                 result["message"] = message
                 return result
             was_stopped = True
 
-        self.primary_pod = self.db_utils.fetch_primary_pod(timeout, interval)
+        self.primary_pod = self.fetch_primary_pod(timeout, interval)
         if not self.primary_pod:
             message = "Primary pod not found."
             self.logger.error(message)
@@ -96,7 +76,7 @@ class RestoreCNPGDatabase:
 
             if was_stopped:
                 self.logger.debug(f"Stopping app {self.app_name} after restore failure.")
-                self.db_utils.stop_app(self.app_name)
+                self.stop_app(self.app_name)
 
             return result
 
@@ -108,7 +88,7 @@ class RestoreCNPGDatabase:
             if not result["success"]:
                 if was_stopped:
                     self.logger.debug(f"Stopping app {self.app_name} after restore failure.")
-                    self.db_utils.stop_app(self.app_name)
+                    self.stop_app(self.app_name)
                 return result
 
             result["success"] = True
@@ -121,7 +101,7 @@ class RestoreCNPGDatabase:
 
         if was_stopped:
             self.logger.debug(f"Stopping app {self.app_name} after successful restore.")
-            self.db_utils.stop_app(self.app_name)
+            self.stop_app(self.app_name)
 
         return result
 
@@ -132,7 +112,7 @@ class RestoreCNPGDatabase:
         Returns:
             Tuple[str, str]: The restore command and the file open mode.
         """
-        if self.chart_name == "immich":
+        if self.chart_info.chart_name == "immich":
             command = [
                 "k3s", "kubectl", "exec",
                 "--namespace", self.namespace,
@@ -163,7 +143,7 @@ class RestoreCNPGDatabase:
                 "--single-transaction"
             ]
             open_mode = 'rb'
-        
+
         self.logger.debug(f"Restore command for app {self.app_name}: {command}")
         return command, open_mode
 

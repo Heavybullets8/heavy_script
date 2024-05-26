@@ -30,17 +30,21 @@ class YAMLCleaner:
         Parameters:
             data (dict): The YAML data as a dictionary.
         """
-        def recurse(data):
+        def recurse(data, kind="unknown"):
             if isinstance(data, dict):
                 keys_to_delete = [key for key in data if key in self.global_removals]
                 for key in keys_to_delete:
+                    self.logger.debug(f"Deleting global key '{key}' from resource '{kind}'")
                     data.pop(key)
                 for value in data.values():
-                    recurse(value)
+                    recurse(value, kind)
             elif isinstance(data, list):
                 for item in data:
-                    recurse(item)
-        recurse(data)
+                    recurse(item, kind)
+        
+        kind = data.get('kind', 'unknown')
+        self.logger.debug(f"Cleaning global keys from resource type: {kind}")
+        recurse(data, kind)
 
     def clean_statics(self, data):
         """
@@ -49,18 +53,22 @@ class YAMLCleaner:
         Parameters:
             data (dict): The YAML data as a dictionary.
         """
-        def recurse(data, path=()):
+        def recurse(data, path=(), kind="unknown"):
             if isinstance(data, dict):
                 for key, value in list(data.items()):
                     new_path = path + (key,)
                     if new_path in self.static_removals:
+                        self.logger.debug(f"Deleting static path '{new_path}' from resource '{kind}'")
                         data.pop(key)
                     else:
-                        recurse(value, new_path)
+                        recurse(value, new_path, kind)
             elif isinstance(data, list):
                 for item in data:
-                    recurse(item, path)
-        recurse(data)
+                    recurse(item, path, kind)
+
+        kind = data.get('kind', 'unknown')
+        self.logger.debug(f"Cleaning static paths from resource type: {kind}")
+        recurse(data, kind=kind)
 
     def filter_cnpg_resources(self, data):
         """
@@ -70,12 +78,13 @@ class YAMLCleaner:
             data (dict): The YAML data as a dictionary.
         """
         items = data.get('items', [])
-        filtered_items = [
-            item for item in items if not (
-                any(owner.get('kind') == 'Cluster' for owner in item.get('metadata', {}).get('ownerReferences', []))
-                or "-cnpg-main-" in item.get('metadata', {}).get('name', "")
-            )
-        ]
+        filtered_items = []
+        for item in items:
+            if not (any(owner.get('kind') == 'Cluster' for owner in item.get('metadata', {}).get('ownerReferences', []))
+                    or "-cnpg-main-" in item.get('metadata', {}).get('name', "")):
+                filtered_items.append(item)
+            else:
+                self.logger.debug(f"Excluding CNPG managed resource: {item.get('metadata', {}).get('name', 'unknown')} of kind {item.get('kind', 'unknown')}")
         data['items'] = filtered_items
 
     def remove_empty_containers(self, data):
@@ -88,6 +97,7 @@ class YAMLCleaner:
         if isinstance(data, dict):
             keys_to_delete = [key for key, value in data.items() if (isinstance(value, (dict, list)) and not value)]
             for key in keys_to_delete:
+                self.logger.debug(f"Removing empty container '{key}' from resource")
                 data.pop(key)
             for value in data.values():
                 self.remove_empty_containers(value)

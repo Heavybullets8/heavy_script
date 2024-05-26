@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from zfs.lifecycle import ZFSLifecycleManager
 from zfs.snapshot import ZFSSnapshotManager
-from utils.logger import setup_global_logger
+from utils.logger import setup_global_logger, set_logger
 from utils.type_check import type_check
 from database.backup import BackupCNPGDatabase
 from catalog.catalog import CatalogBackupManager
@@ -31,6 +31,11 @@ class Backup:
         - backup_dir (Path): Directory to use for backups.
         - retention_number (int): Number of backups to retain. Defaults to 15.
         """
+        logger = setup_global_logger("backup")
+        set_logger(logger)
+        self.logger = logger
+        self.logger.info("Backup process initialized.")
+
         timestamp = datetime.now(timezone.utc).strftime('%Y-%m-%d_%H:%M:%S')
         self.snapshot_name = f"HeavyScript--{timestamp}"
         self.kubeconfig = KubeAPIFetch()
@@ -45,9 +50,6 @@ class Backup:
         self.backup_dataset_parent = self.backup_dir.relative_to("/mnt")
         self.backup_dataset = str(self.backup_dataset_parent)
         self._create_backup_dataset(self.backup_dataset)
-
-        self.logger = setup_global_logger(self.backup_dir)
-        self.logger.info("Backup process initialized.")
 
         self.chart_collection = APIChartCollection()
         self.all_chart_names = self.chart_collection.all_chart_names

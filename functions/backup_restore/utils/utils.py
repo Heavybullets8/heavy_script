@@ -1,5 +1,6 @@
-import time, logging
+import time
 from utils.shell import run_command
+from utils.logger import get_logger
 
 def waitForKubernetes(check_interval: int = 15, timeout: int = 1800) -> bool:
     """
@@ -12,7 +13,7 @@ def waitForKubernetes(check_interval: int = 15, timeout: int = 1800) -> bool:
     Returns:
         bool: True if Kubernetes is running, False if timed out.
     """
-    logger = logging.getLogger('BackupLogger')
+    logger = get_logger()
     logger.debug("Waiting for Kubernetes to start...")
     
     start_time = time.time()
@@ -49,7 +50,7 @@ def checkKubernetesStatus() -> bool:
     Returns:
         bool: False if Kubernetes status is STOPPED or FAILED, True otherwise.
     """
-    logger = logging.getLogger('BackupLogger')
+    logger = get_logger()
     logger.debug("Checking Kubernetes status...")
 
     command = "cli -m csv -c 'app kubernetes status'"

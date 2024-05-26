@@ -1,12 +1,12 @@
 import re
 import yaml
-import logging
 from pathlib import Path
 from datetime import datetime
 
 from zfs.cache import ZFSCache
 from utils.shell import run_command
 from utils.type_check import type_check
+from utils.logger import get_logger
 
 class ZFSSnapshotManager:
     """
@@ -18,7 +18,7 @@ class ZFSSnapshotManager:
         """
         Initialize the ZFSSnapshotManager class.
         """
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.cache = ZFSCache()
 
     @type_check

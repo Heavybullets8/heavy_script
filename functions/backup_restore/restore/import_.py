@@ -1,6 +1,6 @@
 from pathlib import Path
 from utils.type_check import type_check
-from utils.logger import setup_global_logger
+from utils.logger import setup_global_logger, set_logger
 from catalog.catalog import CatalogRestoreManager
 from charts.backup_create import ChartCreationManager
 
@@ -17,13 +17,15 @@ class ChartInfoImporter:
         - app_name (str): The name of the application to restore.
         - export_path (Path): Path to the exported chart information.
         """
+        logger = setup_global_logger("import")
+        set_logger(logger)
+        self.logger = logger
+        self.logger.info(f"ChartInfoImporter initialized for {app_name}.")
+
         self.app_name = app_name
         self.export_path = export_path.resolve()
         self.chart_info_dir = self.export_path / "charts" / app_name
         self.catalog_dir = self.export_path / "catalog"
-
-        self.logger = setup_global_logger(self.export_path)
-        self.logger.info(f"ChartInfoImporter initialized for {app_name}.")
 
     def import_chart_info(self) -> bool:
         """

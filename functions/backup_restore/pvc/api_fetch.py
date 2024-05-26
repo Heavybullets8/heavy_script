@@ -1,5 +1,5 @@
-import logging
 from kubernetes.client.rest import ApiException
+from utils.logger import get_logger
 from utils.singletons import KubernetesClientManager
 from utils.type_check import type_check
 
@@ -15,7 +15,7 @@ class KubePVCFetcher:
 
         Fetches the PVC data from the Kubernetes cluster and prepares a mapping.
         """
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.v1_client = KubernetesClientManager.fetch()
         self.logger.debug("Initializing KubePVCFetcher...")
         self.pvc_data = self._fetch_pvc_data()

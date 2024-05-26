@@ -1,6 +1,6 @@
-import logging
 import threading
 from utils.shell import run_command
+from utils.logger import get_logger
 from utils.type_check import type_check
 
 class ZFSCache:
@@ -26,7 +26,7 @@ class ZFSCache:
         """
         Initialize the cache by loading datasets and snapshots.
         """
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.logger.debug("Initializing ZFSCache...")
         self.hard_refresh()
 

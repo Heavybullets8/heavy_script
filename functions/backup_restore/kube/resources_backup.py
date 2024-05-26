@@ -1,7 +1,7 @@
-import logging
 import shutil
 from pathlib import Path
 import yaml
+from utils.logger import get_logger
 from utils.shell import run_command
 from utils.type_check import type_check
 from utils.yaml_cleaner import YAMLCleaner
@@ -22,7 +22,7 @@ class KubeBackupResources:
         - app_name (str): The name of the application.
         - backup_dir (Path): The directory where backups will be stored.
         """
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.truncator = Truncator(max_length=100)
         self.backup_dir = backup_dir
         self.app_name = app_name

@@ -1,5 +1,5 @@
 import time
-import logging
+from utils.logger import get_logger
 from utils.singletons import MiddlewareClientManager
 
 def check_job_status(job_id: int) -> bool:
@@ -13,7 +13,7 @@ def check_job_status(job_id: int) -> bool:
         bool: True if the job succeeds, False if the job fails or times out.
     """
     middleware = MiddlewareClientManager.fetch()
-    logger = logging.getLogger('BackupLogger')
+    logger = get_logger()
 
     max_retries = 50
     retry_count = 0

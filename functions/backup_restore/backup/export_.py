@@ -4,7 +4,7 @@ import yaml
 from datetime import datetime, timezone
 from pathlib import Path
 
-from utils.logger import setup_global_logger
+from utils.logger import setup_global_logger, set_logger
 from utils.type_check import type_check
 from catalog.catalog import CatalogBackupManager
 from charts.backup_create import ChartBackupManager
@@ -23,6 +23,10 @@ class ChartInfoExporter:
         - export_dir (Path): Directory to export the chart information.
         - retention_number (int): Number of exports to retain. Defaults to 15.
         """
+        logger = setup_global_logger("export")
+        set_logger(logger)
+        self.logger = logger
+        self.logger.info("Initializing ChartInfoExporter...")
         timestamp = datetime.now(timezone.utc).strftime('%Y-%m-%d_%H:%M:%S')
 
         self.export_dir = export_dir.resolve()
@@ -30,7 +34,6 @@ class ChartInfoExporter:
         self.export_root = self.export_dir / f"Export--{timestamp}"
         self.export_root.mkdir(parents=True, exist_ok=True)
 
-        self.logger = setup_global_logger(self.export_root)
         self.chart_collection = APIChartCollection()
         self.all_release_names = self.chart_collection.all_release_names
         self.logger.info("ChartInfoExporter initialized.")

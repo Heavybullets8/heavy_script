@@ -1,5 +1,5 @@
 import time
-import logging
+from utils.logger import get_logger
 import threading
 from charts.api_fetch import APIChartFetcher
 
@@ -14,7 +14,7 @@ class AppManager:
 
         Retrieves the already configured logger.
         """
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.status_event = threading.Event()
 
     def wait_for_app_active(self, app_name: str, timeout: int = 600) -> bool:

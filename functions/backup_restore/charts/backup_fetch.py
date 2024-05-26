@@ -1,7 +1,7 @@
-import logging
 import json
 from pathlib import Path
 from typing import Dict, List, Union
+from utils.logger import get_logger
 from utils.type_check import type_check
 
 class BackupChartFetcher:
@@ -17,7 +17,7 @@ class BackupChartFetcher:
         Parameters:
             charts_base_dir (Path): The base directory containing chart data.
         """
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.charts_base_dir = charts_base_dir
         self.charts_info: Dict[str, Dict[str, Union[str, Path, dict]]] = {}
         self._parse_all_charts()

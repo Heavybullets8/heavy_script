@@ -1,7 +1,7 @@
-import logging
 import threading
 from abc import ABC, abstractmethod
 from typing import Dict, List
+from utils.logger import get_logger
 from utils.type_check import type_check
 from utils.singletons import MiddlewareClientManager
 
@@ -24,7 +24,7 @@ class APIChartFetcher(ChartObserver):
             refresh_on_update (bool): Flag to control if updates should trigger a refresh.
         """
         self.app_name = app_name
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.chart_cache = ChartCache()
         self.status_callback = None
         self.refresh_on_update = refresh_on_update
@@ -263,7 +263,7 @@ class APIChartCollection(ChartObserver):
         Parameters:
             refresh_on_update (bool): Flag to control if updates should trigger a refresh.
         """
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.chart_cache = ChartCache()
         self.refresh_on_update = refresh_on_update
         self._charts_data = self.chart_cache.get_all_charts()
@@ -402,7 +402,7 @@ class ChartCache:
 
     def __init__(self):
         if not self._initialized:
-            self.logger = logging.getLogger('BackupLogger')
+            self.logger = get_logger()
             self.middleware = MiddlewareClientManager.fetch()
             self._charts = self._fetch_all_charts()
             self._initialized = True

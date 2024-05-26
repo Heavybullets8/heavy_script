@@ -1,7 +1,7 @@
 import os
 import shutil
-import logging
 from pathlib import Path
+from utils.logger import get_logger
 from utils.type_check import type_check
 from utils.singletons import MiddlewareClientManager
 from utils.check_job import check_job_status
@@ -15,7 +15,7 @@ class KubeUtils:
         """
         Initialize the KubeUtils class.
         """
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.middleware = MiddlewareClientManager.fetch()
         self.logger.debug("KubeUtils initialized.")
 

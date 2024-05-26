@@ -1,6 +1,6 @@
 import json
-import logging
 from pathlib import Path
+from utils.logger import get_logger
 from utils.singletons import MiddlewareClientManager
 from utils.type_check import type_check
 
@@ -13,7 +13,7 @@ class KubeBackupConfig:
         Parameters:
         - backup_dir (Path): Directory where the backup will be stored.
         """
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.middleware = MiddlewareClientManager.fetch()
         self.backupDir = backup_dir
         self.logger.debug(f"KubeBackupConfig initialized with backup directory: {self.backupDir}")

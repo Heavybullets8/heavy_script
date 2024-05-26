@@ -1,5 +1,5 @@
 import subprocess
-import logging
+from utils.logger import get_logger
 
 class CommandResult:
     def __init__(self, output, error, status):
@@ -53,7 +53,7 @@ def run_command(command: str, suppress_output: bool = False) -> CommandResult:
     Returns:
         CommandResult: The result of the command execution.
     """
-    logger = logging.getLogger('BackupLogger')
+    logger = get_logger()
     logger.debug(f"Executing command: {command}")
 
     try:

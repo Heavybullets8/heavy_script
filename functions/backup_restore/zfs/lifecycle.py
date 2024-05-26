@@ -1,7 +1,7 @@
 from zfs.cache import ZFSCache
 from utils.shell import run_command
 from utils.type_check import type_check
-import logging
+from utils.logger import get_logger
 
 class ZFSLifecycleManager:
     """
@@ -9,7 +9,7 @@ class ZFSLifecycleManager:
     """
 
     def __init__(self):
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.cache = ZFSCache()
 
     @type_check

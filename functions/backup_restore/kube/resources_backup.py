@@ -139,6 +139,7 @@ class KubeBackupResources:
                     if zfs_volume_data['items']:
                         zfs_volume_item = zfs_volume_data['items'][0]
                         zfs_volume_yaml = yaml.dump(zfs_volume_item)
+                        zfs_volume_yaml = yaml_cleaner.clean_yaml(zfs_volume_yaml)
                         self._write_yaml_backup(zfs_volume_yaml, pv_zfs_dir / f"{pvc_name}-zfsvolume.yaml")
                     else:
                         error_msg = f"No ZFS volume found for PV {pv}."

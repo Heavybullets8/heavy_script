@@ -1,5 +1,6 @@
-import yaml
+import tempfile
 from pathlib import Path
+import yaml
 from typing import List
 from utils.logger import get_logger
 from utils.type_check import type_check
@@ -28,10 +29,7 @@ class KubeRestoreResources:
         """
         self.logger.debug("Restoring PV and ZFS volumes from provided file list...")
         failures = []
-        volume_files = sorted(
-            volume_files,
-            key=lambda f: ('-zfsvolume.yaml' in f.name)
-        )
+        volume_files = sorted(volume_files, key=lambda f: '-zfsvolume.yaml' in f.name)
 
         if not volume_files:
             self.logger.warning("No PV or ZFS volume files provided.")
@@ -43,13 +41,18 @@ class KubeRestoreResources:
                 with open(file, 'r') as f:
                     yaml_data = f.read()
                     cleaned_data = self.yaml_cleaner.clean_yaml(yaml_data)
+                
+                with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+                    temp_file.write(cleaned_data.encode())
+                    temp_file.flush()
+                    temp_file.seek(0)
 
-                restore_result = run_command(f'k3s kubectl apply -f - --validate=false', input=cleaned_data)
-                if restore_result.is_success():
-                    self.logger.debug(f"Restored {file.name}")
-                else:
-                    self.logger.error(f"Failed to restore {file.name}: {restore_result.get_error()}")
-                    failures.append(file.name)
+                    restore_result = run_command(f'k3s kubectl apply -f "{temp_file.name}" --validate=false')
+                    if restore_result.is_success():
+                        self.logger.debug(f"Restored {file.name}")
+                    else:
+                        self.logger.error(f"Failed to restore {file.name}: {restore_result.get_error()}")
+                        failures.append(file.name)
             except Exception as e:
                 self.logger.error(f"Error processing volume file {file}: {e}")
                 failures.append(file.name)
@@ -73,13 +76,18 @@ class KubeRestoreResources:
                 yaml_data = f.read()
                 cleaned_data = self.yaml_cleaner.clean_yaml(yaml_data)
 
-            restore_result = run_command(f'k3s kubectl apply -f - --validate=false', input=cleaned_data)
-            if restore_result.is_success():
-                self.logger.debug(f"Successfully restored namespace from {namespace_file}")
-                return True
-            else:
-                self.logger.error(f"Failed to restore namespace from {namespace_file}: {restore_result.get_error()}")
-                return False
+            with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+                temp_file.write(cleaned_data.encode())
+                temp_file.flush()
+                temp_file.seek(0)
+
+                restore_result = run_command(f'k3s kubectl apply -f "{temp_file.name}" --validate=false')
+                if restore_result.is_success():
+                    self.logger.debug(f"Successfully restored namespace from {namespace_file}")
+                    return True
+                else:
+                    self.logger.error(f"Failed to restore namespace from {namespace_file}: {restore_result.get_error()}")
+                    return False
         except Exception as e:
             self.logger.error(f"Error processing namespace file {namespace_file}: {e}")
             return False

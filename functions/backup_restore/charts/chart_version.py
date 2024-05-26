@@ -1,7 +1,7 @@
 from pathlib import Path
-import logging
 import shutil
 import tarfile
+from utils.logger import get_logger
 from utils.type_check import type_check
 
 class ChartVersionBackup:
@@ -20,7 +20,7 @@ class ChartVersionBackup:
             ix_apps_pool (str): Pool of ix-applications.
             version (str): Version of the chart to backup.
         """
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.backup_dir = backup_dir
         self.app_name = app_name
         self.ix_apps_pool = ix_apps_pool
@@ -66,7 +66,7 @@ class ChartVersionRestore:
         Parameters:
             ix_apps_pool (str): Pool of ix-applications.
         """
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.ix_apps_pool = ix_apps_pool
         self.logger.debug(f"ChartVersionRestore initialized with pool: {self.ix_apps_pool}")
 
@@ -137,7 +137,7 @@ class ChartVersionUtils:
         Parameters:
             ix_apps_pool (str): Pool of ix-applications.
         """
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.ix_apps_pool = ix_apps_pool
         self.logger.debug(f"ChartVersionUtils initialized with pool: {self.ix_apps_pool}")
 

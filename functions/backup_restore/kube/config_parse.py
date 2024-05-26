@@ -1,6 +1,6 @@
 import json
-import logging
 from pathlib import Path
+from utils.logger import get_logger
 from utils.singletons import MiddlewareClientManager
 from utils.type_check import type_check
 
@@ -16,7 +16,7 @@ class KubeConfigReader:
         Parameters:
             backupFile (Path): The path to the backup file containing Kubernetes configuration.
         """
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.backupFile = backupFile
         self.config_data = self._load_config()
 
@@ -95,7 +95,7 @@ class KubeAPIFetch:
         """
         Initialize the KubeAPIFetch and fetch the Kubernetes configuration from the middleware.
         """
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.middleware = MiddlewareClientManager.fetch()
         self.config_data = self._fetch_kubernetes_config()
 

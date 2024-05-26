@@ -1,8 +1,8 @@
 import atexit
-import logging
 import threading
 from middlewared.client import Client
 from kubernetes import client, config
+from utils.logger import get_logger
 
 class MiddlewareClientManager:
     """
@@ -12,6 +12,7 @@ class MiddlewareClientManager:
     """
     _middleware = None
     _lock = threading.Lock()
+    _logger = get_logger()
 
     def __new__(cls):
         if cls._middleware is None:
@@ -33,7 +34,7 @@ class MiddlewareClientManager:
                 if cls._middleware is None:
                     cls._middleware = Client()
                     atexit.register(cls.close)
-                    logging.getLogger('BackupLogger').debug("Middleware client initialized.")
+                    cls._logger.debug("Middleware client initialized.")
         return cls._middleware
 
     @classmethod
@@ -44,7 +45,7 @@ class MiddlewareClientManager:
         if cls._middleware:
             cls._middleware.close()
             cls._middleware = None
-            logging.getLogger('BackupLogger').debug("Middleware client closed.")
+            cls._logger.debug("Middleware client closed.")
 
 class KubernetesClientManager:
     """
@@ -54,7 +55,7 @@ class KubernetesClientManager:
     """
     _k8s_client = None
     _config_file = '/etc/rancher/k3s/k3s.yaml'
-    _logger = logging.getLogger('BackupLogger')
+    _logger = get_logger()
 
     @classmethod
     def fetch(cls) -> client.CoreV1Api:

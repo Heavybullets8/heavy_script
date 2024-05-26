@@ -1,6 +1,56 @@
 import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
+from contextvars import ContextVar
+
+# Context variable to hold the current logger
+current_logger: ContextVar[logging.Logger] = ContextVar('current_logger')
+
+def setup_global_logger(operation: str, max_bytes: int = 10*1024*1024, backup_count: int = 5) -> logging.Logger:
+    """
+    Set up a global logger that logs messages to both a rotating file and the console.
+
+    Parameters:
+        operation (str): The operation type (import, export, backup, restore).
+        max_bytes (int): The maximum size of the log file before rotation (default 10MB).
+        backup_count (int): The number of backup files to keep (default 5).
+
+    Returns:
+        logging.Logger: The configured logger.
+    """
+    log_dir = Path(__file__).parent.parent.parent.parent / "logs" / operation
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_filename = log_dir / f"{operation}.log"
+
+    logger = logging.getLogger(f'{operation.capitalize()}Logger')
+    logger.setLevel(logging.DEBUG)
+
+    # Ensure handlers are not duplicated
+    if not logger.handlers:
+        try:
+            fh = RotatingFileHandler(log_filename, maxBytes=max_bytes, backupCount=backup_count)
+            fh.setLevel(logging.DEBUG)
+            fh_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(module)s - %(funcName)s - %(message)s')
+            fh.setFormatter(fh_formatter)
+            logger.addHandler(fh)
+        except Exception as e:
+            print(f"Failed to set up file handler: {e}")
+
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.INFO)
+        ch_formatter = logging.Formatter('%(message)s')
+        ch.setFormatter(ch_formatter)
+        logger.addHandler(ch)
+
+    return logger
+
+def get_logger() -> logging.Logger:
+    """Retrieve the current logger from the context."""
+    return current_logger.get()
+
+def set_logger(logger: logging.Logger):
+    """Set the current logger in the context."""
+    current_logger.set(logger)
 
 class Truncator:
     """
@@ -14,6 +64,7 @@ class Truncator:
             max_length (int): The maximum length for truncation.
         """
         self.max_length = max_length
+        self.logger = get_logger()
 
     def _truncate(self, value: str) -> str:
         """
@@ -25,6 +76,7 @@ class Truncator:
         Returns:
             str: The truncated string.
         """
+        self.logger.debug(f"Truncating value: {value}")
         return (value[:self.max_length] + '...') if len(value) > self.max_length else value
 
     def truncate_dict(self, d: dict) -> dict:
@@ -37,6 +89,7 @@ class Truncator:
         Returns:
             dict: The truncated dictionary.
         """
+        self.logger.debug(f"Truncating dictionary: {d}")
         truncated = {}
         for key, value in d.items():
             truncated_key = self._truncate(str(key))
@@ -59,45 +112,9 @@ class Truncator:
         Returns:
             The truncated data.
         """
+        self.logger.debug(f"Truncating data: {data}")
         if isinstance(data, dict):
             return self.truncate_dict(data)
         elif isinstance(data, list):
             return [self._truncate(str(item)) for item in data]
         return data
-
-def setup_global_logger(operation: str, max_bytes: int = 10*1024*1024, backup_count: int = 5) -> logging.Logger:
-    """
-    Set up a global logger that logs messages to both a rotating file and the console.
-
-    Parameters:
-        operation (str): The operation type (import, export, backup, restore).
-        max_bytes (int): The maximum size of the log file before rotation (default 10MB).
-        backup_count (int): The number of backup files to keep (default 5).
-
-    Returns:
-        logging.Logger: The configured logger.
-    """
-    log_dir = Path(__file__).parent.parent.parent.parent / "logs" / operation
-    log_dir.mkdir(parents=True, exist_ok=True)
-    log_filename = log_dir / f"{operation}.log"
-
-    logger = logging.getLogger(f'{operation.capitalize()}Logger')
-    logger.setLevel(logging.DEBUG)
-
-    if not logger.handlers:
-        try:
-            fh = RotatingFileHandler(log_filename, maxBytes=max_bytes, backupCount=backup_count)
-            fh.setLevel(logging.DEBUG)
-            fh_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(module)s - %(funcName)s - %(message)s')
-            fh.setFormatter(fh_formatter)
-            logger.addHandler(fh)
-        except Exception as e:
-            print(f"Failed to set up file handler: {e}")
-
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.INFO)
-        ch_formatter = logging.Formatter('%(message)s')
-        ch.setFormatter(ch_formatter)
-        logger.addHandler(ch)
-
-    return logger

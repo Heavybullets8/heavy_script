@@ -1,5 +1,5 @@
 import json
-import logging
+from utils.logger import get_logger
 from pathlib import Path
 from utils.singletons import MiddlewareClientManager
 from utils.check_job import check_job_status
@@ -19,7 +19,7 @@ class CatalogBackupManager:
             catalog_dir (Path): The directory where the catalog backup will be stored.
         """
         self.catalog_dir = Path(catalog_dir)
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.logger.debug(f"CatalogBackupManager initialized for {self.catalog_dir}")
         self.middleware = MiddlewareClientManager.fetch()
 
@@ -53,7 +53,7 @@ class CatalogRestoreManager:
             catalog_dir (Path): The directory where the catalog backup is stored.
         """
         self.catalog_dir = Path(catalog_dir)
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.middleware = MiddlewareClientManager.fetch()
 
     def restore(self):
@@ -121,7 +121,7 @@ class CatalogQueryManager:
             catalog_dir (Path): The directory where the catalog backup is stored.
         """
         self.catalog_dir = Path(catalog_dir)
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.logger.debug(f"CatalogQueryManager initialized for {self.catalog_dir}")
 
     def get_catalog_location_by_label(self, label: str) -> str:

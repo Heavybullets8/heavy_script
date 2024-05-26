@@ -1,5 +1,5 @@
-import logging
 import yaml
+from utils.logger import get_logger
 
 class YAMLCleaner:
     """
@@ -15,7 +15,7 @@ class YAMLCleaner:
             global_removals (set): A set of global keys to remove from the YAML data.
             static_removals (set): A set of specific paths to remove from the YAML data.
         """
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.global_removals = global_removals if global_removals is not None else {'uid', 'resourceVersion', 'creationTimestamp', 'status'}
         self.static_removals = static_removals if static_removals is not None else {
             ('spec', 'nodeAffinity'),

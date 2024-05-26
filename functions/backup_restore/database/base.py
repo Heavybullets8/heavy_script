@@ -1,8 +1,8 @@
 import base64
 import time
-import logging
 from pathlib import Path
 from kubernetes.client.rest import ApiException
+from utils.logger import get_logger
 from utils.shell import run_command
 from utils.singletons import KubernetesClientManager
 from utils.type_check import type_check
@@ -23,7 +23,7 @@ class CNPGBase:
             backup_dir (Path): Directory where the backup will be stored.
             backup_file (Path): The path to the backup file.
         """
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.v1_client = KubernetesClientManager.fetch()
         self.app_name = app_name
         self.namespace = f"ix-{app_name}"

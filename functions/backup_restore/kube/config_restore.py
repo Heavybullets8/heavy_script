@@ -1,6 +1,6 @@
 import json
-import logging
 from pathlib import Path
+from utils.logger import get_logger
 from utils.singletons import MiddlewareClientManager
 from utils.type_check import type_check
 from utils.check_job import check_job_status
@@ -17,7 +17,7 @@ class KubeRestoreConfig:
         Parameters:
         - backup_file (Path): Path to the backup file containing the Kubernetes configuration.
         """
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.middleware = MiddlewareClientManager.fetch()
         self.backup_file = backup_file
         self.logger.debug(f"KubeRestoreConfig initialized with backup file: {self.backup_file}")

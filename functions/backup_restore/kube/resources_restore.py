@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 import yaml
 from typing import List
+from utils.logger import get_logger
 from utils.type_check import type_check
 from utils.shell import run_command
 
@@ -10,7 +11,7 @@ class KubeRestoreResources:
     Class toRestore Kubernetes resources from a backup directory.
     """
     def __init__(self):
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.logger.debug(f"KubeRestoreResources initialized")
 
     @type_check

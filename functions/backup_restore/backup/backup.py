@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from zfs.lifecycle import ZFSLifecycleManager
 from zfs.snapshot import ZFSSnapshotManager
-from utils.logger import setup_global_logger
+from utils.logger import setup_global_logger, set_logger
 from utils.type_check import type_check
 from database.backup import BackupCNPGDatabase
 from catalog.catalog import CatalogBackupManager
@@ -31,7 +31,9 @@ class Backup:
         - backup_dir (Path): Directory to use for backups.
         - retention_number (int): Number of backups to retain. Defaults to 15.
         """
-        self.logger = setup_global_logger("backup")
+        logger = setup_global_logger("backup")
+        set_logger(logger)
+        self.logger = logger
         self.logger.info("Backup process initialized.")
 
         timestamp = datetime.now(timezone.utc).strftime('%Y-%m-%d_%H:%M:%S')

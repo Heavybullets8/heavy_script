@@ -9,7 +9,7 @@ from kube.config_parse import KubeConfigReader
 from kube.resources_restore import KubeRestoreResources
 from zfs.snapshot import ZFSSnapshotManager
 from zfs.lifecycle import ZFSLifecycleManager
-from utils.logger import setup_global_logger
+from utils.logger import setup_global_logger, set_logger
 from utils.singletons import MiddlewareClientManager
 from utils.type_check import type_check
 
@@ -22,7 +22,9 @@ class RestoreBase:
         - backup_dir (Path): Directory where the backup is stored.
         """
         try:
-            self.logger = setup_global_logger("restore")
+            logger = setup_global_logger("restore")
+            set_logger(logger)
+            self.logger = logger
             self.logger.info("Restore process initialized.")
 
             self.backup_dir = backup_dir.resolve()

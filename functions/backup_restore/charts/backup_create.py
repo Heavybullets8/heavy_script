@@ -1,6 +1,6 @@
 import json
-import logging
 from pathlib import Path
+from utils.logger import get_logger
 from utils.singletons import MiddlewareClientManager
 from middlewared.client import ClientException
 from utils.type_check import type_check
@@ -19,7 +19,7 @@ class ChartBackupManager:
         Parameters:
             backup_dir (Path): The directory where backups will be stored.
         """
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.backup_dir = backup_dir
         self.logger.debug(f"ChartBackupManager initialized for backup directory: {self.backup_dir}")
 
@@ -120,7 +120,7 @@ class ChartCreationManager:
         """
         Initialize the ChartCreationManager class.
         """
-        self.logger = logging.getLogger('BackupLogger')
+        self.logger = get_logger()
         self.middleware = MiddlewareClientManager.fetch()
         self.logger.debug("ChartCreationManager initialized.")
 

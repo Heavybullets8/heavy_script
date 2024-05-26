@@ -30,7 +30,7 @@ class ChartInfoExporter:
         self.export_root = self.export_dir / f"Export--{timestamp}"
         self.export_root.mkdir(parents=True, exist_ok=True)
 
-        self.logger = setup_global_logger(self.export_root)
+        self.logger = setup_global_logger("export")
         self.chart_collection = APIChartCollection()
         self.all_release_names = self.chart_collection.all_release_names
         self.logger.info("ChartInfoExporter initialized.")

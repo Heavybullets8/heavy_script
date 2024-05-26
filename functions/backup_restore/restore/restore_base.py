@@ -32,7 +32,7 @@ class RestoreBase:
             self.snapshot_manager = ZFSSnapshotManager()
             self.snapshot_manager.rollback_all_snapshots(self.snapshot_name, self.backup_dataset)
 
-            self.logger = setup_global_logger(self.backup_dir)
+            self.logger = setup_global_logger("restore")
             self.logger.info("Restore process initialized.")
 
             self.middleware = MiddlewareClientManager.fetch()

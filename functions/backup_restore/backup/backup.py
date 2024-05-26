@@ -46,7 +46,7 @@ class Backup:
         self.backup_dataset = str(self.backup_dataset_parent)
         self._create_backup_dataset(self.backup_dataset)
 
-        self.logger = setup_global_logger(self.backup_dir)
+        self.logger = setup_global_logger("backup")
         self.logger.info("Backup process initialized.")
 
         self.chart_collection = APIChartCollection()

@@ -22,7 +22,7 @@ class ChartInfoImporter:
         self.chart_info_dir = self.export_path / "charts" / app_name
         self.catalog_dir = self.export_path / "catalog"
 
-        self.logger = setup_global_logger(self.export_path)
+        self.logger = setup_global_logger("import")
         self.logger.info(f"ChartInfoImporter initialized for {app_name}.")
 
     def import_chart_info(self) -> bool:

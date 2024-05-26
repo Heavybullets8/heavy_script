@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 class Truncator:
@@ -65,24 +65,29 @@ class Truncator:
             return [self._truncate(str(item)) for item in data]
         return data
 
-def setup_global_logger(backup_root: str) -> logging.Logger:
+def setup_global_logger(operation: str, max_bytes: int = 10*1024*1024, backup_count: int = 5) -> logging.Logger:
     """
-    Set up a global logger that logs messages to both a file and the console.
+    Set up a global logger that logs messages to both a rotating file and the console.
 
     Parameters:
+        operation (str): The operation type (import, export, backup, restore).
         backup_root (str): The directory where the log file will be created.
+        max_bytes (int): The maximum size of the log file before rotation (default 10MB).
+        backup_count (int): The number of backup files to keep (default 5).
 
     Returns:
         logging.Logger: The configured logger.
     """
-    log_dir = Path(backup_root)
-    logger = logging.getLogger('BackupLogger')
+    log_dir = Path(__file__).parent.parent.parent.parent / "logs" / operation
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_filename = log_dir / f"{operation}.log"
+
+    logger = logging.getLogger(f'{operation.capitalize()}Logger')
     logger.setLevel(logging.DEBUG)
 
     if not logger.handlers:
-        log_filename = log_dir / f".debug_{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H:%M:%S')}.log"
         try:
-            fh = logging.FileHandler(log_filename)
+            fh = RotatingFileHandler(log_filename, maxBytes=max_bytes, backupCount=backup_count)
             fh.setLevel(logging.DEBUG)
             fh_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(module)s - %(funcName)s - %(message)s')
             fh.setFormatter(fh_formatter)

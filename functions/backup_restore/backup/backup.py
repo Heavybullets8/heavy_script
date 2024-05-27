@@ -152,7 +152,7 @@ class Backup:
                 if snapshot_result["success"]:
                     for snapshot in snapshot_result["snapshots"]:
                         self.logger.info(f"Sending snapshot {snapshot} to backup directory...")
-                        backup_path = app_backup_dir / "snapshots" / f"{snapshot.replace('/', '_')}.zfs"
+                        backup_path = app_backup_dir / "snapshots" / f"{snapshot.replace('/', '%%')}.zfs"
                         backup_path.parent.mkdir(parents=True, exist_ok=True)
                         send_result = self.snapshot_manager.zfs_send(snapshot, backup_path, compress=True)
                         if not send_result["success"]:

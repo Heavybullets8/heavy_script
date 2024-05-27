@@ -279,7 +279,7 @@ class ZFSSnapshotManager:
         }
 
         try:
-            destroy_snapshots_command = f'/sbin/zfs list -H -t snapshot -o name -r "{dataset_path}" | xargs -n1 /sbin/zfs destroy'
+            destroy_snapshots_command = f'/sbin/zfs list -H -t snapshot -o name -r "{dataset_path}" | xargs -0 -n1 /sbin/zfs destroy'
             destroy_result = run_command(destroy_snapshots_command)
             if not destroy_result.is_success():
                 result["message"] = f"Failed to destroy existing snapshots in {dataset_path}: {destroy_result.get_error()}"

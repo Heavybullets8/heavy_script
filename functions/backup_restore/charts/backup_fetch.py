@@ -418,6 +418,10 @@ class BackupChartFetcher:
                     k: str(v) if isinstance(v, Path) else (
                         [str(i) for i in v] if v is not None else 'None'
                     ) for k, v in info['files'].items()
+                },
+                'config': {
+                    k: v if not isinstance(v, Path) else str(v)
+                    for k, v in info.get('config', {}).items()
                 }
             } for app, info in self.charts_info.items()
         }

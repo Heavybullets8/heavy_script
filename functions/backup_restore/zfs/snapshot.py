@@ -61,7 +61,7 @@ class ZFSSnapshotManager:
         return errors
 
     @type_check
-    def create_snapshots(self, snapshot_name, dataset_paths: list, retention_number: int) -> list:
+    def create_snapshots(self, snapshot_name, dataset_paths: list, retention_number: int) -> dict:
         """
         Create snapshots for specified ZFS datasets and cleanup old snapshots.
 
@@ -71,30 +71,44 @@ class ZFSSnapshotManager:
         - retention_number (int): Number of recent snapshots to retain.
 
         Returns:
-        - list: A list of error messages, if any.
+        - dict: Result containing status, messages, and list of created snapshots.
         """
-        errors = []
+        result = {
+            "success": False,
+            "message": "",
+            "errors": [],
+            "snapshots": []
+        }
+
         for path in dataset_paths:
             if path not in self.cache.datasets:
                 error_msg = f"Dataset {path} does not exist."
                 self.logger.error(error_msg)
-                errors.append(error_msg)
+                result["errors"].append(error_msg)
                 continue
 
             snapshot_full_name = f"{path}@{snapshot_name}"
             command = f"/sbin/zfs snapshot \"{snapshot_full_name}\""
-            result = run_command(command)
-            if result.is_success():
+            snapshot_result = run_command(command)
+            if snapshot_result.is_success():
                 self.cache.add_snapshot(snapshot_full_name)
                 self.logger.debug(f"Created snapshot: {snapshot_full_name}")
+                result["snapshots"].append(snapshot_full_name)
             else:
-                error_msg = f"Failed to create snapshot for {snapshot_full_name}: {result.get_error()}"
+                error_msg = f"Failed to create snapshot for {snapshot_full_name}: {snapshot_result.get_error()}"
                 self.logger.error(error_msg)
-                errors.append(error_msg)
+                result["errors"].append(error_msg)
         
         cleanup_errors = self._cleanup_snapshots(dataset_paths, retention_number)
-        errors.extend(cleanup_errors)
-        return errors
+        result["errors"].extend(cleanup_errors)
+
+        if not result["errors"]:
+            result["success"] = True
+            result["message"] = "All snapshots created and cleaned up successfully."
+        else:
+            result["message"] = "Some errors occurred during snapshot creation or cleanup."
+
+        return result
 
     @type_check
     def delete_snapshots(self, snapshot_name: str) -> list:
@@ -207,3 +221,79 @@ class ZFSSnapshotManager:
                     self.logger.error(f"Failed to rollback {snapshot}: {rollback_result.get_error()}")
         except Exception as e:
             self.logger.error(f"Failed to rollback snapshots for {dataset_path}: {e}", exc_info=True)
+
+    @type_check
+    def zfs_send(self, source: str, destination: Path, compress: bool = False) -> dict:
+        """
+        Send a ZFS snapshot to a destination file, with optional gzip compression.
+
+        Parameters:
+        - source (str): The source ZFS snapshot to send.
+        - destination (Path): The destination file to send the snapshot to.
+        - compress (bool): Whether to use gzip compression. Default is False.
+
+        Returns:
+        - dict: Result containing status and message.
+        """
+        result = {
+            "success": False,
+            "message": ""
+        }
+
+        try:
+            if compress:
+                command = f"/sbin/zfs send \"{source}\" | gzip > \"{destination}\""
+            else:
+                command = f"/sbin/zfs send \"{source}\" > \"{destination}\""
+
+            send_result = run_command(command)
+            if send_result.is_success():
+                self.logger.debug(f"Successfully sent snapshot {source} to {destination}")
+                result["success"] = True
+                result["message"] = f"Successfully sent snapshot {source} to {destination}"
+            else:
+                result["message"] = f"Failed to send snapshot {source}: {send_result.get_error()}"
+                self.logger.error(result["message"])
+        except Exception as e:
+            result["message"] = f"Exception occurred while sending snapshot {source}: {e}"
+            self.logger.error(result["message"], exc_info=True)
+
+        return result
+
+    @type_check
+    def zfs_receive(self, source: Path, destination: str, decompress: bool = False) -> dict:
+        """
+        Receive a ZFS snapshot from a source file and restore it to the destination dataset.
+
+        Parameters:
+        - source (Path): The source file containing the snapshot.
+        - destination (str): The destination ZFS dataset to receive the snapshot to.
+        - decompress (bool): Whether the source file is gzip compressed. Default is False.
+
+        Returns:
+        - dict: Result containing status and message.
+        """
+        result = {
+            "success": False,
+            "message": ""
+        }
+
+        try:
+            if decompress:
+                command = f"gunzip -c \"{source}\" | /sbin/zfs recv \"{destination}\""
+            else:
+                command = f"/sbin/zfs recv \"{destination}\" < \"{source}\""
+
+            receive_result = run_command(command)
+            if receive_result.is_success():
+                self.logger.debug(f"Successfully received snapshot from {source} to {destination}")
+                result["success"] = True
+                result["message"] = f"Successfully received snapshot from {source} to {destination}"
+            else:
+                result["message"] = f"Failed to receive snapshot from {source}: {receive_result.get_error()}"
+                self.logger.error(result["message"])
+        except Exception as e:
+            result["message"] = f"Exception occurred while receiving snapshot from {source}: {e}"
+            self.logger.error(result["message"], exc_info=True)
+
+        return result

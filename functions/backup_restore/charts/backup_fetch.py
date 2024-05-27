@@ -362,6 +362,26 @@ class BackupChartFetcher:
         """
         return self.charts_info.get(app_name, {}).get('metadata', {}).get('dataset', '')
 
+    @type_check
+    def get_ix_volumes_dataset(self, app_name: str) -> Union[str, None]:
+        """
+        Get the ixVolumes dataset path for a given application.
+
+        Returns:
+        - str: The ixVolumes dataset path if it exists, else None.
+        """
+        ix_volumes = self.charts_info.get(app_name, {}).get("ixVolumes", [])
+        if ix_volumes:
+            host_path = ix_volumes[0].get("hostPath")
+            if host_path:
+                # Remove the "/mnt/" prefix
+                if host_path.startswith("/mnt/"):
+                    host_path = host_path[5:]
+                # Remove the last directory to get the dataset path
+                dataset_path = str(Path(host_path).parent)
+                return dataset_path
+        return None
+
     def handle_critical_failure(self, app_name: str) -> None:
         """
         Remove the application from all_releases and other relevant lists.

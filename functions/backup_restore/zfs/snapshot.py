@@ -136,51 +136,46 @@ class ZFSSnapshotManager:
         return errors
 
     @type_check
-    def rollback_persistent_volume(self, snapshot_name: str, pv_file: Path) -> dict:
+    def rollback_snapshots(self, snapshots: list) -> dict:
         """
-        Restore a PV from a backup YAML file and rollback to a specified snapshot.
+        Rollback multiple snapshots.
 
         Parameters:
-        - snapshot_name (str): Name of the snapshot to rollback to.
-        - pv_file (Path): Path to the PV file.
+        - snapshots (list): List of snapshots to rollback.
 
         Returns:
-        - dict: Result containing status and message.
+        - dict: Result containing status, messages, and list of rolled back snapshots.
         """
         result = {
-            "success": False,
-            "message": ""
+            "success": True,
+            "messages": [],
+            "rolled_back_snapshots": []
         }
 
-        try:
-            with pv_file.open('r') as file:
-                pv_data = yaml.safe_load(file)
-
-            pool_name = pv_data['spec']['csi']['volumeAttributes']['openebs.io/poolname']
-            volume_handle = pv_data['spec']['csi']['volumeHandle']
-            dataset_path = f"{pool_name}/{volume_handle}"
-
+        for snapshot in snapshots:
+            dataset_path, snapshot_name = snapshot.split('@', 1)
             if dataset_path not in self.cache.datasets:
                 message = f"Dataset {dataset_path} does not exist. Cannot restore snapshot."
                 self.logger.warning(message)
-                result["message"] = message
-                return result
+                result["messages"].append(message)
+                result["success"] = False
+                continue
 
-            rollback_command = f"/sbin/zfs rollback -r -f \"{dataset_path}@{snapshot_name}\""
+            rollback_command = f"/sbin/zfs rollback -r -f \"{snapshot}\""
             rollback_result = run_command(rollback_command)
             if rollback_result.is_success():
                 message = f"Successfully rolled back {dataset_path} to snapshot {snapshot_name}."
                 self.logger.debug(message)
-                result["success"] = True
-                result["message"] = message
+                result["rolled_back_snapshots"].append({
+                    "dataset": dataset_path,
+                    "snapshot": snapshot_name
+                })
+                result["messages"].append(message)
             else:
                 message = f"Failed to rollback {dataset_path} to snapshot {snapshot_name}: {rollback_result.get_error()}"
                 self.logger.error(message)
-                result["message"] = message
-        except Exception as e:
-            message = f"Failed to process PV file {pv_file}: {e}"
-            self.logger.error(message, exc_info=True)
-            result["message"] = message
+                result["messages"].append(message)
+                result["success"] = False
 
         return result
 
@@ -195,6 +190,19 @@ class ZFSSnapshotManager:
         snapshots = list(self.cache.snapshots)
         self.logger.debug(f"Listing all snapshots: {snapshots}")
         return snapshots
+
+    @type_check
+    def snapshot_exists(self, snapshot_name: str) -> bool:
+        """
+        Check if a snapshot exists in the cache.
+
+        Parameters:
+        - snapshot_name (str): The name of the snapshot to check.
+
+        Returns:
+        - bool: True if the snapshot exists, False otherwise.
+        """
+        return snapshot_name in self.cache.snapshots
 
     @type_check
     def rollback_all_snapshots(self, snapshot_name: str, dataset_path: str) -> None:

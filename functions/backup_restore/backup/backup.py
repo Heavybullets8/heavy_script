@@ -158,6 +158,14 @@ class Backup:
                         if not send_result["success"]:
                             failures[app_name].append(send_result["message"])
 
+            if chart_info.ix_volumes_dataset:
+                self.logger.info(f"Sending snapshots to backup directory...")
+                backup_path = app_backup_dir / "snapshots" / f"{snapshot.replace('/', '%%')}.zfs"
+                backup_path.parent.mkdir(parents=True, exist_ok=True)
+                send_result = self.snapshot_manager.zfs_send(snapshot, backup_path, compress=True)
+                if not send_result["success"]:
+                    failures[app_name].append(send_result["message"])
+
         self._create_backup_snapshot()
         self._log_failures(failures)
         self._cleanup_old_backups()

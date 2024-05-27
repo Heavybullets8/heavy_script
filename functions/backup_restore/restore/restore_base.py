@@ -1,4 +1,5 @@
 import os
+import yaml
 from pathlib import Path
 from collections import defaultdict
 from app.app_manager import AppManager
@@ -95,26 +96,80 @@ class RestoreBase:
 
     @type_check
     def _rollback_volumes(self, app_name: str):
-        """Rollback persistent volumes."""
+        """
+        Rollback persistent volumes or restore from backups if necessary.
+
+        Parameters:
+        - app_name (str): The name of the application to restore volumes for.
+        """
         pv_files = self.chart_info.get_file(app_name, "pv_zfs_volumes")
         pv_only_files = [file for file in pv_files if file.name.endswith('-pv.yaml')]
+
+        snapshots_to_rollback = []
+        snapshots_to_restore = []
+
+        self.logger.info(f"Preparing to rollback or restore ZFS snapshots for {app_name}...")
+
+        # Process PV files
         if pv_only_files:
-            self.logger.info(f"Rolling back ZFS snapshots for {app_name}...")
             for pv_file in pv_only_files:
-                result = self.snapshot_manager.rollback_persistent_volume(self.snapshot_name, pv_file)
-                if not result["success"]:
-                    self.failures[app_name].append(result["message"])
-                    self.logger.error(f"Failed to rollback {pv_file} for {app_name}: {result['message']}")
+                try:
+                    with pv_file.open('r') as file:
+                        pv_data = yaml.safe_load(file)
+                    pool_name = pv_data['spec']['csi']['volumeAttributes']['openebs.io/poolname']
+                    volume_handle = pv_data['spec']['csi']['volumeHandle']
+                    dataset_path = f"{pool_name}/{volume_handle}"
+                    snapshot = f"{dataset_path}@{self.snapshot_name}"
+
+                    if self.snapshot_manager.snapshot_exists(snapshot):
+                        snapshots_to_rollback.append(snapshot)
+                    else:
+                        snapshots_to_restore.append(snapshot)
+                except Exception as e:
+                    message = f"Failed to process PV file {pv_file}: {e}"
+                    self.logger.error(message, exc_info=True)
+                    self.failures[app_name].append(message)
+                    continue
+
+        # Process ix_volumes
+        ix_volumes_dataset = self.chart_info.get_ix_volumes_dataset()
+        if ix_volumes_dataset:
+            snapshot = f"{ix_volumes_dataset}@{self.snapshot_name}"
+            if self.snapshot_manager.snapshot_exists(snapshot):
+                snapshots_to_rollback.append(snapshot)
+            else:
+                snapshots_to_restore.append(snapshot)
+
+        # Rollback snapshots
+        if snapshots_to_rollback:
+            self.logger.info(f"Rolling back snapshots for {app_name}...")
+            rollback_result = self.snapshot_manager.rollback_snapshots(snapshots_to_rollback)
+            for message in rollback_result["messages"]:
+                if not rollback_result["success"]:
+                    self.failures[app_name].append(message)
+                    self.logger.error(message)
                 else:
-                    self.logger.debug(result["message"])
+                    self.logger.debug(message)
+
+        # Restore snapshots
+        if snapshots_to_restore:
+            self.logger.info(f"Restoring snapshots for {app_name}...")
+            restore_result = self._restore_snapshots(app_name, snapshots_to_restore)
+            for message in restore_result["messages"]:
+                if not restore_result["success"]:
+                    self.failures[app_name].append(message)
+                    self.logger.error(message)
+                else:
+                    self.logger.debug(message)
 
     @type_check
-    def restore_snapshots(self, app_name: str):
+    def _restore_snapshots(self, app_name: str, snapshots_to_restore: list):
         """
         Restore snapshots from the backup directory for a specific application.
 
         Parameters:
         - app_name (str): The name of the application to restore snapshots for.
+        - snapshots_to_restore (list): List of snapshots to restore.
         """
         snapshot_files = self.chart_info.get_file(app_name, "snapshots")
         if snapshot_files:
@@ -139,13 +194,13 @@ class RestoreBase:
                         self.logger.error(f"Failed to create parent dataset {parent_dataset_path}")
                         continue
 
-                # Restore the snapshot
-                restore_result = self.snapshot_manager.zfs_receive(snapshot_file_path, dataset_path, decompress=True)
-                if not restore_result["success"]:
-                    self.failures[app_name].append(restore_result["message"])
-                    self.logger.error(f"Failed to restore snapshot from {snapshot_file_path} for {app_name}: {restore_result['message']}")
-                else:
-                    self.logger.debug(f"Successfully restored snapshot from {snapshot_file_path} for {app_name}")
+                if snapshot_file_name in snapshots_to_restore:
+                    restore_result = self.snapshot_manager.zfs_receive(snapshot_file_path, dataset_path, decompress=True)
+                    if not restore_result["success"]:
+                        self.failures[app_name].append(restore_result["message"])
+                        self.logger.error(f"Failed to restore snapshot from {snapshot_file_path} for {app_name}: {restore_result['message']}")
+                    else:
+                        self.logger.debug(f"Successfully restored snapshot from {snapshot_file_path} for {app_name}")
 
     @type_check
     def _restore_application(self, app_name: str) -> bool:

@@ -57,6 +57,9 @@ class BackupChartFetcher:
                 'dataset': '',
                 'is_cnpg': False,
             },
+            'config': {
+                'ixVolumes': []
+            },
             'files': {
                 'database': None,
                 'namespace': None,
@@ -87,6 +90,8 @@ class BackupChartFetcher:
             chart_info['metadata']['catalog'] = metadata.get('catalog', '')
             chart_info['metadata']['dataset'] = metadata.get('dataset', '')
             chart_info['metadata']['is_cnpg'] = self._is_cnpg(config)
+
+            chart_info['config']['ixVolumes'] = config.get('ixVolumes', [])
 
             # Add files
             chart_info['files']['database'] = self._get_database_file(database_dir, app_name)
@@ -370,7 +375,7 @@ class BackupChartFetcher:
         Returns:
         - str: The ixVolumes dataset path if it exists, else None.
         """
-        ix_volumes = self.charts_info.get(app_name, {}).get("ixVolumes", [])
+        ix_volumes = self.charts_info.get(app_name, {}).get("config", {}).get("ixVolumes", [])
         if ix_volumes:
             host_path = ix_volumes[0].get("hostPath")
             if host_path:

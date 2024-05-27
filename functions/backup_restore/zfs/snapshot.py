@@ -279,12 +279,19 @@ class ZFSSnapshotManager:
         }
 
         try:
-            destroy_snapshots_command = f'/sbin/zfs list -H -t snapshot -o name -r "{dataset_path}" | xargs -0 -n1 /sbin/zfs destroy'
-            destroy_result = run_command(destroy_snapshots_command)
-            if not destroy_result.is_success():
-                result["message"] = f"Failed to destroy existing snapshots in {dataset_path}: {destroy_result.get_error()}"
-                self.logger.error(result["message"])
-                return result
+            all_snapshots = self.list_snapshots()
+            dataset_snapshots = [snap for snap in all_snapshots if snap.startswith(f"{dataset_path}@")]
+
+            for snapshot in dataset_snapshots:
+                destroy_command = f'/sbin/zfs destroy "{snapshot}"'
+                destroy_result = run_command(destroy_command)
+                if destroy_result.is_success():
+                    self.cache.remove_snapshot(snapshot)
+                    self.logger.debug(f"Deleted snapshot: {snapshot}")
+                else:
+                    result["message"] = f"Failed to destroy existing snapshot {snapshot}: {destroy_result.get_error()}"
+                    self.logger.error(result["message"])
+                    return result
 
             receive_command = f'/sbin/zfs recv -F "{dataset_path}"'
             if decompress:

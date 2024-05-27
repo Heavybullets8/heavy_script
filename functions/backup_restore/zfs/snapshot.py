@@ -282,7 +282,7 @@ class ZFSSnapshotManager:
             if decompress:
                 command = f"gunzip -c \"{source}\" | /sbin/zfs recv \"{destination}\""
             else:
-                command = f"/sbin/zfs recv \"{destination}\" < \"{source}\""
+                command = f"/sbin/zfs recv -F \"{destination}\" < \"{source}\""
 
             receive_result = run_command(command)
             if receive_result.is_success():

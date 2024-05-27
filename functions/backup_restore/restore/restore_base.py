@@ -120,23 +120,23 @@ class RestoreBase:
         if snapshot_files:
             self.logger.debug(f"Restoring snapshots for {app_name}...")
             for snapshot_file in snapshot_files:
-                # Replace '%%' with '/' in the full file path
-                snapshot_file_path = str(snapshot_file).replace('%%', '/')
+                # Perform the replacement of '%%' with '/' on the filename
+                snapshot_file_name = snapshot_file.name.replace('%%', '/')
+                snapshot_file_path = snapshot_file.with_name(snapshot_file_name)
                 self.logger.debug(f"Modified snapshot file path: {snapshot_file_path}")
-                
+
                 # Extract the dataset path from the modified file path
-                original_path = Path(snapshot_file_path).stem
+                original_path = snapshot_file_path.stem
                 self.logger.debug(f"Original path: {original_path}")
                 dataset_path, _ = original_path.split('@', 1)
                 self.logger.debug(f"Dataset path: {dataset_path}")
 
-                restore_result = self.snapshot_manager.zfs_receive(Path(snapshot_file_path), dataset_path, decompress=True)
+                restore_result = self.snapshot_manager.zfs_receive(snapshot_file_path, dataset_path, decompress=True)
                 if not restore_result["success"]:
                     self.failures[app_name].append(restore_result["message"])
-                    self.logger.error(f"Failed to restore snapshot from {snapshot_file} for {app_name}: {restore_result['message']}")
+                    self.logger.error(f"Failed to restore snapshot from {snapshot_file_path} for {app_name}: {restore_result['message']}")
                 else:
-                    self.logger.debug(f"Successfully restored snapshot from {snapshot_file} for {app_name}")
-
+                    self.logger.debug(f"Successfully restored snapshot from {snapshot_file_path} for {app_name}")
 
     @type_check
     def _restore_application(self, app_name: str) -> bool:

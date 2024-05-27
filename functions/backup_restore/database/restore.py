@@ -139,7 +139,7 @@ class RestoreCNPGDatabase(CNPGBase):
                 "--if-exists",
                 "--no-owner",
                 "--no-privileges",
-                "--single-transaction"
+                "--disable-triggers"
             ]
             open_mode = 'rb'
 
@@ -201,7 +201,7 @@ class RestoreCNPGDatabase(CNPGBase):
                 return result
 
             # Check for deadlock and retry if detected
-            if 'deadlock detected' in stderr:
+            if b'deadlock detected' in stderr:
                 message = f"Deadlock detected. Retrying {attempt + 1}/{retries}..."
                 self.logger.warning(message)
                 result["message"] = f"{result['message']} {message}"

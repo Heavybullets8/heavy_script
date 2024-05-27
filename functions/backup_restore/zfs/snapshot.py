@@ -188,7 +188,6 @@ class ZFSSnapshotManager:
         - list: A list of all snapshot names.
         """
         snapshots = list(self.cache.snapshots)
-        self.logger.debug(f"Listing all snapshots: {snapshots}")
         return snapshots
 
     @type_check

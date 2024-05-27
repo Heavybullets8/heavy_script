@@ -263,7 +263,7 @@ class APIChartFetcher(ChartObserver):
         Returns:
         - str: The ixVolumes dataset path if it exists, else None.
         """
-        ix_volumes = self._chart_data.get("ixVolumes", [])
+        ix_volumes = self.chart_config.get("ixVolumes", [])
         if ix_volumes:
             host_path = ix_volumes[0].get("hostPath")
             if host_path:

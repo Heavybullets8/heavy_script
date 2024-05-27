@@ -132,7 +132,7 @@ class RestoreBase:
                     continue
 
         # Process ix_volumes
-        ix_volumes_dataset = self.chart_info.get_ix_volumes_dataset()
+        ix_volumes_dataset = self.chart_info.get_ix_volumes_dataset(app_name)
         if ix_volumes_dataset:
             snapshot = f"{ix_volumes_dataset}@{self.snapshot_name}"
             if self.snapshot_manager.snapshot_exists(snapshot):

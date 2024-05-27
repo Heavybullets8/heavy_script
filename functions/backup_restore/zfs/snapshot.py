@@ -279,7 +279,14 @@ class ZFSSnapshotManager:
         }
 
         try:
-            receive_command = f'zfs recv -F "{dataset_path}"'
+            destroy_snapshots_command = f'/sbin/zfs list -H -t snapshot -o name -r "{dataset_path}" | xargs -n1 /sbin/zfs destroy'
+            destroy_result = run_command(destroy_snapshots_command)
+            if not destroy_result.is_success():
+                result["message"] = f"Failed to destroy existing snapshots in {dataset_path}: {destroy_result.get_error()}"
+                self.logger.error(result["message"])
+                return result
+
+            receive_command = f'/sbin/zfs recv -F "{dataset_path}"'
             if decompress:
                 command = f'gunzip < "{snapshot_file}" | {receive_command}'
             else:

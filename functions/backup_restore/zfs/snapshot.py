@@ -261,14 +261,14 @@ class ZFSSnapshotManager:
         return result
 
     @type_check
-    def zfs_receive(self, source: Path, destination: str, decompress: bool = False) -> dict:
+    def zfs_receive(self, snapshot_file: Path, dataset_path: str, decompress: bool = False) -> dict:
         """
-        Receive a ZFS snapshot from a source file and restore it to the destination dataset.
+        Receive a ZFS snapshot from a file and restore it to the specified dataset path.
 
         Parameters:
-        - source (Path): The source file containing the snapshot.
-        - destination (str): The destination ZFS dataset to receive the snapshot to.
-        - decompress (bool): Whether the source file is gzip compressed. Default is False.
+        - snapshot_file (Path): The path to the snapshot file.
+        - dataset_path (str): The ZFS dataset path to restore to.
+        - decompress (bool): Whether the snapshot file is gzip compressed. Default is False.
 
         Returns:
         - dict: Result containing status and message.
@@ -279,21 +279,21 @@ class ZFSSnapshotManager:
         }
 
         try:
+            receive_command = f'zfs recv -F "{dataset_path}"'
             if decompress:
-                command = f"gunzip -c \"{source}\" | /sbin/zfs recv -F \"{destination}\""
+                command = f'gunzip < "{snapshot_file}" | {receive_command}'
             else:
-                command = f"/sbin/zfs recv -F \"{destination}\" < \"{source}\""
-
+                command = f'cat "{snapshot_file}" | {receive_command}'
+            
+            self.logger.debug(f"Executing command: {command}")
             receive_result = run_command(command)
             if receive_result.is_success():
-                self.logger.debug(f"Successfully received snapshot from {source} to {destination}")
                 result["success"] = True
-                result["message"] = f"Successfully received snapshot from {source} to {destination}"
+                result["message"] = f"Successfully restored snapshot from {snapshot_file} to {dataset_path}"
             else:
-                result["message"] = f"Failed to receive snapshot from {source}: {receive_result.get_error()}"
-                self.logger.error(result["message"])
+                result["message"] = receive_result.get_error()
         except Exception as e:
-            result["message"] = f"Exception occurred while receiving snapshot from {source}: {e}"
+            result["message"] = f"Exception occurred while restoring snapshot from {snapshot_file}: {e}"
             self.logger.error(result["message"], exc_info=True)
 
         return result

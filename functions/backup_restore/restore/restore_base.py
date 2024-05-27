@@ -121,7 +121,9 @@ class RestoreBase:
             self.logger.debug(f"Restoring snapshots for {app_name}...")
             for snapshot_file in snapshot_files:
                 original_path = snapshot_file.stem.replace('%%', '/')
+                self.logger.debug(f"Original path: {original_path}")
                 dataset_path, _ = original_path.split('@', 1)
+                self.logger.debug(f"Dataset path: {dataset_path}")
 
                 restore_result = self.snapshot_manager.zfs_receive(snapshot_file, dataset_path, decompress=True)
                 if not restore_result["success"]:

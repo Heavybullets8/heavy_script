@@ -150,8 +150,8 @@ class Backup:
                     failures[app_name].extend(snapshot_result["errors"])
 
                 if snapshot_result["success"]:
+                    self.logger.info(f"Sending snapshots to backup directory...")
                     for snapshot in snapshot_result["snapshots"]:
-                        self.logger.info(f"Sending snapshot {snapshot} to backup directory...")
                         backup_path = app_backup_dir / "snapshots" / f"{snapshot.replace('/', '%%')}.zfs"
                         backup_path.parent.mkdir(parents=True, exist_ok=True)
                         send_result = self.snapshot_manager.zfs_send(snapshot, backup_path, compress=True)

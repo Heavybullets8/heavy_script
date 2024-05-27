@@ -42,6 +42,8 @@ class RestoreAll(RestoreBase):
                 self.logger.error(f"Failed to rollback snapshots for {app_name}: {e}\n")
                 self.failures[app_name].append(f"Failed to rollback volume snapshots: {e}")
 
+            self.restore_snapshots(app_name)
+
         self.logger.info("\nStarting Kubernetes Services\n"
                          "----------------------------")
         try:

@@ -66,6 +66,7 @@ class BackupChartFetcher:
                 'secrets': [],
                 'crds': [],
                 'pv_zfs_volumes': [],
+                'snapshots': []
             }
         }
 
@@ -73,6 +74,7 @@ class BackupChartFetcher:
         kubernetes_objects_dir = chart_base_dir / 'kubernetes_objects'
         database_dir = chart_base_dir / 'database'
         versions_dir = chart_base_dir / 'chart_versions'
+        snapshots_dir = chart_base_dir / 'snapshots'
 
         # Parse metadata and config
         metadata = self._parse_metadata(chart_info_dir)
@@ -96,6 +98,7 @@ class BackupChartFetcher:
             chart_info['files']['crds'] = self._get_files(kubernetes_objects_dir / 'crds')
             chart_info['files']['pv_zfs_volumes'] = self._get_files(kubernetes_objects_dir / 'pv_zfs_volumes')
             chart_info['files']['cnpg_pvcs_to_delete'] = self._get_file(kubernetes_objects_dir / 'cnpg_pvcs_to_delete.txt')
+            chart_info['files']['snapshots'] = self._get_files(snapshots_dir)
 
             return chart_info
 

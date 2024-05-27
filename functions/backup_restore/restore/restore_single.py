@@ -26,6 +26,7 @@ class RestoreSingle(RestoreBase):
         for app_name in app_names:
             try:
                 self._rollback_volumes(app_name)
+                self.restore_snapshots(app_name)
             except Exception as e:
                 self.logger.error(f"Failed to rollback snapshots for {app_name}: {e}\n")
                 self.failures[app_name].append(f"Failed to rollback volume snapshots: {e}")

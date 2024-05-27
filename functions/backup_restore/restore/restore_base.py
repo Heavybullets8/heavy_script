@@ -109,6 +109,28 @@ class RestoreBase:
                     self.logger.debug(result["message"])
 
     @type_check
+    def restore_snapshots(self, app_name: str):
+        """
+        Restore snapshots from the backup directory for a specific application.
+
+        Parameters:
+        - app_name (str): The name of the application to restore snapshots for.
+        """
+        snapshot_files = self.chart_info.get_file(app_name, "snapshots")
+        if snapshot_files:
+            self.logger.debug(f"Restoring snapshots for {app_name}...")
+            for snapshot_file in snapshot_files:
+                original_path = snapshot_file.stem.replace('%%', '/')
+                dataset_path, _ = original_path.split('@', 1)
+
+                restore_result = self.snapshot_manager.zfs_receive(snapshot_file, dataset_path, decompress=True)
+                if not restore_result["success"]:
+                    self.failures[app_name].append(restore_result["message"])
+                    self.logger.error(f"Failed to restore snapshot from {snapshot_file} for {app_name}: {restore_result['message']}")
+                else:
+                    self.logger.debug(f"Successfully restored snapshot from {snapshot_file} for {app_name}")
+
+    @type_check
     def _restore_application(self, app_name: str) -> bool:
         """Restore a single application."""
         try:

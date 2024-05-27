@@ -280,7 +280,7 @@ class ZFSSnapshotManager:
 
         try:
             if decompress:
-                command = f"gunzip -c \"{source}\" | /sbin/zfs recv \"{destination}\""
+                command = f"gunzip -c \"{source}\" | /sbin/zfs recv -F \"{destination}\""
             else:
                 command = f"/sbin/zfs recv -F \"{destination}\" < \"{source}\""
 

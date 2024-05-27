@@ -129,6 +129,17 @@ class RestoreBase:
                 dataset_path, _ = snapshot_file_name.split('@', 1)
                 self.logger.debug(f"Dataset path: {dataset_path}")
 
+                # Ensure the parent dataset exists
+                parent_dataset_path = '/'.join(dataset_path.split('/')[:-1])
+                if not self.zfs_manager.dataset_exists(parent_dataset_path):
+                    self.logger.debug(f"Parent dataset {parent_dataset_path} does not exist. Creating it...")
+                    create_result = self.zfs_manager.create_dataset(parent_dataset_path)
+                    if not create_result:
+                        self.failures[app_name].append(f"Failed to create parent dataset {parent_dataset_path}")
+                        self.logger.error(f"Failed to create parent dataset {parent_dataset_path}")
+                        continue
+
+                # Restore the snapshot
                 restore_result = self.snapshot_manager.zfs_receive(snapshot_file_path, dataset_path, decompress=True)
                 if not restore_result["success"]:
                     self.failures[app_name].append(restore_result["message"])

@@ -108,8 +108,6 @@ class RestoreBase:
         snapshots_to_rollback = []
         snapshots_to_restore = []
 
-        self.logger.info(f"Preparing to rollback or restore ZFS snapshots for {app_name}...")
-
         # Process PV files
         if pv_only_files:
             for pv_file in pv_only_files:

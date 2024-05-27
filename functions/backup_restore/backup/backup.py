@@ -160,6 +160,7 @@ class Backup:
 
             if chart_info.ix_volumes_dataset:
                 self.logger.info(f"Sending snapshots to backup directory...")
+                snapshot = chart_info.ix_volumes_dataset + "@" + self.snapshot_name
                 backup_path = app_backup_dir / "snapshots" / f"{snapshot.replace('/', '%%')}.zfs"
                 backup_path.parent.mkdir(parents=True, exist_ok=True)
                 send_result = self.snapshot_manager.zfs_send(snapshot, backup_path, compress=True)

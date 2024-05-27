@@ -120,9 +120,9 @@ class RestoreBase:
         if snapshot_files:
             self.logger.debug(f"Restoring snapshots for {app_name}...")
             for snapshot_file in snapshot_files:
-                # Perform the replacement of '%%' with '/' on the filename
-                snapshot_file_name = snapshot_file.name.replace('%%', '/')
-                snapshot_file_path = snapshot_file.with_name(snapshot_file_name)
+                # Perform the replacement of '%%' with '/' on the full file path
+                snapshot_file_path_str = str(snapshot_file).replace('%%', '/')
+                snapshot_file_path = Path(snapshot_file_path_str)
                 self.logger.debug(f"Modified snapshot file path: {snapshot_file_path}")
 
                 # Extract the dataset path from the modified file path

@@ -71,23 +71,17 @@ class RestoreCNPGDatabase(CNPGBase):
         if not self.primary_pod:
             message = "Primary pod not found."
             self.logger.error(message)
+            result["message"] = message
 
             if was_stopped:
                 self.logger.debug(f"Stopping app {self.app_name} after restore failure.")
                 self.stop_app(self.app_name)
 
-            result["message"] = message
             return result
 
-        try:
-            # Terminate active connections and drop the database
-            drop_database_result = self._drop_and_recreate_database()
-            if not drop_database_result["success"]:
-                result["message"] = drop_database_result["message"]
-                self.logger.error(result["message"])
-                return result
+        self.command, self.open_mode = self._get_restore_command()
 
-            # Restore the database from the backup file
+        try:
             result = self._execute_restore_command()
 
             if not result["success"]:
@@ -145,101 +139,12 @@ class RestoreCNPGDatabase(CNPGBase):
                 "--if-exists",
                 "--no-owner",
                 "--no-privileges",
-                "--disable-triggers"
+                "--single-transaction"
             ]
             open_mode = 'rb'
 
         self.logger.debug(f"Restore command for app {self.app_name}: {command}")
         return command, open_mode
-
-    def _drop_and_recreate_database(self) -> Dict[str, str]:
-        """
-        Terminate active connections, drop the database, and recreate it.
-
-        Returns:
-            dict: Result containing status and message.
-        """
-        result = {
-            "success": False,
-            "message": ""
-        }
-
-        terminate_connections_command = [
-            "k3s", "kubectl", "exec",
-            "--namespace", self.namespace,
-            "--stdin",
-            "--container", "postgres",
-            self.primary_pod,
-            "--",
-            "psql",
-            "--dbname", "postgres",
-            "--command",
-            f"""
-            SELECT pg_terminate_backend(pg_stat_activity.pid)
-            FROM pg_stat_activity
-            WHERE pg_stat_activity.datname = '{self.database_name}'
-              AND pid <> pg_backend_pid();
-            """
-        ]
-
-        drop_database_command = [
-            "k3s", "kubectl", "exec",
-            "--namespace", self.namespace,
-            "--stdin",
-            "--container", "postgres",
-            self.primary_pod,
-            "--",
-            "psql",
-            "--dbname", "postgres",
-            "--command",
-            f"DROP DATABASE IF EXISTS {self.database_name};"
-        ]
-
-        create_database_command = [
-            "k3s", "kubectl", "exec",
-            "--namespace", self.namespace,
-            "--stdin",
-            "--container", "postgres",
-            self.primary_pod,
-            "--",
-            "psql",
-            "--dbname", "postgres",
-            "--command",
-            f"CREATE DATABASE {self.database_name} OWNER {self.database_user};"
-        ]
-
-        try:
-            # Terminate active connections
-            terminate_process = subprocess.run(terminate_connections_command, capture_output=True, text=True)
-            if terminate_process.returncode != 0:
-                result["message"] = f"Failed to terminate active connections: {terminate_process.stderr}"
-                self.logger.error(result["message"])
-                return result
-
-            # Drop the database
-            drop_process = subprocess.run(drop_database_command, capture_output=True, text=True)
-            if drop_process.returncode != 0:
-                result["message"] = f"Failed to drop the database: {drop_process.stderr}"
-                self.logger.error(result["message"])
-                return result
-
-            # Recreate the database
-            create_process = subprocess.run(create_database_command, capture_output=True, text=True)
-            if create_process.returncode != 0:
-                result["message"] = f"Failed to recreate the database: {create_process.stderr}"
-                self.logger.error(result["message"])
-                return result
-
-            result["success"] = True
-            result["message"] = "Database dropped and recreated successfully."
-            self.logger.debug(result["message"])
-
-        except Exception as e:
-            message = f"Failed to drop and recreate database: {e}"
-            self.logger.error(message, exc_info=True)
-            result["message"] = message
-
-        return result
 
     def _execute_restore_command(self, retries=3, wait=5) -> Dict[str, str]:
         """
@@ -257,8 +162,6 @@ class RestoreCNPGDatabase(CNPGBase):
             "message": ""
         }
         self.logger.debug(f"Executing restore command on pod: {self.primary_pod} with dump file: {self.backup_file}")
-
-        self.command, self.open_mode = self._get_restore_command()
 
         for attempt in range(retries):
             try:

@@ -129,9 +129,13 @@ class RestoreBase:
                     if self.snapshot_manager.snapshot_exists(snapshot):
                         snapshots_to_rollback.append(snapshot)
                         self.logger.debug(f"Snapshot exists and will be rolled back: {snapshot}")
-                    else:
+                    elif any(snap.stem.replace('%%', '/') == snapshot for snap in self.chart_info.get_file(app_name, "snapshots") or []):
                         snapshots_to_restore.append(snapshot)
-                        self.logger.debug(f"Snapshot does not exist and will be restored: {snapshot}")
+                        self.logger.debug(f"Snapshot to restore found in backups: {snapshot}")
+                    else:
+                        message = f"Snapshot {snapshot} cannot be rolled back or restored from backup."
+                        self.failures[app_name].append(message)
+                        self.logger.error(message)
                 except Exception as e:
                     message = f"Failed to process PV file {pv_file}: {e}"
                     self.logger.error(message, exc_info=True)
@@ -147,9 +151,13 @@ class RestoreBase:
             if self.snapshot_manager.snapshot_exists(snapshot):
                 snapshots_to_rollback.append(snapshot)
                 self.logger.debug(f"Snapshot exists and will be rolled back: {snapshot}")
-            else:
+            elif any(snap.stem.replace('%%', '/') == snapshot for snap in self.chart_info.get_file(app_name, "snapshots") or []):
                 snapshots_to_restore.append(snapshot)
-                self.logger.debug(f"Snapshot does not exist and will be restored: {snapshot}")
+                self.logger.debug(f"Snapshot to restore found in backups: {snapshot}")
+            else:
+                message = f"Snapshot {snapshot} for ix_volumes cannot be rolled back or restored from backup."
+                self.failures[app_name].append(message)
+                self.logger.error(message)
 
         # Rollback snapshots
         if snapshots_to_rollback:

@@ -82,10 +82,10 @@ class RestoreCNPGDatabase(CNPGBase):
         self.command, self.open_mode = self._get_restore_command()
 
         try:
-            # Drop and recreate the database before restoring
-            drop_create_result = self._drop_and_create_database()
-            if not drop_create_result["success"]:
-                result["message"] = drop_create_result["message"]
+            # Drop all objects in the database before restoring
+            drop_all_objects_result = self._drop_all_objects()
+            if not drop_all_objects_result["success"]:
+                result["message"] = drop_all_objects_result["message"]
                 self.logger.error(result["message"])
                 return result
 
@@ -153,9 +153,9 @@ class RestoreCNPGDatabase(CNPGBase):
         self.logger.debug(f"Restore command for app {self.app_name}: {command}")
         return command, open_mode
 
-    def _drop_and_create_database(self) -> Dict[str, str]:
+    def _drop_all_objects(self) -> Dict[str, str]:
         """
-        Drop and recreate the database.
+        Drop all objects in the database.
 
         Returns:
             dict: Result containing status and message.
@@ -165,7 +165,7 @@ class RestoreCNPGDatabase(CNPGBase):
             "message": ""
         }
 
-        drop_command = [
+        drop_all_objects_command = [
             "k3s", "kubectl", "exec",
             "--namespace", self.namespace,
             "--stdin",
@@ -173,41 +173,45 @@ class RestoreCNPGDatabase(CNPGBase):
             self.primary_pod,
             "--",
             "psql",
+            "--dbname", self.database_name,
             "--command",
-            f"DROP DATABASE IF EXISTS {self.database_name};"
-        ]
-
-        create_command = [
-            "k3s", "kubectl", "exec",
-            "--namespace", self.namespace,
-            "--stdin",
-            "--container", "postgres",
-            self.primary_pod,
-            "--",
-            "psql",
-            "--command",
-            f"CREATE DATABASE {self.database_name} OWNER {self.database_user};"
+            """
+            DO $$ DECLARE
+                r RECORD;
+            BEGIN
+                -- drop all tables
+                FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = current_schema()) LOOP
+                    EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
+                END LOOP;
+                -- drop all sequences
+                FOR r IN (SELECT sequencename FROM pg_sequences WHERE schemaname = current_schema()) LOOP
+                    EXECUTE 'DROP SEQUENCE IF EXISTS ' || quote_ident(r.sequencename) || ' CASCADE';
+                END LOOP;
+                -- drop all views
+                FOR r IN (SELECT viewname FROM pg_views WHERE schemaname = current_schema()) LOOP
+                    EXECUTE 'DROP VIEW IF EXISTS ' || quote_ident(r.viewname) || ' CASCADE';
+                END LOOP;
+                -- drop all functions
+                FOR r IN (SELECT proname FROM pg_proc p JOIN pg_namespace n ON p.pronamespace = n.oid WHERE n.nspname = current_schema()) LOOP
+                    EXECUTE 'DROP FUNCTION IF EXISTS ' || quote_ident(r.proname) || ' CASCADE';
+                END LOOP;
+            END $$;
+            """
         ]
 
         try:
-            drop_process = subprocess.run(drop_command, capture_output=True, text=True)
+            drop_process = subprocess.run(drop_all_objects_command, capture_output=True, text=True)
             if drop_process.returncode != 0:
-                result["message"] = f"Failed to drop database: {drop_process.stderr}"
-                self.logger.error(result["message"])
-                return result
-
-            create_process = subprocess.run(create_command, capture_output=True, text=True)
-            if create_process.returncode != 0:
-                result["message"] = f"Failed to create database: {create_process.stderr}"
+                result["message"] = f"Failed to drop all objects in database: {drop_process.stderr}"
                 self.logger.error(result["message"])
                 return result
 
             result["success"] = True
-            result["message"] = "Database dropped and recreated successfully."
+            result["message"] = "All objects in database dropped successfully."
             self.logger.debug(result["message"])
 
         except Exception as e:
-            message = f"Failed to drop and create database: {e}"
+            message = f"Failed to drop all objects in database: {e}"
             self.logger.error(message, exc_info=True)
             result["message"] = message
 

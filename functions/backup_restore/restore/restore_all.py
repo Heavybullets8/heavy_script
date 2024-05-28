@@ -106,21 +106,21 @@ class RestoreAll(RestoreBase):
                 self.logger.error(f"Job for {app_name} failed: {e}")
                 self._handle_critical_failure(app_name, str(f"Job failed: {e}"))
 
-        # if self.chart_info.cnpg_apps:
-        #     self.logger.info("\nRestoring CNPG Databases\n"
-        #                     "------------------------")
-        # for app_name in self.chart_info.cnpg_apps:
-        #     try:
-        #         self.logger.info(f"Restoring database for {app_name}...")
-        #         db_manager = RestoreCNPGDatabase(app_name, self.chart_info.get_file(app_name, "database"))
-        #         result = db_manager.restore()
-        #         if not result["success"]:
-        #             self.failures[app_name].append(result["message"])
-        #         else:
-        #             self.logger.info(result["message"])
-        #     except Exception as e:
-        #         self.logger.error(f"Failed to restore database for {app_name}: {e}")
-        #         self.failures[app_name].append(f"Database restore failed: {e}")
+        if self.chart_info.cnpg_apps:
+            self.logger.info("\nRestoring CNPG Databases\n"
+                            "------------------------")
+        for app_name in self.chart_info.cnpg_apps:
+            try:
+                self.logger.info(f"Restoring database for {app_name}...")
+                db_manager = RestoreCNPGDatabase(app_name, self.chart_info.get_file(app_name, "database"))
+                result = db_manager.restore()
+                if not result["success"]:
+                    self.failures[app_name].append(result["message"])
+                else:
+                    self.logger.info(result["message"])
+            except Exception as e:
+                self.logger.error(f"Failed to restore database for {app_name}: {e}")
+                self.failures[app_name].append(f"Database restore failed: {e}")
 
         self._log_failures()
 

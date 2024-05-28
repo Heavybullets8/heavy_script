@@ -258,6 +258,8 @@ class RestoreCNPGDatabase(CNPGBase):
         }
         self.logger.debug(f"Executing restore command on pod: {self.primary_pod} with dump file: {self.backup_file}")
 
+        self.command, self.open_mode = self._get_restore_command()
+
         for attempt in range(retries):
             try:
                 if self.backup_file.suffix == '.gz':

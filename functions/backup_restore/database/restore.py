@@ -71,17 +71,24 @@ class RestoreCNPGDatabase(CNPGBase):
         if not self.primary_pod:
             message = "Primary pod not found."
             self.logger.error(message)
-            result["message"] = message
 
             if was_stopped:
                 self.logger.debug(f"Stopping app {self.app_name} after restore failure.")
                 self.stop_app(self.app_name)
 
+            result["message"] = message
             return result
 
         self.command, self.open_mode = self._get_restore_command()
 
         try:
+            # Drop and recreate the database before restoring
+            drop_create_result = self._drop_and_create_database()
+            if not drop_create_result["success"]:
+                result["message"] = drop_create_result["message"]
+                self.logger.error(result["message"])
+                return result
+
             result = self._execute_restore_command()
 
             if not result["success"]:
@@ -145,6 +152,66 @@ class RestoreCNPGDatabase(CNPGBase):
 
         self.logger.debug(f"Restore command for app {self.app_name}: {command}")
         return command, open_mode
+
+    def _drop_and_create_database(self) -> Dict[str, str]:
+        """
+        Drop and recreate the database.
+
+        Returns:
+            dict: Result containing status and message.
+        """
+        result = {
+            "success": False,
+            "message": ""
+        }
+
+        drop_command = [
+            "k3s", "kubectl", "exec",
+            "--namespace", self.namespace,
+            "--stdin",
+            "--container", "postgres",
+            self.primary_pod,
+            "--",
+            "psql",
+            "--command",
+            f"DROP DATABASE IF EXISTS {self.database_name};"
+        ]
+
+        create_command = [
+            "k3s", "kubectl", "exec",
+            "--namespace", self.namespace,
+            "--stdin",
+            "--container", "postgres",
+            self.primary_pod,
+            "--",
+            "psql",
+            "--command",
+            f"CREATE DATABASE {self.database_name} OWNER {self.database_user};"
+        ]
+
+        try:
+            drop_process = subprocess.run(drop_command, capture_output=True, text=True)
+            if drop_process.returncode != 0:
+                result["message"] = f"Failed to drop database: {drop_process.stderr}"
+                self.logger.error(result["message"])
+                return result
+
+            create_process = subprocess.run(create_command, capture_output=True, text=True)
+            if create_process.returncode != 0:
+                result["message"] = f"Failed to create database: {create_process.stderr}"
+                self.logger.error(result["message"])
+                return result
+
+            result["success"] = True
+            result["message"] = "Database dropped and recreated successfully."
+            self.logger.debug(result["message"])
+
+        except Exception as e:
+            message = f"Failed to drop and create database: {e}"
+            self.logger.error(message, exc_info=True)
+            result["message"] = message
+
+        return result
 
     def _execute_restore_command(self, retries=3, wait=5) -> Dict[str, str]:
         """

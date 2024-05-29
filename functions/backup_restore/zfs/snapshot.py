@@ -148,7 +148,7 @@ class ZFSSnapshotManager(ZFSCache):
         Returns:
         - list: A list of all snapshot names.
         """
-        snapshots = list(self.snapshots.keys())
+        snapshots = list(self._snapshots.keys())
         return snapshots
 
     @type_check

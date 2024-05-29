@@ -49,7 +49,7 @@ class Backup:
 
         self.backup_dataset_parent = self.backup_dir.relative_to("/mnt")
         self.backup_dataset = str(self.backup_dataset_parent)
-        self._create_backup_dataset(self.backup_dataset)
+        self._create_backup_dataset()
 
         self.chart_collection = APIChartCollection()
         self.all_chart_names = self.chart_collection.all_chart_names
@@ -57,13 +57,20 @@ class Backup:
 
         self.kube_pvc_fetcher = KubePVCFetcher()
 
-    def _create_backup_dataset(self, dataset):
+    def _create_backup_dataset(self):
         """
-        Create a ZFS dataset for backups if it doesn't already exist.
+        Create a ZFS dataset for backups.
         """
-        if not self.lifecycle_manager.dataset_exists(dataset):
-            if not self.lifecycle_manager.create_dataset(dataset):
-                raise RuntimeError(f"Failed to create backup dataset: {dataset}")
+        if not self.lifecycle_manager.dataset_exists(self.backup_dataset):
+            if not self.lifecycle_manager.create_dataset(
+                self.backup_dataset,
+                options={
+                    "atime": "off",
+                    "compression": "zstd-19",
+                    "recordsize": "1M"
+                }
+            ):
+                raise RuntimeError(f"Failed to create backup dataset: {self.backup_dataset}")
 
     def backup_all(self):
         """
@@ -145,14 +152,15 @@ class Backup:
             # TODO: Print off better messages for each of the two types
             dataset_paths = self.kube_pvc_fetcher.get_volume_paths_by_namespace(f"ix-{app_name}")
             if dataset_paths:
-                self.logger.info(f"Backing up {app_name} PVCs...")
                 for dataset_path in dataset_paths:
-                    self.logger.info(f"Backing up PVCs for dataset {dataset_path}...")
+                    pvc_name = dataset_path.split('/')[-1]
+                    self.logger.info(f"Snapshotting PVC: {pvc_name}...")
 
                     # Check to see if dataset exists
                     if not self.lifecycle_manager.dataset_exists(dataset_path):
-                        self.logger.error(f"Dataset {dataset_path} does not exist.")
-                        failures[app_name].append(f"Dataset {dataset_path} does not exist.")
+                        error_msg = f"Dataset {dataset_path} does not exist."
+                        self.logger.error(error_msg)
+                        failures[app_name].append(error_msg)
                         continue
 
                     # Create the snapshot for the current dataset
@@ -160,8 +168,9 @@ class Backup:
                     if not snapshot_result["success"]:
                         failures[app_name].append(snapshot_result["message"])
                         continue
-                    
+
                     # Send the snapshot to the backup directory
+                    self.logger.info(f"Sending snapshot stream to backup file...")
                     snapshot_name = f"{dataset_path}@{self.snapshot_name}"
                     backup_path = app_backup_dir / "snapshots" / f"{snapshot_name.replace('/', '%%')}.zfs"
                     backup_path.parent.mkdir(parents=True, exist_ok=True)
@@ -171,10 +180,11 @@ class Backup:
 
             # Handle ix_volumes_dataset separately
             if chart_info.ix_volumes_dataset:
-                self.logger.info(f"Sending snapshots to backup directory...")
+                self.logger.info(f"Snapshotting ix_volumes...")
                 snapshot = chart_info.ix_volumes_dataset + "@" + self.snapshot_name
                 backup_path = app_backup_dir / "snapshots" / f"{snapshot.replace('/', '%%')}.zfs"
                 backup_path.parent.mkdir(parents=True, exist_ok=True)
+                self.logger.info(f"Sending snapshot stream to backup file...")
                 send_result = self.snapshot_manager.zfs_send(snapshot, backup_path, compress=True)
                 if not send_result["success"]:
                     failures[app_name].append(send_result["message"])

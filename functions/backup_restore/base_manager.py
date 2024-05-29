@@ -16,7 +16,14 @@ class BaseManager:
         self.logger.debug(f"Initializing BaseManager for path: {self.backup_abs_path}")
 
         if not self.lifecycle_manager.dataset_exists(self.backup_dataset_parent):
-            self.lifecycle_manager.create_dataset(self.backup_dataset_parent)
+            self.lifecycle_manager.create_dataset(
+                self.backup_dataset_parent,
+                options={
+                    "atime": "off",
+                    "compression": "zstd-19",
+                    "recordsize": "1M"
+                }
+            )
             self.logger.debug(f"Created dataset: {self.backup_dataset_parent}")
 
     def _derive_dataset_parent(self):

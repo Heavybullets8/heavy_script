@@ -68,12 +68,16 @@ class ZFSSnapshotManager:
         - int: The refer size of the snapshot in bytes.
         """
         try:
-            result = subprocess.run(["zfs", "list", "-H", "-o", "refer", snapshot], capture_output=True, text=True, check=True)
-            size_str = result.stdout.strip()
-            size = self._convert_size_to_bytes(size_str)
-            return size
-        except subprocess.CalledProcessError as e:
-            self.logger.error(f"Failed to get refer size for snapshot {snapshot}: {e}")
+            result = run_command(f"zfs list -H -o refer \"{snapshot}\"")
+            if result.is_success():
+                size_str = result.get_output()
+                size = self._convert_size_to_bytes(size_str)
+                return size
+            else:
+                self.logger.error(f"Failed to get refer size for snapshot {snapshot}: {result.get_error()}")
+                return 0
+        except Exception as e:
+            self.logger.error(f"Exception occurred while getting refer size for snapshot {snapshot}: {e}")
             return 0
 
     @type_check

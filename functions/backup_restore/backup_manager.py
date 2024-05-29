@@ -99,7 +99,7 @@ class BackupManager(BaseManager):
                 snapshot_name = match.group()
                 if snapshot_name not in full_backup_names and snapshot_name not in deleted_snapshots:
                     self.logger.info(f"Deleting dangling snapshot: {snapshot_name}")
-                    self.snapshot_manager.delete_snapshots(snapshot_name)
+                    self.snapshot_manager.delete_snapshot(snapshot_name)
                     self.logger.info(f"Deleted snapshot: {snapshot_name}")
                     deleted_snapshots.add(snapshot_name)
 

@@ -220,9 +220,8 @@ class Backup:
         - applications_dataset (str): The root dataset under which Kubernetes operates.
         """
         datasets_to_ignore = KubeUtils().to_ignore_datasets_on_backup(self.kubeconfig.dataset)
-        all_datasets = self.lifecycle_manager.list_datasets()
 
-        datasets_to_backup = [ds for ds in all_datasets if ds.startswith(self.kubeconfig.dataset) and ds not in datasets_to_ignore]
+        datasets_to_backup = [ds for ds in self.lifecycle_manager.datasets if ds.startswith(self.kubeconfig.dataset) and ds not in datasets_to_ignore]
         self.logger.debug(f"Snapshotting datasets: {datasets_to_backup}")
 
         for dataset in datasets_to_backup:

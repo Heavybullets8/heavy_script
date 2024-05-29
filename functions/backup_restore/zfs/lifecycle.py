@@ -60,6 +60,15 @@ class ZFSLifecycleManager:
 
     @type_check
     def delete_dataset(self, dataset: str) -> bool:
+        """
+        Delete a ZFS dataset, including all its snapshots.
+
+        Parameters:
+        - dataset (str): The name of the dataset to delete.
+
+        Returns:
+        - bool: True if the dataset was successfully deleted, False otherwise.
+        """
         if not self.dataset_exists(dataset):
             self.logger.warning(f"Dataset \"{dataset}\" does not exist. Cannot delete.")
             return False
@@ -87,10 +96,10 @@ class ZFSLifecycleManager:
             self.logger.error(f"Failed to delete dataset \"{dataset}\": {result.get_error()}")
             return False
 
-    @type_check
-    def list_datasets(self) -> list:
+    @property
+    def datasets(self) -> list:
         """
-        List all cached ZFS datasets.
+        Property to get the current list of cached ZFS datasets.
 
         Returns:
         - list: A list of all dataset names.

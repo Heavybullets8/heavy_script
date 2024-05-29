@@ -29,7 +29,7 @@ class BaseManager:
         """List all backups in the parent dataset, separated into full backups and exports."""
         self.logger.debug("Listing all backups")
         full_backups = sorted(
-            (ds for ds in self.lifecycle_manager.list_datasets() if ds.startswith(f"{self.backup_dataset_parent}/HeavyScript--")),
+            (ds for ds in self.lifecycle_manager.datasets if ds.startswith(f"{self.backup_dataset_parent}/HeavyScript--")),
             key=lambda ds: datetime.strptime(ds.split('/')[-1].replace("HeavyScript--", ""), '%Y-%m-%d_%H:%M:%S'),
             reverse=True
         )

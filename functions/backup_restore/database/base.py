@@ -34,9 +34,9 @@ class CNPGBase:
         self.error = None
 
         # # Fetch database name and user if needed
-        # if self.chart_info.chart_name != "immich":
-        self.database_name = self.fetch_database_name()
-        self.database_user = self.fetch_database_user() or self.database_name
+        if self.chart_info.chart_name != "immich":
+            self.database_name = self.fetch_database_name()
+            self.database_user = self.fetch_database_user() or self.database_name
 
     def fetch_primary_pod(self, timeout=600, interval=5) -> str:
         """

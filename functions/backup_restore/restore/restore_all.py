@@ -11,6 +11,10 @@ class RestoreAll(RestoreBase):
         super().__init__(backup_dir)
 
     def restore(self):
+        if not self.chart_info.all_releases:
+            self.logger.error("No releases found in backup directory.")
+            return
+
         """Perform the entire restore process."""
         self.logger.info("Building Restore Plan\n"
                         "----------------------")
@@ -18,10 +22,6 @@ class RestoreAll(RestoreBase):
             self._build_restore_plan(self.chart_info.all_releases)
         except RuntimeError as e:
             self.logger.error(str(e))
-            return
-
-        if not self.chart_info.all_releases:
-            self.logger.error("No releases found in backup directory.")
             return
 
         self.logger.info("Performing Initial Kubernetes Operations\n"

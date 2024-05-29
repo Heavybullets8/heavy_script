@@ -60,7 +60,7 @@ class ZFSCache:
             snapshots = {}
             for line in result.get_output().split('\n'):
                 if line:
-                    parts = line.split()
+                    parts = line.rsplit('\t', 1)
                     snapshot_name = parts[0]
                     refer_size = self._convert_size_to_bytes(parts[1])
                     snapshots[snapshot_name] = {"refer": refer_size}

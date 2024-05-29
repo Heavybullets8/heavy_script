@@ -123,8 +123,7 @@ class RestoreBase:
 
                     if not self.zfs_manager.dataset_exists(parent_dataset_path):
                         self.logger.debug(f"Parent dataset {parent_dataset_path} does not exist. Creating it...")
-                        create_result = self.zfs_manager.create_dataset(parent_dataset_path)
-                        if not create_result["success"]:
+                        if not self.zfs_manager.create_dataset(parent_dataset_path):
                             message = f"Failed to create parent dataset {parent_dataset_path}"
                             self.failures.setdefault(app_name, []).append(message)
                             self.logger.error(message)
@@ -173,8 +172,8 @@ class RestoreBase:
 
         # Process ix_volumes
         ix_volumes_dataset = self.chart_info.get_ix_volumes_dataset(app_name)
-        self.logger.debug(f"Found ix_volumes dataset for {app_name}: {ix_volumes_dataset}")
         if ix_volumes_dataset:
+            self.logger.debug(f"Found ix_volumes dataset for {app_name}: {ix_volumes_dataset}")
             snapshot = f"{ix_volumes_dataset}@{self.snapshot_name}"
             self.logger.debug(f"Constructed ix_volumes snapshot path: {snapshot}")
 

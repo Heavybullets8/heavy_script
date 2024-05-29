@@ -93,69 +93,69 @@ class KubeRestoreResources:
             return False
 
     @type_check
-    def restore_secrets(self, secret_files: List[Path]) -> list:
+    def restore_secret(self, secret_file: Path) -> dict:
         """
-        Restore secrets for the application from its backup directory.
+        Restore a single secret for the application from its backup directory.
 
         Parameters:
-        - secret_files (List[Path]): List of secret file paths to restore.
+        - secret_file (Path): Path of the secret file to restore.
 
         Returns:
-        - list: List of files that failed to restore. If everything succeeds, returns an empty list.
+        - dict: Result containing status and message.
         """
-        self.logger.debug("Restoring secrets from provided file list...")
-        failures = []
+        result = {
+            "success": False,
+            "message": ""
+        }
 
-        if not secret_files:
-            self.logger.warning("No secret files provided.")
-            return []
-
-        for secret_file in secret_files:
-            self.logger.debug(f"Restoring secret from file: {secret_file}")
-            try:
-                with open(secret_file, 'r') as f:
-                    secret_body = yaml.safe_load(f)
-                    secret_body['metadata'].pop('resourceVersion', None)
-                    secret_body['metadata'].pop('uid', None)
-                    secret_body['metadata']['annotations'] = secret_body['metadata'].get('annotations', {})
-                    secret_body['metadata']['annotations']['kubectl.kubernetes.io/last-applied-configuration'] = yaml.dump(secret_body)
-                with open(secret_file, 'w') as f:
-                    yaml.dump(secret_body, f)
-                restoreResult = run_command(f"k3s kubectl apply -f \"{secret_file}\" --validate=false")
-                if restoreResult.is_success():
-                    self.logger.debug(f"Restored {secret_file.name}")
-                else:
-                    self.logger.error(f"Failed to restore {secret_file.name}: {restoreResult.get_error()}")
-                    failures.append(secret_file.name)
-            except Exception as e:
-                self.logger.error(f"Error processing secret file {secret_file}: {e}")
-                failures.append(secret_file.name)
-        return failures
+        self.logger.debug(f"Restoring secret from file: {secret_file}")
+        try:
+            with open(secret_file, 'r') as f:
+                secret_body = yaml.safe_load(f)
+                secret_body['metadata'].pop('resourceVersion', None)
+                secret_body['metadata'].pop('uid', None)
+                secret_body['metadata']['annotations'] = secret_body['metadata'].get('annotations', {})
+                secret_body['metadata']['annotations']['kubectl.kubernetes.io/last-applied-configuration'] = yaml.dump(secret_body)
+            with open(secret_file, 'w') as f:
+                yaml.dump(secret_body, f)
+            restore_result = run_command(f"k3s kubectl apply -f \"{secret_file}\" --validate=false")
+            if restore_result.is_success():
+                self.logger.debug(f"Restored {secret_file.name}")
+                result["success"] = True
+                result["message"] = f"Restored {secret_file.name} successfully."
+            else:
+                self.logger.error(f"Failed to restore {secret_file.name}: {restore_result.get_error()}")
+                result["message"] = f"Failed to restore {secret_file.name}: {restore_result.get_error()}"
+        except Exception as e:
+            self.logger.error(f"Error processing secret file {secret_file}: {e}")
+            result["message"] = f"Error processing secret file {secret_file}: {e}"
+        
+        return result
 
     @type_check
-    def restore_crd(self, crd_files: List[Path]) -> list:
+    def restore_crd(self, crd_file: Path) -> dict:
         """
-        Restore CRDs for the application from its backup directory.
+        Restore a single CRD for the application from its backup directory.
 
         Parameters:
-        - crd_files (List[Path]): List of CRD file paths to restore.
+        - crd_file (Path): Path of the CRD file to restore.
 
         Returns:
-        - list: List of files that failed to restore. If everything succeeds, returns an empty list.
+        - dict: Result containing status and message.
         """
-        self.logger.debug("Restoring CRDs from provided file list...")
-        failures = []
+        result = {
+            "success": False,
+            "message": ""
+        }
 
-        if not crd_files:
-            self.logger.warning("No CRD files provided.")
-            return []
+        self.logger.debug(f"Restoring CRD from file: {crd_file}")
+        restore_result = run_command(f"k3s kubectl apply -f \"{crd_file}\" --validate=false")
+        if restore_result.is_success():
+            self.logger.debug(f"Restored {crd_file.name}")
+            result["success"] = True
+            result["message"] = f"Restored {crd_file.name} successfully."
+        else:
+            self.logger.error(f"Failed to restore {crd_file.name}: {restore_result.get_error()}")
+            result["message"] = f"Failed to restore {crd_file.name}: {restore_result.get_error()}"
 
-        for file in crd_files:
-            self.logger.debug(f"Restoring CRD from file: {file}")
-            restoreResult = run_command(f"k3s kubectl apply -f \"{file}\" --validate=false")
-            if restoreResult.is_success():
-                self.logger.debug(f"Restored {file.name}")
-            else:
-                self.logger.error(f"Failed to restore {file.name}: {restoreResult.get_error()}")
-                failures.append(file.name)
-        return failures
+        return result

@@ -40,7 +40,7 @@ class RestoreAll(RestoreBase):
                 self._rollback_volumes(app_name)
             except Exception as e:
                 self.logger.error(f"Failed to rollback snapshots for {app_name}: {e}\n")
-                self.failures[app_name].append(f"Failed to rollback volume snapshots: {e}")
+                self.failures.setdefault(app_name, []).append(f"Failed to rollback volume snapshots: {e}")
 
         self.logger.info("\nStarting Kubernetes Services\n"
                          "----------------------------")
@@ -57,7 +57,7 @@ class RestoreAll(RestoreBase):
             CatalogRestoreManager(self.catalog_dir).restore()
         except Exception as e:
             self.logger.warning(f"Failed to restore catalog: {e}")
-            self.failures["Catalog"].append(f"Restoration failed: {e}")
+            self.failures.setdefault(app_name, []).append(f"Restoration failed: {e}")
 
         if self.chart_info.apps_with_crds:
             self.logger.info("\nRestoring Custom Resource Definitions\n"
@@ -90,7 +90,7 @@ class RestoreAll(RestoreBase):
                     continue
             except Exception as e:
                 self.logger.error(f"Failed to restore {app_name}: {e}\n")
-                self.failures[app_name].append(f"Restoration failed: {e}")
+                self.failures.setdefault(app_name, []).append(f"Restoration failed: {e}")
                 continue
 
             self.logger.info("")
@@ -115,12 +115,12 @@ class RestoreAll(RestoreBase):
                 db_manager = RestoreCNPGDatabase(app_name, self.chart_info.get_file(app_name, "database"))
                 result = db_manager.restore()
                 if not result["success"]:
-                    self.failures[app_name].append(result["message"])
+                    self.failures.setdefault(app_name, []).append(result["message"])
                 else:
                     self.logger.info(result["message"])
             except Exception as e:
                 self.logger.error(f"Failed to restore database for {app_name}: {e}")
-                self.failures[app_name].append(f"Database restore failed: {e}")
+                self.failures.setdefault(app_name, []).append(f"Database restore failed: {e}")
 
         self._log_failures()
 

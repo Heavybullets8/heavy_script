@@ -1,3 +1,4 @@
+import re
 import shutil
 from pathlib import Path
 from base_manager import BaseManager
@@ -27,7 +28,6 @@ class BackupManager(BaseManager):
         exporter = ChartInfoExporter(self.backup_abs_path)
         exporter.export()
         self.logger.info("Chart information export completed successfully")
-        self.cleanup_dangling_snapshots()
         if retention is not None:
             self.delete_old_exports(retention)
 

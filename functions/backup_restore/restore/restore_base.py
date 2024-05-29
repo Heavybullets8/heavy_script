@@ -10,6 +10,7 @@ from kube.config_parse import KubeConfigReader
 from kube.resources_restore import KubeRestoreResources
 from zfs.snapshot import ZFSSnapshotManager
 from zfs.lifecycle import ZFSLifecycleManager
+from utils.shell import run_command
 from utils.logger import setup_global_logger, set_logger
 from utils.singletons import MiddlewareClientManager
 from utils.type_check import type_check
@@ -114,7 +115,17 @@ class RestoreBase:
         - app_name (str): The name of the application to restore volumes for.
         """
         self.logger.debug(f"Starting rollback process for {app_name}...")
-        
+
+        def set_mountpoint_legacy(dataset_path):
+            command = f"/sbin/zfs set mountpoint=legacy \"{dataset_path}\""
+            result = run_command(command, suppress_output=True)
+            if result.is_success():
+                self.logger.debug(f"Set mountpoint to legacy for {dataset_path}")
+            else:
+                message = f"Failed to set mountpoint to legacy for {dataset_path}: {result.get_error()}"
+                self.failures.setdefault(app_name, []).append(message)
+                self.logger.error(message)
+
         def rollback_snapshot(snapshot: str, name: str, volume_type: str):
             self.logger.info(f"{app_name}: rolling back {volume_type} {name}...")
             rollback_result = self.snapshot_manager.rollback_snapshot(snapshot, recursive=True, force=True)
@@ -176,6 +187,9 @@ class RestoreBase:
                     message = f"Snapshot {snapshot} for PVC {pv_name} cannot be rolled back or restored from backup."
                     self.failures.setdefault(app_name, []).append(message)
                     self.logger.error(message)
+                    continue
+
+                set_mountpoint_legacy(dataset_path)
             except Exception as e:
                 message = f"Failed to process PV file {pv_file}: {e}"
                 self.logger.error(message, exc_info=True)

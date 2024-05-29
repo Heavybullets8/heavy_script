@@ -145,19 +145,30 @@ class Backup:
             dataset_paths = self.kube_pvc_fetcher.get_volume_paths_by_namespace(f"ix-{app_name}")
             if dataset_paths:
                 self.logger.info(f"Backing up {app_name} PVCs...")
-                snapshot_result = self.snapshot_manager.create_snapshots(self.snapshot_name, dataset_paths, self.retention_number)
-                if snapshot_result["errors"]:
-                    failures[app_name].extend(snapshot_result["errors"])
+                for dataset_path in dataset_paths:
+                    self.logger.info(f"Backing up PVCs for dataset {dataset_path}...")
 
-                if snapshot_result["success"]:
-                    self.logger.info(f"Sending snapshots to backup directory...")
-                    for snapshot in snapshot_result["snapshots"]:
-                        backup_path = app_backup_dir / "snapshots" / f"{snapshot.replace('/', '%%')}.zfs"
-                        backup_path.parent.mkdir(parents=True, exist_ok=True)
-                        send_result = self.snapshot_manager.zfs_send(snapshot, backup_path, compress=True)
-                        if not send_result["success"]:
-                            failures[app_name].append(send_result["message"])
+                    # Check to see if dataset exists
+                    if not self.lifecycle_manager.dataset_exists(dataset_path):
+                        self.logger.error(f"Dataset {dataset_path} does not exist.")
+                        failures[app_name].append(f"Dataset {dataset_path} does not exist.")
+                        continue
 
+                    # Create the snapshot for the current dataset
+                    snapshot_result = self.snapshot_manager.create_snapshot(self.snapshot_name, dataset_path)
+                    if not snapshot_result["success"]:
+                        failures[app_name].append(snapshot_result["message"])
+                        continue
+                    
+                    # Send the snapshot to the backup directory
+                    snapshot_name = f"{dataset_path}@{self.snapshot_name}"
+                    backup_path = app_backup_dir / "snapshots" / f"{snapshot_name.replace('/', '%%')}.zfs"
+                    backup_path.parent.mkdir(parents=True, exist_ok=True)
+                    send_result = self.snapshot_manager.zfs_send(snapshot_name, backup_path, compress=True)
+                    if not send_result["success"]:
+                        failures[app_name].append(send_result["message"])
+
+            # Handle ix_volumes_dataset separately
             if chart_info.ix_volumes_dataset:
                 self.logger.info(f"Sending snapshots to backup directory...")
                 snapshot = chart_info.ix_volumes_dataset + "@" + self.snapshot_name
@@ -193,7 +204,7 @@ class Backup:
         Create a snapshot of the backup dataset after all backups are completed.
         """
         self.logger.info(f"\nCreating snapshot for backup: {self.backup_dataset}")
-        snapshot_result = self.snapshot_manager.create_snapshots(self.snapshot_name, [self.backup_dataset], self.retention_number)
+        snapshot_result = self.snapshot_manager.create_snapshot(self.snapshot_name, self.backup_dataset)
 
         if snapshot_result.get("success"):
             self.logger.info("Snapshot created successfully for backup dataset.")
@@ -210,21 +221,28 @@ class Backup:
             (ds for ds in self.lifecycle_manager.list_datasets() if ds.startswith(f"{self.backup_dataset_parent}/HeavyScript--")),
             key=lambda ds: datetime.strptime(ds.replace(f"{self.backup_dataset_parent}/HeavyScript--", ""), '%Y-%m-%d_%H:%M:%S')
         )
-        
+
         if len(backup_datasets) > self.retention_number:
             for old_backup_dataset in backup_datasets[:-self.retention_number]:
                 snapshot_name = old_backup_dataset.split("/")[-1]
                 self.logger.info(f"Deleting oldest backup due to retention limit: {snapshot_name}")
+
                 try:
                     self.lifecycle_manager.delete_dataset(old_backup_dataset)
                     self.logger.debug(f"Removed old backup: {old_backup_dataset}")
                 except Exception as e:
                     self.logger.error(f"Failed to delete old backup dataset {old_backup_dataset}: {e}", exc_info=True)
-                
+
                 self.logger.debug(f"Deleting snapshots for: {snapshot_name}")
-                snapshot_errors = self.snapshot_manager.delete_snapshots(snapshot_name)
-                if snapshot_errors:
-                    self.logger.error(f"Failed to delete snapshots for {snapshot_name}: {snapshot_errors}")
+                all_snapshots = self.snapshot_manager.list_snapshots()
+                matching_snapshots = [snap for snap in all_snapshots if snap.endswith(f"@{snapshot_name}")]
+
+                for snapshot in matching_snapshots:
+                    delete_result = self.snapshot_manager.delete_snapshot(snapshot)
+                    if not delete_result["success"]:
+                        self.logger.error(f"Failed to delete snapshot {snapshot}: {delete_result['message']}")
+
+                self.logger.info(f"Cleanup completed for backup: {snapshot_name}")
 
     def _backup_application_datasets(self):
         """
@@ -239,8 +257,8 @@ class Backup:
         datasets_to_backup = [ds for ds in all_datasets if ds.startswith(self.kubeconfig.dataset) and ds not in datasets_to_ignore]
         self.logger.debug(f"Snapshotting datasets: {datasets_to_backup}")
 
-        snapshot_result = self.snapshot_manager.create_snapshots(self.snapshot_name, datasets_to_backup, self.retention_number)
-        if not snapshot_result.get("success"):
-            self.logger.error("Failed to create snapshots for application datasets.")
-            for error in snapshot_result.get("errors", []):
-                self.logger.error(error)
+        for dataset in datasets_to_backup:
+            # Create snapshot for each dataset
+            snapshot_result = self.snapshot_manager.create_snapshot(self.snapshot_name, dataset)
+            if not snapshot_result.get("success"):
+                self.logger.error(f"Failed to create snapshot for dataset {dataset}: {snapshot_result['message']}")

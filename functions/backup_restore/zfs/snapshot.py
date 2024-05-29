@@ -1,7 +1,5 @@
-import re
-import yaml
+import subprocess
 from pathlib import Path
-from datetime import datetime
 
 from zfs.cache import ZFSCache
 from utils.shell import run_command
@@ -22,160 +20,138 @@ class ZFSSnapshotManager:
         self.cache = ZFSCache()
 
     @type_check
-    def _cleanup_snapshots(self, dataset_paths: list, retention_number: int) -> list:
+    def create_snapshot(self, snapshot_name: str, dataset: str) -> dict:
         """
-        Cleanup older snapshots, retaining only a specified number of the most recent ones.
-
-        Parameters:
-        - dataset_paths (list): List of paths to datasets.
-        - retention_number (int): Number of recent snapshots to retain.
-
-        Returns:
-        - list: A list of error messages, if any.
-        """
-        errors = []
-        for path in dataset_paths:
-            if path not in self.cache.datasets:
-                error_msg = f"Dataset {path} does not exist."
-                self.logger.error(error_msg)
-                errors.append(error_msg)
-                continue
-
-            matching_snapshots = [snap for snap in self.cache.snapshots if snap.startswith(f"{path}@HeavyScript--")]
-            matching_snapshots.sort(key=lambda x: datetime.strptime(re.search(r'HeavyScript--\d{4}-\d{2}-\d{2}_\d{2}:\d{2}:\d{2}', x).group(), "HeavyScript--%Y-%m-%d_%H:%M:%S"))
-
-            self.logger.debug(f"Found {len(matching_snapshots)} snapshots for dataset path {path}.")
-
-            if len(matching_snapshots) > retention_number:
-                snapshots_to_delete = matching_snapshots[:-retention_number]
-                for snapshot in snapshots_to_delete:
-                    delete_command = f"/sbin/zfs destroy \"{snapshot}\""
-                    delete_result = run_command(delete_command)
-                    if delete_result.is_success():
-                        self.cache.remove_snapshot(snapshot)
-                        self.logger.debug(f"Deleted snapshot: {snapshot}")
-                    else:
-                        error_msg = f"Failed to delete snapshot {snapshot}: {delete_result.get_error()}"
-                        self.logger.error(error_msg)
-                        errors.append(error_msg)
-        return errors
-
-    @type_check
-    def create_snapshots(self, snapshot_name, dataset_paths: list, retention_number: int) -> dict:
-        """
-        Create snapshots for specified ZFS datasets and cleanup old snapshots.
+        Create a single ZFS snapshot for the specified dataset.
 
         Parameters:
         - snapshot_name (str): Name of the snapshot.
-        - dataset_paths (list): List of paths to create snapshots for.
-        - retention_number (int): Number of recent snapshots to retain.
+        - dataset (str): Dataset to create the snapshot for.
 
         Returns:
-        - dict: Result containing status, messages, and list of created snapshots.
+        - dict: Result containing status and message.
         """
         result = {
             "success": False,
-            "message": "",
-            "errors": [],
-            "snapshots": []
+            "message": ""
         }
 
-        for path in dataset_paths:
-            if path not in self.cache.datasets:
-                error_msg = f"Dataset {path} does not exist."
-                self.logger.error(error_msg)
-                result["errors"].append(error_msg)
-                continue
+        if dataset not in self.cache.datasets:
+            result["message"] = f"Dataset {dataset} does not exist."
+            self.logger.error(result["message"])
+            return result
 
-            snapshot_full_name = f"{path}@{snapshot_name}"
-            command = f"/sbin/zfs snapshot \"{snapshot_full_name}\""
-            snapshot_result = run_command(command)
-            if snapshot_result.is_success():
-                self.cache.add_snapshot(snapshot_full_name)
-                self.logger.debug(f"Created snapshot: {snapshot_full_name}")
-                result["snapshots"].append(snapshot_full_name)
-            else:
-                error_msg = f"Failed to create snapshot for {snapshot_full_name}: {snapshot_result.get_error()}"
-                self.logger.error(error_msg)
-                result["errors"].append(error_msg)
-        
-        cleanup_errors = self._cleanup_snapshots(dataset_paths, retention_number)
-        result["errors"].extend(cleanup_errors)
-
-        if not result["errors"]:
+        snapshot_full_name = f"{dataset}@{snapshot_name}"
+        command = f"/sbin/zfs snapshot \"{snapshot_full_name}\""
+        snapshot_result = run_command(command)
+        if snapshot_result.is_success():
+            refer_size = self.get_snapshot_refer_size(snapshot_full_name)
+            self.cache.add_snapshot(snapshot_full_name, refer_size)
+            self.logger.debug(f"Created snapshot: {snapshot_full_name} with refer size: {refer_size}")
             result["success"] = True
-            result["message"] = "All snapshots created and cleaned up successfully."
+            result["message"] = f"Snapshot {snapshot_full_name} created successfully."
         else:
-            result["message"] = "Some errors occurred during snapshot creation or cleanup."
+            result["message"] = f"Failed to create snapshot for {snapshot_full_name}: {snapshot_result.get_error()}"
+            self.logger.error(result["message"])
 
         return result
 
     @type_check
-    def delete_snapshots(self, snapshot_name: str) -> list:
+    def get_snapshot_refer_size(self, snapshot: str) -> int:
         """
-        Delete all snapshots matching a specific name.
+        Get the refer size of a ZFS snapshot.
 
         Parameters:
-        - snapshot_name (str): The name of the snapshot to delete.
+        - snapshot (str): The name of the snapshot.
 
         Returns:
-        - list: A list of error messages, if any.
+        - int: The refer size of the snapshot in bytes.
         """
-        errors = []
-        matching_snapshots = [snap for snap in self.cache.snapshots if snap.endswith(f"@{snapshot_name}")]
-        for snapshot in matching_snapshots:
-            delete_command = f"/sbin/zfs destroy \"{snapshot}\""
-            delete_result = run_command(delete_command)
-            if delete_result.is_success():
-                self.cache.remove_snapshot(snapshot)
-                self.logger.debug(f"Deleted snapshot: {snapshot}")
-            else:
-                error_msg = f"Failed to delete snapshot {snapshot}: {delete_result.get_error()}"
-                self.logger.error(error_msg)
-                errors.append(error_msg)
-        return errors
+        try:
+            result = subprocess.run(["zfs", "list", "-H", "-o", "refer", snapshot], capture_output=True, text=True, check=True)
+            size_str = result.stdout.strip()
+            size = self._convert_size_to_bytes(size_str)
+            return size
+        except subprocess.CalledProcessError as e:
+            self.logger.error(f"Failed to get refer size for snapshot {snapshot}: {e}")
+            return 0
 
     @type_check
-    def rollback_snapshots(self, snapshots: list) -> dict:
+    def _convert_size_to_bytes(self, size_str):
+        size_units = {"K": 1024, "M": 1024**2, "G": 1024**3, "T": 1024**4}
+        if size_str[-1] in size_units:
+            return int(float(size_str[:-1]) * size_units[size_str[-1]])
+        else:
+            return int(size_str)
+
+    @type_check
+    def delete_snapshot(self, snapshot: str) -> dict:
         """
-        Rollback multiple snapshots.
+        Delete a single ZFS snapshot.
 
         Parameters:
-        - snapshots (list): List of snapshots to rollback.
+        - snapshot (str): The name of the snapshot to delete.
 
         Returns:
-        - dict: Result containing status, messages, and list of rolled back snapshots.
+        - dict: Result containing status and message.
         """
         result = {
-            "success": True,
-            "messages": [],
-            "rolled_back_snapshots": []
+            "success": False,
+            "message": ""
         }
 
-        for snapshot in snapshots:
-            dataset_path, snapshot_name = snapshot.split('@', 1)
-            if dataset_path not in self.cache.datasets:
-                message = f"Dataset {dataset_path} does not exist. Cannot restore snapshot."
-                self.logger.warning(message)
-                result["messages"].append(message)
-                result["success"] = False
-                continue
+        delete_command = f"/sbin/zfs destroy \"{snapshot}\""
+        delete_result = run_command(delete_command)
+        if delete_result.is_success():
+            self.cache.remove_snapshot(snapshot)
+            self.logger.debug(f"Deleted snapshot: {snapshot}")
+            result["success"] = True
+            result["message"] = f"Snapshot {snapshot} deleted successfully."
+        else:
+            result["message"] = f"Failed to delete snapshot {snapshot}: {delete_result.get_error()}"
+            self.logger.error(result["message"])
 
-            rollback_command = f"/sbin/zfs rollback -r -f \"{snapshot}\""
-            rollback_result = run_command(rollback_command)
-            if rollback_result.is_success():
-                message = f"Successfully rolled back {dataset_path} to snapshot {snapshot_name}."
-                self.logger.debug(message)
-                result["rolled_back_snapshots"].append({
-                    "dataset": dataset_path,
-                    "snapshot": snapshot_name
-                })
-                result["messages"].append(message)
-            else:
-                message = f"Failed to rollback {dataset_path} to snapshot {snapshot_name}: {rollback_result.get_error()}"
-                self.logger.error(message)
-                result["messages"].append(message)
-                result["success"] = False
+        return result
+
+    @type_check
+    def rollback_snapshot(self, snapshot: str, recursive: bool = False, force: bool = False) -> dict:
+        """
+        Rollback a single ZFS snapshot.
+
+        Parameters:
+        - snapshot (str): The name of the snapshot to rollback.
+        - recursive (bool): Whether to rollback recursively. Default is False.
+        - force (bool): Whether to force the rollback. Default is False.
+
+        Returns:
+        - dict: Result containing status and message.
+        """
+        result = {
+            "success": False,
+            "message": ""
+        }
+
+        dataset_path, snapshot_name = snapshot.split('@', 1)
+        if dataset_path not in self.cache.datasets:
+            result["message"] = f"Dataset {dataset_path} does not exist. Cannot restore snapshot."
+            self.logger.warning(result["message"])
+            return result
+
+        rollback_command = f"/sbin/zfs rollback"
+        if recursive:
+            rollback_command += " -r"
+        if force:
+            rollback_command += " -f"
+        rollback_command += f" \"{snapshot}\""
+        
+        rollback_result = run_command(rollback_command)
+        if rollback_result.is_success():
+            result["success"] = True
+            result["message"] = f"Successfully rolled back {dataset_path} to snapshot {snapshot_name}."
+            self.logger.debug(result["message"])
+        else:
+            result["message"] = f"Failed to rollback {dataset_path} to snapshot {snapshot_name}: {rollback_result.get_error()}"
+            self.logger.error(result["message"])
 
         return result
 
@@ -187,7 +163,7 @@ class ZFSSnapshotManager:
         Returns:
         - list: A list of all snapshot names.
         """
-        snapshots = list(self.cache.snapshots)
+        snapshots = list(self.cache.snapshots.keys())
         return snapshots
 
     @type_check
@@ -204,13 +180,15 @@ class ZFSSnapshotManager:
         return snapshot_name in self.cache.snapshots
 
     @type_check
-    def rollback_all_snapshots(self, snapshot_name: str, dataset_path: str) -> None:
+    def rollback_all_snapshots(self, snapshot_name: str, dataset_path: str, recursive: bool = False, force: bool = False) -> None:
         """
         Rollback all snapshots under a given path recursively that match the snapshot name.
 
         Parameters:
         - snapshot_name (str): The name of the snapshot to rollback to.
         - dataset_path (str): The path of the dataset to rollback snapshots for.
+        - recursive (bool): Whether to rollback recursively. Default is False.
+        - force (bool): Whether to force the rollback. Default is False.
         """
         if dataset_path not in self.cache.datasets:
             self.logger.error(f"Dataset {dataset_path} does not exist. Cannot rollback snapshots.")
@@ -220,12 +198,7 @@ class ZFSSnapshotManager:
             all_snapshots = [snap for snap in self.cache.snapshots if snap.startswith(dataset_path)]
             matching_snapshots = [snap for snap in all_snapshots if snap.endswith(f"@{snapshot_name}")]
             for snapshot in matching_snapshots:
-                rollback_command = f"/sbin/zfs rollback -r -f \"{snapshot}\""
-                rollback_result = run_command(rollback_command)
-                if rollback_result.is_success():
-                    self.logger.debug(f"Successfully rolled back {snapshot}.")
-                else:
-                    self.logger.error(f"Failed to rollback {snapshot}: {rollback_result.get_error()}")
+                self.rollback_snapshot(snapshot, recursive, force)
         except Exception as e:
             self.logger.error(f"Failed to rollback snapshots for {dataset_path}: {e}", exc_info=True)
 
@@ -289,16 +262,16 @@ class ZFSSnapshotManager:
             all_snapshots = self.list_snapshots()
             dataset_snapshots = [snap for snap in all_snapshots if snap.startswith(f"{dataset_path}@")]
 
+            delete_errors = []
             for snapshot in dataset_snapshots:
-                destroy_command = f'/sbin/zfs destroy "{snapshot}"'
-                destroy_result = run_command(destroy_command)
-                if destroy_result.is_success():
-                    self.cache.remove_snapshot(snapshot)
-                    self.logger.debug(f"Deleted snapshot: {snapshot}")
-                else:
-                    result["message"] = f"Failed to destroy existing snapshot {snapshot}: {destroy_result.get_error()}"
-                    self.logger.error(result["message"])
-                    return result
+                delete_result = self.delete_snapshot(snapshot)
+                if not delete_result["success"]:
+                    delete_errors.append(delete_result["message"])
+
+            if delete_errors:
+                result["message"] = f"Failed to destroy existing snapshots: {delete_errors}"
+                self.logger.error(result["message"])
+                return result
 
             receive_command = f'/sbin/zfs recv -F "{dataset_path}"'
             if decompress:

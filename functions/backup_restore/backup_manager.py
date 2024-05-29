@@ -18,9 +18,9 @@ class BackupManager(BaseManager):
         backup = Backup(self.backup_abs_path)
         backup.backup_all()
         self.logger.info("Backup completed successfully")
-        self.cleanup_dangling_snapshots()
         if retention is not None:
             self.delete_old_backups(retention)
+        self.cleanup_dangling_snapshots()
 
     def export_chart_info(self, retention=None):
         """Export chart information with optional retention."""

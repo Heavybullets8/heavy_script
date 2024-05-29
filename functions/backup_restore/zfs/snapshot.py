@@ -83,10 +83,14 @@ class ZFSSnapshotManager:
     @type_check
     def _convert_size_to_bytes(self, size_str):
         size_units = {"K": 1024, "M": 1024**2, "G": 1024**3, "T": 1024**4}
-        if size_str[-1] in size_units:
-            return int(float(size_str[:-1]) * size_units[size_str[-1]])
-        else:
-            return int(size_str)
+        try:
+            if size_str[-1] in size_units:
+                return int(float(size_str[:-1]) * size_units[size_str[-1]])
+            else:
+                return int(size_str)
+        except ValueError:
+            self.logger.error(f"Invalid size string: {size_str}")
+            return 0
 
     @type_check
     def delete_snapshot(self, snapshot: str) -> dict:

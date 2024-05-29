@@ -1,4 +1,3 @@
-import subprocess
 from pathlib import Path
 
 from zfs.cache import ZFSCache

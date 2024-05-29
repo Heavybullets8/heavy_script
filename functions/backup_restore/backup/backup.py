@@ -180,7 +180,6 @@ class Backup:
 
         self._create_backup_snapshot()
         self._log_failures(failures)
-        self._cleanup_old_backups()
 
     def _log_failures(self, failures):
         """
@@ -212,37 +211,6 @@ class Backup:
             self.logger.error("Failed to create snapshot for backup dataset.")
             for error in snapshot_result.get("errors", []):
                 self.logger.error(error)
-
-    def _cleanup_old_backups(self):
-        """
-        Cleanup old backups and their associated snapshots if the number of backups exceeds the retention limit.
-        """
-        backup_datasets = sorted(
-            (ds for ds in self.lifecycle_manager.list_datasets() if ds.startswith(f"{self.backup_dataset_parent}/HeavyScript--")),
-            key=lambda ds: datetime.strptime(ds.replace(f"{self.backup_dataset_parent}/HeavyScript--", ""), '%Y-%m-%d_%H:%M:%S')
-        )
-
-        if len(backup_datasets) > self.retention_number:
-            for old_backup_dataset in backup_datasets[:-self.retention_number]:
-                snapshot_name = old_backup_dataset.split("/")[-1]
-                self.logger.info(f"Deleting oldest backup due to retention limit: {snapshot_name}")
-
-                try:
-                    self.lifecycle_manager.delete_dataset(old_backup_dataset)
-                    self.logger.debug(f"Removed old backup: {old_backup_dataset}")
-                except Exception as e:
-                    self.logger.error(f"Failed to delete old backup dataset {old_backup_dataset}: {e}", exc_info=True)
-
-                self.logger.debug(f"Deleting snapshots for: {snapshot_name}")
-                all_snapshots = self.snapshot_manager.list_snapshots()
-                matching_snapshots = [snap for snap in all_snapshots if snap.endswith(f"@{snapshot_name}")]
-
-                for snapshot in matching_snapshots:
-                    delete_result = self.snapshot_manager.delete_snapshot(snapshot)
-                    if not delete_result["success"]:
-                        self.logger.error(f"Failed to delete snapshot {snapshot}: {delete_result['message']}")
-
-                self.logger.info(f"Cleanup completed for backup: {snapshot_name}")
 
     def _backup_application_datasets(self):
         """

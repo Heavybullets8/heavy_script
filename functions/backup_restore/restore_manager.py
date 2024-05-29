@@ -39,8 +39,7 @@ class RestoreManager(BaseManager):
             for backup in newer_backups:
                 newer_backup_name = Path(backup).name
                 self.logger.info(f"Deleting newer backup due to restore: {newer_backup_name}")
-                self.lifecycle_manager.delete_dataset(backup)
-                self.snapshot_manager.delete_snapshots(newer_backup_name)
+                self.delete_backup(newer_backup_name)
                 self.logger.info(f"Deleted backup: {newer_backup_name} and associated snapshots.")
 
         return True

@@ -258,14 +258,14 @@ class RestoreBase:
                     self.logger.error(f"Critical failure in restoring {app_name}, skipping further processing.\n")
                     return False
 
-                secret_files = self.chart_info.get_file(app_name, "secrets")
-                if secret_files:
-                    self.logger.info(f"Restoring secrets for {app_name}...")
-                    for secret_file in secret_files:
-                        secret_result = self.restore_resources.restore_secret(secret_file)
-                        if not secret_result.get("success", False):
-                            self.failures.setdefault(app_name, []).append(secret_result.get("message"))
-                            self.logger.error(secret_result.get("message"))
+            secret_files = self.chart_info.get_file(app_name, "secrets")
+            if secret_files:
+                self.logger.info(f"Restoring secrets for {app_name}...")
+                for secret_file in secret_files:
+                    secret_result = self.restore_resources.restore_secret(secret_file)
+                    if not secret_result.get("success", False):
+                        self.failures.setdefault(app_name, []).append(secret_result.get("message"))
+                        self.logger.error(secret_result.get("message"))
 
             if app_name not in self.create_list:
                 try:

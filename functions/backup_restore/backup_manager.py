@@ -89,17 +89,19 @@ class BackupManager(BaseManager):
         full_backups, _ = self.list_backups()
         full_backup_names = {Path(backup).name for backup in full_backups}
 
-        all_snapshots = self.snapshot_manager.list_snapshots()
         pattern = re.compile(r'HeavyScript--\d{4}-\d{2}-\d{2}_\d{2}:\d{2}:\d{2}')
 
-        for snapshot in all_snapshots:
+        for snapshot in self.snapshot_manager.snapshots:
             match = pattern.search(snapshot)
             if match:
                 snapshot_name = match.group()
                 if snapshot_name not in full_backup_names:
-                    self.logger.info(f"Deleting dangling snapshot: {snapshot_name}")
-                    self.snapshot_manager.delete_snapshot(snapshot_name)
-                    self.logger.info(f"Deleted snapshot: {snapshot_name}")
+                    self.logger.info(f"Deleting dangling snapshot: {snapshot}")
+                    delete_result = self.snapshot_manager.delete_snapshot(snapshot)
+                    if delete_result["success"]:
+                        self.logger.info(f"Deleted snapshot: {snapshot}")
+                    else:
+                        self.logger.error(f"Failed to delete snapshot {snapshot}: {delete_result['message']}")
 
     def delete_old_exports(self, retention):
         """Delete exports that exceed the retention limit."""

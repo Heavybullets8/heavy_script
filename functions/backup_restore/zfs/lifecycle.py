@@ -1,16 +1,12 @@
 from zfs.cache import ZFSCache
 from utils.shell import run_command
 from utils.type_check import type_check
-from utils.logger import get_logger
+from .cache import ZFSCache
 
-class ZFSLifecycleManager:
+class ZFSLifecycleManager(ZFSCache):
     """
     Class responsible for lifecycle operations of ZFS datasets, such as checking existence, creating, and deleting datasets.
     """
-
-    def __init__(self):
-        self.logger = get_logger()
-        self.cache = ZFSCache()
 
     @type_check
     def dataset_exists(self, dataset: str) -> bool:
@@ -23,7 +19,7 @@ class ZFSLifecycleManager:
         Returns:
         - bool: True if the dataset exists, False otherwise.
         """
-        exists = dataset in self.cache.datasets
+        exists = dataset in self.datasets
         self.logger.debug(f"Dataset \"{dataset}\" exists: {exists}")
         return exists
 
@@ -51,7 +47,7 @@ class ZFSLifecycleManager:
         result = run_command(command, suppress_output=True)
 
         if result.is_success():
-            self.cache.add_dataset(dataset)
+            self.add_dataset(dataset)
             self.logger.debug(f"Dataset \"{dataset}\" created successfully.")
             return True
         else:
@@ -74,12 +70,12 @@ class ZFSLifecycleManager:
             return False
 
         # Delete all associated snapshots first
-        snapshots_to_delete = self.cache.get_snapshots_for_dataset(dataset)
+        snapshots_to_delete = self.get_snapshots_for_dataset(dataset)
         for snapshot in snapshots_to_delete:
             command = f"/sbin/zfs destroy \"{snapshot}\""
             result = run_command(command, suppress_output=True)
             if result.is_success():
-                self.cache.remove_snapshot(snapshot)
+                self.remove_snapshot(snapshot)
                 self.logger.debug(f"Snapshot \"{snapshot}\" deleted successfully.")
             else:
                 self.logger.error(f"Failed to delete snapshot \"{snapshot}\": {result.get_error()}")
@@ -89,7 +85,7 @@ class ZFSLifecycleManager:
         command = f"/sbin/zfs destroy -r \"{dataset}\""
         result = run_command(command, suppress_output=True)
         if result.is_success():
-            self.cache.remove_dataset(dataset)
+            self.remove_dataset(dataset)
             self.logger.debug(f"Dataset \"{dataset}\" deleted successfully.")
             return True
         else:
@@ -104,6 +100,6 @@ class ZFSLifecycleManager:
         Returns:
         - list: A list of all dataset names.
         """
-        datasets = list(self.cache.datasets)
+        datasets = list(self._datasets)
         self.logger.debug(f"Listing all datasets: {datasets}")
         return datasets

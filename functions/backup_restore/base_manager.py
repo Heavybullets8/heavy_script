@@ -46,9 +46,8 @@ class BaseManager:
     def _list_snapshots_for_backup(self, backup_name: str):
         """List all snapshots matching a specific backup name."""
         self.logger.debug(f"Listing snapshots for backup: {backup_name}")
-        all_snapshots = self.snapshot_manager.list_snapshots()
         pattern = re.compile(r'HeavyScript--\d{4}-\d{2}-\d{2}_\d{2}:\d{2}:\d{2}')
-        matching_snapshots = [snap for snap in all_snapshots if pattern.search(snap) and snap.endswith(f"@{backup_name}")]
+        matching_snapshots = [snap for snap in self.snapshot_manager.snapshots if pattern.search(snap) and snap.endswith(f"@{backup_name}")]
         self.logger.debug(f"Found {len(matching_snapshots)} snapshots for backup: {backup_name}")
         return matching_snapshots
 

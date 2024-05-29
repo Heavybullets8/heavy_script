@@ -1,22 +1,12 @@
 from pathlib import Path
-
-from zfs.cache import ZFSCache
 from utils.shell import run_command
 from utils.type_check import type_check
-from utils.logger import get_logger
+from .cache import ZFSCache
 
-class ZFSSnapshotManager:
+class ZFSSnapshotManager(ZFSCache):
     """
     Class responsible for managing ZFS snapshots, including creation, deletion, and rollback operations.
     """
-
-    @type_check
-    def __init__(self):
-        """
-        Initialize the ZFSSnapshotManager class.
-        """
-        self.logger = get_logger()
-        self.cache = ZFSCache()
 
     @type_check
     def create_snapshot(self, snapshot_name: str, dataset: str) -> dict:
@@ -35,7 +25,7 @@ class ZFSSnapshotManager:
             "message": ""
         }
 
-        if dataset not in self.cache.datasets:
+        if dataset not in self.datasets:
             result["message"] = f"Dataset {dataset} does not exist."
             self.logger.error(result["message"])
             return result
@@ -45,7 +35,7 @@ class ZFSSnapshotManager:
         snapshot_result = run_command(command)
         if snapshot_result.is_success():
             refer_size = self.get_snapshot_refer_size(snapshot_full_name)
-            self.cache.add_snapshot(snapshot_full_name, refer_size)
+            self.add_snapshot(snapshot_full_name, refer_size)
             self.logger.debug(f"Created snapshot: {snapshot_full_name} with refer size: {refer_size}")
             result["success"] = True
             result["message"] = f"Snapshot {snapshot_full_name} created successfully."
@@ -67,7 +57,7 @@ class ZFSSnapshotManager:
         - int: The refer size of the snapshot in bytes.
         """
         try:
-            result = run_command(f"zfs list -H -o refer \"{snapshot}\"")
+            result = run_command(f"/sbin/zfs list -H -o refer \"{snapshot}\"")
             if result.is_success():
                 size_str = result.get_output()
                 size = self._convert_size_to_bytes(size_str)
@@ -77,18 +67,6 @@ class ZFSSnapshotManager:
                 return 0
         except Exception as e:
             self.logger.error(f"Exception occurred while getting refer size for snapshot {snapshot}: {e}")
-            return 0
-
-    @type_check
-    def _convert_size_to_bytes(self, size_str):
-        size_units = {"K": 1024, "M": 1024**2, "G": 1024**3, "T": 1024**4}
-        try:
-            if size_str[-1] in size_units:
-                return int(float(size_str[:-1]) * size_units[size_str[-1]])
-            else:
-                return int(size_str)
-        except ValueError:
-            self.logger.error(f"Invalid size string: {size_str}")
             return 0
 
     @type_check
@@ -110,7 +88,7 @@ class ZFSSnapshotManager:
         delete_command = f"/sbin/zfs destroy \"{snapshot}\""
         delete_result = run_command(delete_command)
         if delete_result.is_success():
-            self.cache.remove_snapshot(snapshot)
+            self.remove_snapshot(snapshot)
             self.logger.debug(f"Deleted snapshot: {snapshot}")
             result["success"] = True
             result["message"] = f"Snapshot {snapshot} deleted successfully."
@@ -139,7 +117,7 @@ class ZFSSnapshotManager:
         }
 
         dataset_path, snapshot_name = snapshot.split('@', 1)
-        if dataset_path not in self.cache.datasets:
+        if dataset_path not in self.datasets:
             result["message"] = f"Dataset {dataset_path} does not exist. Cannot restore snapshot."
             self.logger.warning(result["message"])
             return result
@@ -162,15 +140,15 @@ class ZFSSnapshotManager:
 
         return result
 
-    @type_check
-    def list_snapshots(self) -> list:
+    @property
+    def snapshots(self) -> list:
         """
         List all cached ZFS snapshots.
 
         Returns:
         - list: A list of all snapshot names.
         """
-        snapshots = list(self.cache.snapshots.keys())
+        snapshots = list(self.snapshots.keys())
         return snapshots
 
     @type_check
@@ -184,7 +162,7 @@ class ZFSSnapshotManager:
         Returns:
         - bool: True if the snapshot exists, False otherwise.
         """
-        return snapshot_name in self.cache.snapshots
+        return snapshot_name in self.snapshots
 
     @type_check
     def rollback_all_snapshots(self, snapshot_name: str, dataset_path: str, recursive: bool = False, force: bool = False) -> None:
@@ -197,12 +175,12 @@ class ZFSSnapshotManager:
         - recursive (bool): Whether to rollback recursively. Default is False.
         - force (bool): Whether to force the rollback. Default is False.
         """
-        if dataset_path not in self.cache.datasets:
+        if dataset_path not in self.datasets:
             self.logger.error(f"Dataset {dataset_path} does not exist. Cannot rollback snapshots.")
             return
 
         try:
-            all_snapshots = [snap for snap in self.cache.snapshots if snap.startswith(dataset_path)]
+            all_snapshots = [snap for snap in self.snapshots if snap.startswith(dataset_path)]
             matching_snapshots = [snap for snap in all_snapshots if snap.endswith(f"@{snapshot_name}")]
             for snapshot in matching_snapshots:
                 self.rollback_snapshot(snapshot, recursive, force)
@@ -266,8 +244,7 @@ class ZFSSnapshotManager:
         }
 
         try:
-            all_snapshots = self.list_snapshots()
-            dataset_snapshots = [snap for snap in all_snapshots if snap.startswith(f"{dataset_path}@")]
+            dataset_snapshots = [snap for snap in self.snapshots if snap.startswith(f"{dataset_path}@")]
 
             delete_errors = []
             for snapshot in dataset_snapshots:

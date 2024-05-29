@@ -35,7 +35,7 @@ class RestoreBase:
             self.backup_chart_dir = self.backup_dir / "charts"
             self.catalog_dir = self.backup_dir / "catalog"
 
-            print("Rolling back snapshot for backup dataset, ensuring integrity...")
+            self.logger.info("Rolling back snapshot for backup dataset, ensuring integrity...")
             self.snapshot_manager = ZFSSnapshotManager()
             self.snapshot_manager.rollback_all_snapshots(self.snapshot_name, self.backup_dataset, recursive=True, force=True)
 

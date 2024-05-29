@@ -36,7 +36,7 @@ class RestoreBase:
 
             print("Rolling back snapshot for backup dataset, ensuring integrity...")
             self.snapshot_manager = ZFSSnapshotManager()
-            self.snapshot_manager.rollback_all_snapshots(self.snapshot_name, self.backup_dataset)
+            self.snapshot_manager.rollback_all_snapshots(self.snapshot_name, self.backup_dataset, recursive=True, force=True)
 
             self.middleware = MiddlewareClientManager.fetch()
             self.kubernetes_config_file = self.backup_dir / "kubernetes_config" / "kubernetes_config.json"
@@ -162,13 +162,14 @@ class RestoreBase:
         # Rollback snapshots
         if snapshots_to_rollback:
             self.logger.info(f"Rolling back snapshots for {app_name}...")
-            rollback_result = self.snapshot_manager.rollback_snapshots(snapshots_to_rollback)
-            for message in rollback_result.get("messages", []):
-                if not rollback_result.get("success", False):
-                    self.failures[app_name].append(message)
-                    self.logger.error(message)
-                else:
-                    self.logger.debug(message)
+            for snapshot in snapshots_to_rollback:
+                rollback_result = self.snapshot_manager.rollback_snapshot(snapshot, recursive=True, force=True)
+                for message in rollback_result.get("messages", []):
+                    if not rollback_result.get("success", False):
+                        self.failures[app_name].append(message)
+                        self.logger.error(message)
+                    else:
+                        self.logger.debug(message)
 
         # Restore snapshots
         if snapshots_to_restore:

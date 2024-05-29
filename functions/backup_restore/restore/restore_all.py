@@ -157,7 +157,7 @@ class RestoreAll(RestoreBase):
 
         try:
             self.logger.info(f"Rolling back snapshots under {self.kube_config_reader.dataset}")
-            self.snapshot_manager.rollback_all_snapshots(self.snapshot_name, self.kube_config_reader.dataset)
+            self.snapshot_manager.rollback_all_snapshots(self.snapshot_name, self.kube_config_reader.dataset, recursive=True, force=True)
         except Exception as e:
             self.logger.error(f"Failed to rollback snapshots: {e}")
             raise Exception("Initial Kubernetes setup failed.")

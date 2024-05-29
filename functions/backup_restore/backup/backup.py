@@ -142,6 +142,7 @@ class Backup:
                     self.logger.error(f"Failed to backup database for {app_name}: {result['message']}")
                     failures[app_name].append(result["message"])
 
+            # TODO: Print off better messages for each of the two types
             dataset_paths = self.kube_pvc_fetcher.get_volume_paths_by_namespace(f"ix-{app_name}")
             if dataset_paths:
                 self.logger.info(f"Backing up {app_name} PVCs...")

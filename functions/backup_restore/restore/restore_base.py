@@ -89,10 +89,21 @@ class RestoreBase:
             self.chart_info.handle_critical_failure(app_name)
 
     def _restore_crds(self, app_name):
+        """
+        Restore CRDs for the specified application.
+
+        Parameters:
+        - app_name (str): The name of the application to restore CRDs for.
+        """
         self.logger.info(f"Restoring CRDs for {app_name}...")
-        crd_failures = self.restore_resources.restore_crd(self.chart_info.get_file(app_name, "crds"))
-        if crd_failures:
-            self.failures[app_name].extend(crd_failures)
+        crd_files = self.chart_info.get_file(app_name, "crds")
+
+        for crd_file in crd_files:
+            self.logger.info(f"Restoring CRD from file: {crd_file}")
+            restore_result = self.restore_resources.restore_crd(crd_file)
+            if not restore_result["success"]:
+                self.failures.setdefault(app_name, []).append(restore_result["message"])
+                self.logger.error(f"Failed to restore CRD from {crd_file}: {restore_result['message']}")
 
     @type_check
     def _rollback_volumes(self, app_name: str):

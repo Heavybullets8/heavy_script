@@ -116,14 +116,14 @@ class RestoreBase:
         self.logger.debug(f"Starting rollback process for {app_name}...")
         
         def rollback_snapshot(snapshot: str, name: str, volume_type: str):
-            self.logger.info(f"Rolling back {volume_type} {name}...")
+            self.logger.info(f"{app_name}: rolling back {volume_type} {name}...")
             rollback_result = self.snapshot_manager.rollback_snapshot(snapshot, recursive=True, force=True)
             if not rollback_result.get("success", False):
                 self.failures.setdefault(app_name, []).append(rollback_result.get("message", "Unknown error"))
                 self.logger.error(rollback_result.get("message", "Unknown error"))
 
         def restore_snapshot(snapshot: str, name: str, volume_type: str):
-            self.logger.info(f"Restoring {volume_type} {name} from backup...")
+            self.logger.info(f"{app_name}: restoring {volume_type} {name} from backup...")
             snapshot_files = self.chart_info.get_file(app_name, "snapshots")
             if snapshot_files:
                 for snapshot_file in snapshot_files:

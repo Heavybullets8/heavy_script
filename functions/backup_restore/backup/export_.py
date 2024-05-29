@@ -66,25 +66,6 @@ class ChartInfoExporter:
             self._convert_json_to_yaml(chart_info_dir / 'values.json')
         
         self.logger.info("Chart information export completed.")
-        self._cleanup_old_exports()
-
-    def _cleanup_old_exports(self):
-        """
-        Cleanup old exports if the number of exports exceeds the retention limit.
-        """
-        export_dirs = sorted(
-            (d for d in self.export_dir.iterdir() if d.is_dir() and d.name.startswith("Export--")),
-            key=lambda d: datetime.strptime(d.name.replace("Export--", ""), '%Y-%m-%d_%H:%M:%S')
-        )
-
-        if len(export_dirs) > self.retention_number:
-            for old_export_dir in export_dirs[:-self.retention_number]:
-                self.logger.info(f"Deleting oldest export due to retention limit: {old_export_dir.name}")
-                try:
-                    shutil.rmtree(old_export_dir)
-                    self.logger.debug(f"Removed old export: {old_export_dir}")
-                except Exception as e:
-                    self.logger.error(f"Failed to delete old export directory {old_export_dir}: {e}", exc_info=True)
 
     def _convert_json_to_yaml(self, json_file: Path):
         """

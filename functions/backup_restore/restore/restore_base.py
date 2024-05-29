@@ -99,7 +99,7 @@ class RestoreBase:
         crd_files = self.chart_info.get_file(app_name, "crds")
 
         for crd_file in crd_files:
-            self.logger.info(f"Restoring CRD from file: {crd_file}")
+            self.logger.debug(f"Restoring CRD from file: {crd_file}")
             restore_result = self.restore_resources.restore_crd(crd_file)
             if not restore_result["success"]:
                 self.failures.setdefault(app_name, []).append(restore_result["message"])

@@ -5,76 +5,37 @@ import configparser
 def update_config(config_file_path):
     config_file_path = Path(config_file_path)
     
-    # Read the original content preserving comments
-    with config_file_path.open('r') as file:
-        lines = file.readlines()
-
-    # Create a new config parser object
+    # Create a new config parser object with comments allowed
     config = configparser.ConfigParser(allow_no_value=True)
+    config.optionxform = str  # Preserve the letter case of keys
     config.read(config_file_path)
-    
+
     # Remove the [databases] section if it exists
     if 'databases' in config:
         config.remove_section('databases')
+    
+    # Ensure the [BACKUP] section is added and contains the required options
+    if 'BACKUP' not in config:
+        config.add_section('BACKUP')
 
-    # Prepare the new content
-    new_content = []
-    in_databases_section = False
-    backup_section_exists = False
-    in_backup_section = False
-    backup_options = {
-        'export_enabled': 'export_enabled=true\n',
-        'full_backup_enabled': 'full_backup_enabled=true\n',
-        'backup_snapshot_streams': 'backup_snapshot_streams=false\n',
-        'max_stream_size': (
-            '# Maximum size of a backup stream, the default is 10GB, be careful when setting this higher\n'
-            '# Especially considering PV\'s for plex, sonarr, radarr, etc. can be quite large\n'
-            '# Example: max_stream_size=10GB, max_stream_size=20KB, max_stream_size=1TB\n'
-            '# max_stream_size=10GB\n'
-        )
-    }
-    backup_keys = set(backup_options.keys())
+    backup_section = config['BACKUP']
 
-    for line in lines:
-        # Detect if we are in the [databases] section
-        if line.strip().lower() == '[databases]':
-            in_databases_section = True
-            continue
-        if line.startswith('[') and in_databases_section:
-            in_databases_section = False
-        if in_databases_section:
-            continue
+    # Add required options if they do not exist
+    if 'export_enabled' not in backup_section:
+        backup_section['export_enabled'] = 'true'
+    if 'full_backup_enabled' not in backup_section:
+        backup_section['full_backup_enabled'] = 'true'
+    if 'backup_snapshot_streams' not in backup_section:
+        backup_section['backup_snapshot_streams'] = 'false'
+    if 'max_stream_size' not in backup_section:
+        backup_section['; Maximum size of a backup stream, the default is 10GB, be careful when setting this higher\n'
+                        '# Especially considering PV\'s for plex, sonarr, radarr, etc. can be quite large\n'
+                        '# Example: max_stream_size=10GB, max_stream_size=20KB, max_stream_size=1TB'] = None
+        backup_section['max_stream_size'] = '10GB'
 
-        # Detect if we are in the [BACKUP] section
-        if line.strip().lower() == '[backup]':
-            backup_section_exists = True
-            in_backup_section = True
-        elif line.startswith('[') and in_backup_section:
-            in_backup_section = False
-
-        # Add lines to the new content
-        if in_backup_section:
-            key = line.split('=')[0].strip()
-            if key in backup_keys:
-                backup_keys.discard(key)
-
-        new_content.append(line)
-
-    # If the [BACKUP] section exists but is missing some keys, add the missing keys
-    if backup_section_exists and backup_keys:
-        new_content.append('\n')
-        for key in backup_keys:
-            new_content.append(backup_options[key])
-
-    # If the [BACKUP] section does not exist, add it
-    if not backup_section_exists:
-        new_content.append('\n[BACKUP]\n')
-        for key in backup_options:
-            new_content.append(backup_options[key])
-
-    # Write the new content back to the config file
+    # Write the updated config back to the file
     with config_file_path.open('w') as file:
-        file.writelines(new_content)
+        config.write(file, space_around_delimiters=False)
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:

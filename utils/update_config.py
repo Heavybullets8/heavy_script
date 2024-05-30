@@ -40,29 +40,18 @@ def update_config():
 
     # Write the updated config back to the file
     with open(config_file_path, 'w', encoding='utf-8') as file:
-        # Ensure new sections and options are added correctly
-        for section in default_config.keys():
-            if section not in current_config:
-                file.write(f'\n[{section}]\n')
-                for key, value in default_config[section].items():
-                    if value is None:
-                        file.write(f'{key}\n')
-                    else:
-                        file.write(f'{key}={value}\n')
-            else:
-                if not any(line.strip() == f'[{section}]' for line in new_content):
-                    file.write(f'\n[{section}]\n')
-                for key, value in current_config[section].items():
+        for section in current_config.keys():
+            file.write(f'\n[{section}]\n')
+            for key, value in current_config[section].items():
+                file.write(f'{key}={value}\n')
+
+            # Add any missing keys and comments from the default config
+            for key, value in default_config[section].items():
+                if key not in current_config[section]:
                     file.write(f'{key}={value}\n')
-                # Add any missing keys from the default config
-                for key, value in default_config[section].items():
-                    if key not in current_config[section]:
-                        print(f"Adding missing key: {key} to section: {section}")
-                        file.write(f'{key}={value}\n')
-                    # Write any comments associated with keys
-                    elif current_config[section][key] == default_config[section][key]:
-                        for comment in default_config.comments[key]:
-                            file.write(f'{comment}\n')
+                if key in default_config.comments and default_config.comments[key]:
+                    for comment in default_config.comments[key]:
+                        file.write(f'{comment}\n')
 
     print(f"Updated config written to: {config_file_path}")
 

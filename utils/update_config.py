@@ -41,7 +41,7 @@ def update_config():
     # Write the updated config back to the file
     with open(config_file_path, 'w', encoding='utf-8') as file:
         # Ensure new sections and options are added correctly
-        for section in default_config.sections():
+        for section in default_config.keys():
             if section not in current_config:
                 file.write(f'\n[{section}]\n')
                 for key, value in default_config[section].items():
@@ -50,9 +50,10 @@ def update_config():
                     else:
                         file.write(f'{key}={value}\n')
             else:
-                file.write(f'\n[{section}]\n')
-                for line in current_config[section].items():
-                    file.write(f'{line[0]}={line[1]}\n')
+                if not any(line.strip() == f'[{section}]' for line in new_content):
+                    file.write(f'\n[{section}]\n')
+                for key, value in current_config[section].items():
+                    file.write(f'{key}={value}\n')
                 # Add any missing keys from the default config
                 for key, value in default_config[section].items():
                     if key not in current_config[section]:

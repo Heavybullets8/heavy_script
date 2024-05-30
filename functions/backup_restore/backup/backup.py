@@ -170,6 +170,7 @@ class Backup:
                         failures[app_name].append(snapshot_result["message"])
                         continue
 
+                    # Read configuration settings
                     config_file_path = str(Path(__file__).parent.parent.parent.parent / 'config.ini')
                     config = ConfigObj(config_file_path, encoding='utf-8', list_values=False)
 
@@ -189,8 +190,14 @@ class Backup:
 
                     max_stream_size_bytes = size_str_to_bytes(max_stream_size_str)
 
+                    self.logger.debug(f"backup_snapshot_streams: {backup_snapshot_streams}")
+                    self.logger.debug(f"max_stream_size_str: {max_stream_size_str}")
+                    self.logger.debug(f"max_stream_size_bytes: {max_stream_size_bytes}")
+
                     if backup_snapshot_streams:
                         snapshot_refer_size = self.snapshot_manager.get_snapshot_refer_size(snapshot_name)
+                        self.logger.debug(f"snapshot_refer_size: {snapshot_refer_size}")
+
                         if snapshot_refer_size <= max_stream_size_bytes:
                             # Send the snapshot to the backup directory
                             self.logger.info(f"Sending snapshot stream to backup file...")

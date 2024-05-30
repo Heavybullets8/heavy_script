@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from configobj import ConfigObj
 from pathlib import Path
 from collections import defaultdict
 
@@ -169,14 +170,40 @@ class Backup:
                         failures[app_name].append(snapshot_result["message"])
                         continue
 
-                    # Send the snapshot to the backup directory
-                    self.logger.info(f"Sending snapshot stream to backup file...")
-                    snapshot_name = f"{dataset_path}@{self.snapshot_name}"
-                    backup_path = app_backup_dir / "snapshots" / f"{snapshot_name.replace('/', '%%')}.zfs"
-                    backup_path.parent.mkdir(parents=True, exist_ok=True)
-                    send_result = self.snapshot_manager.zfs_send(snapshot_name, backup_path, compress=True)
-                    if not send_result["success"]:
-                        failures[app_name].append(send_result["message"])
+                    config_file_path = str(Path(__file__).parent.parent.parent.parent / 'config.ini')
+                    config = ConfigObj(config_file_path, encoding='utf-8', list_values=False)
+
+                    backup_snapshot_streams = config['BACKUP'].as_bool('backup_snapshot_streams')
+                    max_stream_size_str = config['BACKUP'].get('max_stream_size', '10G')
+
+                    def size_str_to_bytes(size_str):
+                        size_units = {"K": 1024, "M": 1024**2, "G": 1024**3, "T": 1024**4}
+                        try:
+                            if size_str[-1] in size_units:
+                                return int(float(size_str[:-1]) * size_units[size_str[-1]])
+                            else:
+                                return int(size_str)
+                        except ValueError:
+                            self.logger.error(f"Invalid size string: {size_str}")
+                            return 0
+
+                    max_stream_size_bytes = size_str_to_bytes(max_stream_size_str)
+
+                    if backup_snapshot_streams:
+                        snapshot_refer_size = self.snapshot_manager.get_snapshot_refer_size(snapshot_name)
+                        if snapshot_refer_size <= max_stream_size_bytes:
+                            # Send the snapshot to the backup directory
+                            self.logger.info(f"Sending snapshot stream to backup file...")
+                            snapshot_name = f"{dataset_path}@{self.snapshot_name}"
+                            backup_path = app_backup_dir / "snapshots" / f"{snapshot_name.replace('/', '%%')}.zfs"
+                            backup_path.parent.mkdir(parents=True, exist_ok=True)
+                            send_result = self.snapshot_manager.zfs_send(snapshot_name, backup_path, compress=True)
+                            if not send_result["success"]:
+                                failures[app_name].append(send_result["message"])
+                        else:
+                            self.logger.warning(f"Snapshot refer size {snapshot_refer_size} exceeds the maximum configured size {max_stream_size_bytes}")
+                    else:
+                        self.logger.debug("Backup snapshot streams are disabled in the configuration.")
 
             # Handle ix_volumes_dataset separately
             if chart_info.ix_volumes_dataset:

@@ -9,8 +9,8 @@ def update_config():
     print(f"Loading default config from: {default_config_path}")
 
     # Load the existing config and default config
-    current_config = ConfigObj(config_file_path, encoding='utf-8', list_values=False)
-    default_config = ConfigObj(default_config_path, encoding='utf-8', list_values=False)
+    current_config = ConfigObj(config_file_path, encoding='utf-8', list_values=False, preserve_comments=True)
+    default_config = ConfigObj(default_config_path, encoding='utf-8', list_values=False, preserve_comments=True)
 
     print("Current config sections:", list(current_config.keys()))
     print("Default config sections:", list(default_config.keys()))
@@ -39,19 +39,17 @@ def update_config():
                     current_config[section][key] = value
 
     # Write the updated config back to the file
-    with open(config_file_path, 'w', encoding='utf-8') as file:
-        for section in current_config.keys():
-            file.write(f'\n[{section}]\n')
-            for key, value in current_config[section].items():
-                file.write(f'{key}={value}\n')
+    current_config.write()
 
-            # Add any missing keys and comments from the default config
-            for key, value in default_config[section].items():
-                if key not in current_config[section]:
-                    file.write(f'{key}={value}\n')
-                if key in default_config.comments and default_config.comments[key]:
-                    for comment in default_config.comments[key]:
-                        file.write(f'{comment}\n')
+    # Ensure new lines before new sections
+    with open(config_file_path, 'r', encoding='utf-8') as file:
+        lines = file.readlines()
+
+    with open(config_file_path, 'w', encoding='utf-8') as file:
+        for i, line in enumerate(lines):
+            if line.startswith('[') and i != 0 and lines[i-1].strip() != '':
+                file.write('\n')
+            file.write(line)
 
     print(f"Updated config written to: {config_file_path}")
 

@@ -2,8 +2,8 @@ from pathlib import Path
 from configobj import ConfigObj
 
 def update_config():
-    config_file_path = str(Path(__file__).parent / 'config.ini')
-    default_config_path = str(Path(__file__).parent / '.default.config.ini')
+    config_file_path = str(Path(__file__).parent.parent / 'config.ini')
+    default_config_path = str(Path(__file__).parent.parent / '.default.config.ini')
 
     print(f"Loading current config from: {config_file_path}")
     print(f"Loading default config from: {default_config_path}")

@@ -22,6 +22,18 @@ def update_config(config_file_path):
     in_databases_section = False
     backup_section_exists = False
     in_backup_section = False
+    backup_options = {
+        'export_enabled': 'export_enabled=true\n',
+        'full_backup_enabled': 'full_backup_enabled=true\n',
+        'backup_snapshot_streams': 'backup_snapshot_streams=false\n',
+        'max_stream_size': (
+            '# Maximum size of a backup stream, the default is 10GB, be careful when setting this higher\n'
+            '# Especially considering PV\'s for plex, sonarr, radarr, etc. can be quite large\n'
+            '# Example: max_stream_size=10GB, max_stream_size=20KB, max_stream_size=1TB\n'
+            '# max_stream_size=10GB\n'
+        )
+    }
+    backup_keys = set(backup_options.keys())
 
     for line in lines:
         # Detect if we are in the [databases] section
@@ -40,35 +52,25 @@ def update_config(config_file_path):
         elif line.startswith('[') and in_backup_section:
             in_backup_section = False
 
-        # Add lines to the new content, and check for existing keys in the [BACKUP] section
+        # Add lines to the new content
         if in_backup_section:
-            if 'export_enabled' not in config['BACKUP']:
-                new_content.append('export_enabled=true\n')
-            if 'full_backup_enabled' not in config['BACKUP']:
-                new_content.append('full_backup_enabled=true\n')
-            if 'backup_snapshot_streams' not in config['BACKUP']:
-                new_content.append('backup_snapshot_streams=false\n')
-            if 'max_stream_size' not in config['BACKUP']:
-                new_content.append('# Maximum size of a backup stream, the default is 10GB, be careful when setting this higher\n')
-                new_content.append('# Especially considering PV\'s for plex, sonarr, radarr, etc. can be quite large\n')
-                new_content.append('# Example: max_stream_size=10GB, max_stream_size=20KB, max_stream_size=1TB\n')
-                new_content.append('# max_stream_size=10GB\n')
-        
+            key = line.split('=')[0].strip()
+            if key in backup_keys:
+                backup_keys.discard(key)
+
         new_content.append(line)
+
+    # If the [BACKUP] section exists but is missing some keys, add the missing keys
+    if backup_section_exists and backup_keys:
+        new_content.append('\n')
+        for key in backup_keys:
+            new_content.append(backup_options[key])
 
     # If the [BACKUP] section does not exist, add it
     if not backup_section_exists:
         new_content.append('\n[BACKUP]\n')
-        new_content.append('export_enabled=true\n')
-        new_content.append('full_backup_enabled=true\n')
-        new_content.append('backup_snapshot_streams=false\n')
-        new_content.append('\n## String options ##\n')
-        new_content.append('# Uncomment the following line to specify a custom dataset location for backups\n')
-        new_content.append('# custom_dataset_location=\n')
-        new_content.append('\n# Maximum size of a backup stream, the default is 10GB, be careful when setting this higher\n')
-        new_content.append('# Especially considering PV\'s for plex, sonarr, radarr, etc. can be quite large\n')
-        new_content.append('# Example: max_stream_size=10GB, max_stream_size=20KB, max_stream_size=1TB\n')
-        new_content.append('# max_stream_size=10GB\n')
+        for key in backup_options:
+            new_content.append(backup_options[key])
 
     # Write the new content back to the config file
     with config_file_path.open('w') as file:

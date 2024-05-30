@@ -19,35 +19,31 @@ def update_config(config_file_path):
     if 'databases' in config:
         config.remove_section('databases')
 
-    # Load the default config from .default.config
+    # Load the default config from .default.config.ini
     default_config_parser = configparser.ConfigParser(allow_no_value=True)
     default_config_parser.optionxform = str  # Preserve the letter case of keys
     default_config_parser.read(default_config_path)
 
-    # Update the existing config with missing sections and options from the default config
-    for section in default_config_parser.sections():
-        if not config.has_section(section):
-            config.add_section(section)
-        for key, value in default_config_parser.items(section):
-            if not config.has_option(section, key):
-                config.set(section, key, value)
+    # Collect lines to write back, excluding [databases] section
+    new_lines = []
+    in_databases_section = False
+    for line in lines:
+        if line.strip().lower() == '[databases]':
+            in_databases_section = True
+            continue
+        if line.startswith('[') and in_databases_section:
+            in_databases_section = False
+        if not in_databases_section:
+            new_lines.append(line)
 
-    # Write the updated config back to the file preserving the original comments
+    # Write the collected lines back to the file
     with config_file_path.open('w') as file:
-        in_databases_section = False
-        for line in lines:
-            if line.strip().lower() == '[databases]':
-                in_databases_section = True
-                continue
-            if line.startswith('[') and in_databases_section:
-                in_databases_section = False
-            if not in_databases_section:
-                file.write(line)
+        file.writelines(new_lines)
         
-        file.write('\n')
+        # Ensure new sections and options are added if missing
         for section in default_config_parser.sections():
             if not config.has_section(section):
-                file.write(f'[{section}]\n')
+                file.write(f'\n[{section}]\n')
             for key, value in default_config_parser.items(section):
                 if not config.has_option(section, key):
                     if value is None:

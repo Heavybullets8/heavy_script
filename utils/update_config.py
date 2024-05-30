@@ -24,15 +24,18 @@ def update_config(config_file_path):
         lines = file.readlines()
 
     new_content = []
-    in_removed_section = False
+    in_section = None
 
     for line in lines:
-        if any(line.strip().lower() == f'[{section.lower()}]' for section in sections_to_remove):
-            in_removed_section = True
-            continue
-        if line.startswith('[') and in_removed_section:
-            in_removed_section = False
-        if not in_removed_section:
+        section_header = line.strip().lower()
+        if section_header.startswith('[') and section_header.endswith(']'):
+            section_name = section_header[1:-1]
+            if section_name in sections_to_remove:
+                in_section = section_name
+                continue
+            in_section = None
+
+        if in_section is None:
             new_content.append(line)
 
     # Write the modified content back to the config file

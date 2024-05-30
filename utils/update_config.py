@@ -1,10 +1,9 @@
-import sys
 from pathlib import Path
 from configobj import ConfigObj
 
-def update_config(config_file_path):
-    config_file_path = Path(config_file_path)
-    default_config_path = Path(__file__).parent / '.default.config.ini'
+def update_config():
+    config_file_path = str(Path(__file__).parent / 'config.ini')
+    default_config_path = str(Path(__file__).parent / '.default.config.ini')
 
     # Load the existing config and default config
     current_config = ConfigObj(config_file_path, encoding='utf-8', list_values=False)
@@ -32,10 +31,5 @@ def update_config(config_file_path):
     # Write the updated config back to the file
     current_config.write()
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python update_config.py <config_file_path>")
-        sys.exit(1)
-    
-    config_file_path = sys.argv[1]
-    update_config(config_file_path)
+if __name__ == "__main__":    
+    update_config()

@@ -182,16 +182,17 @@ class Backup:
                     self.logger.debug(f"max_stream_size_bytes: {self.max_stream_size_bytes}")
 
                     if self.backup_snapshot_streams:
-                        snapshot_refer_size = self.snapshot_manager.get_snapshot_refer_size(snapshot_name)
+                        snapshot = f"{dataset_path}@{self.snapshot_name}"
+                        snapshot_refer_size = self.snapshot_manager.get_snapshot_refer_size(snapshot)
                         self.logger.debug(f"snapshot_refer_size: {snapshot_refer_size}")
 
                         if snapshot_refer_size <= self.max_stream_size_bytes:
                             # Send the snapshot to the backup directory
                             self.logger.info(f"Sending PV snapshot stream to backup file...")
-                            snapshot_name = f"{dataset_path}@{self.snapshot_name}"
-                            backup_path = app_backup_dir / "snapshots" / f"{snapshot_name.replace('/', '%%')}.zfs"
+                            snapshot = f"{dataset_path}@{self.snapshot_name}"
+                            backup_path = app_backup_dir / "snapshots" / f"{snapshot.replace('/', '%%')}.zfs"
                             backup_path.parent.mkdir(parents=True, exist_ok=True)
-                            send_result = self.snapshot_manager.zfs_send(snapshot_name, backup_path, compress=True)
+                            send_result = self.snapshot_manager.zfs_send(snapshot, backup_path, compress=True)
                             if not send_result["success"]:
                                 failures[app_name].append(send_result["message"])
                         else:

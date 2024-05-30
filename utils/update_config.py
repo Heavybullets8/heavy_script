@@ -1,65 +1,41 @@
 import sys
 from pathlib import Path
-import configparser
+from configobj import ConfigObj
 
 def update_config(config_file_path):
     config_file_path = Path(config_file_path)
     default_config_path = Path(__file__).parent / '.default.config.ini'
 
-    # Load the default config from .default.config.ini
-    default_config = configparser.ConfigParser(allow_no_value=True, delimiters=("=",))
-    default_config.optionxform = str  # Preserve the letter case of keys
-    default_config.read(default_config_path)
+    # Load the existing config and default config
+    current_config = ConfigObj(config_file_path, encoding='utf-8', list_values=False)
+    default_config = ConfigObj(default_config_path, encoding='utf-8', list_values=False)
 
-    # Load the existing config
-    current_config = configparser.ConfigParser(allow_no_value=True, delimiters=("=",))
-    current_config.optionxform = str  # Preserve the letter case of keys
-    current_config.read(config_file_path)
+    # Remove sections from current config that are not in the default config
+    for section in list(current_config.keys()):
+        if section not in default_config:
+            del current_config[section]
 
-    # Prepare the new content by removing sections that are not in the default config
-    sections_to_remove = [section for section in current_config.sections() if section not in default_config.sections()]
+    # Update sections and keys from the default config
+    for section, default_options in default_config.items():
+        if section not in current_config:
+            current_config[section] = default_options
+        else:
+            # Remove keys not present in the default config
+            for key in list(current_config[section].keys()):
+                if key not in default_options:
+                    del current_config[section][key]
+            # Add keys from the default config
+            for key, value in default_options.items():
+                if key not in current_config[section]:
+                    current_config[section][key] = value
 
-    # Read the original content preserving comments
-    with config_file_path.open('r') as file:
-        lines = file.readlines()
-
-    new_content = []
-    in_section = None
-
-    for line in lines:
-        section_header = line.strip().lower()
-        if section_header.startswith('[') and section_header.endswith(']'):
-            section_name = section_header[1:-1]
-            if section_name in sections_to_remove:
-                in_section = section_name
-                continue
-            in_section = None
-
-        if in_section is None:
-            new_content.append(line)
-
-    # Write the modified content back to the config file
-    with config_file_path.open('w') as file:
-        file.writelines(new_content)
-
-    # Reload the config to update it with missing sections and options from the default config
-    current_config.read_string(''.join(new_content))
-
-    for section in default_config.sections():
-        if not current_config.has_section(section):
-            current_config.add_section(section)
-        for key, value in default_config.items(section):
-            if not current_config.has_option(section, key):
-                current_config.set(section, key, value)
-
-    # Write the final updated config back to the file, ensuring new sections and options are added
-    with config_file_path.open('w') as file:
-        current_config.write(file, space_around_delimiters=False)
+    # Write the updated config back to the file
+    current_config.write()
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python update_config.py <config_file_path>")
         sys.exit(1)
-
+    
     config_file_path = sys.argv[1]
     update_config(config_file_path)

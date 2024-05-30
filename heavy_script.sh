@@ -56,7 +56,7 @@ fi
 # generate the config.ini file if it does not exist
 generate_config_ini
 
-python3 utils/update_config.py "$script_path/config.ini"
+python3 utils/update_config.py
 
 # Separate bundled short options
 args=()

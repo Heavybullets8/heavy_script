@@ -1,51 +1,49 @@
-import sys
 from pathlib import Path
-import configparser
+from configobj import ConfigObj
 
-def update_config(config_file_path):
-    config_file_path = Path(config_file_path)
-    
-    # Read the original content preserving comments
-    with config_file_path.open('r') as file:
+def update_config():
+    config_file_path = str(Path(__file__).parent.parent / 'config.ini')
+    default_config_path = str(Path(__file__).parent.parent / '.default.config.ini')
+
+    # Load the existing config and default config
+    current_config = ConfigObj(config_file_path, encoding='utf-8', list_values=False)
+    default_config = ConfigObj(default_config_path, encoding='utf-8', list_values=False)
+
+    # Remove sections from current config that are not in the default config
+    for section in list(current_config.keys()):
+        if section not in default_config:
+            del current_config[section]
+
+    # Update sections and keys from the default config
+    for section, default_options in default_config.items():
+        if section not in current_config:
+            current_config[section] = default_options
+            current_config.comments[section] = default_config.comments.get(section, [])
+        else:
+            # Remove keys not present in the default config
+            for key in list(current_config[section].keys()):
+                if key not in default_options:
+                    del current_config[section][key]
+            # Add keys from the default config
+            for key, value in default_options.items():
+                if key not in current_config[section]:
+                    current_config[section][key] = value
+                    current_config[section].comments[key] = default_config[section].comments.get(key, [])
+                if key in default_options.inline_comments:
+                    current_config[section].inline_comments[key] = default_options.inline_comments[key]
+
+    # Write the updated config back to the file
+    current_config.write()
+
+    # Ensure new lines before new sections
+    with open(config_file_path, 'r', encoding='utf-8') as file:
         lines = file.readlines()
 
-    # Create a new config parser object
-    config = configparser.ConfigParser(allow_no_value=True)
-    config.read(config_file_path)
-    
-    # Remove the [databases] section if it exists
-    if 'databases' in config:
-        config.remove_section('databases')
-
-    # Prepare the new content
-    new_content = []
-    in_databases_section = False
-
-    for line in lines:
-        if line.strip().lower() == '[databases]':
-            in_databases_section = True
-            continue
-        if line.startswith('[') and in_databases_section:
-            in_databases_section = False
-        if not in_databases_section:
-            new_content.append(line)
-
-    # Ensure the [BACKUP] section is added if it does not exist
-    if 'BACKUP' not in config:
-        new_content.append('\n[BACKUP]\n')
-        new_content.append('export_enabled=true\n')
-        new_content.append('full_backup_enabled=true\n')
-        new_content.append('# Uncomment the following line to specify a custom dataset location for backups\n')
-        new_content.append('# custom_dataset_location=\n')
-
-    # Write the new content back to the config file
-    with config_file_path.open('w') as file:
-        file.writelines(new_content)
+    with open(config_file_path, 'w', encoding='utf-8') as file:
+        for i, line in enumerate(lines):
+            if line.startswith('[') and i != 0 and lines[i-1].strip() != '':
+                file.write('\n')
+            file.write(line)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python update_config.py <config_file_path>")
-        sys.exit(1)
-    
-    config_file_path = sys.argv[1]
-    update_config(config_file_path)
+    update_config()

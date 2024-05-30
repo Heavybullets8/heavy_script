@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from configobj import ConfigObj
 from pathlib import Path
 from collections import defaultdict
 
@@ -49,7 +50,7 @@ class Backup:
 
         self.backup_dataset_parent = self.backup_dir.relative_to("/mnt")
         self.backup_dataset = str(self.backup_dataset_parent)
-        self._create_backup_dataset(self.backup_dataset)
+        self._create_backup_dataset()
 
         self.chart_collection = APIChartCollection()
         self.all_chart_names = self.chart_collection.all_chart_names
@@ -57,13 +58,28 @@ class Backup:
 
         self.kube_pvc_fetcher = KubePVCFetcher()
 
-    def _create_backup_dataset(self, dataset):
+        # Read configuration settings
+        config_file_path = str(Path(__file__).parent.parent.parent.parent / 'config.ini')
+        config = ConfigObj(config_file_path, encoding='utf-8', list_values=False)
+
+        self.backup_snapshot_streams = config['BACKUP'].as_bool('backup_snapshot_streams')
+        self.max_stream_size_str = config['BACKUP'].get('max_stream_size', '10G')
+        self.max_stream_size_bytes = self._size_str_to_bytes(self.max_stream_size_str)
+
+    def _create_backup_dataset(self):
         """
-        Create a ZFS dataset for backups if it doesn't already exist.
+        Create a ZFS dataset for backups.
         """
-        if not self.lifecycle_manager.dataset_exists(dataset):
-            if not self.lifecycle_manager.create_dataset(dataset):
-                raise RuntimeError(f"Failed to create backup dataset: {dataset}")
+        if not self.lifecycle_manager.dataset_exists(self.backup_dataset):
+            if not self.lifecycle_manager.create_dataset(
+                self.backup_dataset,
+                options={
+                    "atime": "off",
+                    "compression": "zstd-19",
+                    "recordsize": "1M"
+                }
+            ):
+                raise RuntimeError(f"Failed to create backup dataset: {self.backup_dataset}")
 
     def backup_all(self):
         """
@@ -144,14 +160,78 @@ class Backup:
 
             dataset_paths = self.kube_pvc_fetcher.get_volume_paths_by_namespace(f"ix-{app_name}")
             if dataset_paths:
-                self.logger.info(f"Backing up {app_name} PVCs...")
-                snapshot_errors = self.snapshot_manager.create_snapshots(self.snapshot_name, dataset_paths, self.retention_number)
-                if snapshot_errors:
-                    failures[app_name].extend(snapshot_errors)
+                for dataset_path in dataset_paths:
+                    pvc_name = dataset_path.split('/')[-1]
+                    self.logger.info(f"Snapshotting PVC: {pvc_name}...")
+
+                    # Check to see if dataset exists
+                    if not self.lifecycle_manager.dataset_exists(dataset_path):
+                        error_msg = f"Dataset {dataset_path} does not exist."
+                        self.logger.error(error_msg)
+                        failures[app_name].append(error_msg)
+                        continue
+
+                    # Create the snapshot for the current dataset
+                    snapshot_result = self.snapshot_manager.create_snapshot(self.snapshot_name, dataset_path)
+                    if not snapshot_result["success"]:
+                        failures[app_name].append(snapshot_result["message"])
+                        continue
+
+                    self.logger.debug(f"backup_snapshot_streams: {self.backup_snapshot_streams}")
+                    self.logger.debug(f"max_stream_size_str: {self.max_stream_size_str}")
+                    self.logger.debug(f"max_stream_size_bytes: {self.max_stream_size_bytes}")
+
+                    if self.backup_snapshot_streams:
+                        snapshot = f"{dataset_path}@{self.snapshot_name}"
+                        snapshot_refer_size = self.snapshot_manager.get_snapshot_refer_size(snapshot)
+                        self.logger.debug(f"snapshot_refer_size: {snapshot_refer_size}")
+
+                        if snapshot_refer_size <= self.max_stream_size_bytes:
+                            # Send the snapshot to the backup directory
+                            self.logger.info(f"Sending PV snapshot stream to backup file...")
+                            snapshot = f"{dataset_path}@{self.snapshot_name}"
+                            backup_path = app_backup_dir / "snapshots" / f"{snapshot.replace('/', '%%')}.zfs"
+                            backup_path.parent.mkdir(parents=True, exist_ok=True)
+                            send_result = self.snapshot_manager.zfs_send(snapshot, backup_path, compress=True)
+                            if not send_result["success"]:
+                                failures[app_name].append(send_result["message"])
+                        else:
+                            self.logger.warning(f"Snapshot refer size {snapshot_refer_size} exceeds the maximum configured size {self.max_stream_size_bytes}")
+                    else:
+                        self.logger.debug("Backup snapshot streams are disabled in the configuration.")
+
+            # Handle ix_volumes_dataset separately
+            if chart_info.ix_volumes_dataset:
+                snapshot = chart_info.ix_volumes_dataset + "@" + self.snapshot_name
+                if self.backup_snapshot_streams:
+                    snapshot_refer_size = self.snapshot_manager.get_snapshot_refer_size(snapshot)
+                    self.logger.debug(f"ix_volumes_dataset snapshot_refer_size: {snapshot_refer_size}")
+
+                    if snapshot_refer_size <= self.max_stream_size_bytes:
+                        self.logger.info(f"Sending ix_volumes snapshot stream to backup file...")
+                        backup_path = app_backup_dir / "snapshots" / f"{snapshot.replace('/', '%%')}.zfs"
+                        backup_path.parent.mkdir(parents=True, exist_ok=True)
+                        send_result = self.snapshot_manager.zfs_send(snapshot, backup_path, compress=True)
+                        if not send_result["success"]:
+                            failures[app_name].append(send_result["message"])
+                    else:
+                        self.logger.warning(f"ix_volumes_dataset snapshot refer size {snapshot_refer_size} exceeds the maximum configured size {self.max_stream_size_bytes}")
+                else:
+                    self.logger.debug("Backup snapshot streams are disabled in the configuration.")
 
         self._create_backup_snapshot()
         self._log_failures(failures)
-        self._cleanup_old_backups()
+
+    def _size_str_to_bytes(self, size_str):
+        size_units = {"K": 1024, "M": 1024**2, "G": 1024**3, "T": 1024**4}
+        try:
+            if size_str[-1] in size_units:
+                return int(float(size_str[:-1]) * size_units[size_str[-1]])
+            else:
+                return int(size_str)
+        except ValueError:
+            self.logger.error(f"Invalid size string: {size_str}")
+            return 0
 
     def _log_failures(self, failures):
         """
@@ -175,34 +255,14 @@ class Backup:
         Create a snapshot of the backup dataset after all backups are completed.
         """
         self.logger.info(f"\nCreating snapshot for backup: {self.backup_dataset}")
-        if self.snapshot_manager.create_snapshots(self.snapshot_name, [self.backup_dataset], self.retention_number):
-            self.logger.error("Failed to create snapshot for backup dataset.")
-        else:
-            self.logger.info("Snapshot created successfully for backup dataset.")
+        snapshot_result = self.snapshot_manager.create_snapshot(self.snapshot_name, self.backup_dataset)
 
-    def _cleanup_old_backups(self):
-        """
-        Cleanup old backups and their associated snapshots if the number of backups exceeds the retention limit.
-        """
-        backup_datasets = sorted(
-            (ds for ds in self.lifecycle_manager.list_datasets() if ds.startswith(f"{self.backup_dataset_parent}/HeavyScript--")),
-            key=lambda ds: datetime.strptime(ds.replace(f"{self.backup_dataset_parent}/HeavyScript--", ""), '%Y-%m-%d_%H:%M:%S')
-        )
-        
-        if len(backup_datasets) > self.retention_number:
-            for old_backup_dataset in backup_datasets[:-self.retention_number]:
-                snapshot_name = old_backup_dataset.split("/")[-1]
-                self.logger.info(f"Deleting oldest backup due to retention limit: {snapshot_name}")
-                try:
-                    self.lifecycle_manager.delete_dataset(old_backup_dataset)
-                    self.logger.debug(f"Removed old backup: {old_backup_dataset}")
-                except Exception as e:
-                    self.logger.error(f"Failed to delete old backup dataset {old_backup_dataset}: {e}", exc_info=True)
-                
-                self.logger.debug(f"Deleting snapshots for: {snapshot_name}")
-                snapshot_errors = self.snapshot_manager.delete_snapshots(snapshot_name)
-                if snapshot_errors:
-                    self.logger.error(f"Failed to delete snapshots for {snapshot_name}: {snapshot_errors}")
+        if snapshot_result.get("success"):
+            self.logger.info("Snapshot created successfully for backup dataset.")
+        else:
+            self.logger.error("Failed to create snapshot for backup dataset.")
+            for error in snapshot_result.get("errors", []):
+                self.logger.error(error)
 
     def _backup_application_datasets(self):
         """
@@ -212,12 +272,12 @@ class Backup:
         - applications_dataset (str): The root dataset under which Kubernetes operates.
         """
         datasets_to_ignore = KubeUtils().to_ignore_datasets_on_backup(self.kubeconfig.dataset)
-        all_datasets = self.lifecycle_manager.list_datasets()
 
-        datasets_to_backup = [ds for ds in all_datasets if ds.startswith(self.kubeconfig.dataset) and ds not in datasets_to_ignore]
+        datasets_to_backup = [ds for ds in self.lifecycle_manager.datasets if ds.startswith(self.kubeconfig.dataset) and ds not in datasets_to_ignore]
         self.logger.debug(f"Snapshotting datasets: {datasets_to_backup}")
 
-        snapshot_errors = self.snapshot_manager.create_snapshots(self.snapshot_name, datasets_to_backup, self.retention_number)
-        if snapshot_errors:
-            self.logger.error(f"Failed to create snapshots for application datasets: {snapshot_errors}")
-
+        for dataset in datasets_to_backup:
+            # Create snapshot for each dataset
+            snapshot_result = self.snapshot_manager.create_snapshot(self.snapshot_name, dataset)
+            if not snapshot_result.get("success"):
+                self.logger.error(f"Failed to create snapshot for dataset {dataset}: {snapshot_result['message']}")

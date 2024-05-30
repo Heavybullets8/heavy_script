@@ -1,6 +1,7 @@
 import threading
+from pathlib import Path
 from abc import ABC, abstractmethod
-from typing import Dict, List
+from typing import Dict, List, Union
 from utils.logger import get_logger
 from utils.type_check import type_check
 from utils.singletons import MiddlewareClientManager
@@ -253,6 +254,24 @@ class APIChartFetcher(ChartObserver):
         has_pvc = any(value.get('type') == 'pvc' for value in persistence.values() if isinstance(value, dict))
         self.logger.debug(f"Has PVCs for app {self.app_name}: {has_pvc}")
         return has_pvc
+
+    @property
+    def ix_volumes_dataset(self) -> Union[str, None]:
+        """
+        Get the ixVolumes dataset path for a given application.
+
+        Returns:
+        - str: The ixVolumes dataset path if it exists, else None.
+        """
+        ix_volumes = self.chart_config.get("ixVolumes", [])
+        if ix_volumes:
+            host_path = ix_volumes[0].get("hostPath")
+            if host_path:
+                if host_path.startswith("/mnt/"):
+                    host_path = host_path[5:]
+                dataset_path = str(Path(host_path).parent)
+                return dataset_path
+        return None
 
 class APIChartCollection(ChartObserver):
     @type_check

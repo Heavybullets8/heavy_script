@@ -57,6 +57,9 @@ class BackupChartFetcher:
                 'dataset': '',
                 'is_cnpg': False,
             },
+            'config': {
+                'ixVolumes': []
+            },
             'files': {
                 'database': None,
                 'namespace': None,
@@ -66,6 +69,7 @@ class BackupChartFetcher:
                 'secrets': [],
                 'crds': [],
                 'pv_zfs_volumes': [],
+                'snapshots': []
             }
         }
 
@@ -73,6 +77,7 @@ class BackupChartFetcher:
         kubernetes_objects_dir = chart_base_dir / 'kubernetes_objects'
         database_dir = chart_base_dir / 'database'
         versions_dir = chart_base_dir / 'chart_versions'
+        snapshots_dir = chart_base_dir / 'snapshots'
 
         # Parse metadata and config
         metadata = self._parse_metadata(chart_info_dir)
@@ -86,6 +91,8 @@ class BackupChartFetcher:
             chart_info['metadata']['dataset'] = metadata.get('dataset', '')
             chart_info['metadata']['is_cnpg'] = self._is_cnpg(config)
 
+            chart_info['config']['ixVolumes'] = config.get('ixVolumes', [])
+
             # Add files
             chart_info['files']['database'] = self._get_database_file(database_dir, app_name)
             chart_info['files']['namespace'] = self._get_file(kubernetes_objects_dir / 'namespace' / 'namespace.yaml')
@@ -96,6 +103,7 @@ class BackupChartFetcher:
             chart_info['files']['crds'] = self._get_files(kubernetes_objects_dir / 'crds')
             chart_info['files']['pv_zfs_volumes'] = self._get_files(kubernetes_objects_dir / 'pv_zfs_volumes')
             chart_info['files']['cnpg_pvcs_to_delete'] = self._get_file(kubernetes_objects_dir / 'cnpg_pvcs_to_delete.txt')
+            chart_info['files']['snapshots'] = self._get_files(snapshots_dir)
 
             return chart_info
 
@@ -359,6 +367,26 @@ class BackupChartFetcher:
         """
         return self.charts_info.get(app_name, {}).get('metadata', {}).get('dataset', '')
 
+    @type_check
+    def get_ix_volumes_dataset(self, app_name: str) -> Union[str, None]:
+        """
+        Get the ixVolumes dataset path for a given application.
+
+        Returns:
+        - str: The ixVolumes dataset path if it exists, else None.
+        """
+        ix_volumes = self.charts_info.get(app_name, {}).get("config", {}).get("ixVolumes", [])
+        if ix_volumes:
+            host_path = ix_volumes[0].get("hostPath")
+            if host_path:
+                # Remove the "/mnt/" prefix
+                if host_path.startswith("/mnt/"):
+                    host_path = host_path[5:]
+                # Remove the last directory to get the dataset path
+                dataset_path = str(Path(host_path).parent)
+                return dataset_path
+        return None
+
     def handle_critical_failure(self, app_name: str) -> None:
         """
         Remove the application from all_releases and other relevant lists.
@@ -390,6 +418,10 @@ class BackupChartFetcher:
                     k: str(v) if isinstance(v, Path) else (
                         [str(i) for i in v] if v is not None else 'None'
                     ) for k, v in info['files'].items()
+                },
+                'config': {
+                    k: v if not isinstance(v, Path) else str(v)
+                    for k, v in info.get('config', {}).items()
                 }
             } for app, info in self.charts_info.items()
         }

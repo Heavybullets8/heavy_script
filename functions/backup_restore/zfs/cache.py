@@ -12,7 +12,7 @@ class ZFSCache:
     _instance = None
     _lock = threading.Lock()
     _datasets = set()
-    _snapshots = set()
+    _snapshots = {}
 
     def __new__(cls):
         if not cls._instance:
@@ -47,22 +47,39 @@ class ZFSCache:
             self.logger.error("Failed to load datasets.")
             return set()
 
-    def _load_snapshots(self) -> set:
+    def _load_snapshots(self) -> dict:
         """
-        Load all ZFS snapshots.
+        Load all ZFS snapshots and their refer sizes.
 
         Returns:
-            set: A set of all ZFS snapshots.
+            dict: A dictionary of all ZFS snapshots with their details.
         """
-        command = "/sbin/zfs list -H -t snapshot -o name"
+        command = "/sbin/zfs list -H -t snapshot -o name,refer"
         result = run_command(command, suppress_output=True)
         if result.is_success():
-            snapshots = set(result.get_output().split('\n'))
+            snapshots = {}
+            for line in result.get_output().split('\n'):
+                if line:
+                    parts = line.rsplit('\t', 1)
+                    snapshot_name = parts[0]
+                    refer_size = self._convert_size_to_bytes(parts[1])
+                    snapshots[snapshot_name] = {"refer": refer_size}
             self.logger.debug(f"Loaded {len(snapshots)} snapshots.")
             return snapshots
         else:
             self.logger.error("Failed to load snapshots.")
-            return set()
+            return {}
+
+    def _convert_size_to_bytes(self, size_str):
+        size_units = {"K": 1024, "M": 1024**2, "G": 1024**3, "T": 1024**4}
+        try:
+            if size_str[-1] in size_units:
+                return int(float(size_str[:-1]) * size_units[size_str[-1]])
+            else:
+                return int(size_str)
+        except ValueError:
+            self.logger.error(f"Invalid size string: {size_str}")
+            return 0
 
     def hard_refresh(self):
         """
@@ -71,7 +88,7 @@ class ZFSCache:
         ZFSCache._datasets = self._load_datasets()
         ZFSCache._snapshots = self._load_snapshots()
 
-    def get_snapshots_for_dataset(self, dataset: str) -> set:
+    def get_snapshots_for_dataset(self, dataset: str) -> dict:
         """
         Get all snapshots associated with a specific dataset.
 
@@ -79,10 +96,10 @@ class ZFSCache:
             dataset (str): The name of the dataset.
 
         Returns:
-            set: A set of snapshots associated with the dataset.
+            dict: A dictionary of snapshots associated with the dataset.
         """
         with self._lock:
-            return {snap for snap in ZFSCache._snapshots if snap.startswith(dataset + '@')}
+            return {snap: details for snap, details in ZFSCache._snapshots.items() if snap.startswith(dataset + '@')}
 
     @property
     def datasets(self) -> set:
@@ -107,23 +124,23 @@ class ZFSCache:
             ZFSCache._datasets = value
 
     @property
-    def snapshots(self) -> set:
+    def snapshots(self) -> dict:
         """
         Get the current set of snapshots.
 
         Returns:
-            set: The current set of snapshots.
+            dict: The current set of snapshots.
         """
         with self._lock:
             return ZFSCache._snapshots
 
     @snapshots.setter
-    def snapshots(self, value: set):
+    def snapshots(self, value: dict):
         """
         Set the current set of snapshots.
 
         Parameters:
-            value (set): The new set of snapshots.
+            value (dict): The new set of snapshots.
         """
         with self._lock:
             ZFSCache._snapshots = value
@@ -153,16 +170,17 @@ class ZFSCache:
             self.logger.debug(f"Removed dataset: {dataset}")
 
     @type_check
-    def add_snapshot(self, snapshot: str):
+    def add_snapshot(self, snapshot: str, refer_size: int):
         """
         Add a snapshot to the cache.
 
         Parameters:
             snapshot (str): The snapshot to add.
+            refer_size (int): The refer size of the snapshot.
         """
         with self._lock:
-            ZFSCache._snapshots.add(snapshot)
-            self.logger.debug(f"Added snapshot: {snapshot}")
+            ZFSCache._snapshots[snapshot] = {"refer": refer_size}
+            self.logger.debug(f"Added snapshot: {snapshot} with refer size: {refer_size}")
 
     @type_check
     def remove_snapshot(self, snapshot: str):
@@ -173,5 +191,6 @@ class ZFSCache:
             snapshot (str): The snapshot to remove.
         """
         with self._lock:
-            ZFSCache._snapshots.discard(snapshot)
-            self.logger.debug(f"Removed snapshot: {snapshot}")
+            if snapshot in ZFSCache._snapshots:
+                del ZFSCache._snapshots[snapshot]
+                self.logger.debug(f"Removed snapshot: {snapshot}")

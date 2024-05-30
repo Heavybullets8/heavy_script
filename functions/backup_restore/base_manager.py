@@ -1,3 +1,5 @@
+import re
+import shutil
 from datetime import datetime
 from pathlib import Path
 from zfs.lifecycle import ZFSLifecycleManager
@@ -14,7 +16,14 @@ class BaseManager:
         self.logger.debug(f"Initializing BaseManager for path: {self.backup_abs_path}")
 
         if not self.lifecycle_manager.dataset_exists(self.backup_dataset_parent):
-            self.lifecycle_manager.create_dataset(self.backup_dataset_parent)
+            self.lifecycle_manager.create_dataset(
+                self.backup_dataset_parent,
+                options={
+                    "atime": "off",
+                    "compression": "zstd-19",
+                    "recordsize": "1M"
+                }
+            )
             self.logger.debug(f"Created dataset: {self.backup_dataset_parent}")
 
     def _derive_dataset_parent(self):
@@ -27,7 +36,7 @@ class BaseManager:
         """List all backups in the parent dataset, separated into full backups and exports."""
         self.logger.debug("Listing all backups")
         full_backups = sorted(
-            (ds for ds in self.lifecycle_manager.list_datasets() if ds.startswith(f"{self.backup_dataset_parent}/HeavyScript--")),
+            (ds for ds in self.lifecycle_manager.datasets if ds.startswith(f"{self.backup_dataset_parent}/HeavyScript--")),
             key=lambda ds: datetime.strptime(ds.split('/')[-1].replace("HeavyScript--", ""), '%Y-%m-%d_%H:%M:%S'),
             reverse=True
         )
@@ -40,6 +49,47 @@ class BaseManager:
 
         self.logger.debug(f"Found {len(full_backups)} full backups and {len(export_dirs)} export directories")
         return full_backups, export_dirs
+
+    def _list_snapshots_for_backup(self, backup_name: str):
+        """List all snapshots matching a specific backup name."""
+        self.logger.debug(f"Listing snapshots for backup: {backup_name}")
+        pattern = re.compile(r'HeavyScript--\d{4}-\d{2}-\d{2}_\d{2}:\d{2}:\d{2}')
+        matching_snapshots = [snap for snap in self.snapshot_manager.snapshots if pattern.search(snap) and snap.endswith(f"@{backup_name}")]
+        self.logger.debug(f"Found {len(matching_snapshots)} snapshots for backup: {backup_name}")
+        return matching_snapshots
+
+    def delete_backup(self, backup_name: str):
+        """Delete a specific backup and its associated snapshots by name."""
+        full_backups, export_dirs = self.list_backups()
+
+        for backup in full_backups:
+            if backup.endswith(backup_name):
+                self.logger.info(f"Deleting full backup: {backup}")
+                self.lifecycle_manager.delete_dataset(backup)
+                snapshots = self._list_snapshots_for_backup(backup_name)
+                for snapshot in snapshots:
+                    self.snapshot_manager.delete_snapshot(snapshot)
+                self.logger.info(f"Deleted full backup: {backup} and associated snapshots")
+                return True
+
+        for export in export_dirs:
+            if export.name == backup_name:
+                self.logger.info(f"Deleting export: {export}")
+                shutil.rmtree(export)
+                self.logger.info(f"Deleted export: {export}")
+                return True
+
+        self.logger.info(f"Backup {backup_name} not found")
+        return False
+
+    def delete_old_backups(self, retention: int):
+        """Delete backups that exceed the retention limit."""
+        self.logger.debug(f"Deleting old backups exceeding retention: {retention}")
+        full_backups, _ = self.list_backups()
+        if len(full_backups) > retention:
+            for backup in full_backups[retention:]:
+                backup_name = Path(backup).name
+                self.delete_backup(backup_name)
 
     def interactive_select_backup(self, backup_type="all"):
         """

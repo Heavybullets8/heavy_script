@@ -4,14 +4,12 @@ from pathlib import Path
 from base_manager import BaseManager
 from backup.backup import Backup
 from backup.export_ import ChartInfoExporter
-from zfs.snapshot import ZFSSnapshotManager
 from utils.logger import get_logger
 
 class BackupManager(BaseManager):
     def __init__(self, backup_abs_path: Path):
         super().__init__(backup_abs_path)
         self.logger = get_logger()
-        self.snapshot_manager = ZFSSnapshotManager()
         self.logger.info(f"BackupManager initialized for {self.backup_abs_path}")
 
     def backup_all(self, retention=None):
@@ -20,9 +18,9 @@ class BackupManager(BaseManager):
         backup = Backup(self.backup_abs_path)
         backup.backup_all()
         self.logger.info("Backup completed successfully")
-        self.cleanup_dangling_snapshots()
         if retention is not None:
             self.delete_old_backups(retention)
+        self.cleanup_dangling_snapshots()
 
     def export_chart_info(self, retention=None):
         """Export chart information with optional retention."""
@@ -30,34 +28,17 @@ class BackupManager(BaseManager):
         exporter = ChartInfoExporter(self.backup_abs_path)
         exporter.export()
         self.logger.info("Chart information export completed successfully")
-        self.cleanup_dangling_snapshots()
         if retention is not None:
             self.delete_old_exports(retention)
 
     def delete_backup_by_name(self, backup_name: str):
         """Delete a specific backup by name."""
         self.logger.info(f"Attempting to delete backup: {backup_name}")
-        full_backups, export_dirs = self.list_backups()
-
-        for backup in full_backups:
-            if backup.endswith(backup_name):
-                self.logger.info(f"Deleting full backup: {backup}")
-                self.lifecycle_manager.delete_dataset(backup)
-                self.snapshot_manager.delete_snapshots(backup_name)
-                self.logger.info(f"Deleted full backup: {backup} and associated snapshots")
-                self.cleanup_dangling_snapshots()
-                return True
-
-        for export in export_dirs:
-            if export.name == backup_name:
-                self.logger.info(f"Deleting export: {export}")
-                shutil.rmtree(export)
-                self.logger.info(f"Deleted export: {export}")
-                self.cleanup_dangling_snapshots()
-                return True
-
-        self.logger.info(f"Backup {backup_name} not found")
-        return False
+        result = self.delete_backup(backup_name)
+        if result:
+            self.logger.info(f"Deleted backup: {backup_name}")
+        else:
+            self.logger.info(f"Backup {backup_name} not found")
 
     def delete_backup_by_index(self, backup_index: int):
         """Delete a specific backup by index."""
@@ -67,30 +48,20 @@ class BackupManager(BaseManager):
 
         if 0 <= backup_index < len(all_backups):
             backup = all_backups[backup_index]
-            if backup in full_backups:
-                backup_name = Path(backup).name
-                self.logger.info(f"Deleting full backup: {backup_name}")
-                self.lifecycle_manager.delete_dataset(backup)
-                self.snapshot_manager.delete_snapshots(backup_name)
-                self.logger.info(f"Deleted full backup: {backup_name} and associated snapshots")
-            elif backup in export_dirs:
-                self.logger.info(f"Deleting export: {backup.name}")
-                shutil.rmtree(backup)
-                self.logger.info(f"Deleted export: {backup.name}")
-            self.cleanup_dangling_snapshots()
-            return True
-
-        self.logger.info(f"Invalid backup index: {backup_index}")
-        return False
+            backup_name = Path(backup).name
+            self.logger.info(f"Deleting backup: {backup_name}")
+            self.delete_backup(backup_name)
+            self.logger.info(f"Deleted backup: {backup_name}")
+        else:
+            self.logger.info(f"Invalid backup index: {backup_index}")
 
     def interactive_delete_backup(self):
         """Offer an interactive selection to delete backups."""
         self.logger.info("Starting interactive backup deletion")
         selected_backup = self.interactive_select_backup()
         if selected_backup:
-            all_backups = self.list_backups()[0] + self.list_backups()[1]
-            backup_index = all_backups.index(selected_backup)
-            self.delete_backup_by_index(backup_index)
+            backup_name = Path(selected_backup).name
+            self.delete_backup_by_name(backup_name)
 
     def display_backups(self):
         """Display all backups without deleting them."""
@@ -118,31 +89,19 @@ class BackupManager(BaseManager):
         full_backups, _ = self.list_backups()
         full_backup_names = {Path(backup).name for backup in full_backups}
 
-        all_snapshots = self.snapshot_manager.list_snapshots()
         pattern = re.compile(r'HeavyScript--\d{4}-\d{2}-\d{2}_\d{2}:\d{2}:\d{2}')
-        deleted_snapshots = set()
 
-        for snapshot in all_snapshots:
+        for snapshot in self.snapshot_manager.snapshots:
             match = pattern.search(snapshot)
             if match:
                 snapshot_name = match.group()
-                if snapshot_name not in full_backup_names and snapshot_name not in deleted_snapshots:
-                    self.logger.info(f"Deleting dangling snapshot: {snapshot_name}")
-                    self.snapshot_manager.delete_snapshots(snapshot_name)
-                    self.logger.info(f"Deleted snapshot: {snapshot_name}")
-                    deleted_snapshots.add(snapshot_name)
-
-    def delete_old_backups(self, retention):
-        """Delete backups that exceed the retention limit."""
-        self.logger.debug(f"Deleting old backups exceeding retention: {retention}")
-        full_backups, _ = self.list_backups()
-        if len(full_backups) > retention:
-            for backup in full_backups[retention:]:
-                backup_name = Path(backup).name
-                self.logger.info(f"Deleting old backup: {backup_name}")
-                self.lifecycle_manager.delete_dataset(backup)
-                self.snapshot_manager.delete_snapshots(backup_name)
-                self.logger.info(f"Deleted old backup: {backup_name} and associated snapshots")
+                if snapshot_name not in full_backup_names:
+                    self.logger.info(f"Deleting dangling snapshot: {snapshot}")
+                    delete_result = self.snapshot_manager.delete_snapshot(snapshot)
+                    if delete_result["success"]:
+                        self.logger.info(f"Deleted snapshot: {snapshot}")
+                    else:
+                        self.logger.error(f"Failed to delete snapshot {snapshot}: {delete_result['message']}")
 
     def delete_old_exports(self, retention):
         """Delete exports that exceed the retention limit."""

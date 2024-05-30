@@ -58,6 +58,14 @@ class Backup:
 
         self.kube_pvc_fetcher = KubePVCFetcher()
 
+        # Read configuration settings
+        config_file_path = str(Path(__file__).parent.parent.parent.parent / 'config.ini')
+        config = ConfigObj(config_file_path, encoding='utf-8', list_values=False)
+
+        self.backup_snapshot_streams = config['BACKUP'].as_bool('backup_snapshot_streams')
+        self.max_stream_size_str = config['BACKUP'].get('max_stream_size', '10G')
+        self.max_stream_size_bytes = self._size_str_to_bytes(self.max_stream_size_str)
+
     def _create_backup_dataset(self):
         """
         Create a ZFS dataset for backups.
@@ -150,7 +158,6 @@ class Backup:
                     self.logger.error(f"Failed to backup database for {app_name}: {result['message']}")
                     failures[app_name].append(result["message"])
 
-            # TODO: Print off better messages for each of the two types
             dataset_paths = self.kube_pvc_fetcher.get_volume_paths_by_namespace(f"ix-{app_name}")
             if dataset_paths:
                 for dataset_path in dataset_paths:
@@ -170,37 +177,17 @@ class Backup:
                         failures[app_name].append(snapshot_result["message"])
                         continue
 
-                    # Read configuration settings
-                    config_file_path = str(Path(__file__).parent.parent.parent.parent / 'config.ini')
-                    config = ConfigObj(config_file_path, encoding='utf-8', list_values=False)
+                    self.logger.debug(f"backup_snapshot_streams: {self.backup_snapshot_streams}")
+                    self.logger.debug(f"max_stream_size_str: {self.max_stream_size_str}")
+                    self.logger.debug(f"max_stream_size_bytes: {self.max_stream_size_bytes}")
 
-                    backup_snapshot_streams = config['BACKUP'].as_bool('backup_snapshot_streams')
-                    max_stream_size_str = config['BACKUP'].get('max_stream_size', '10G')
-
-                    def size_str_to_bytes(size_str):
-                        size_units = {"K": 1024, "M": 1024**2, "G": 1024**3, "T": 1024**4}
-                        try:
-                            if size_str[-1] in size_units:
-                                return int(float(size_str[:-1]) * size_units[size_str[-1]])
-                            else:
-                                return int(size_str)
-                        except ValueError:
-                            self.logger.error(f"Invalid size string: {size_str}")
-                            return 0
-
-                    max_stream_size_bytes = size_str_to_bytes(max_stream_size_str)
-
-                    self.logger.debug(f"backup_snapshot_streams: {backup_snapshot_streams}")
-                    self.logger.debug(f"max_stream_size_str: {max_stream_size_str}")
-                    self.logger.debug(f"max_stream_size_bytes: {max_stream_size_bytes}")
-
-                    if backup_snapshot_streams:
+                    if self.backup_snapshot_streams:
                         snapshot_refer_size = self.snapshot_manager.get_snapshot_refer_size(snapshot_name)
                         self.logger.debug(f"snapshot_refer_size: {snapshot_refer_size}")
 
-                        if snapshot_refer_size <= max_stream_size_bytes:
+                        if snapshot_refer_size <= self.max_stream_size_bytes:
                             # Send the snapshot to the backup directory
-                            self.logger.info(f"Sending snapshot stream to backup file...")
+                            self.logger.info(f"Sending PV snapshot stream to backup file...")
                             snapshot_name = f"{dataset_path}@{self.snapshot_name}"
                             backup_path = app_backup_dir / "snapshots" / f"{snapshot_name.replace('/', '%%')}.zfs"
                             backup_path.parent.mkdir(parents=True, exist_ok=True)
@@ -208,23 +195,42 @@ class Backup:
                             if not send_result["success"]:
                                 failures[app_name].append(send_result["message"])
                         else:
-                            self.logger.warning(f"Snapshot refer size {snapshot_refer_size} exceeds the maximum configured size {max_stream_size_bytes}")
+                            self.logger.warning(f"Snapshot refer size {snapshot_refer_size} exceeds the maximum configured size {self.max_stream_size_bytes}")
                     else:
                         self.logger.debug("Backup snapshot streams are disabled in the configuration.")
 
             # Handle ix_volumes_dataset separately
             if chart_info.ix_volumes_dataset:
-                self.logger.info(f"Snapshotting ix_volumes...")
                 snapshot = chart_info.ix_volumes_dataset + "@" + self.snapshot_name
-                backup_path = app_backup_dir / "snapshots" / f"{snapshot.replace('/', '%%')}.zfs"
-                backup_path.parent.mkdir(parents=True, exist_ok=True)
-                self.logger.info(f"Sending snapshot stream to backup file...")
-                send_result = self.snapshot_manager.zfs_send(snapshot, backup_path, compress=True)
-                if not send_result["success"]:
-                    failures[app_name].append(send_result["message"])
+                if self.backup_snapshot_streams:
+                    snapshot_refer_size = self.snapshot_manager.get_snapshot_refer_size(snapshot)
+                    self.logger.debug(f"ix_volumes_dataset snapshot_refer_size: {snapshot_refer_size}")
+
+                    if snapshot_refer_size <= self.max_stream_size_bytes:
+                        self.logger.info(f"Sending ix_volumes snapshot stream to backup file...")
+                        backup_path = app_backup_dir / "snapshots" / f"{snapshot.replace('/', '%%')}.zfs"
+                        backup_path.parent.mkdir(parents=True, exist_ok=True)
+                        send_result = self.snapshot_manager.zfs_send(snapshot, backup_path, compress=True)
+                        if not send_result["success"]:
+                            failures[app_name].append(send_result["message"])
+                    else:
+                        self.logger.warning(f"ix_volumes_dataset snapshot refer size {snapshot_refer_size} exceeds the maximum configured size {self.max_stream_size_bytes}")
+                else:
+                    self.logger.debug("Backup snapshot streams are disabled in the configuration.")
 
         self._create_backup_snapshot()
         self._log_failures(failures)
+
+    def _size_str_to_bytes(self, size_str):
+        size_units = {"K": 1024, "M": 1024**2, "G": 1024**3, "T": 1024**4}
+        try:
+            if size_str[-1] in size_units:
+                return int(float(size_str[:-1]) * size_units[size_str[-1]])
+            else:
+                return int(size_str)
+        except ValueError:
+            self.logger.error(f"Invalid size string: {size_str}")
+            return 0
 
     def _log_failures(self, failures):
         """

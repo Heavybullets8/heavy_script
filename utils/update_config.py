@@ -11,51 +11,51 @@ def update_config(config_file_path):
         lines = file.readlines()
 
     # Load the existing config
-    config = configparser.ConfigParser(allow_no_value=True)
-    config.optionxform = str  # Preserve the letter case of keys
-    config.read(config_file_path)
-
-    # Remove the [databases] section if it exists
-    if 'databases' in config:
-        config.remove_section('databases')
+    current_config = configparser.ConfigParser(allow_no_value=True)
+    current_config.optionxform = str  # Preserve the letter case of keys
+    current_config.read(config_file_path)
 
     # Load the default config from .default.config.ini
-    default_config_parser = configparser.ConfigParser(allow_no_value=True)
-    default_config_parser.optionxform = str  # Preserve the letter case of keys
-    default_config_parser.read(default_config_path)
+    default_config = configparser.ConfigParser(allow_no_value=True)
+    default_config.optionxform = str  # Preserve the letter case of keys
+    default_config.read(default_config_path)
+
+    # Remove sections from the current config that are not in the default config
+    sections_to_remove = [section for section in current_config.sections() if section not in default_config.sections()]
+    for section in sections_to_remove:
+        current_config.remove_section(section)
 
     # Update the existing config with missing sections and options from the default config
-    for section in default_config_parser.sections():
-        if not config.has_section(section):
-            config.add_section(section)
-        for key, value in default_config_parser.items(section):
-            if not config.has_option(section, key):
-                config.set(section, key, value)
+    for section in default_config.sections():
+        if not current_config.has_section(section):
+            current_config.add_section(section)
+        for key, value in default_config.items(section):
+            if not current_config.has_option(section, key):
+                current_config.set(section, key, value)
 
     # Write the updated config back to the file preserving the original comments
     with config_file_path.open('w') as file:
-        in_databases_section = False
+        in_removed_section = False
         for line in lines:
-            if line.strip().lower() == '[databases]':
-                in_databases_section = True
+            if any(line.strip().lower() == f'[{s.lower()}]' for s in sections_to_remove):
+                in_removed_section = True
                 continue
-            if line.startswith('[') and in_databases_section:
-                in_databases_section = False
-            if not in_databases_section:
+            if line.startswith('[') and in_removed_section:
+                in_removed_section = False
+            if not in_removed_section:
                 file.write(line)
         
         # Ensure new sections and options are added if missing
-        for section in default_config_parser.sections():
+        for section in default_config.sections():
             if not any(f'[{section}]' in line for line in lines):
                 file.write(f'\n[{section}]\n')
-                for key, value in default_config_parser.items(section):
+                for key, value in default_config.items(section):
                     if value is None:
                         file.write(f'{key}\n')
                     else:
                         file.write(f'{key}={value}\n')
-
             else:
-                for key, value in default_config_parser.items(section):
+                for key, value in default_config.items(section):
                     if not any(key in line for line in lines):
                         if value is None:
                             file.write(f'{key}\n')

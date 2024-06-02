@@ -9,7 +9,12 @@ read_config() {
     # Set the default options using the config file
     export export_enabled="${BACKUP__BACKUP__export_enabled:-false}"
     export full_backup_enabled="${BACKUP__BACKUP__full_backup_enabled:-false}"
-    export dataset_path="${BACKUP__BACKUP__custom_dataset_location:-/mnt/$(get_apps_pool)/heavyscript_backups}"
+    export dataset_path
+    if [[ "${BACKUP__BACKUP__dataset_absolute_path:-"DEFAULT"}" == "DEFAULT" ]]; then
+        dataset_path="/mnt/$(get_apps_pool)/heavyscript_backups"
+    else
+        dataset_path="${BACKUP__BACKUP__dataset_absolute_path:-"/mnt/$(get_apps_pool)/heavyscript_backups"}"
+    fi
 }
 
 # Function to handle backups and exports

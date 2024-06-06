@@ -1,5 +1,27 @@
 # HeavyScript
 
+# Archived Repository Notice
+
+## HeavyScript is Archived
+
+Due to the upcoming update for TrueNAS SCALE ([link to update](https://forums.truenas.com/t/the-future-of-electric-eel-and-apps/5409)), where they will be completely removing k3s and replacing it with Docker Compose, I have decided to archive this repository. Since I do not want to use Docker Compose, I will not be supporting it. The tools that HeavyScript offers will all be deprecated by this release due to that change, as the tools are designed for TrueNAS SCALE's k3s implementation, not Docker.
+
+Instead, I will be switching over to TalosOS, and users should watch the TrueCharts Discord channel for migration notices.
+
+It is also worth noting that TrueCharts has archived and completely removed their charts from TrueNAS SCALE as well, as seen here: [TrueCharts Catalog](https://github.com/truecharts/catalog).
+
+TrueCharts' comments on the situation can be seen here: [TrueCharts Deprecation News](https://truecharts.org/news/scale-deprecation/).
+
+## Personal Note
+
+Developing HeavyScript was my first project and the most fun I've had with coding. Amassing 380+ stars throughout the years is nothing I ever dreamed of when I started the project, and I am sad to see it go.
+
+Thank you to everyone who has supported and used HeavyScript!
+
+Best regards,  
+Heavybullets8
+
+
 ## Contact
 
 If you have questions or would like to contribute, I have a sub discord category hosted on the Truecharts Discord.
